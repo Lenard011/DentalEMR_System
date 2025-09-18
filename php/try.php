@@ -3,27 +3,44 @@
 
 if (isset($_POST["patient"])) {
   // PATIENT INFO
-  $surname = $_POST["surname"] ?? null;
-  $firstname   = $_POST["firstname"] ?? null;
-  $middlename  = $_POST["middlename"] ?? null;
+  $surname       = $_POST["surname"] ?? null;
+  $firstname     = $_POST["firstname"] ?? null;
+  $middlename    = $_POST["middlename"] ?? null;
   $date_of_birth = $_POST["dob"] ?? null;
   $placeofbirth  = $_POST["pob"] ?? null;
-  $age         = $_POST["age"] ?? null;
-  $sex         = $_POST["sex"] ?? null;
-  $address     = $_POST["address"] ?? null;
-  $occupation  = $_POST["occupation"] ?? null;
+  $age           = $_POST["age"] ?? null;
+  $sex           = $_POST["sex"] ?? null;
+  $address       = $_POST["address"] ?? null;
+  $occupation    = $_POST["occupation"] ?? null;
+  $pregnant          = $_POST["pregnant"] ?? null;
+  $guardian     = $_POST["guardian"] ?? null;
 
   $stmt = $conn->prepare("INSERT INTO patients 
-        (surname, firstname, middlename, date_of_birth, place_of_birth, age, sex, address, occupation) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-  $stmt->bind_param("sssssssss", $surname, $firstname, $middlename, $date_of_birth, $placeofbirth, $age, $sex, $address, $occupation);
+    (surname, firstname, middlename, date_of_birth, place_of_birth, age, sex, address, occupation, pregnant, guardian) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+  $stmt->bind_param(
+    "sssssssssss",
+    $surname,
+    $firstname,
+    $middlename,
+    $date_of_birth,
+    $placeofbirth,
+    $age,
+    $sex,
+    $address,
+    $occupation,
+    $pregnant,
+    $guardian
+  );
 
   if ($stmt->execute()) {
-    $patient_id = $stmt->insert_id; 
+    $patient_id = $stmt->insert_id;
   } else {
     die("❌ Patient insert failed: " . $stmt->error);
   }
   $stmt->close();
+
 
   // OTHER PATIENT INFO
   $nhts     = isset($_POST['nhts_pr']) ? 1 : 0;

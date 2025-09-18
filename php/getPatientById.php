@@ -4,36 +4,43 @@ header("Content-Type: application/json");
 // Database connection
 $conn = new mysqli("localhost", "root", "", "dentalemr_system");
 if ($conn->connect_error) {
-    echo json_encode(["error" => $conn->connect_error]);
-    exit;
+    echo json_encode(["error" => "Database connection failed: " . $conn->connect_error]);
+    exit();
 }
 
-// Get patient ID from GET
-$id = intval($_GET['id'] ?? 0);
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id <= 0) {
     echo json_encode(["error" => "Invalid patient ID"]);
-    exit;
+    exit();
 }
 
-// Detect the actual ID column in the table
-$columns = $conn->query("SHOW COLUMNS FROM patients");
-$id_column = "id"; // default
-while($col = $columns->fetch_assoc()) {
-    if (strtolower($col['Field']) === 'patient_id') {
-        $id_column = 'patient_id';
-        break;
-    }
-}
+// Query patient details + membership info
+$sql = "SELECT 
+            p.patient_id, 
+            p.surname, p.firstname, p.middlename, 
+            p.date_of_birth, p.place_of_birth, p.age, p.sex, 
+            p.address, p.occupation, p.guardian,
+            o.nhts_pr, o.four_ps, o.indigenous_people, o.pwd,
+            o.philhealth_flag, o.philhealth_number,
+            o.sss_flag, o.sss_number,
+            o.gsis_flag, o.gsis_number
+        FROM patients p
+        LEFT JOIN patient_other_info o 
+            ON p.patient_id = o.patient_id
+        WHERE p.patient_id = ?
+        LIMIT 1";
 
-// Select patient details
-$sql = "SELECT * FROM patients WHERE $id_column = $id LIMIT 1";
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
 
-if ($result && $row = $result->fetch_assoc()) {
-    echo json_encode($row);
+if ($result->num_rows > 0) {
+    echo json_encode($result->fetch_assoc());
 } else {
     echo json_encode(["error" => "Patient not found"]);
 }
 
+$stmt->close();
 $conn->close();
 ?>
