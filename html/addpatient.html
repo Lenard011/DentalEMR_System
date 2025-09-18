@@ -7,6 +7,56 @@
     <title>Add patient</title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+        async function loadPatients() {
+            try {
+                const res = await fetch("../php/getPatients.php");
+                const data = await res.json();
+
+                const tbody = document.getElementById("patientsBody");
+                tbody.innerHTML = "";
+
+                if (data.error) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-red-600">${data.error}</td></tr>`;
+                    return;
+                }
+                if (data.message) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3">${data.message}</td></tr>`;
+                    return;
+                }
+
+                data.forEach(p => {
+                    tbody.innerHTML += `
+          <tr class="border-b dark:border-gray-700">
+            <td class="px-4 py-3 text-center">${p.patient_id}</td>
+            <td class="px-4 py-3 text-center">
+              ${p.surname}, ${p.firstname} ${p.middlename ?? ""}
+            </td>
+            <td class="px-4 py-3 text-center">${p.sex}</td>
+            <td class="px-4 py-3 text-center">${p.age}</td>
+            <td class="px-4 py-3 text-center">${p.address}</td>
+            <td class="px-4 py-3 flex justify-center">
+              <button onclick="window.location.href='viewrecord.html?id=${p.patient_id}'"
+                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 
+                focus:ring-blue-300 font-medium rounded-lg text-xs px-3 py-2">
+                View
+              </button>
+            </td>
+          </tr>`;
+                });
+            } catch (err) {
+                console.error("Error loading patients:", err);
+                document.getElementById("patientsBody").innerHTML =
+                    `<tr><td colspan="6" class="text-center py-3 text-red-600">Error loading data</td></tr>`;
+            }
+        }
+
+        function view(id) {
+            alert("View patient with ID: " + id);
+        }
+
+        window.onload = loadPatients;
+    </script>
 </head>
 
 <body>
@@ -230,8 +280,6 @@
                                     clip-rule="evenodd" />
                                 <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
                             </svg>
-
-
                             <span class="ml-3">Archived</span>
                         </a>
                     </li>
@@ -359,19 +407,21 @@
                         </div>
                         <!-- Table -->
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <table id="patientsTable" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                 <thead
                                     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                    <tr class="">
-                                        <th scope="col" class="px-4 py-3 text-center">ID</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Name</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Sex</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Age</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Address</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Actions</th>
+                                    <tr>
+                                        <th class="px-4 py-3 text-center">ID</th>
+                                        <th class="px-4 py-3 text-center">Name</th>
+                                        <th class="px-4 py-3 text-center">Sex</th>
+                                        <th class="px-4 py-3 text-center">Age</th>
+                                        <th class="px-4 py-3 text-center">Address</th>
+                                        <th class="px-4 py-3 text-center">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="patientsBody"></tbody>
+                            </table>
+                            <!-- <tbody>
                                     <tr class="border-b dark:border-gray-700">
                                         <th scope="row"
                                             class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -395,8 +445,7 @@
                                             </button>
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
+                                </tbody> -->
                         </div>
                     </div>
                 </div>
@@ -587,7 +636,7 @@
                                 <button type="button" id="Addpatientbtn2" data-modal-hide="addpatientModal"
                                     data-modal-target="addpatientModal2" data-modal-toggle="addpatientModal2"
                                     class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                    next
+                                    Next
                                 </button>
                             </div>
                         </div>

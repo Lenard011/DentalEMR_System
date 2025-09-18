@@ -1,707 +1,94 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Information</title>
-    <!-- <link href="../css/style.css" rel="stylesheet"> -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>View Patient Record</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        async function loadPatient() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            const container = document.getElementById("patientDetails");
+
+            if (!id) {
+                container.innerHTML = `<p class="text-red-600">No patient ID provided</p>`;
+                return;
+            }
+
+            try {
+                const res = await fetch(`../php/getPatientById.php?id=${id}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    container.innerHTML = `<p class="text-red-600">${data.error}</p>`;
+                    return;
+                }
+
+                container.innerHTML = `
+        <div class="mx-auto mb-5 max-w-screen-xl px-4 py-4 bg-white rounded-lg shadow dark:bg-gray-800">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Patient Details</h2>
+            <button onclick="window.location.href='editrecord.html?id=${data.id || data.patient_id}'"
+              class="flex items-center gap-1 text-white bg-blue-700 hover:bg-blue-800 font-medium rounded px-3 py-1 text-xs dark:bg-blue-600 dark:hover:bg-blue-700">
+              Edit
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p class="font-medium text-gray-900 dark:text-white">${data.surname}, ${data.firstname} ${data.middlename ?? ""}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Full Name</p>
+            </div>
+
+            <div class="text-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p class="font-medium text-gray-900 dark:text-white">${data.sex}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Gender</p>
+            </div>
+
+            <div class="text-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p class="font-medium text-gray-900 dark:text-white">${data.age}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Age</p>
+            </div>
+
+            <div class="text-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p class="font-medium text-gray-900 dark:text-white">${data.dob ?? ""}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Date of Birth</p>
+            </div>
+
+            <div class="text-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p class="font-medium text-gray-900 dark:text-white">${data.address ?? ""}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Address</p>
+            </div>
+
+            <div class="text-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p class="font-medium text-gray-900 dark:text-white">${data.occupation ?? ""}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Occupation</p>
+            </div>
+
+            <div class="text-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p class="font-medium text-gray-900 dark:text-white">${data.place_of_birth ?? ""}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Place of Birth</p>
+            </div>
+
+            <div class="text-center p-2 bg-gray-100 dark:bg-gray-700 rounded">
+              <p class="font-medium text-gray-900 dark:text-white">${data.parent_guardian ?? ""}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Parent/Guardian</p>
+            </div>
+          </div>
+        </div>
+        `;
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<p class="text-red-600">Error loading patient details</p>`;
+            }
+        }
+        window.onload = loadPatient;
+    </script>
 </head>
 
-<body>
-    <div class="antialiased bg-gray-50 dark:bg-gray-900">
-        <nav
-            class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
-            <div class="flex flex-wrap justify-between items-center">
-                <div class="flex justify-start items-center">
-                    <button data-drawer-target="drawer-navigation" data-drawer-toggle="drawer-navigation"
-                        aria-controls="drawer-navigation"
-                        class="p-2 mr-2 text-gray-600 rounded-lg cursor-pointer md:hidden hover:text-gray-900 hover:bg-gray-100 focus:bg-gray-100 dark:focus:bg-gray-700 focus:ring-2 focus:ring-gray-100 dark:focus:ring-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                        <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd"
-                                d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                                clip-rule="evenodd"></path>
-                        </svg>
-                        <svg aria-hidden="true" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd"
-                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="sr-only">Toggle sidebar</span>
-                    </button>
-                    <a href="https://flowbite.com" class="flex items-center justify-between mr-4">
-                        <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
-                            class="mr-3 h-8" alt="Flowbite Logo" />
-                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
-                            Clinic</span>
-                    </a>
-
-                </div>
-                <!-- UserProfile -->
-                <div class="flex items-center lg:order-2">
-                    <button type="button" data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation"
-                        class="p-2 mr-1 text-gray-500 rounded-lg md:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-                        <span class="sr-only">Toggle search</span>
-                        <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path clip-rule="evenodd" fill-rule="evenodd"
-                                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z">
-                            </path>
-                        </svg>
-                    </button>
-                    <button type="button"
-                        class="flex mx-3 cursor-pointer text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                        id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown">
-                        <span class="sr-only">Open user menu</span>
-                        <img class="w-8 h-8 rounded-full"
-                            src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png"
-                            alt="user photo" />
-                    </button>
-                    <!-- Dropdown menu -->
-                    <div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
-                        id="dropdown">
-                        <div class="py-3 px-4">
-                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">Neil Sims</span>
-                            <span class="block text-sm text-gray-900 truncate dark:text-white">name@flowbite.com</span>
-                        </div>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My
-                                    profile</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Accounts</a>
-                            </li>
-                        </ul>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
-                                    out</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </nav>
-        <!-- Sidebar -->
-        <aside
-            class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
-            aria-label="Sidenav" id="drawer-navigation">
-            <div class="overflow-y-auto py-5 px-3 h-full bg-white dark:bg-gray-800">
-                <form action="#" method="GET" class="md:hidden mb-2">
-                    <label for="sidebar-search" class="sr-only">Search</label>
-                    <div class="relative">
-                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor"
-                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z">
-                                </path>
-                            </svg>
-                        </div>
-                        <input type="text" name="search" id="sidebar-search"
-                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                            placeholder="Search" />
-                    </div>
-                </form>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="index.html"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg aria-hidden="true"
-                                class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
-                                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
-                            </svg>
-                            <span class="ml-3">Dashboard</span>
-                        </a>
-                    </li>
-                </ul>
-                <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
-                    <li>
-                        <a href="#"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
-                            <svg aria-hidden="true" style="color: blue;"
-                                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                                <path
-                                    d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" />
-                            </svg>
-
-                            <span class="ml-3" style="color: blue;">Add Patient</span>
-                        </a>
-                    </li>
-                    <li>
-                        <button type="button"
-                            class="flex items-center cursor-pointer p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                            aria-controls="dropdown-pages" data-collapse-toggle="dropdown-pages">
-                            <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
-                                fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap">Patient Treatment</span>
-                            <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <ul id="dropdown-pages" class="hidden py-2 space-y-2">
-                            <li>
-                                <a href="./treatmentrecords/treatmentrecords.html"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
-                                    Records</a>
-                            </li>
-                            <li>
-                                <a href="./addpatienttreatment/patienttreatment.html"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
-                                    Patient Treatment</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
-                    <li>
-                        <a href="./reports/targetclientlist.html"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
-                                <path fill-rule="evenodd"
-                                    d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-
-                            <span class="ml-3">Target Client List</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="./reports/mho_ohp.html"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M11 9h6m-6 3h6m-6 3h6M6.996 9h.01m-.01 3h.01m-.01 3h.01M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
-                            </svg>
-                            <span class="ml-3">MHO - OHP</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="./reports/oralhygienefindings.html"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
-                                    d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5" />
-                            </svg>
-
-                            <span class="ml-3">Oral Hygiene Findings</span>
-                        </a>
-                    </li>
-                </ul>
-                <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
-                    <li>
-                        <a href="#"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-                                    clip-rule="evenodd" />
-                                <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-                            </svg>
-
-
-                            <span class="ml-3">Archived</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M4 4v15a1 1 0 0 0 1 1h15M8 16l2.5-5.5 3 3L17.273 7 20 9.667" />
-                            </svg>
-
-                            <span class="ml-3">Analytics</span>
-                        </a>
-                    </li>
-
-                </ul>
-            </div>
-        </aside>
-
-        <main class="p-1.5 md:ml-64 h-auto pt-1">
-            <div class="relative flex items-center w-full  mt-13 p-2">
-                <!-- Back Btn -->
-                <button type="button" onclick="back()" class="cursor-pointer absolute left-2">
-                    <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M5 12h14M5 12l4-4m-4 4 4 4" />
-                    </svg>
-                </button>
-                <p class="mx-auto text-xl text-center font-semibold text-gray-900 dark:text-white">
-                    Patient Information
-                </p>
-            </div>
-
-            <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg mb-2">
-                <p class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Lenard G. Galgo</p>
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Patient Detatils</p>
-                        <button type="button"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                class="bi bi-pencil-square" viewBox="0 0 16 16">
-                                <path
-                                    d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
-                                <path fill-rule="evenodd"
-                                    d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
-                            </svg>
-                            Edit
-                        </button>
-                    </div>
-                    <div class="flex flex-col justify-center items-center px-5 gap-5 mb-3">
-                        <div class="flex items-center justify-between p-2 gap-1  max-w-5xl w-full">
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg class="w-6 h-6 text-blue-800 dark:text-white" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                            viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="1"
-                                                d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-normal text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Lenard G. Galgo</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Name</p>
-                                </div>
-                            </div>
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="0 0 20 16">
-                                            <path fill-rule="evenodd"
-                                                d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1zm-.997 4.346a3 3 0 1 0-5.006 3.309 3 3 0 0 0 5.006-3.31z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-normal text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Male</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Gender</p>
-                                </div>
-                            </div>
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="0 0 18 15">
-                                            <path fill-rule="evenodd"
-                                                d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-normal text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        22</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Age</p>
-                                </div>
-                            </div>
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-1 -3 16 22">
-                                            <path
-                                                d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0" />
-                                            <path
-                                                d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-normal text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        04/28/2002</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Date of Birth</p>
-                                </div>
-                            </div>
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-1 -3 16 22">
-                                            <path
-                                                d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
-                                            <path
-                                                d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-normal text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        None</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Occupation</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-center p-2 gap-30  max-w-5xl w-full">
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-2 0 20 16">
-                                            <path
-                                                d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10" />
-                                            <path
-                                                d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-normal text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Nueva Valencia Guimaras</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Place of Birth</p>
-                                </div>
-                            </div>
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-2 0 20 16">
-
-                                            <path fill-rule="evenodd"
-                                                d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.3 1.3 0 0 0-.37.265.3.3 0 0 0-.057.09V14l.002.008.016.033a.6.6 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.6.6 0 0 0 .146-.15l.015-.033L12 14v-.004a.3.3 0 0 0-.057-.09 1.3 1.3 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465s-2.462-.172-3.34-.465c-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-normal text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Tayamaan</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Address</p>
-                                </div>
-                            </div>
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-2.5 0 20 16">
-                                            <path
-                                                d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p class="text-sm font-normal text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Ma. Leliza Galgo</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Parent/Guardian</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Memberrship</p>
-                    </div>
-                    <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                        style="font-size:14.6px;">
-                        <li>
-                            National Household Targeting System - Poverty Reduction (NHTS-PR)
-                        </li>
-                        <li>
-                            Pantawid Pamilyang Pilipino Program (4Ps)
-                        </li>
-                        <li>
-                            PhilHealth
-                        </li>
-                    </ul>
-                </div>
-                <!-- Vital Signs -->
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 pb-4 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Vital Signs</p>
-                    </div>
-                    <div class="grid grid-cols-2  gap-x-2 gap-y-4 p-1">
-                        <div
-                            class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300  dark:bg-gray-800 dark:border-gray-950 ">
-                            <div class="w-full flex items-center justify-center">
-                                <div
-                                    class="flex rounded-full items-center justify-center  p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                        class="bi bi-capsule w-6 h-6 p-0.5  text-blue-800 dark:text-white"
-                                        viewBox="0 0 16 16">
-                                        <path
-                                            d="M1.828 8.9 8.9 1.827a4 4 0 1 1 5.657 5.657l-7.07 7.071A4 4 0 1 1 1.827 8.9Zm9.128.771 2.893-2.893a3 3 0 1 0-4.243-4.242L6.713 5.429z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="w-full flex items-center justify-center mt-1">
-                                <p
-                                    class="text-sm font-normal items-center justify-center text-gray-950 dark:text-white">
-                                    Blood Pressure
-                                </p>
-                            </div>
-                            <div class="relative overflow-x-auto mt-5">
-                                <table
-                                    class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border  dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                                    <tbody class="block ">
-                                        <tr
-                                            class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                            <td class="px-3 py-1 ">
-                                                10/20/2024
-                                            </td>
-                                            <td class="px-3 py-1 text-right">
-                                                120/70
-                                            </td>
-                                        </tr>
-                                        <tr
-                                            class="flex  items-center justify-between w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                            <td class="px-3 py-1 ">
-                                                5/10/2024
-                                            </td>
-                                            <td class="px-3 py-1 text-right">
-                                                120/80
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div
-                            class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300  dark:bg-gray-800 dark:border-gray-950">
-                            <div class="w-full flex items-center justify-center">
-                                <div
-                                    class="rounded-full items-center justify-center flex p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                        class="bi bi-capsule w-6 h-6 p-0.5  text-blue-800 dark:text-white"
-                                        viewBox="0 0 16 16">
-                                        <path
-                                            d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415" />
-                                        <path
-                                            d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="w-full flex items-center justify-center">
-                                <p
-                                    class="text-sm font-normal items-center justify-center text-gray-950 dark:text-white">
-                                    Temperature
-                                </p>
-                            </div>
-                            <div class="relative overflow-x-auto mt-5">
-                                <table
-                                    class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border  dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                                    <tbody class="block ">
-                                        <tr
-                                            class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                            <td class="px-3 py-1 ">
-                                                10/20/2024
-                                            </td>
-                                            <td class="px-3 py-1 text-right">
-                                                120/70
-                                            </td>
-                                        </tr>
-                                        <tr
-                                            class="flex  items-center justify-between w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                            <td class="px-3 py-1 ">
-                                                5/10/2024
-                                            </td>
-                                            <td class="px-3 py-1 text-right">
-                                                120/80
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div
-                            class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300  dark:bg-gray-800 dark:border-gray-950">
-                            <div class="w-full flex items-center justify-center">
-                                <div
-                                    class="rounded-full items-center justify-center flex p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                        class="bi bi-capsule w-6 h-6 p-0.5  text-blue-800 dark:text-white"
-                                        viewBox="0 0 16 16">
-                                        <path
-                                            d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053.918 3.995.78 5.323 1.508 7H.43c-2.128-5.697 4.165-8.83 7.394-5.857q.09.083.176.171a3 3 0 0 1 .176-.17c3.23-2.974 9.522.159 7.394 5.856h-1.078c.728-1.677.59-3.005.108-3.947C13.486.878 10.4.28 8.717 2.01zM2.212 10h1.315C4.593 11.183 6.05 12.458 8 13.795c1.949-1.337 3.407-2.612 4.473-3.795h1.315c-1.265 1.566-3.14 3.25-5.788 5-2.648-1.75-4.523-3.434-5.788-5" />
-                                        <path
-                                            d="M10.464 3.314a.5.5 0 0 0-.945.049L7.921 8.956 6.464 5.314a.5.5 0 0 0-.88-.091L3.732 8H.5a.5.5 0 0 0 0 1H4a.5.5 0 0 0 .416-.223l1.473-2.209 1.647 4.118a.5.5 0 0 0 .945-.049l1.598-5.593 1.457 3.642A.5.5 0 0 0 12 9h3.5a.5.5 0 0 0 0-1h-3.162z" />
-                                    </svg>
-                                </div>
-                            </div>
-                            <div class="w-full flex items-center justify-center">
-                                <p
-                                    class="text-sm font-normal items-center justify-center text-gray-950 dark:text-white">
-                                    Pulse Rate
-                                </p>
-                            </div>
-
-                            <div class="relative overflow-x-auto mt-5">
-                                <table
-                                    class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border  dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                                    <tbody class="block ">
-                                        <tr
-                                            class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                            <td class="px-3 py-1 ">
-                                                10/20/2024
-                                            </td>
-                                            <td class="px-3 py-1 text-right">
-                                                120/70
-                                            </td>
-                                        </tr>
-                                        <tr
-                                            class="flex  items-center justify-between w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                                            <td class="px-3 py-1 ">
-                                                5/10/2024
-                                            </td>
-                                            <td class="px-3 py-1 text-right">
-                                                120/80
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div
-                            class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300  dark:bg-gray-800 dark:border-gray-950">
-                            <div class="w-full flex items-center justify-center">
-                                <div
-                                    class="rounded-full items-center justify-center flex p-2.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
-                                    <img src="../img/9767079.png" alt="">
-                                </div>
-                            </div>
-                            <div class="w-full flex items-center justify-center">
-                                <p
-                                    class="text-sm font-normal items-center justify-center text-gray-950 dark:text-white">
-                                    Weight
-                                </p>
-                            </div>
-                            <div class="relative overflow-x-auto mt-5">
-                                <table
-                                    class="w-full block text-sm text-left rtl:text-right text-gray-900 border  border-gray-200 rounded-lg">
-                                    <tbody class="block ">
-                                        <tr
-                                            class="flex  items-center justify-between  border-b  w-full  d border-gray-200">
-                                            <td class="px-3 py-1 ">
-                                                10/20/2024
-                                            </td>
-                                            <td class="px-3 py-1 text-right">
-                                                120/70
-                                            </td>
-                                        </tr>
-                                        <tr class="flex  items-center justify-between w-full   border-gray-200">
-                                            <td class="px-3 py-1 ">
-                                                5/10/2024
-                                            </td>
-                                            <td class="px-3 py-1 text-right">
-                                                120/80
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Medical History</p>
-                    </div>
-                    <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                        style="font-size:14.6px;">
-                        <li>
-                            National Household Targeting System - Poverty Reduction (NHTS-PR)
-                        </li>
-                    </ul>
-                </div>
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Dietary Habits / Social History
-                        </p>
-                    </div>
-                    <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                        style="font-size:14.6px;">
-                        <li>
-                            None
-                        </li>
-                    </ul>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="../js/tailwind.config.js"></script>
-    <script>
-        function back() {
-            location.href = ("addpatient.html");
-        }
-    </script>
+<body class="bg-gray-100 min-h-screen p-6">
+    <div id="patientDetails" class="text-gray-700">Loading...</div>
 </body>
 
 </html>
