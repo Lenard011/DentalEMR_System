@@ -89,6 +89,7 @@ if (isset($_POST["patient"])) {
   $malignancy_flag  = isset($_POST['malignancy_flag']) ? 1 : 0;
   $malignancy_det   = $_POST['malignancy_details'] ?? null;
   $prev_hosp_flag   = isset($_POST['prev_hospitalization_flag']) ? 1 : 0;
+  $last_admission_date  = $_POST['last_admission_date'] ?? null;
   $admission_cause  = $_POST['admission_cause'] ?? null;
   $surgery_det      = $_POST['surgery_details'] ?? null;
   $blood_trans_flag = isset($_POST['blood_transfusion_flag']) ? 1 : 0;
@@ -100,12 +101,12 @@ if (isset($_POST["patient"])) {
   $stmt = $conn->prepare("INSERT INTO medical_history 
         (patient_id, allergies_flag, allergies_details, hypertension_cva, diabetes_mellitus, 
          blood_disorders, heart_disease, thyroid_disorders, hepatitis_flag, hepatitis_details,
-         malignancy_flag, malignancy_details, prev_hospitalization_flag, admission_cause, 
+         malignancy_flag, malignancy_details, prev_hospitalization_flag, last_admission_date, admission_cause, 
          surgery_details, blood_transfusion_flag, blood_transfusion, tattoo, other_conditions_flag, other_conditions) 
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
   $stmt->bind_param(
-    "isiiiiiisisissisiiss",
+    "isiiiiiisisisssisiiss",
     $patient_id,
     $allergies_flag,
     $allergies_det,
@@ -119,6 +120,7 @@ if (isset($_POST["patient"])) {
     $malignancy_flag,
     $malignancy_det,
     $prev_hosp_flag,
+    $last_admission_date,
     $admission_cause,
     $surgery_det,
     $blood_trans_flag,

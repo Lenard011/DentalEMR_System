@@ -449,19 +449,10 @@
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white ">Memberrship</p>
-            <button type="button"
-              class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-              <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true">
-                <path clip-rule="evenodd" fill-rule="evenodd"
-                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
-              </svg>
-              Add
-            </button>
           </div>
           <ul id="membershipList" class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
             style="font-size:14.6px;">
-            Loading ...
+              Loading ...
           </ul>
         </div>
         <!-- Vital Signs -->
@@ -469,47 +460,57 @@
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 pb-4 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white ">Vital Signs</p>
-            <button type="button"
-              class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-              <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true">
-                <path clip-rule="evenodd" fill-rule="evenodd"
-                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
-              </svg>
-              Add
-            </button>
           </div>
-          <div class="grid grid-cols-2 gap-x-2 gap-y-4 p-1">
-            <!-- Blood Pressure -->
+          <div class="grid grid-cols-2  gap-x-2 gap-y-4 p-1">
             <div
-              class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
+              class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300  dark:bg-gray-800 dark:border-gray-950 ">
               <div class="w-full flex items-center justify-center">
-                <div class="flex rounded-full items-center justify-center p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
+                <div
+                  class="flex rounded-full items-center justify-center  p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                    class="bi bi-capsule w-6 h-6 p-0.5 text-blue-800 dark:text-white" viewBox="0 0 16 16">
+                    class="bi bi-capsule w-6 h-6 p-0.5  text-blue-800 dark:text-white" viewBox="0 0 16 16">
                     <path
                       d="M1.828 8.9 8.9 1.827a4 4 0 1 1 5.657 5.657l-7.07 7.071A4 4 0 1 1 1.827 8.9Zm9.128.771 2.893-2.893a3 3 0 1 0-4.243-4.242L6.713 5.429z" />
                   </svg>
                 </div>
               </div>
               <div class="w-full flex items-center justify-center mt-1">
-                <p class="text-sm font-normal text-gray-950 dark:text-white">Blood Pressure</p>
+                <p class="text-sm font-normal items-center justify-center text-gray-950 dark:text-white">
+                  Blood Pressure
+                </p>
               </div>
               <div class="relative overflow-x-auto mt-5">
                 <table
-                  class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                  <tbody id="bpTableBody" class="block"></tbody>
+                  class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border  dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
+                  <tbody class="block ">
+                    <tr
+                      class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                      <td class="px-3 py-1 ">
+                        10/20/2024
+                      </td>
+                      <td class="px-3 py-1 text-right">
+                        120/70
+                      </td>
+                    </tr>
+                    <tr
+                      class="flex  items-center justify-between w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                      <td class="px-3 py-1 ">
+                        5/10/2024
+                      </td>
+                      <td class="px-3 py-1 text-right">
+                        120/80
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
-
-            <!-- Temperature -->
             <div
-              class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
+              class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300  dark:bg-gray-800 dark:border-gray-950">
               <div class="w-full flex items-center justify-center">
-                <div class="rounded-full flex items-center justify-center p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
+                <div class="rounded-full items-center justify-center flex p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                    class="bi bi-capsule w-6 h-6 p-0.5 text-blue-800 dark:text-white" viewBox="0 0 16 16">
+                    class="bi bi-capsule w-6 h-6 p-0.5  text-blue-800 dark:text-white" viewBox="0 0 16 16">
                     <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415" />
                     <path
                       d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1" />
@@ -517,23 +518,42 @@
                 </div>
               </div>
               <div class="w-full flex items-center justify-center">
-                <p class="text-sm font-normal text-gray-950 dark:text-white">Temperature</p>
+                <p class="text-sm font-normal items-center justify-center text-gray-950 dark:text-white">
+                  Temperature
+                </p>
               </div>
               <div class="relative overflow-x-auto mt-5">
                 <table
-                  class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                  <tbody id="tempTableBody" class="block"></tbody>
+                  class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border  dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
+                  <tbody class="block ">
+                    <tr
+                      class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                      <td class="px-3 py-1 ">
+                        10/20/2024
+                      </td>
+                      <td class="px-3 py-1 text-right">
+                        120/70
+                      </td>
+                    </tr>
+                    <tr
+                      class="flex  items-center justify-between w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                      <td class="px-3 py-1 ">
+                        5/10/2024
+                      </td>
+                      <td class="px-3 py-1 text-right">
+                        120/80
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
-
-            <!-- Pulse Rate -->
             <div
-              class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
+              class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300  dark:bg-gray-800 dark:border-gray-950">
               <div class="w-full flex items-center justify-center">
-                <div class="rounded-full flex items-center justify-center p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
+                <div class="rounded-full items-center justify-center flex p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                    class="bi bi-capsule w-6 h-6 p-0.5 text-blue-800 dark:text-white" viewBox="0 0 16 16">
+                    class="bi bi-capsule w-6 h-6 p-0.5  text-blue-800 dark:text-white" viewBox="0 0 16 16">
                     <path
                       d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053.918 3.995.78 5.323 1.508 7H.43c-2.128-5.697 4.165-8.83 7.394-5.857q.09.083.176.171a3 3 0 0 1 .176-.17c3.23-2.974 9.522.159 7.394 5.856h-1.078c.728-1.677.59-3.005.108-3.947C13.486.878 10.4.28 8.717 2.01zM2.212 10h1.315C4.593 11.183 6.05 12.458 8 13.795c1.949-1.337 3.407-2.612 4.473-3.795h1.315c-1.265 1.566-3.14 3.25-5.788 5-2.648-1.75-4.523-3.434-5.788-5" />
                     <path
@@ -542,75 +562,100 @@
                 </div>
               </div>
               <div class="w-full flex items-center justify-center">
-                <p class="text-sm font-normal text-gray-950 dark:text-white">Pulse Rate</p>
+                <p class="text-sm font-normal items-center justify-center text-gray-950 dark:text-white">
+                  Pulse Rate
+                </p>
               </div>
+
               <div class="relative overflow-x-auto mt-5">
                 <table
-                  class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                  <tbody id="pulseTableBody" class="block"></tbody>
+                  class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border  dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
+                  <tbody class="block ">
+                    <tr
+                      class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                      <td class="px-3 py-1 ">
+                        10/20/2024
+                      </td>
+                      <td class="px-3 py-1 text-right">
+                        120/70
+                      </td>
+                    </tr>
+                    <tr
+                      class="flex  items-center justify-between w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                      <td class="px-3 py-1 ">
+                        5/10/2024
+                      </td>
+                      <td class="px-3 py-1 text-right">
+                        120/80
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
-
-            <!-- Weight -->
             <div
-              class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
+              class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300  dark:bg-gray-800 dark:border-gray-950">
               <div class="w-full flex items-center justify-center">
-                <div class="rounded-full flex items-center justify-center p-2.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
+                <div class="rounded-full items-center justify-center flex p-2.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
                   <img src="../img/9767079.png" alt="">
                 </div>
               </div>
               <div class="w-full flex items-center justify-center">
-                <p class="text-sm font-normal text-gray-950 dark:text-white">Weight</p>
+                <p class="text-sm font-normal items-center justify-center text-gray-950 dark:text-white">
+                  Weight
+                </p>
               </div>
               <div class="relative overflow-x-auto mt-5">
                 <table
-                  class="w-full block text-sm text-left rtl:text-right text-gray-900 border border-gray-200 rounded-lg">
-                  <tbody id="weightTableBody" class="block"></tbody>
+                  class="w-full block text-sm text-left rtl:text-right text-gray-900 border  border-gray-200 rounded-lg">
+                  <tbody class="block ">
+                    <tr class="flex  items-center justify-between  border-b  w-full  d border-gray-200">
+                      <td class="px-3 py-1 ">
+                        10/20/2024
+                      </td>
+                      <td class="px-3 py-1 text-right">
+                        120/70
+                      </td>
+                    </tr>
+                    <tr class="flex  items-center justify-between w-full   border-gray-200">
+                      <td class="px-3 py-1 ">
+                        5/10/2024
+                      </td>
+                      <td class="px-3 py-1 text-right">
+                        120/80
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             </div>
           </div>
-
         </div>
         <!-- medical -->
         <div
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white ">Medical History</p>
-            <button type="button"
-              class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-              <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true">
-                <path clip-rule="evenodd" fill-rule="evenodd"
-                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
-              </svg>
-              Add
-            </button>
           </div>
-          <ul id="medicalHistoryList"
-            class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
+          <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
             style="font-size:14.6px;">
+            <li>
+              National Household Targeting System - Poverty Reduction (NHTS-PR)
+            </li>
           </ul>
         </div>
         <!-- Dietary -->
         <div
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
-            <p class="text-base font-normal text-gray-950 dark:text-white">Dietary Habits / Social History</p>
-            <button type="button"
-              class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-              <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true">
-                <path clip-rule="evenodd" fill-rule="evenodd"
-                  d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
-              </svg>
-              Add
-            </button>
+            <p class="text-base font-normal text-gray-950 dark:text-white ">Dietary Habits / Social History
+            </p>
           </div>
-          <ul id="dietaryHistoryList"
-            class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
+          <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
             style="font-size:14.6px;">
+            <li>
+              None
+            </li>
           </ul>
         </div>
       </section>
@@ -620,7 +665,6 @@
   <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
   <script src="../js/tailwind.config.js"></script>
-
   <script>
     async function loadPatient() {
       const params = new URLSearchParams(window.location.search);
@@ -640,9 +684,11 @@
           return;
         }
 
-        // Patient details
-        document.getElementById("patientName").textContent = `${data.surname}, ${data.firstname} ${data.middlename ?? ""}`;
-        document.getElementById("patientName2").textContent = `${data.surname}, ${data.firstname} ${data.middlename ?? ""}`;
+        // Fill patient details
+        document.getElementById("patientName").textContent =
+          `${data.surname}, ${data.firstname} ${data.middlename ?? ""}`;
+        document.getElementById("patientName2").textContent =
+          `${data.surname}, ${data.firstname} ${data.middlename ?? ""}`;
         document.getElementById("patientSex").textContent = data.sex;
         document.getElementById("patientAge").textContent = data.age;
         document.getElementById("patientDob").textContent = data.date_of_birth ?? "";
@@ -651,134 +697,37 @@
         document.getElementById("patientAddress").textContent = data.address ?? "";
         document.getElementById("patientGuardian").textContent = data.guardian ?? "";
 
-        // Memberships
+        // Fill Other Info (Memberships)
         const membershipList = document.getElementById("membershipList");
-        membershipList.innerHTML = "";
+        membershipList.innerHTML = ""; 
+
         let hasMembership = false;
+
         function addMembershipItem(text) {
           const li = document.createElement("li");
           li.textContent = text;
           membershipList.appendChild(li);
           hasMembership = true;
         }
+
         if (data.nhts_pr == 1) addMembershipItem("NHTS-PR");
         if (data.four_ps == 1) addMembershipItem("4Ps");
         if (data.indigenous_people == 1) addMembershipItem("Indigenous People (IP)");
         if (data.pwd == 1) addMembershipItem("Person With Disabilities (PWD)");
-        if (data.philhealth_flag == 1 && data.philhealth_number) addMembershipItem(`PhilHealth - ${data.philhealth_number}`);
-        if (data.sss_flag == 1 && data.sss_number) addMembershipItem(`SSS - ${data.sss_number}`);
-        if (data.gsis_flag == 1 && data.gsis_number) addMembershipItem(`GSIS - ${data.gsis_number}`);
-        if (!hasMembership) membershipList.innerHTML = "<span>No membership records</span>";
 
-        // Vital Signs
-        document.getElementById("bpTableBody").innerHTML = "";
-        document.getElementById("tempTableBody").innerHTML = "";
-        document.getElementById("pulseTableBody").innerHTML = "";
-        document.getElementById("weightTableBody").innerHTML = "";
-        if (data.vital_signs && data.vital_signs.length > 0) {
-          data.vital_signs.forEach(v => {
-            document.getElementById("bpTableBody").innerHTML += `<tr><td>${v.recorded_at}</td><td>${v.blood_pressure ?? "-"}</td></tr>`;
-            document.getElementById("tempTableBody").innerHTML += `<tr><td>${v.recorded_at}</td><td>${v.temperature ?? "-"}</td></tr>`;
-            document.getElementById("pulseTableBody").innerHTML += `<tr><td>${v.recorded_at}</td><td>${v.pulse_rate ?? "-"}</td></tr>`;
-            document.getElementById("weightTableBody").innerHTML += `<tr><td>${v.recorded_at}</td><td>${v.weight ?? "-"}</td></tr>`;
-          });
-        } else {
-          ["bpTableBody", "tempTableBody", "pulseTableBody", "weightTableBody"].forEach(id => {
-            document.getElementById(id).innerHTML = `<tr><td colspan="2" class="text-center text-gray-500">No records</td></tr>`;
-          });
+        if (data.philhealth_flag == 1 && data.philhealth_number) {
+          addMembershipItem(`PhilHealth - ${data.philhealth_number}`);
+        }
+        if (data.sss_flag == 1 && data.sss_number) {
+          addMembershipItem(`SSS - ${data.sss_number}`);
+        }
+        if (data.gsis_flag == 1 && data.gsis_number) {
+          addMembershipItem(`GSIS - ${data.gsis_number}`);
         }
 
-        // Medical History
-        const historyList = document.getElementById("medicalHistoryList");
-        historyList.innerHTML = "";
-        let hasHistory = false;
-
-        function addHistoryItem(label, details = "") {
-          const li = document.createElement("li");
-          li.textContent = details ? `${label} - ${details}` : label;
-          historyList.appendChild(li);
-          hasHistory = true;
-        }
-
-        if (data.medical_history) {
-          const h = data.medical_history;
-
-          if (h.allergies_flag == 1) addHistoryItem("Allergies", h.allergies_details);
-          if (h.hypertension_cva == 1) addHistoryItem("Hypertension / CVA");
-          if (h.diabetes_mellitus == 1) addHistoryItem("Diabetes Mellitus");
-          if (h.blood_disorders == 1) addHistoryItem("Blood Disorders");
-          if (h.heart_disease == 1) addHistoryItem("Heart Disease");
-          if (h.thyroid_disorders == 1) addHistoryItem("Thyroid Disorders");
-          if (h.hepatitis_flag == 1) addHistoryItem("Hepatitis", h.hepatitis_details);
-          if (h.malignancy_flag == 1) addHistoryItem("Malignancy", h.malignancy_details);
-
-          // Previous Hospitalization (with Medical + Surgical nested)
-          if (h.prev_hospitalization_flag == 1) {
-            const li = document.createElement("li");
-            li.textContent = "Previous Hospitalization";
-
-            const subUl = document.createElement("ul");
-            subUl.classList.add("ml-7");
-
-            // Medical
-            if (h.last_admission_date || h.admission_cause) {
-              const medLi = document.createElement("li");
-              medLi.textContent = `Medical - ${h.last_admission_date ?? ""}${h.admission_cause ? " - " + h.admission_cause : ""}`;
-              subUl.appendChild(medLi);
-            }
-
-            // Surgical
-            if (h.surgery_details && h.surgery_details.trim() !== "") {
-              const surgLi = document.createElement("li");
-              surgLi.textContent = `Surgical - ${h.surgery_details}`;
-              subUl.appendChild(surgLi);
-            }
-
-            if (subUl.children.length > 0) {
-              li.appendChild(subUl);
-            }
-
-            historyList.appendChild(li);
-            hasHistory = true;
-          }
-
-          if (h.blood_transfusion_flag == 1) addHistoryItem("Blood Transfusion", h.blood_transfusion);
-          if (h.tattoo == 1) addHistoryItem("Tattoo");
-          if (h.other_conditions_flag == 1) addHistoryItem("Other Conditions", h.other_conditions);
-        }
-
-        if (!hasHistory) {
-          historyList.innerHTML = "<span>No medical history records</span>";
-        }
-
-        // Dietary / Social History
-        const dietList = document.getElementById("dietaryHistoryList");
-        dietList.innerHTML = "";
-        let hasDiet = false;
-
-        function addDietItem(text) {
-          const li = document.createElement("li");
-          li.textContent = text;
-          dietList.appendChild(li);
-          hasDiet = true;
-        }
-
-        if (data.dietary_habits) {
-          const d = data.dietary_habits;
-
-          if (d.sugar_flag == 1) addDietItem(`Sugar Intake - ${d.sugar_details ?? ""}`);
-          if (d.alcohol_flag == 1) addDietItem(`Alcohol - ${d.alcohol_details ?? ""}`);
-          if (d.tobacco_flag == 1) addDietItem(`Tobacco - ${d.tobacco_details ?? ""}`);
-          if (d.betel_nut_flag == 1) addDietItem(`Betel Nut - ${d.betel_nut_details ?? ""}`);
-        }
-
-        if (!hasDiet) {
-          dietList.innerHTML = "<span>No dietary/social history records</span>";
-        }
-
-
-        if (!hasDiet) {
-          dietList.innerHTML = "<span>No dietary/social history records</span>";
+        // If no memberships, show message (without bullet)
+        if (!hasMembership) {
+          membershipList.innerHTML = "<span>No membership records</span>";
         }
 
       } catch (err) {
