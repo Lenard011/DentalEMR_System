@@ -272,11 +272,12 @@
 
       <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg mb-2">
         <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading ...</p>
+        <!-- Patient Info -->
         <div
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white ">Patient Detatils</p>
-            <button type="button"
+            <button id="editBtn" type="button"
               class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                 class="bi bi-pencil-square" viewBox="0 0 16 16">
@@ -613,6 +614,109 @@
             style="font-size:14.6px;">
           </ul>
         </div>
+        <!-- Edit Patient Modal -->
+        <div id="editPatientModal" tabindex="-1" aria-hidden="true"
+          class="fixed inset-0 hidden justify-center items-center z-50 bg-gray-200/50">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+            <div class="flex flex-row justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Patient Details</h2>
+              <button type="button" onclick="closeModal()"
+                class="realative  cursor-pointer right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd"></path>
+                </svg>
+              </button>
+            </div>
+            <!-- Form uses action + POST -->
+            <form id="editPatientForm" action="../php/update_patient.php" method="POST">
+              <input type="hidden" id="editPatientId" name="patient_id">
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label for="editFirstname" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">First
+                    Name</label>
+                  <input type="text" id="editFirstname" name="firstname"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                </div>
+                <div>
+                  <label for="editSurname"
+                    class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Surname</label>
+                  <input type="text" id="editSurname" name="surname"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                </div>
+                <div>
+                  <label for="editMiddlename"
+                    class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Middle Name</label>
+                  <input type="text" id="editMiddlename" name="middlename"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                </div>
+                <div>
+                  <label for="editDob" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Date of
+                    Birth</label>
+                  <input type="date" id="editDob" name="date_of_birth"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                </div>
+                <div>
+                  <label for="editSex" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Sex</label>
+                  <select id="editSex" name="sex"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                    <option value="">-- Select --</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="editOccupation"
+                    class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Age</label>
+                  <input type="text" id="editAge" name="age"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                </div>
+              </div>
+              <div class="mt-4">
+                <label for="editAddress"
+                  class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Place of Birth</label>
+                <input type="text" id="editPob" name="place_of_birth"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+              </div>
+              <div class="mt-4">
+                <label for="editAddress"
+                  class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Address</label>
+                <input type="text" id="editAddress" name="address"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+              </div>
+              <div class="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label for="editOccupation"
+                    class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Occupation</label>
+                  <input type="text" id="editOccupation" name="occupation"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                </div>
+                <div>
+                  <label for="editGuardian"
+                    class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Guardian</label>
+                  <input type="text" id="editGuardian" name="guardian"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                </div>
+              </div>
+
+              <div class="mt-6 flex justify-end">
+                <!-- Submit button now has a name -->
+                <button type="submit" name="update_patient"
+                  class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-sm px-3 py-2">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <!-- small notification container -->
+        <div id="notice"
+          style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
+        </div>
       </section>
     </main>
   </div>
@@ -677,10 +781,10 @@
         document.getElementById("weightTableBody").innerHTML = "";
         if (data.vital_signs && data.vital_signs.length > 0) {
           data.vital_signs.forEach(v => {
-            document.getElementById("bpTableBody").innerHTML += `<tr><td>${v.recorded_at}</td><td>${v.blood_pressure ?? "-"}</td></tr>`;
-            document.getElementById("tempTableBody").innerHTML += `<tr><td>${v.recorded_at}</td><td>${v.temperature ?? "-"}</td></tr>`;
-            document.getElementById("pulseTableBody").innerHTML += `<tr><td>${v.recorded_at}</td><td>${v.pulse_rate ?? "-"}</td></tr>`;
-            document.getElementById("weightTableBody").innerHTML += `<tr><td>${v.recorded_at}</td><td>${v.weight ?? "-"}</td></tr>`;
+            document.getElementById("bpTableBody").innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${v.recorded_at}</td><td class="px-3 py-1 text-right">${v.blood_pressure ?? "-"}</td></tr>`;
+            document.getElementById("tempTableBody").innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${v.recorded_at}</td><td class="px-3 py-1 text-right">${v.temperature ?? "-"}</td></tr>`;
+            document.getElementById("pulseTableBody").innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${v.recorded_at}</td><td class="px-3 py-1 text-right">${v.pulse_rate ?? "-"}</td></tr>`;
+            document.getElementById("weightTableBody").innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${v.recorded_at}</td><td class="px-3 py-1 text-right">${v.weight ?? "-"}</td></tr>`;
           });
         } else {
           ["bpTableBody", "tempTableBody", "pulseTableBody", "weightTableBody"].forEach(id => {
@@ -789,12 +893,101 @@
 
     window.onload = loadPatient;
   </script>
-
+  <!-- Backbtn -->
   <script>
     function back() {
       location.href = ("addpatient.html");
     }
   </script>
+
+  <script>
+    // parse id from URL: viewrecord.html?id=123
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientId = urlParams.get('id'); // MUST supply ?id=123 when opening this page
+    const wasUpdated = urlParams.get('updated'); // optional ?updated=1
+
+    let currentPatient = null;
+
+    function showNotice(msg, isError = false) {
+      const n = document.getElementById('notice');
+      n.style.background = isError ? 'blue' : '#blue';
+      n.innerText = msg;
+      n.style.display = 'block';
+      setTimeout(() => n.style.display = 'none', 3000);
+    }
+
+    async function loadPatient() {
+      if (!patientId) {
+        document.getElementById('patientName2').innerText = 'No patient id provided';
+        return;
+      }
+
+      try {
+        const res = await fetch(`../php/get_patient.php?id=${encodeURIComponent(patientId)}`);
+        const data = await res.json();
+        if (data.success) {
+          currentPatient = data.patient;
+
+          // Fill display fields (use your preferred ordering)
+          document.getElementById('patientName2').innerText = currentPatient.surname + ' ' + currentPatient.firstname;
+          document.getElementById('patientDob').innerText = currentPatient.date_of_birth || '';
+          document.getElementById('patientSex').innerText = currentPatient.sex || '';
+          document.getElementById('patientAge').innerText = currentPatient.age || '';
+          document.getElementById('patientBirthPlace').innerText = currentPatient.place_of_birth || '';
+          document.getElementById('patientOccupation').innerText = currentPatient.occupation || '';
+          document.getElementById('patientAddress').innerText = currentPatient.address || '';
+          document.getElementById('patientGuardian').innerText = currentPatient.guardian || '';
+
+          // Attach edit button to open modal with this patient data
+          document.getElementById('editBtn').onclick = () => openModal(currentPatient);
+
+          // if redirected after update show success
+          if (wasUpdated === '1') {
+            showNotice('Patient updated successfully');
+            // optional: remove updated param from URL so notice doesn't reappear when reloading
+            history.replaceState(null, '', window.location.pathname + '?id=' + encodeURIComponent(patientId));
+          }
+        } else {
+          alert('Error loading patient: ' + data.error);
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to load patient');
+      }
+    }
+
+    function openModal(patient) {
+      // fill modal inputs (keep classes unchanged)
+      document.getElementById('editPatientId').value = patient.patient_id;
+      document.getElementById('editFirstname').value = patient.firstname || '';
+      document.getElementById('editSurname').value = patient.surname || '';
+      document.getElementById('editMiddlename').value = patient.middlename || '';
+      // date input expects yyyy-mm-dd; DB date should already be in that format
+      document.getElementById('editDob').value = patient.date_of_birth || '';
+      document.getElementById('editSex').value = patient.sex || '';
+      document.getElementById('editAge').value = patient.age || '';
+      document.getElementById('editPob').value = patient.place_of_birth || '';
+      document.getElementById('editOccupation').value = patient.occupation || '';
+      document.getElementById('editAddress').value = patient.address || '';
+      document.getElementById('editGuardian').value = patient.guardian || '';
+
+      // show modal (keeps classes you used)
+      const modal = document.getElementById('editPatientModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('editPatientModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // when page loads
+    window.addEventListener('DOMContentLoaded', loadPatient);
+  </script>
+
+</body>
 </body>
 
 </html>

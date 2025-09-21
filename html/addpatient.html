@@ -57,7 +57,53 @@
 
         window.onload = loadPatients;
     </script>
+    <style>
+        /* Popup overlay */
+        #validationPopup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
 
+        /* Popup box */
+        .popup-content {
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .popup-content p {
+            font-size: 14px;
+            margin-bottom: 15px;
+            color: #222;
+        }
+
+        .popup-content button {
+            padding: 8px 16px;
+            background: red;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .popup-content button:hover {
+            background: darkred;
+        }
+    </style>
 
 </head>
 
@@ -428,7 +474,7 @@
                 </div>
             </section>
             <!-- Add patient Modal -->
-            <form id="patientForm" method="POST" action="../../DentalEMR_System/php/try.php">
+            <form id="patientForm" method="POST" action="../../DentalEMR_System/php/addpatient.php">
                 <!-- FirstModal -->
                 <div id="addpatientModal" tabindex="-1" aria-hidden="true"
                     class="hidden overflow-y-hidden overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-auto md:inset-y-13  max-h-152 md:h-152 ">
@@ -466,15 +512,15 @@
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Name</label>
                                         <div class="gap-1 sm:grid-cols-3  w-130 flex justify-between items-center">
-                                            <input type="text" name="surname"
+                                            <input type="text" name="surname" data-required data-label="Surname"
                                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                placeholder="Surname" >
-                                            <input type="text" name="firstname"
+                                                placeholder="Surname">
+                                            <input type="text" name="firstname" data-required data-label="Firstname"
                                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                placeholder="First name" >
-                                            <input type="text" name="middlename"
+                                                placeholder="First name">
+                                            <input type="text" name="middlename" data-required data-label="Middlename"
                                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-26 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                placeholder="Middle initial" >
+                                                placeholder="Middle initial">
                                         </div>
                                     </div>
                                     <!-- PlaceofBirth -->
@@ -482,16 +528,14 @@
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Place
                                             of Birth</label>
-                                        <input type="text" name="pob"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            >
+                                        <input type="text" name="pob" data-required data-label="Place of Birth"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                     </div>
                                     <div class="w-full">
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Address</label>
-                                        <input type="text" name="address"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            >
+                                        <input type="text" name="address" data-required data-label="Address"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                     </div>
                                 </div>
                                 <!-- Second Col -->
@@ -501,9 +545,8 @@
                                         <label for="date"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Date of
                                             Birth</label>
-                                        <input type="date" name="dob"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            >
+                                        <input type="date" name="dob" data-required data-label="date of Birth"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                     </div>
                                     <!-- Age,Sex,Pregnant -->
                                     <div id="form-container" class="grid grid-cols-2 gap-4 w-full">
@@ -511,18 +554,16 @@
                                         <div id="age-wrapper">
                                             <label for="age"
                                                 class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Age</label>
-                                            <input type="number" id="age" name="age"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                >
+                                            <input type="number" id="age" name="age" data-required data-label="Age"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                         </div>
 
                                         <!-- Sex -->
                                         <div id="sex-wrapper">
                                             <label for="sex"
                                                 class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Sex</label>
-                                            <select id="sex" name="sex"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                >
+                                            <select id="sex" name="sex" data-required data-label="Sex"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                                 <option value="">-- Select --</option>
                                                 <option value="Male">Male</option>
                                                 <option value="Female">Female</option>
@@ -558,17 +599,17 @@
                                         <div class="">
                                             <label for="name"
                                                 class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Occupation</label>
-                                            <input type="text" name="occupation"
+                                            <input type="text" name="occupation" data-required data-label="Occupation"
                                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                placeholder="" >
+                                                placeholder="">
                                         </div>
                                         <!-- Parent/guardian -->
                                         <div class="">
                                             <label for="name"
                                                 class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Parent/Guardian</label>
-                                            <input type="text" name="guardian"
+                                            <input type="text" name="guardian" data-required data-label="Parent/Guardian"
                                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                                placeholder="" >
+                                                placeholder="">
                                         </div>
                                     </div>
                                 </div>
@@ -616,7 +657,6 @@
                                                 class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">PhilHealth
                                                 (Indicate Number)</label>
                                             <input type="text" id="philhealth_number" name="philhealth_number" disabled
-                                                
                                                 class="block py-1 h-4.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder="" />
                                         </div>
@@ -631,7 +671,7 @@
                                                 (Indicate Number)</label>
                                             <input type="text" id="sss_number" name="sss_number" disabled
                                                 class="block py-1 h-4.5 px-0 w-50 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=""  />
+                                                placeholder="" />
                                         </div>
                                     </div>
                                     <div class="flex items-center mb-1">
@@ -644,7 +684,7 @@
                                                 (Indicate Number)</label>
                                             <input type="text" id="gsis_number" name="gsis_number" disabled
                                                 class="block py-1 px-0 h-4.5 w-50 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=""  />
+                                                placeholder="" />
                                         </div>
                                     </div>
                                 </div>
@@ -698,31 +738,31 @@
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Blood
                                             Preassure</label>
-                                        <input type="text" name="blood_pressure"
+                                        <input type="text" name="blood_pressure" data-required data-label="Blood Pressure"
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            placeholder="" >
+                                            placeholder="">
                                     </div>
                                     <div class="w-full">
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Temperature</label>
-                                        <input type="number" step="0.1" name="temperature"
+                                        <input type="number" step="0.1" name="temperature" data-required data-label="Temperature"
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            placeholder="" >
+                                            placeholder="">
                                     </div>
                                     <div class="w-full">
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Pulse
                                             Rate</label>
-                                        <input type="number" name="pulse_rate"
+                                        <input type="number" name="pulse_rate" data-required data-label="Pulse Rate"
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            placeholder="" >
+                                            placeholder="">
                                     </div>
                                     <div class="w-full">
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Weight</label>
-                                        <input type="number" step="0.01" name="weight"
+                                        <input type="number" step="0.01" name="weight" data-required data-label="Weight"
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            placeholder="" >
+                                            placeholder="">
                                     </div>
                                 </div>
                             </div>
@@ -741,7 +781,7 @@
                                                     class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Allergies
                                                     (Please specify)</label>
                                                 <input type="text" id="allergies_details" name="allergies_details"
-                                                    disabled 
+                                                    disabled
                                                     class="block py-1 h-4.5 px-0 w-59 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                     placeholder=" " />
                                             </div>
@@ -790,7 +830,7 @@
                                                     class="ms-2 text-sm w-50  font-medium text-gray-900 dark:text-gray-300">Hepatitis
                                                     (Please specify type)</label>
                                                 <input type="text" id="hepatitis_details" name="hepatitis_details"
-                                                    disabled 
+                                                    disabled
                                                     class="block py-1 h-4.5 px-0 w-59 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                     placeholder=" " />
                                             </div>
@@ -804,7 +844,7 @@
                                                     class="ms-2 w-50 text-sm  font-medium text-gray-900 dark:text-gray-300">Malignancy
                                                     (Please specify)</label>
                                                 <input type="text" id="malignancy_details" name="malignancy_details"
-                                                    disabled 
+                                                    disabled
                                                     class="block py-1 h-4.5 px-0 w-59 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                     placeholder=" " />
                                             </div>
@@ -829,7 +869,7 @@
                                                         class="w-27 text-sm font-medium text-gray-900 dark:text-gray-300 ">
                                                         Last Admission:</label>
                                                     <input type="date" id="last_admission_date"
-                                                        name="last_admission_date" disabled 
+                                                        name="last_admission_date" disabled
                                                         class="block py-1 px-0 h-4.5  text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                         placeholder="" />
                                                 </div>
@@ -839,7 +879,7 @@
                                                         class="w-15 text-sm font-medium text-gray-900 dark:text-gray-300 ">
                                                         Cause:</label>
                                                     <input type="text" id="admission_cause" name="admission_cause"
-                                                        disabled 
+                                                        disabled
                                                         class="block py-1 px-0 h-4.5 w-35.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                         placeholder="" />
                                                 </div>
@@ -850,7 +890,6 @@
                                                 class="ms-2 w-55 text-sm font-medium text-gray-900 dark:text-gray-300">
                                                 Surgical (Post-Operative)</label>
                                             <input type="text" id="surgery_details" name="surgery_details" disabled
-                                                
                                                 class="block py-1 px-0 h-4.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder=" " />
                                         </div>
@@ -863,7 +902,7 @@
                                                     class="ms-2 not-last-of-type:w-40 text-sm font-medium text-gray-900 dark:text-gray-300">Blood
                                                     transfusion (Month & Year)</label>
                                                 <input type="text" id="blood_transfusion_date"
-                                                    name="blood_transfusion_date" disabled 
+                                                    name="blood_transfusion_date" disabled
                                                     class="block py-1 h-4.5 px-0 w-59.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                     placeholder=" " />
                                             </div>
@@ -884,7 +923,6 @@
                                                 class="ms-2 w-40  text-sm font-medium text-gray-900 dark:text-gray-300">Others
                                                 (Please specify)</label>
                                             <input type="text" id="other_conditions" name="other_conditions" disabled
-                                                
                                                 class="block py-1 h-4.5 px-0 w-60 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder=" " />
                                         </div>
@@ -951,7 +989,7 @@
                                             <label for="default-checkbox"
                                                 class="ms-2 text-sm w-90 font-medium text-gray-900 dark:text-gray-300">Sugar
                                                 Sweetened Beverages/Food (Amount, Frequency & Duration)</label>
-                                            <input type="text" id="sugar_details" name="sugar_details" disabled 
+                                            <input type="text" id="sugar_details" name="sugar_details" disabled
                                                 class="block py-1 h-4.5 px-0 w-70 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder=" " />
                                         </div>
@@ -965,7 +1003,6 @@
                                                 class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use of
                                                 Alcohol (Amount, Frequency & Duration)</label>
                                             <input type="text" id="alcohol_details" name="alcohol_details" disabled
-                                                
                                                 class="block py-1 px-0 h-4.5 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder=" " />
                                         </div>
@@ -979,7 +1016,6 @@
                                                 class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use of
                                                 Tobacco (Amount, Frequency & Duration)</label>
                                             <input type="text" id="tobacco_details" name="tobacco_details" disabled
-                                                
                                                 class="block py-1 h-4.5 px-0 w-78 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder=" " />
                                         </div>
@@ -993,7 +1029,6 @@
                                                 class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Betel
                                                 Nut Chewing (Amount, Frequency & Duration)</label>
                                             <input type="text" id="betel_nut_details" name="betel_nut_details" disabled
-                                                
                                                 class="block py-1 h-4.5 px-0 w-73.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                                 placeholder=" " />
                                         </div>
@@ -1017,7 +1052,13 @@
                         </div>
                     </div>
                 </div>
-
+                <!-- Popup container (hidden by default) -->
+                <div id="validationPopup" style="display:none;">
+                    <div class="popup-content">
+                        <p id="validationMessage"></p>
+                        <button type="button" onclick="closeValidationPopup()">OK</button>
+                    </div>
+                </div>
             </form>
         </main>
     </div>
@@ -1079,53 +1120,68 @@
         sexInput.addEventListener('change', togglePregnantSection);
     </script>
 
+    <!-- Alert Message -->
     <script>
-        // Function to validate current step
-        function validateStep(step) {
-            const modal = document.getElementById("modal" + step);
-            const inputs = modal.querySelectorAll("input, select");
-            let missing = [];
-
-            inputs.forEach(input => {
-                if (!input.value.trim()) {
-                    missing.push(input.name.replace(/_/g, " ").toUpperCase());
-                }
-            });
-
-            if (missing.length > 0) {
-                alert("⚠ Please fill in all required fields before continuing:\n\n" + missing.join(", "));
-                return false;
-            } else {
-                showModal(step + 1);
-            }
+        // Show popup
+        function showValidationPopup(message) {
+            document.getElementById("validationMessage").innerHTML = message;
+            document.getElementById("validationPopup").style.display = "flex";
         }
 
-        // Final form validation on submit
-        document.getElementById("patientForm").addEventListener("submit", function (e) {
-            const inputs = this.querySelectorAll("input, select");
-            let missing = [];
+        // Close popup
+        function closeValidationPopup() {
+            document.getElementById("validationPopup").style.display = "none";
+        }
 
-            inputs.forEach(input => {
-                if (!input.value.trim()) {
-                    missing.push(input.name.replace(/_/g, " ").toUpperCase());
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("patientForm");
+
+            form.addEventListener("submit", function (e) {
+                let missing = [];
+
+                // --- Always required fields (text, number, date, select) ---
+                form.querySelectorAll("[data-required]").forEach(input => {
+                    if (!input.value.trim()) {
+                        missing.push(input.getAttribute("data-label"));
+                    }
+                });
+
+                // --- Conditional fields (only required if checkbox is checked) ---
+                const conditionalMap = {
+                    "allergies_flag": ["allergies_details", "Allergies"],
+                    "hepatitis_flag": ["hepatitis_details", "Hepatitis"],
+                    "malignancy_flag": ["malignancy_details", "Malignancy"],
+                    "prev_hospitalization_flag	": ["last_admission_date", "Medical Last Admission"],
+                    "blood_transfusion_flag": ["blood_transfusion", "Blood Transfusion"],
+                    "other_conditions_flag": ["other_conditions", "Other Conditions"],
+                    "sugar_flag": ["sugar_details", "Sugar"],
+                    "alcohol_flag": ["alcohol_details", "Use of Alcohol"],
+                    "tobacco_flag": ["tobacco_details", "Use of tobacco"],
+                    "betel_nut_flag": ["betel_nut_details", "Betel Nut Chewing"],
+                    "philhealth_flag": ["philhealth_number", "Philhealth Number"],
+                    "sss_flag": ["sss_number", "SSS Number"],
+                    "gsis_flag": ["gsis_number", "GSIS Number"]
+                };
+
+                Object.entries(conditionalMap).forEach(([flagName, [detailsName, label]]) => {
+                    const checkbox = form.querySelector("[name='" + flagName + "']");
+                    const detailsField = form.querySelector("[name='" + detailsName + "']");
+                    if (checkbox && checkbox.checked && detailsField && !detailsField.value.trim()) {
+                        missing.push(label);
+                    }
+                });
+
+                // --- Show unified custom popup ---
+                if (missing.length > 0) {
+                    e.preventDefault();
+                    showValidationPopup(
+                        "⚠ Please fill in the following required fields:<br><br>" + missing.join(", ")
+                    );
                 }
             });
-
-            if (missing.length > 0) {
-                e.preventDefault();
-                alert("⚠ Please fill in all required fields:\n\n" + missing.join(", "));
-
-                // Jump to the modal containing the first missing field
-                const firstMissing = this.querySelector("[name='" + missing[0].toLowerCase().replace(/ /g, "_") + "']");
-                if (firstMissing) {
-                    const parentModal = firstMissing.closest(".modal");
-                    if (parentModal) {
-                        showModal(parentModal.id.replace("modal", ""));
-                    }
-                }
-            }
         });
     </script>
+
 </body>
 
 </html>

@@ -42,8 +42,14 @@ if (!$patient) {
 }
 $stmt->close();
 
-// Query vital signs
-$vital_sql = "SELECT vital_id, blood_pressure, pulse_rate, temperature, weight, recorded_at
+// Query vital signs (date only for recorded_at)
+$vital_sql = "SELECT 
+                vital_id, 
+                blood_pressure, 
+                pulse_rate, 
+                temperature, 
+                weight, 
+                DATE(recorded_at) AS recorded_at
               FROM vital_signs
               WHERE patient_id = ?
               ORDER BY recorded_at DESC";
@@ -80,7 +86,7 @@ $conn->close();
 
 // Combine patient + vitals + medical history + dietary history
 $patient["vital_signs"] = $vitals;
-$patient["medical_history"] = $medical;
+$patient["medical_history"] = $medical; 
 $patient["dietary_habits"] = $diet;
 
 echo json_encode($patient);
