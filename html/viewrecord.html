@@ -449,10 +449,10 @@
         <div
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
-            <p class="text-base font-normal text-gray-950 dark:text-white ">Memberrship</p>
-            <button type="button"
+            <p class="text-base font-normal text-gray-950 dark:text-white">Membership</p>
+            <button id="addBtn" type="button"
               class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-              <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
+              <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true">
                 <path clip-rule="evenodd" fill-rule="evenodd"
                   d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
@@ -462,7 +462,6 @@
           </div>
           <ul id="membershipList" class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
             style="font-size:14.6px;">
-            Loading ...
           </ul>
         </div>
         <!-- Vital Signs -->
@@ -579,9 +578,9 @@
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white ">Medical History</p>
-            <button type="button"
+            <button id="addMedicalHistoryBtn" type="button"
               class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-              <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
+              <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true">
                 <path clip-rule="evenodd" fill-rule="evenodd"
                   d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
@@ -614,9 +613,11 @@
             style="font-size:14.6px;">
           </ul>
         </div>
+
+
         <!-- Edit Patient Modal -->
         <div id="editPatientModal" tabindex="-1" aria-hidden="true"
-          class="fixed inset-0 hidden justify-center items-center z-50 bg-gray-200/50">
+          class="fixed inset-0 hidden justify-center items-center z-50 bg-gray-600/50">
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-lg p-6 relative">
             <div class="flex flex-row justify-between items-center mb-4">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Patient Details</h2>
@@ -677,8 +678,8 @@
                 </div>
               </div>
               <div class="mt-4">
-                <label for="editAddress"
-                  class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Place of Birth</label>
+                <label for="editAddress" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Place of
+                  Birth</label>
                 <input type="text" id="editPob" name="place_of_birth"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
               </div>
@@ -713,6 +714,201 @@
             </form>
           </div>
         </div>
+
+        <!-- membership -->
+        <div id="membershipModal" tabindex="-1" aria-hidden="true"
+          class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-4">
+            <div class="flex flex-row justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Membership</h2>
+              <button type="button" id="cancelBtn"
+                class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                ✕
+              </button>
+            </div>
+
+            <form id="membershipForm" class="space-y-4">
+              <input type="hidden" name="patient_id" id="patient_id" value="">
+
+              <!-- NHTS -->
+              <div class="flex items-center mb-1">
+                <input type="checkbox" value="1" name="nhts_pr" data-field="nhts_pr"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <label class="ms-2 text-sm">NHTS-PR</label>
+              </div>
+
+              <!-- 4Ps -->
+              <div class="flex items-center mb-1">
+                <input type="checkbox" value="1" name="four_ps" data-field="four_ps"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <label class="ms-2 text-sm">Pantawid Pamilyang Pilipino Program (4Ps)</label>
+              </div>
+
+              <!-- IP -->
+              <div class="flex items-center mb-1">
+                <input type="checkbox" value="1" name="indigenous_people" data-field="indigenous_people"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <label class="ms-2 text-sm">Indigenous People (IP)</label>
+              </div>
+
+              <!-- PWD -->
+              <div class="flex items-center mb-1">
+                <input type="checkbox" value="1" name="pwd" data-field="pwd"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <label class="ms-2 text-sm">Person With Disabilities (PWDs)</label>
+              </div>
+
+              <!-- PhilHealth -->
+              <div class="flex items-center mb-1">
+                <input type="checkbox" value="1" name="philhealth_flag" data-field="philhealth_flag"
+                  onchange="toggleInput(this, 'philhealth_number')"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <div class="grid grid-cols-2 items-center gap-4">
+                  <label class="ms-2 text-sm">PhilHealth (Indicate Number)</label>
+                  <input type="text" id="philhealth_number" name="philhealth_number" disabled
+                    class="block py-1 px-0 w-full text-sm border-b-2 border-gray-300 focus:outline-none focus:border-blue-600" />
+                </div>
+              </div>
+
+              <!-- SSS -->
+              <div class="flex items-center mb-1">
+                <input type="checkbox" value="1" name="sss_flag" data-field="sss_flag"
+                  onchange="toggleInput(this, 'sss_number')" class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <div class="grid grid-cols-2 items-center gap-4">
+                  <label class="ms-2 text-sm">SSS (Indicate Number)</label>
+                  <input type="text" id="sss_number" name="sss_number" disabled
+                    class="block py-1 px-0 w-full text-sm border-b-2 border-gray-300 focus:outline-none focus:border-blue-600" />
+                </div>
+              </div>
+
+              <!-- GSIS -->
+              <div class="flex items-center mb-1">
+                <input type="checkbox" value="1" name="gsis_flag" data-field="gsis_flag"
+                  onchange="toggleInput(this, 'gsis_number')" class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <div class="grid grid-cols-2 items-center gap-4">
+                  <label class="ms-2 text-sm">GSIS (Indicate Number)</label>
+                  <input type="text" id="gsis_number" name="gsis_number" disabled
+                    class="block py-1 px-0 w-full text-sm border-b-2 border-gray-300 focus:outline-none focus:border-blue-600" />
+                </div>
+              </div>
+
+              <!-- Save button -->
+              <div class="flex justify-end gap-2">
+                <button type="submit" name="save_membership"
+                  class="px-3 mt-4 cursor-pointer py-1 rounded bg-blue-700 hover:bg-blue-800 text-white text-sm">
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Medical History Modal -->
+        <div id="medicalHistoryModal" tabindex="-1" aria-hidden="true"
+          class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+            <div class="flex flex-row justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Medical History</h2>
+              <button type="button" id="cancelMedicalHistoryBtn"
+                class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                ✕
+              </button>
+            </div>
+
+            <form id="medicalHistoryForm" class="space-y-4">
+              <!-- Hidden patient_id -->
+              <input type="hidden" name="patient_id" id="mh_patient_id" value="">
+
+              <!-- Example Fields -->
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="allergies_flag" value="1"
+                  onchange="toggleInput(this, 'allergies_details')">
+                <label class="text-sm">Allergies</label>
+                <input type="text" id="allergies_details" name="allergies_details" disabled
+                  class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Details">
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="hypertension_cva" value="1">
+                <label class="text-sm">Hypertension / CVA</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="diabetes_mellitus" value="1">
+                <label class="text-sm">Diabetes Mellitus</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="blood_disorders" value="1">
+                <label class="text-sm">Blood Disorders</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="heart_disease" value="1">
+                <label class="text-sm">Heart Disease</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="thyroid_disorders" value="1">
+                <label class="text-sm">Thyroid Disorders</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="hepatitis_flag" value="1"
+                  onchange="toggleInput(this, 'hepatitis_details')">
+                <label class="text-sm">Hepatitis</label>
+                <input type="text" id="hepatitis_details" name="hepatitis_details" disabled
+                  class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Details">
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="malignancy_flag" value="1"
+                  onchange="toggleInput(this, 'malignancy_details')">
+                <label class="text-sm">Malignancy</label>
+                <input type="text" id="malignancy_details" name="malignancy_details" disabled
+                  class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Details">
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="prev_hospitalization_flag" value="1">
+                <label class="text-sm">Previous Hospitalization</label>
+                <input type="date" name="last_admission_date" class="border rounded px-2 py-1 text-sm">
+                <input type="text" name="admission_cause" placeholder="Cause"
+                  class="flex-1 border rounded px-2 py-1 text-sm">
+              </div>
+
+              <div class="flex items-center gap-2">
+                <label class="text-sm">Surgery Details</label>
+                <input type="text" name="surgery_details" class="flex-1 border rounded px-2 py-1 text-sm">
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="blood_transfusion_flag" value="1">
+                <label class="text-sm">Blood Transfusion</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="tattoo" value="1">
+                <label class="text-sm">Tattoo</label>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <input type="checkbox" name="other_conditions_flag" value="1"
+                  onchange="toggleInput(this, 'other_conditions')">
+                <label class="text-sm">Other Conditions</label>
+                <input type="text" id="other_conditions" name="other_conditions" disabled
+                  class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Specify">
+              </div>
+
+              <div class="flex justify-end gap-2">
+                <button type="submit" name="save_medical_history"
+                  class="px-3 py-1 rounded bg-blue-700 hover:bg-blue-800 text-white text-sm">
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
         <!-- small notification container -->
         <div id="notice"
           style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
@@ -724,7 +920,6 @@
   <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
   <script src="../js/tailwind.config.js"></script>
-
   <script>
     async function loadPatient() {
       const params = new URLSearchParams(window.location.search);
@@ -765,8 +960,8 @@
           membershipList.appendChild(li);
           hasMembership = true;
         }
-        if (data.nhts_pr == 1) addMembershipItem("NHTS-PR");
-        if (data.four_ps == 1) addMembershipItem("4Ps");
+        if (data.nhts_pr == 1) addMembershipItem("National Household Targeting System - Poverty Reduction (NHTS)");
+        if (data.four_ps == 1) addMembershipItem("Pantawin Pamilyang Pilipino Program (4Ps)");
         if (data.indigenous_people == 1) addMembershipItem("Indigenous People (IP)");
         if (data.pwd == 1) addMembershipItem("Person With Disabilities (PWD)");
         if (data.philhealth_flag == 1 && data.philhealth_number) addMembershipItem(`PhilHealth - ${data.philhealth_number}`);
@@ -900,6 +1095,7 @@
     }
   </script>
 
+  <!-- edit -->
   <script>
     // parse id from URL: viewrecord.html?id=123
     const urlParams = new URLSearchParams(window.location.search);
@@ -987,6 +1183,204 @@
     window.addEventListener('DOMContentLoaded', loadPatient);
   </script>
 
+  <!-- membership add -->
+  <script>
+    function toggleInput(checkbox, inputId) {
+      const input = document.getElementById(inputId);
+      input.disabled = !checkbox.checked;
+      if (!checkbox.checked) input.value = "";
+    }
+
+    function setPatientId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const patientId = urlParams.get('id');
+      if (patientId) {
+        document.getElementById('patient_id').value = patientId;
+        loadMemberships(patientId);
+      }
+    }
+
+    function showModal() {
+      document.getElementById('membershipModal').classList.remove('hidden');
+    }
+
+    function hideModal() {
+      document.getElementById('membershipModal').classList.add('hidden');
+    }
+
+    function showNotice(message) {
+      const notice = document.getElementById("notice");
+      notice.textContent = message;
+      notice.style.display = "block";
+
+      setTimeout(() => {
+        notice.style.display = "none";
+      }, 3000); // hides after 3s
+    }
+
+    // 🔹 Fetch existing memberships from DB
+    async function loadMemberships(patientId) {
+      const response = await fetch(`../php/get_membership.php?patient_id=${patientId}`);
+      const result = await response.json();
+
+      const membershipList = document.getElementById("membershipList");
+      membershipList.innerHTML = ""; // clear before appending
+
+      if (result.success) {
+        result.memberships.forEach(m => {
+          // Update modal: disable + check already added memberships
+          const checkbox = document.querySelector(`[data-field="${m.field}"]`);
+          if (checkbox) {
+            checkbox.disabled = true;
+            checkbox.checked = true;
+          }
+
+          // Update membership list UI
+          const li = document.createElement("li");
+          li.textContent = m.label;
+          membershipList.appendChild(li);
+        });
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setPatientId();
+      document.getElementById('addBtn').addEventListener('click', showModal);
+      document.getElementById('cancelBtn').addEventListener('click', hideModal);
+
+      const membershipForm = document.getElementById('membershipForm');
+
+      membershipForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(membershipForm);
+
+        const response = await fetch("../php/save_membership.php", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          membershipForm.reset();
+          hideModal();
+
+          // 🔹 Reload memberships
+          const patientId = document.getElementById('patient_id').value;
+          loadMemberships(patientId);
+          // 🔹 Show notice
+          showNotice("Membership added successfully!");
+        } else {
+          alert("Error: " + result.message);
+        }
+      });
+    });
+  </script>
+
+  <!-- medical add -->
+  <script>
+    function toggleInput(checkbox, inputId) {
+      const input = document.getElementById(inputId);
+      input.disabled = !checkbox.checked;
+      if (!checkbox.checked) input.value = "";
+    }
+
+    function setPatientIdMH() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const patientId = urlParams.get('id'); // ?id=123
+      if (patientId) {
+        document.getElementById('mh_patient_id').value = patientId;
+      }
+      return patientId;
+    }
+
+    async function loadMedicalHistory(patientId) {
+      const response = await fetch(`../php/get_medical_history.php?patient_id=${patientId}`);
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const data = result.data;
+
+        // Loop through data and set checkboxes / inputs
+        for (const key in data) {
+          if (!data.hasOwnProperty(key)) continue;
+          const value = data[key];
+
+          const field = document.querySelector(`[name="${key}"]`);
+          if (field) {
+            if (field.type === "checkbox") {
+              if (parseInt(value) === 1) {
+                field.checked = true;
+                field.disabled = true; // lock once saved
+              }
+            } else {
+              if (value && value !== "0") {
+                field.value = value;
+                field.disabled = true; // lock once saved
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function showMedicalHistoryModal() {
+      const patientId = setPatientIdMH();
+      if (patientId) {
+        loadMedicalHistory(patientId); // preload existing
+      }
+      document.getElementById('medicalHistoryModal').classList.remove('hidden');
+    }
+
+    function hideMedicalHistoryModal() {
+      document.getElementById('medicalHistoryModal').classList.add('hidden');
+    }
+
+    function showNotice(message) {
+      const notice = document.getElementById("notice");
+      notice.innerText = message;
+      notice.style.display = "block";
+      setTimeout(() => { notice.style.display = "none"; }, 3000);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setPatientIdMH();
+
+      const addBtn = document.getElementById('addMedicalHistoryBtn');
+      const cancelBtn = document.getElementById('cancelMedicalHistoryBtn');
+      const form = document.getElementById('medicalHistoryForm');
+      const list = document.getElementById('medicalHistoryList');
+
+      addBtn.addEventListener('click', showMedicalHistoryModal);
+      cancelBtn.addEventListener('click', hideMedicalHistoryModal);
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        const response = await fetch("../php/save_medical_history.php", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          list.innerHTML = "";
+          const li = document.createElement("li");
+          li.textContent = "Medical history saved.";
+          list.appendChild(li);
+
+          showNotice("Medical history saved successfully!");
+          form.reset();
+          hideMedicalHistoryModal();
+        } else {
+          alert("Error: " + result.message);
+        }
+      });
+    });
+
+  </script>
 </body>
 </body>
 
