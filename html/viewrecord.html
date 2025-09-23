@@ -469,7 +469,7 @@
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 pb-4 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white ">Vital Signs</p>
-            <button type="button"
+            <button type="button" id="addVitalbtn"
               class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
               <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true">
@@ -571,7 +571,6 @@
               </div>
             </div>
           </div>
-
         </div>
         <!-- medical -->
         <div
@@ -1046,6 +1045,59 @@
           </div>
         </div>
 
+        <!-- Vital Signs Modal -->
+        <div id="addVitalModal" tabindex="-1" aria-hidden="true"
+          class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+            <div class="flex flex-row justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Vital Signs
+              </h2>
+              <button type="button" id="cancelVital"
+                class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                ✕
+              </button>
+            </div>
+            <form id="vitalform" class="space-y-4">
+              <input type="hidden" id="editPatientId" name="patient_id" value="<?= $patient_id ?>">
+              <div>
+                <div class="w-full">
+                  <label for="name" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Blood
+                    Preassure</label>
+                  <input type="text" name="blood_pressure" data-required data-label="Blood Pressure"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    placeholder="">
+                </div>
+                <div class="w-full">
+                  <label for="name"
+                    class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Temperature</label>
+                  <input type="number" step="0.1" name="temperature" data-required data-label="Temperature"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    placeholder="">
+                </div>
+                <div class="w-full">
+                  <label for="name" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Pulse
+                    Rate</label>
+                  <input type="number" name="pulse_rate" data-required data-label="Pulse Rate"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    placeholder="">
+                </div>
+                <div class="w-full">
+                  <label for="name" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Weight</label>
+                  <input type="number" step="0.01" name="weight" data-required data-label="Weight"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    placeholder="">
+                </div>
+              </div>
+              <!-- Buttons -->
+              <div class="flex justify-end  mt-4">
+                <button type="submit"
+                  class="px-3 cursor-pointer py-1 rounded bg-blue-700 hover:bg-blue-800 text-white text-sm">
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
         <!-- small notification container -->
         <div id="notice"
           style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
@@ -1243,7 +1295,7 @@
 
     function showNotice(msg, isError = false) {
       const n = document.getElementById('notice');
-      n.style.background = isError ? 'blue' : '#blue';
+      n.style.background = isError ? 'blue' : 'red';
       n.innerText = msg;
       n.style.display = 'block';
       setTimeout(() => n.style.display = 'none', 3000);
@@ -1365,7 +1417,7 @@
       notice.textContent = msg;
       notice.style.display = "block";
       notice.style.opacity = "1";
-      notice.style.background = type === "success" ? "#16a34a" : "#dc2626";
+      notice.style.background = type === "success" ? 'blue' : 'red';
       setTimeout(() => { notice.style.opacity = "0"; setTimeout(() => notice.style.display = "none", 300); }, 1000);
     }
 
@@ -1570,9 +1622,93 @@
     });
   </script>
 
+  <!-- vital signs  -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const addBtn = document.getElementById('addVitalbtn');
+      const modal = document.getElementById('addVitalModal');
+      const cancelBtn = document.getElementById('cancelVital');
+      const vitalForm = document.getElementById('vitalform');
 
+      const bpTable = document.getElementById('bpTableBody');
+      const tempTable = document.getElementById('tempTableBody');
+      const pulseTable = document.getElementById('pulseTableBody');
+      const weightTable = document.getElementById('weightTableBody');
+      const notice = document.getElementById('notice');
+      const patientInput = document.getElementById('editPatientId'); // hidden input
 
+      function showNotice(msg, success = true) {
+        notice.textContent = msg;
+        notice.style.background = success ? 'blue' : 'red';
+        notice.style.display = 'block';
+        setTimeout(() => { notice.style.display = 'none'; }, 3000);
+      }
 
+      addBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+      cancelBtn.addEventListener('click', () => {
+        modal.classList.add('hidden');
+        vitalForm.reset();
+      });
+
+      vitalForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(vitalForm);
+        const data = new URLSearchParams();
+        data.append('action', 'save_vitals');
+        data.append('patient_id', patientInput.value); // read from hidden input
+        data.append('blood_pressure', formData.get('blood_pressure'));
+        data.append('pulse_rate', formData.get('pulse_rate'));
+        data.append('temperature', formData.get('temperature'));
+        data.append('weight', formData.get('weight'));
+
+        try {
+          const res = await fetch('../php/patient_info.php', { method: 'POST', body: data });
+          const result = await res.json();
+          if (result.success) {
+            showNotice('Vital signs added successfully!', true);
+            modal.classList.add('hidden');
+            vitalForm.reset();
+            fetchVitals(); // refresh table
+          } else {
+            showNotice('Failed to add vital signs: ' + result.message, false);
+          }
+        } catch (err) {
+          console.error(err);
+          showNotice('Error adding vital signs.', false);
+        }
+      });
+
+      async function fetchVitals() {
+        try {
+          const res = await fetch(`../php/patient_info.php?action=get_vitals&patient_id=${patientInput.value}`);
+          const data = await res.json();
+          if (!data.success) return;
+
+          bpTable.innerHTML = '';
+          tempTable.innerHTML = '';
+          pulseTable.innerHTML = '';
+          weightTable.innerHTML = '';
+
+          data.vitals.forEach(v => {
+            const d = new Date(v.recorded_at);
+            const recorded = d.getFullYear() + '-'
+              + String(d.getMonth() + 1).padStart(2, '0') + '-'
+              + String(d.getDate()).padStart(2, '0');
+
+            bpTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.blood_pressure}</td></tr>`;
+            tempTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.temperature}</td></tr>`;
+            pulseTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.pulse_rate}</td></tr>`;
+            weightTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.weight}</td></tr>`;
+          });
+        } catch (err) {
+          console.error('Failed to fetch vitals:', err);
+        }
+      }
+
+      fetchVitals();
+    });
+
+  </script>
 </body>
 </body>
 

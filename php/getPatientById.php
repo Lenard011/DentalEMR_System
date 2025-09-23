@@ -86,8 +86,7 @@ $conn->close();
 
 // Combine patient + vitals + medical history + dietary history
 $patient["vital_signs"] = $vitals;
-$patient["medical_history"] = $medical; 
+$patient["medical_history"] = $medical;
 $patient["dietary_habits"] = $diet;
 
 echo json_encode($patient);
-?>

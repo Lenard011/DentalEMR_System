@@ -1,7 +1,7 @@
 <?php
 // patient_info.php (final unified version)
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-ini_set('display_errors', 0);
+ini_set('display_errors', 1);
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 header('Content-Type: application/json');
 require_once "conn.php"; // must define $conn = new mysqli(...)
@@ -233,6 +233,67 @@ try {
         $stmt->execute();
 
         echo json_encode(["success" => true]);
+        exit;
+    }
+
+    /* ---------------- VITAL SIGNS ---------------- */
+    if ($action === "get_vitals") {
+        $patient_id = intval($_GET['patient_id'] ?? 0);
+        $stmt = $conn->prepare("SELECT 
+                vital_id, 
+                blood_pressure, 
+                pulse_rate, 
+                temperature, 
+                weight, 
+                DATE(recorded_at) AS recorded_at
+              FROM vital_signs
+              WHERE patient_id = ?
+              ORDER BY recorded_at DESC");
+        $stmt->bind_param("i", $patient_id);
+        $stmt->execute();
+        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        echo json_encode(["success" => true, "vitals" => $rows]);
+        exit;
+    }
+
+    if ($action === "save_vitals") {
+        header('Content-Type: application/json'); // ensure JSON
+        $patient_id = intval($_POST['patient_id'] ?? 0);
+        $blood_pressure = trim($_POST['blood_pressure'] ?? '');
+        $pulse_rate = floatval($_POST['pulse_rate'] ?? 0);
+        $temperature = floatval($_POST['temperature'] ?? 0);
+        $weight = floatval($_POST['weight'] ?? 0);
+
+        if (!$patient_id) {
+            echo json_encode(["success" => false, "message" => "Patient ID required"]);
+            exit;
+        }
+
+        $sql = "INSERT INTO vital_signs (patient_id, blood_pressure, pulse_rate, temperature, weight, recorded_at)
+            VALUES (?, ?, ?, ?, ?, NOW())";
+
+        $stmt = $conn->prepare($sql);
+
+        if (!$stmt) {
+            echo json_encode(["success" => false, "message" => "Prepare failed: " . $conn->error]);
+            exit;
+        }
+
+        $bind = $stmt->bind_param("isddd", $patient_id, $blood_pressure, $pulse_rate, $temperature, $weight);
+
+        if (!$bind) {
+            echo json_encode(["success" => false, "message" => "Bind failed: " . $stmt->error]);
+            exit;
+        }
+
+        $exec = $stmt->execute();
+
+        if (!$exec) {
+            echo json_encode(["success" => false, "message" => "Execute failed: " . $stmt->error]);
+            exit;
+        }
+        echo json_encode(["success" => true, "vital_id" => $stmt->insert_id]);
         exit;
     }
 
