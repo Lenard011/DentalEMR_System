@@ -188,7 +188,7 @@ try {
         if ($row) {
             if ($row['sugar_flag']) $dietary[] = ["field" => "sugar_flag", "label" => "Sugar Sweetened Beverages/Food (" . ($row['sugar_details'] ?: "N/A") . ")"];
             if ($row['alcohol_flag']) $dietary[] = ["field" => "alcohol_flag", "label" => "Use of Alcohol (" . ($row['alcohol_details'] ?: "N/A") . ")"];
-            if ($row['tobacco_flag']) $dietary[] = ["field" => "tobacco_flag", "label" => "use of Tobacco (" . ($row['tobacco_details'] ?: "N/A") . ")"];
+            if ($row['tobacco_flag']) $dietary[] = ["field" => "tobacco_flag", "label" => "Use of Tobacco (" . ($row['tobacco_details'] ?: "N/A") . ")"];
             if ($row['betel_nut_flag']) $dietary[] = ["field" => "betel_nut_flag", "label" => "Betel Nut Chewing (" . ($row['betel_nut_details'] ?: "N/A") . ")"];
         }
 
