@@ -578,7 +578,7 @@
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white ">Medical History</p>
-            <button id="addMedicalHistoryBtn" type="button"
+            <button type="button" id="addMedicalHistoryBtn"
               class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
               <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true">
@@ -1301,6 +1301,10 @@
       if (result.success && result.data) {
         const data = result.data;
 
+        // Reset form before applying
+        const form = document.getElementById("medicalHistoryForm");
+        form.reset();
+
         // Loop through data and set checkboxes / inputs
         for (const key in data) {
           if (!data.hasOwnProperty(key)) continue;
@@ -1372,15 +1376,20 @@
           list.appendChild(li);
 
           showNotice("Medical history saved successfully!");
-          form.reset();
           hideMedicalHistoryModal();
+
+          // 🔄 Refresh medical history so saved fields lock immediately
+          const patientId = setPatientIdMH();
+          if (patientId) {
+            loadMedicalHistory(patientId);
+          }
         } else {
           alert("Error: " + result.message);
         }
       });
     });
-
   </script>
+
 </body>
 </body>
 
