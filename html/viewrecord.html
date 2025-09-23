@@ -255,14 +255,14 @@
       </div>
     </aside>
 
-    <main class="p-1.5 md:ml-64 h-auto pt-1">
+    <main class="relative p-1.5 md:ml-64 h-auto pt-1">
       <div class="relative flex items-center w-full  mt-13 p-2">
         <!-- Back Btn -->
         <button type="button" onclick="back()" class="cursor-pointer absolute left-2">
           <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white" aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-              d="M5 12h14M5 12l4-4m-4 4 4 4" />
+              d="M5 12h14M    5 12l4-4m-4 4 4 4" />
           </svg>
         </button>
         <p class="mx-auto text-xl text-center font-semibold text-gray-900 dark:text-white">
@@ -270,11 +270,11 @@
         </p>
       </div>
 
-      <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg mb-2">
+      <section class="relative bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg mb-2">
         <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading ...</p>
         <!-- Patient Info -->
         <div
-          class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+          class="relative mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white ">Patient Detatils</p>
             <button id="editBtn" type="button"
@@ -289,8 +289,8 @@
               Edit
             </button>
           </div>
-          <div class="flex flex-col justify-center items-center px-5 gap-5 mb-3">
-            <div class="flex items-center justify-between p-2 gap-1  max-w-5xl w-full">
+          <div class="relative flex flex-col justify-center items-center px-5 gap-5 mb-3">
+            <div class="flex items-center justify-between p-2  max-w-5xl w-full">
               <div class="grid items-center justify-center grid-flow-col gap-1">
                 <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
@@ -309,7 +309,7 @@
                     Name</p>
                 </div>
               </div>
-              <div class="grid items-center justify-center grid-flow-col gap-1">
+              <div class="relative grid items-center justify-center grid-flow-col gap-1">
                 <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
@@ -327,7 +327,7 @@
                     Gender</p>
                 </div>
               </div>
-              <div class="grid items-center justify-center grid-flow-col gap-1">
+              <div class="relative grid items-center justify-center grid-flow-col gap-1">
                 <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
@@ -345,7 +345,7 @@
                     Age</p>
                 </div>
               </div>
-              <div class="grid items-center justify-center grid-flow-col gap-1">
+              <div class="relative grid items-center justify-center grid-flow-col gap-1">
                 <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor"
@@ -365,7 +365,7 @@
                     Date of Birth</p>
                 </div>
               </div>
-              <div class="grid items-center justify-center grid-flow-col gap-1">
+              <div class="relative grid items-center justify-center grid-flow-col gap-1">
                 <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -385,7 +385,7 @@
                 </div>
               </div>
             </div>
-            <div class="flex items-center justify-center p-2 gap-30  max-w-5xl w-full">
+            <div class="relative flex items-center justify-between  p-2   max-w-5xl w-full">
               <div class="grid items-center justify-center grid-flow-col gap-1">
                 <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
@@ -405,7 +405,7 @@
                     Place of Birth</p>
                 </div>
               </div>
-              <div class="grid items-center justify-center grid-flow-col gap-1">
+              <div class="relative grid items-center justify-center grid-flow-col gap-1">
                 <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
@@ -424,7 +424,7 @@
                     Address</p>
                 </div>
               </div>
-              <div class="grid items-center justify-center grid-flow-col gap-1">
+              <div class="relative grid items-center justify-center grid-flow-col gap-1">
                 <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
@@ -435,10 +435,10 @@
                   </div>
                 </div>
                 <div>
-                  <p id="patientGuardian" class="text-sm font-normal text-gray-950 dark:text-white"
+                  <p id="patientGuardian" class="relative text-sm font-normal text-gray-950 dark:text-white"
                     style="font-size:14.6px;">
                     Loading ...</p>
-                  <p class="text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
+                  <p class="relative text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Parent/Guardian</p>
                 </div>
               </div>
@@ -598,7 +598,7 @@
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
             <p class="text-base font-normal text-gray-950 dark:text-white">Dietary Habits / Social History</p>
-            <button type="button"
+            <button type="button" id="addDietaryHistoryBtn"
               class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
               <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true">
@@ -613,7 +613,6 @@
             style="font-size:14.6px;">
           </ul>
         </div>
-
 
         <!-- Edit Patient Modal -->
         <div id="editPatientModal" tabindex="-1" aria-hidden="true"
@@ -804,111 +803,246 @@
         </div>
 
         <!-- Medical History Modal -->
-        <div id="medicalHistoryModal" tabindex="-1" aria-hidden="true"
+        <div id="medicalModal" tabindex="-1" aria-hidden="true"
           class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
           <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
-            <div class="flex flex-row justify-between items-center mb-4">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Medical History</h2>
-              <button type="button" id="cancelMedicalHistoryBtn"
-                class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white">
-                ✕
-              </button>
-            </div>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Add / Edit Medical History
+            </h2>
 
-            <form id="medicalHistoryForm" class="space-y-4">
-              <!-- Hidden patient_id -->
-              <input type="hidden" name="patient_id" id="mh_patient_id" value="">
-
-              <!-- Example Fields -->
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="allergies_flag" value="1"
-                  onchange="toggleInput(this, 'allergies_details')">
-                <label class="text-sm">Allergies</label>
-                <input type="text" id="allergies_details" name="allergies_details" disabled
-                  class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Details">
+            <form id="medicalForm" class="space-y-4">
+              <div>
+                <div class="flex w-125  items-center mb-1">
+                  <input type="checkbox" name="allergies_flag" value="1"
+                    onchange="toggleInput(this, 'allergies_details')"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 items-center gap-1">
+                    <label for="default-checkbox"
+                      class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Allergies
+                      (Please specify)</label>
+                    <input type="text" id="allergies_details" name="allergies_details" disabled
+                      class="block py-1 h-4.5 px-0 w-59 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" " />
+                  </div>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="hypertension_cva" value="1"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <label for="default-checkbox"
+                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Hypertension
+                    / CVA</label>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="diabetes_mellitus" value="1"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <label for="default-checkbox"
+                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Diabetes
+                    Mellitus</label>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="blood_disorders" value="1"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <label for="default-checkbox" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Blood
+                    Disorders</label>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="heart_disease" value="1"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <label for="default-checkbox"
+                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">cardiovarscular
+                    / Heart Diseases</label>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="thyroid_disorders" value="1"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <label for="default-checkbox"
+                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Thyroid
+                    Disorders</label>
+                </div>
+                <div class="flex w-125  items-center mb-1">
+                  <input type="checkbox" name="hepatitis_flag" value="1"
+                    onchange="toggleInput(this, 'hepatitis_details')"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 items-center gap-1">
+                    <label for="default-checkbox"
+                      class="ms-2 text-sm w-50  font-medium text-gray-900 dark:text-gray-300">Hepatitis
+                      (Please specify type)</label>
+                    <input type="text" id="hepatitis_details" name="hepatitis_details" disabled
+                      class="block py-1 h-4.5 px-0 w-59 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" " />
+                  </div>
+                </div>
+                <div class="flex w-125  items-center mb-1">
+                  <input type="checkbox" name="malignancy_flag" value="1"
+                    onchange="toggleInput(this, 'malignancy_details')"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 items-center gap-1">
+                    <label for="default-checkbox"
+                      class="ms-2 w-50 text-sm  font-medium text-gray-900 dark:text-gray-300">Malignancy
+                      (Please specify)</label>
+                    <input type="text" id="malignancy_details" name="malignancy_details" disabled
+                      class="block py-1 h-4.5 px-0 w-59 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" " />
+                  </div>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="prev_hospitalization_flag" value="1"
+                    onchange="toggleHospitalization(this)"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 items-center gap-1">
+                    <label for="default-checkbox"
+                      class="ms-2  w-100 text-sm font-medium text-gray-900 dark:text-gray-300">History
+                      of Previous Hospitalization:</label>
+                  </div>
+                </div>
+                <div class="flex flex-col w-120  ml-4 ">
+                  <label for="default-checkbox" class="ms-2 w-55 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    Medical </label>
+                  <div class="ms-4 flex flex-row items-center w-full gap-2">
+                    <div class="flex flex-row items-center  gap-1 ">
+                      <label class="w-27 text-sm font-medium text-gray-900 dark:text-gray-300 ">
+                        Last Admission:</label>
+                      <input type="date" id="last_admission_date" name="last_admission_date" disabled
+                        class="block py-1 px-0 h-4.5  text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                        placeholder="" />
+                    </div>
+                    <span>&</span>
+                    <div class="flex flex-row items-center w-52 ">
+                      <label class="w-15 text-sm font-medium text-gray-900 dark:text-gray-300 ">
+                        Cause:</label>
+                      <input type="text" id="admission_cause" name="admission_cause" disabled
+                        class="block py-1 px-0 h-4.5 w-35.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                        placeholder="" />
+                    </div>
+                  </div>
+                </div>
+                <div class="grid w-120 grid-cols-2 gap-1 ml-4">
+                  <label for="default-checkbox" class="ms-2 w-55 text-sm font-medium text-gray-900 dark:text-gray-300">
+                    Surgical (Post-Operative)</label>
+                  <input type="text" id="surgery_details" name="surgery_details" disabled
+                    class="block py-1 px-0 h-4.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder=" " />
+                </div>
+                <div class="flex w-125 items-center  mb-1">
+                  <input type="checkbox" name="blood_transfusion_flag" value="1"
+                    onchange="toggleInput(this, 'blood_transfusion_date')"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 items-center gap-1">
+                    <label for="default-checkbox"
+                      class="ms-2 not-last-of-type:w-40 text-sm font-medium text-gray-900 dark:text-gray-300">Blood
+                      transfusion (Month & Year)</label>
+                    <input type="text" id="blood_transfusion_date" name="blood_transfusion_date" disabled
+                      class="block py-1 h-4.5 px-0 w-59.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" " />
+                  </div>
+                </div>
+                <div class="flex w-120 items-center mb-1">
+                  <input type="checkbox" name="tattoo" value="1"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <label for="default-checkbox"
+                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Tattoo</label>
+                </div>
               </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="hypertension_cva" value="1">
-                <label class="text-sm">Hypertension / CVA</label>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="diabetes_mellitus" value="1">
-                <label class="text-sm">Diabetes Mellitus</label>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="blood_disorders" value="1">
-                <label class="text-sm">Blood Disorders</label>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="heart_disease" value="1">
-                <label class="text-sm">Heart Disease</label>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="thyroid_disorders" value="1">
-                <label class="text-sm">Thyroid Disorders</label>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="hepatitis_flag" value="1"
-                  onchange="toggleInput(this, 'hepatitis_details')">
-                <label class="text-sm">Hepatitis</label>
-                <input type="text" id="hepatitis_details" name="hepatitis_details" disabled
-                  class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Details">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="malignancy_flag" value="1"
-                  onchange="toggleInput(this, 'malignancy_details')">
-                <label class="text-sm">Malignancy</label>
-                <input type="text" id="malignancy_details" name="malignancy_details" disabled
-                  class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Details">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="prev_hospitalization_flag" value="1">
-                <label class="text-sm">Previous Hospitalization</label>
-                <input type="date" name="last_admission_date" class="border rounded px-2 py-1 text-sm">
-                <input type="text" name="admission_cause" placeholder="Cause"
-                  class="flex-1 border rounded px-2 py-1 text-sm">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <label class="text-sm">Surgery Details</label>
-                <input type="text" name="surgery_details" class="flex-1 border rounded px-2 py-1 text-sm">
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="blood_transfusion_flag" value="1">
-                <label class="text-sm">Blood Transfusion</label>
-              </div>
-
-              <div class="flex items-center gap-2">
-                <input type="checkbox" name="tattoo" value="1">
-                <label class="text-sm">Tattoo</label>
-              </div>
-
-              <div class="flex items-center gap-2">
+              <div class="flex w-125  items-center mb-1">
                 <input type="checkbox" name="other_conditions_flag" value="1"
-                  onchange="toggleInput(this, 'other_conditions')">
-                <label class="text-sm">Other Conditions</label>
-                <input type="text" id="other_conditions" name="other_conditions" disabled
-                  class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Specify">
+                  onchange="toggleInput(this, 'other_conditions')"
+                  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <div class="grid grid-cols-2 items-center gap-">
+                  <label for="default-checkbox"
+                    class="ms-2 w-40  text-sm font-medium text-gray-900 dark:text-gray-300">Others
+                    (Please specify)</label>
+                  <input type="text" id="other_conditions" name="other_conditions" disabled
+                    class="block py-1 h-4.5 px-0 w-60 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder=" " />
+                </div>
               </div>
-
-              <div class="flex justify-end gap-2">
-                <button type="submit" name="save_medical_history"
-                  class="px-3 py-1 rounded bg-blue-700 hover:bg-blue-800 text-white text-sm">
+              <!-- Buttons -->
+              <div class="flex justify-end gap-2 mt-4">
+                <button type="button" id="cancelMedicalBtn"
+                  class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                  Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
                   Save
                 </button>
               </div>
             </form>
           </div>
         </div>
+
+        <!-- Dietary/Habits Modal -->
+        <div id="dietaryModal" tabindex="-1" aria-hidden="true"
+          class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-6">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Add / Edit Medical History
+            </h2>
+            <form id="dietaryForm" class="space-y-4">
+              <div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="sugar_flag" value="1" onchange="toggleInput(this, 'sugar_details')"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 ">
+                    <label for="default-checkbox"
+                      class="ms-2 text-sm w-90 font-medium text-gray-900 dark:text-gray-300">Sugar
+                      Sweetened Beverages/Food (Amount, Frequency & Duration)</label>
+                    <input type="text" id="sugar_details" name="sugar_details" disabled
+                      class="block py-1 h-4.5 px-0 w-70 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" " />
+                  </div>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="alcohol_flag" value="1" onchange="toggleInput(this, 'alcohol_details')"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 gap-6.5">
+                    <label for="default-checkbox" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use
+                      of
+                      Alcohol (Amount, Frequency & Duration)</label>
+                    <input type="text" id="alcohol_details" name="alcohol_details" disabled
+                      class="block py-1 px-0 h-4.5 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" " />
+                  </div>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="tobacco_flag" value="1" onchange="toggleInput(this, 'tobacco_details')"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 gap-5.5">
+                    <label for="default-checkbox" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use
+                      of
+                      Tobacco (Amount, Frequency & Duration)</label>
+                    <input type="text" id="tobacco_details" name="tobacco_details" disabled
+                      class="block py-1 h-4.5 px-0 w-78 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" " />
+                  </div>
+                </div>
+                <div class="flex items-center mb-1">
+                  <input type="checkbox" name="betel_nut_flag" value="1"
+                    onchange="toggleInput(this, 'betel_nut_details')"
+                    class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                  <div class="grid grid-cols-2 gap-4">
+                    <label for="default-checkbox"
+                      class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Betel
+                      Nut Chewing (Amount, Frequency & Duration)</label>
+                    <input type="text" id="betel_nut_details" name="betel_nut_details" disabled
+                      class="block py-1 h-4.5 px-0 w-73.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" " />
+                  </div>
+                </div>
+              </div>
+              <!-- Buttons -->
+              <div class="flex justify-end gap-2 mt-4">
+                <button type="button" id="cancelDietaryBtn"
+                  class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                  Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
         <!-- small notification container -->
         <div id="notice"
           style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
@@ -1183,212 +1317,258 @@
     window.addEventListener('DOMContentLoaded', loadPatient);
   </script>
 
-  <!-- membership add -->
+  <!-- membership, medical and dietary add -->
   <script>
     function toggleInput(checkbox, inputId) {
       const input = document.getElementById(inputId);
+      if (!input) return;
       input.disabled = !checkbox.checked;
       if (!checkbox.checked) input.value = "";
     }
 
-    function setPatientId() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const patientId = urlParams.get('id');
-      if (patientId) {
-        document.getElementById('patient_id').value = patientId;
-        loadMemberships(patientId);
+    function toggleHospitalization(cb) {
+      const last = document.getElementById("last_admission_date");
+      const cause = document.getElementById("admission_cause");
+      const surgery = document.getElementById("surgery_details");
+
+      if (cb.checked) {
+        if (last) last.disabled = false;
+        if (cause) cause.disabled = false;
+        if (surgery) surgery.disabled = false;
+      } else {
+        if (last) { last.disabled = true; last.value = ""; }
+        if (cause) { cause.disabled = true; cause.value = ""; }
+        if (surgery) { surgery.disabled = true; surgery.value = ""; }
       }
     }
 
-    function showModal() {
-      document.getElementById('membershipModal').classList.remove('hidden');
+    function setPatientIdOnForms() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pid = urlParams.get('id');
+      if (!pid) return;
+      document.querySelectorAll("input[name=patient_id]").forEach(i => i.value = pid);
+
+      loadMemberships(pid);
+      loadMedicalHistory(pid);
+      loadDietaryHistory(pid);
     }
 
-    function hideModal() {
-      document.getElementById('membershipModal').classList.add('hidden');
-    }
+    function showModal(id) { document.getElementById(id).classList.remove("hidden"); }
+    function hideModal(id) { document.getElementById(id).classList.add("hidden"); }
 
-    function showNotice(message) {
+    function showNotice(msg, type = "success") {
       const notice = document.getElementById("notice");
-      notice.textContent = message;
+      if (!notice) { alert(msg); return; }
+      notice.textContent = msg;
       notice.style.display = "block";
-
-      setTimeout(() => {
-        notice.style.display = "none";
-      }, 3000); // hides after 3s
+      notice.style.opacity = "1";
+      notice.style.background = type === "success" ? "#16a34a" : "#dc2626";
+      setTimeout(() => { notice.style.opacity = "0"; setTimeout(() => notice.style.display = "none", 300); }, 1000);
     }
 
-    // 🔹 Fetch existing memberships from DB
+    /* ---------- Load membership ---------- */
     async function loadMemberships(patientId) {
-      const response = await fetch(`../php/get_membership.php?patient_id=${patientId}`);
-      const result = await response.json();
+      try {
+        const res = await fetch(`../php/patient_info.php?action=get_membership&patient_id=${patientId}`);
+        const json = await res.json();
+        const membershipList = document.getElementById("membershipList");
+        membershipList.innerHTML = "";
 
-      const membershipList = document.getElementById("membershipList");
-      membershipList.innerHTML = ""; // clear before appending
+        document.querySelectorAll("#membershipForm input[type=checkbox]").forEach(cb => cb.checked = false);
+        document.querySelectorAll("#membershipForm input[type=text]").forEach(inp => { inp.value = ""; inp.disabled = true; });
 
-      if (result.success) {
-        result.memberships.forEach(m => {
-          // Update modal: disable + check already added memberships
-          const checkbox = document.querySelector(`[data-field="${m.field}"]`);
-          if (checkbox) {
-            checkbox.disabled = true;
-            checkbox.checked = true;
-          }
+        if (json.success && json.values) {
+          const v = json.values;
+          document.querySelectorAll("#membershipForm input[type=checkbox]").forEach(cb => {
+            const name = cb.name;
+            const flag = v[name] ?? v[cb.getAttribute('data-field')] ?? 0;
+            cb.checked = (flag == 1 || flag === "1");
+          });
 
-          // Update membership list UI
-          const li = document.createElement("li");
-          li.textContent = m.label;
-          membershipList.appendChild(li);
-        });
-      }
-    }
+          if (v.philhealth_flag == 1) { const el = document.getElementById("philhealth_number"); if (el) { el.disabled = false; el.value = v.philhealth_number || ""; } }
+          if (v.sss_flag == 1) { const el = document.getElementById("sss_number"); if (el) { el.disabled = false; el.value = v.sss_number || ""; } }
+          if (v.gsis_flag == 1) { const el = document.getElementById("gsis_number"); if (el) { el.disabled = false; el.value = v.gsis_number || ""; } }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      setPatientId();
-      document.getElementById('addBtn').addEventListener('click', showModal);
-      document.getElementById('cancelBtn').addEventListener('click', hideModal);
-
-      const membershipForm = document.getElementById('membershipForm');
-
-      membershipForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const formData = new FormData(membershipForm);
-
-        const response = await fetch("../php/save_membership.php", {
-          method: "POST",
-          body: formData
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          membershipForm.reset();
-          hideModal();
-
-          // 🔹 Reload memberships
-          const patientId = document.getElementById('patient_id').value;
-          loadMemberships(patientId);
-          // 🔹 Show notice
-          showNotice("Membership added successfully!");
-        } else {
-          alert("Error: " + result.message);
+          (json.memberships || []).forEach(m => {
+            const li = document.createElement("li"); li.textContent = m.label; membershipList.appendChild(li);
+          });
         }
-      });
-    });
-  </script>
-
-  <!-- medical add -->
-  <script>
-    function toggleInput(checkbox, inputId) {
-      const input = document.getElementById(inputId);
-      input.disabled = !checkbox.checked;
-      if (!checkbox.checked) input.value = "";
+      } catch (err) { console.error("loadMemberships", err); }
     }
 
-    function setPatientIdMH() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const patientId = urlParams.get('id'); // ?id=123
-      if (patientId) {
-        document.getElementById('mh_patient_id').value = patientId;
-      }
-      return patientId;
-    }
-
+    /* ---------- Load medical ---------- */
     async function loadMedicalHistory(patientId) {
-      const response = await fetch(`../php/get_medical_history.php?patient_id=${patientId}`);
-      const result = await response.json();
+      try {
+        const res = await fetch(`../php/patient_info.php?action=get_medical&patient_id=${patientId}`);
+        const json = await res.json();
+        const medicalList = document.getElementById("medicalHistoryList");
+        medicalList.innerHTML = "";
 
-      if (result.success && result.data) {
-        const data = result.data;
+        document.querySelectorAll("#medicalForm input[type=checkbox]").forEach(cb => cb.checked = false);
+        document.querySelectorAll("#medicalForm input[type=text], #medicalForm input[type=date], #medicalForm textarea")
+          .forEach(inp => { inp.value = ""; inp.disabled = true; });
 
-        // Reset form before applying
-        const form = document.getElementById("medicalHistoryForm");
-        form.reset();
+        if (json.success) {
+          const v = json.values || {};
+          document.querySelectorAll("#medicalForm input[type=checkbox]").forEach(cb => {
+            const val = v[cb.name] ?? 0;
+            cb.checked = (val == 1 || val === "1");
+          });
 
-        // Loop through data and set checkboxes / inputs
-        for (const key in data) {
-          if (!data.hasOwnProperty(key)) continue;
-          const value = data[key];
-
-          const field = document.querySelector(`[name="${key}"]`);
-          if (field) {
-            if (field.type === "checkbox") {
-              if (parseInt(value) === 1) {
-                field.checked = true;
-                field.disabled = true; // lock once saved
-              }
-            } else {
-              if (value && value !== "0") {
-                field.value = value;
-                field.disabled = true; // lock once saved
-              }
-            }
+          if (v.allergies_flag == 1) { const el = document.getElementById("allergies_details"); if (el) { el.disabled = false; el.value = v.allergies_details || ""; } }
+          if (v.hepatitis_flag == 1) { const el = document.getElementById("hepatitis_details"); if (el) { el.disabled = false; el.value = v.hepatitis_details || ""; } }
+          if (v.malignancy_flag == 1) { const el = document.getElementById("malignancy_details"); if (el) { el.disabled = false; el.value = v.malignancy_details || ""; } }
+          if (v.prev_hospitalization_flag == 1) {
+            const d = document.getElementById("last_admission_date");
+            const c = document.getElementById("admission_cause");
+            const s = document.getElementById("surgery_details");
+            if (d) { d.disabled = false; d.value = v.last_admission_date || ""; }
+            if (c) { c.disabled = false; c.value = v.admission_cause || ""; }
+            if (s) { s.disabled = false; s.value = v.surgery_details || ""; }
           }
+          if (v.blood_transfusion_flag == 1) {
+            const b = document.getElementById("blood_transfusion_date"); if (b) { b.disabled = false; b.value = v.blood_transfusion || ""; }
+          }
+          if (v.other_conditions_flag == 1) {
+            const o = document.getElementById("other_conditions"); if (o) { o.disabled = false; o.value = v.other_conditions || ""; }
+          }
+
+          (json.medical || []).forEach(m => {
+            const li = document.createElement("li"); li.textContent = m.label; medicalList.appendChild(li);
+          });
         }
-      }
+      } catch (err) { console.error("loadMedicalHistory", err); }
     }
 
-    function showMedicalHistoryModal() {
-      const patientId = setPatientIdMH();
-      if (patientId) {
-        loadMedicalHistory(patientId); // preload existing
-      }
-      document.getElementById('medicalHistoryModal').classList.remove('hidden');
+    /* ---------- Load dietary ---------- */
+    async function loadDietaryHistory(patientId) {
+      try {
+        const res = await fetch(`../php/patient_info.php?action=get_dietary&patient_id=${patientId}`);
+        const json = await res.json();
+        const dietaryList = document.getElementById("dietaryHistoryList");
+        dietaryList.innerHTML = "";
+
+        document.querySelectorAll("#dietaryForm input[type=checkbox]").forEach(cb => cb.checked = false);
+        document.querySelectorAll("#dietaryForm input[type=text]").forEach(inp => { inp.value = ""; inp.disabled = true; });
+
+        if (json.success) {
+          const v = json.values || {};
+          document.querySelectorAll("#dietaryForm input[type=checkbox]").forEach(cb => {
+            const val = v[cb.name] ?? 0;
+            cb.checked = (val == 1 || val === "1");
+          });
+
+          if (v.sugar_flag == 1) { const el = document.getElementById("sugar_details"); if (el) { el.disabled = false; el.value = v.sugar_details || ""; } }
+          if (v.alcohol_flag == 1) { const el = document.getElementById("alcohol_details"); if (el) { el.disabled = false; el.value = v.alcohol_details || ""; } }
+          if (v.tobacco_flag == 1) { const el = document.getElementById("tobacco_details"); if (el) { el.disabled = false; el.value = v.tobacco_details || ""; } }
+          if (v.betel_nut_flag == 1) { const el = document.getElementById("betel_nut_details"); if (el) { el.disabled = false; el.value = v.betel_nut_details || ""; } }
+
+          (json.dietary || []).forEach(m => {
+            const li = document.createElement("li"); li.textContent = m.label; dietaryList.appendChild(li);
+          });
+        }
+      } catch (err) { console.error("loadDietaryHistory", err); }
     }
 
-    function hideMedicalHistoryModal() {
-      document.getElementById('medicalHistoryModal').classList.add('hidden');
-    }
+    /* ---------- Submit handlers ---------- */
+    document.addEventListener("DOMContentLoaded", () => {
+      setPatientIdOnForms();
 
-    function showNotice(message) {
-      const notice = document.getElementById("notice");
-      notice.innerText = message;
-      notice.style.display = "block";
-      setTimeout(() => { notice.style.display = "none"; }, 3000);
-    }
+      document.getElementById("addBtn")?.addEventListener("click", () => showModal("membershipModal"));
+      document.getElementById("cancelBtn")?.addEventListener("click", () => hideModal("membershipModal"));
+      document.getElementById("addMedicalHistoryBtn")?.addEventListener("click", () => showModal("medicalModal"));
+      document.getElementById("cancelMedicalBtn")?.addEventListener("click", () => hideModal("medicalModal"));
+      document.getElementById("addDietaryHistoryBtn")?.addEventListener("click", () => showModal("dietaryModal"));
+      document.getElementById("cancelDietaryBtn")?.addEventListener("click", () => hideModal("dietaryModal"));
 
-    window.addEventListener('DOMContentLoaded', () => {
-      setPatientIdMH();
-
-      const addBtn = document.getElementById('addMedicalHistoryBtn');
-      const cancelBtn = document.getElementById('cancelMedicalHistoryBtn');
-      const form = document.getElementById('medicalHistoryForm');
-      const list = document.getElementById('medicalHistoryList');
-
-      addBtn.addEventListener('click', showMedicalHistoryModal);
-      cancelBtn.addEventListener('click', hideMedicalHistoryModal);
-
-      form.addEventListener("submit", async (e) => {
+      /* --- Membership --- */
+      const membershipForm = document.getElementById("membershipForm");
+      membershipForm?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const formData = new FormData(form);
+        const form = e.target;
+        const fd = new FormData(form);
 
-        const response = await fetch("../php/save_medical_history.php", {
-          method: "POST",
-          body: formData
-        });
+        form.querySelectorAll("input[type=checkbox]").forEach(cb => fd.set(cb.name, cb.checked ? "1" : "0"));
+        form.querySelectorAll("input[type=text]").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
 
-        const result = await response.json();
+        const pidEl = document.getElementById("patient_id");
+        if (!pidEl || !pidEl.value) { showNotice("No patient specified", "error"); return; }
+        fd.set("patient_id", pidEl.value);
+        fd.set("action", "save_membership");
 
-        if (result.success) {
-          list.innerHTML = "";
-          const li = document.createElement("li");
-          li.textContent = "Medical history saved.";
-          list.appendChild(li);
+        try {
+          const r = await fetch("../php/patient_info.php", { method: "POST", body: fd });
+          const text = await r.text(); console.log("membership raw:", text);
+          const json = JSON.parse(text);
+          if (json.success) {
+            hideModal("membershipModal");
+            showNotice("Membership saved");
+            setTimeout(() => location.reload(), 700);
+          } else showNotice("Error: " + (json.message || "Unknown"), "error");
+        } catch (err) { console.error(err); showNotice("Request failed", "error"); }
+      });
 
-          showNotice("Medical history saved successfully!");
-          hideMedicalHistoryModal();
+      /* --- Medical --- */
+      const medicalForm = document.getElementById("medicalForm");
+      medicalForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const fd = new FormData(form);
 
-          // 🔄 Refresh medical history so saved fields lock immediately
-          const patientId = setPatientIdMH();
-          if (patientId) {
-            loadMedicalHistory(patientId);
-          }
-        } else {
-          alert("Error: " + result.message);
-        }
+        form.querySelectorAll("input[type=checkbox]").forEach(cb => fd.set(cb.name, cb.checked ? "1" : "0"));
+        form.querySelectorAll("input[type=text], input[type=date], textarea").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
+
+        const btd = document.getElementById("blood_transfusion_date");
+        if (btd) fd.set("blood_transfusion", btd.disabled ? "" : btd.value);
+
+        const pidEl = document.getElementById("patient_id");
+        if (!pidEl || !pidEl.value) { showNotice("No patient specified", "error"); return; }
+        fd.set("patient_id", pidEl.value);
+        fd.set("action", "save_medical");
+
+        try {
+          const r = await fetch("../php/patient_info.php", { method: "POST", body: fd });
+          const text = await r.text(); console.log("medical raw:", text);
+          const json = JSON.parse(text);
+          if (json.success) {
+            hideModal("medicalModal");
+            showNotice("Medical history saved");
+            setTimeout(() => location.reload(), 700);
+          } else showNotice("Error: " + (json.message || "Unknown"), "error");
+        } catch (err) { console.error(err); showNotice("Request failed", "error"); }
+      });
+
+      /* --- Dietary --- */
+      const dietaryForm = document.getElementById("dietaryForm");
+      dietaryForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const fd = new FormData(form);
+
+        form.querySelectorAll("input[type=checkbox]").forEach(cb => fd.set(cb.name, cb.checked ? "1" : "0"));
+        form.querySelectorAll("input[type=text]").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
+
+        const pidEl = document.getElementById("patient_id");
+        if (!pidEl || !pidEl.value) { showNotice("No patient specified", "error"); return; }
+        fd.set("patient_id", pidEl.value);
+        fd.set("action", "save_dietary");
+
+        try {
+          const r = await fetch("../php/patient_info.php", { method: "POST", body: fd });
+          const text = await r.text(); console.log("dietary raw:", text);
+          const json = JSON.parse(text);
+          if (json.success) {
+            hideModal("dietaryModal");
+            showNotice("Dietary history saved");
+            setTimeout(() => location.reload(), 700);
+          } else showNotice("Error: " + (json.message || "Unknown"), "error");
+        } catch (err) { console.error(err); showNotice("Request failed", "error"); }
       });
     });
   </script>
+
+
+
 
 </body>
 </body>

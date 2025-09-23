@@ -1,4 +1,8 @@
 <?php
+// Prevent PHP notices/warnings from breaking JSON output
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+ini_set('display_errors', 0);
+
 header('Content-Type: application/json');
 require_once "conn.php"; // must define $conn = new mysqli(...)
 
@@ -14,44 +18,42 @@ try {
         exit;
     }
 
-    // Fetch current values
+    // Ensure patient record exists
     $check = $conn->prepare("SELECT * FROM patient_other_info WHERE patient_id = ?");
     $check->bind_param("i", $patient_id);
     $check->execute();
     $result = $check->get_result();
     $row = $result->fetch_assoc();
 
-    // If patient has no record yet → insert new row
     if (!$row) {
         $stmt = $conn->prepare("
             INSERT INTO patient_other_info
             (patient_id, nhts_pr, four_ps, indigenous_people, pwd,
-             philhealth_flag, philhealth_number, sss_flag, sss_number, gsis_flag, gsis_number)
+             philhealth_flag, philhealth_number,
+             sss_flag, sss_number,
+             gsis_flag, gsis_number)
             VALUES (?, 0,0,0,0, 0,NULL, 0,NULL, 0,NULL)
         ");
         $stmt->bind_param("i", $patient_id);
         $stmt->execute();
-        $row = [
-            "nhts_pr" => 0, "four_ps" => 0, "indigenous_people" => 0, "pwd" => 0,
-            "philhealth_flag" => 0, "philhealth_number" => null,
-            "sss_flag" => 0, "sss_number" => null,
-            "gsis_flag" => 0, "gsis_number" => null
-        ];
     }
 
-    // Keep old values, update only newly selected memberships
-    $nhts     = $row['nhts_pr'] || isset($_POST['nhts_pr']) ? 1 : 0;
-    $fourps   = $row['four_ps'] || isset($_POST['four_ps']) ? 1 : 0;
-    $ip       = $row['indigenous_people'] || isset($_POST['indigenous_people']) ? 1 : 0;
-    $pwd      = $row['pwd'] || isset($_POST['pwd']) ? 1 : 0;
-    $philflag = $row['philhealth_flag'] || isset($_POST['philhealth_flag']) ? 1 : 0;
-    $philno   = $philflag ? ($_POST['philhealth_number'] ?: $row['philhealth_number']) : $row['philhealth_number'];
-    $sssflag  = $row['sss_flag'] || isset($_POST['sss_flag']) ? 1 : 0;
-    $sssno    = $sssflag ? ($_POST['sss_number'] ?: $row['sss_number']) : $row['sss_number'];
-    $gsisflag = $row['gsis_flag'] || isset($_POST['gsis_flag']) ? 1 : 0;
-    $gsisno   = $gsisflag ? ($_POST['gsis_number'] ?: $row['gsis_number']) : $row['gsis_number'];
+    // ✅ Directly use POST values (0 if unchecked / not set)
+    $nhts     = isset($_POST['nhts_pr']) ? 1 : 0;
+    $fourps   = isset($_POST['four_ps']) ? 1 : 0;
+    $ip       = isset($_POST['indigenous_people']) ? 1 : 0;
+    $pwd      = isset($_POST['pwd']) ? 1 : 0;
 
-    // Update record with merged values
+    $philflag = isset($_POST['philhealth_flag']) ? 1 : 0;
+    $philno   = $philflag ? ($_POST['philhealth_number'] ?? null) : null;
+
+    $sssflag  = isset($_POST['sss_flag']) ? 1 : 0;
+    $sssno    = $sssflag ? ($_POST['sss_number'] ?? null) : null;
+
+    $gsisflag = isset($_POST['gsis_flag']) ? 1 : 0;
+    $gsisno   = $gsisflag ? ($_POST['gsis_number'] ?? null) : null;
+
+    // Update record
     $stmt = $conn->prepare("
         UPDATE patient_other_info SET
             nhts_pr=?, four_ps=?, indigenous_people=?, pwd=?,
@@ -75,7 +77,6 @@ try {
         $patient_id
     );
     $stmt->execute();
-
     // Build updated memberships list
     $memberships = [];
     if ($nhts) $memberships[] = ["field" => "nhts_pr", "label" => "National Household Targeting System - Poverty Reduction (NHTS)"];
@@ -87,7 +88,6 @@ try {
     if ($gsisflag) $memberships[] = ["field" => "gsis_flag", "label" => "GSIS (" . ($gsisno ?: "N/A") . ")"];
 
     echo json_encode(["success" => true, "memberships" => $memberships]);
-
 } catch (Exception $e) {
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
 }

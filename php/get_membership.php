@@ -1,6 +1,9 @@
 <?php
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+ini_set('display_errors', 0);
+
 header('Content-Type: application/json');
-require_once "conn.php"; // must define $conn = new mysqli(...)
+require_once "conn.php";
 
 $patient_id = $_GET['patient_id'] ?? null;
 if (!$patient_id) {
@@ -9,7 +12,6 @@ if (!$patient_id) {
 }
 
 try {
-    // Get patient memberships
     $stmt = $conn->prepare("
         SELECT nhts_pr, four_ps, indigenous_people, pwd,
                philhealth_flag, philhealth_number,
@@ -26,7 +28,7 @@ try {
     $memberships = [];
     if ($row) {
         if ($row['nhts_pr']) $memberships[] = ["field" => "nhts_pr", "label" => "National Household Targeting System - Poverty Reduction (NHTS)"];
-        if ($row['four_ps']) $memberships[] = ["field" => "four_ps", "label" => "Pantawin Pamilyang Pilipino Program (4Ps)"];
+        if ($row['four_ps']) $memberships[] = ["field" => "four_ps", "label" => "Pantawid Pamilyang Pilipino Program (4Ps)"];
         if ($row['indigenous_people']) $memberships[] = ["field" => "indigenous_people", "label" => "Indigenous People (IP)"];
         if ($row['pwd']) $memberships[] = ["field" => "pwd", "label" => "Person with Disabilities (PWD)"];
         if ($row['philhealth_flag']) $memberships[] = ["field" => "philhealth_flag", "label" => "PhilHealth (" . ($row['philhealth_number'] ?: "N/A") . ")"];
@@ -34,7 +36,11 @@ try {
         if ($row['gsis_flag']) $memberships[] = ["field" => "gsis_flag", "label" => "GSIS (" . ($row['gsis_number'] ?: "N/A") . ")"];
     }
 
-    echo json_encode(["success" => true, "memberships" => $memberships]);
+    echo json_encode([
+        "success" => true,
+        "memberships" => $memberships,
+        "values" => $row ?? []
+    ]);
 } catch (Exception $e) {
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
 }
