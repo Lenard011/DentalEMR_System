@@ -7,7 +7,6 @@
     <title>Add patient</title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
     <style>
         /* Popup overlay */
         #validationPopup {
@@ -50,12 +49,10 @@
             cursor: pointer;
             font-size: 12px;
         }
-
         .popup-content button:hover {
             background: darkred;
         }
     </style>
-
 </head>
 
 <body>
@@ -138,9 +135,7 @@
                 </div>
             </div>
         </nav>
-
         <!-- Sidebar -->
-
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -398,7 +393,7 @@
                 </div>
             </section>
             <!-- Add patient Modal -->
-            <form id="patientForm" method="POST" action="../../DentalEMR_System/php/addpatient.php">
+            <form id="patientForm" method="POST" action="../../DentalEMR_System/php/register_patient/addpatient.php">
                 <!-- FirstModal -->
                 <div id="addpatientModal" tabindex="-1" aria-hidden="true"
                     class="hidden overflow-y-hidden overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-auto md:inset-y-13  max-h-152 md:h-152 ">
@@ -996,6 +991,7 @@
             document.getElementById(inputId).disabled = !checkbox.checked;
         }
     </script>
+
     <script>
         function toggleHospitalization(checkbox) {
             const fields = [
@@ -1109,7 +1105,7 @@
 
     <!-- Table  -->
     <script>
-        const API_PATH = "../php/getPatients.php";
+        const API_PATH = "../php/register_patient/getPatients.php";
         let currentSearch = "";
         let currentPage = 1;
         let limit = 10;

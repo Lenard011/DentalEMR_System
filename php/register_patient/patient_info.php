@@ -1,10 +1,10 @@
 <?php
-// patient_info.php (final unified version)
+// For membership/dietary/vitalsigns
 error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 ini_set('display_errors', 1);
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 header('Content-Type: application/json');
-require_once "conn.php"; // must define $conn = new mysqli(...)
+require_once "../conn.php"; // must define $conn = new mysqli(...)
 
 $action = $_GET['action'] ?? $_POST['action'] ?? null;
 if (!$action) {
@@ -301,3 +301,5 @@ try {
 } catch (Exception $e) {
     echo json_encode(["success" => false, "message" => $e->getMessage()]);
 }
+
+

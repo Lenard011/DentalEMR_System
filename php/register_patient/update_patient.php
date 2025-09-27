@@ -1,5 +1,5 @@
 <?php
-// simple redirect-style update handler (no JSON)
+// Update Patient details
 $conn = new mysqli("localhost", "root", "", "dentalemr_system");
 if ($conn->connect_error) {
     die("DB connection failed: " . $conn->connect_error);
@@ -19,7 +19,7 @@ if (isset($_POST['update_patient'])) {
     $guardian   = $_POST['guardian'] ?? null;
 
     if (!$patient_id) {
-        header("Location: ../html/viewrecord.html?error=nopid");
+        header("Location: ../../html/viewrecord.html?error=nopid");
         exit();
     }
 
@@ -38,11 +38,11 @@ if (isset($_POST['update_patient'])) {
 
     if ($stmt->execute()) {
         // redirect back to the same patient page and indicate success
-        header("Location: ../html/viewrecord.html?id=" . urlencode($patient_id) . "&updated=1");
+        header("Location: ../../html/viewrecord.html?id=" . urlencode($patient_id) . "&updated=1");
         exit();
     } else {
         // redirect back with error flag (or handle as you like)
-        header("Location: ../html/viewrecord.html?id=" . urlencode($patient_id) . "&updated=0&error=db");
+        header("Location: ../../html/viewrecord.html?id=" . urlencode($patient_id) . "&updated=0&error=db");
         exit();
     }
 }

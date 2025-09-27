@@ -269,7 +269,6 @@
           Patient Information
         </p>
       </div>
-
       <section class="relative bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg mb-2">
         <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading ...</p>
         <!-- Patient Info -->
@@ -630,7 +629,7 @@
               </button>
             </div>
             <!-- Form uses action + POST -->
-            <form id="editPatientForm" action="../php/update_patient.php" method="POST">
+            <form id="editPatientForm" action="../php/register_patient/update_patient.php" method="POST">
               <input type="hidden" id="editPatientId" name="patient_id">
 
               <div class="grid grid-cols-2 gap-4">
@@ -1284,7 +1283,7 @@
     }
   </script>
 
-  <!-- edit -->
+  <!-- edit/upadte patient details -->
   <script>
     // parse id from URL: viewrecord.html?id=123
     const urlParams = new URLSearchParams(window.location.search);
@@ -1308,13 +1307,14 @@
       }
 
       try {
-        const res = await fetch(`../php/get_patient.php?id=${encodeURIComponent(patientId)}`);
+        const res = await fetch(`../php/register_patient/get_patient.php?id=${encodeURIComponent(patientId)}`);
         const data = await res.json();
         if (data.success) {
           currentPatient = data.patient;
 
           // Fill display fields (use your preferred ordering)
-          document.getElementById('patientName2').innerText = currentPatient.surname + ' ' + currentPatient.firstname;
+          document.getElementById('patientName').innerText = currentPatient.surname + ' ' + currentPatient.firstname + ' ' + currentPatient.middlename;
+          document.getElementById('patientName2').innerText = currentPatient.surname + ' ' + currentPatient.firstname + ' ' + currentPatient.middlename;
           document.getElementById('patientDob').innerText = currentPatient.date_of_birth || '';
           document.getElementById('patientSex').innerText = currentPatient.sex || '';
           document.getElementById('patientAge').innerText = currentPatient.age || '';
@@ -1372,6 +1372,7 @@
     window.addEventListener('DOMContentLoaded', loadPatient);
   </script>
 
+  <!-- Under ng patient_info.php  -->
   <!-- membership, medical and dietary add -->
   <script>
     function toggleInput(checkbox, inputId) {
@@ -1424,7 +1425,7 @@
     /* ---------- Load membership ---------- */
     async function loadMemberships(patientId) {
       try {
-        const res = await fetch(`../php/patient_info.php?action=get_membership&patient_id=${patientId}`);
+        const res = await fetch(`../php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}`);
         const json = await res.json();
         const membershipList = document.getElementById("membershipList");
         membershipList.innerHTML = "";
@@ -1454,7 +1455,7 @@
     /* ---------- Load medical ---------- */
     async function loadMedicalHistory(patientId) {
       try {
-        const res = await fetch(`../php/patient_info.php?action=get_medical&patient_id=${patientId}`);
+        const res = await fetch(`../php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}`);
         const json = await res.json();
         const medicalList = document.getElementById("medicalHistoryList");
         medicalList.innerHTML = "";
@@ -1498,7 +1499,7 @@
     /* ---------- Load dietary ---------- */
     async function loadDietaryHistory(patientId) {
       try {
-        const res = await fetch(`../php/patient_info.php?action=get_dietary&patient_id=${patientId}`);
+        const res = await fetch(`../php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}`);
         const json = await res.json();
         const dietaryList = document.getElementById("dietaryHistoryList");
         dietaryList.innerHTML = "";
@@ -1552,7 +1553,7 @@
         fd.set("action", "save_membership");
 
         try {
-          const r = await fetch("../php/patient_info.php", { method: "POST", body: fd });
+          const r = await fetch("../php/register_patient/patient_info.php", { method: "POST", body: fd });
           const text = await r.text(); console.log("membership raw:", text);
           const json = JSON.parse(text);
           if (json.success) {
@@ -1582,7 +1583,7 @@
         fd.set("action", "save_medical");
 
         try {
-          const r = await fetch("../php/patient_info.php", { method: "POST", body: fd });
+          const r = await fetch("../php/register_patient/patient_info.php", { method: "POST", body: fd });
           const text = await r.text(); console.log("medical raw:", text);
           const json = JSON.parse(text);
           if (json.success) {
@@ -1609,7 +1610,7 @@
         fd.set("action", "save_dietary");
 
         try {
-          const r = await fetch("../php/patient_info.php", { method: "POST", body: fd });
+          const r = await fetch("../php/register_patient/patient_info.php", { method: "POST", body: fd });
           const text = await r.text(); console.log("dietary raw:", text);
           const json = JSON.parse(text);
           if (json.success) {
@@ -1621,7 +1622,6 @@
       });
     });
   </script>
-
   <!-- vital signs  -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -1662,7 +1662,7 @@
         data.append('weight', formData.get('weight'));
 
         try {
-          const res = await fetch('../php/patient_info.php', { method: 'POST', body: data });
+          const res = await fetch('../php/register_patient/patient_info.php', { method: 'POST', body: data });
           const result = await res.json();
           if (result.success) {
             showNotice('Vital signs added successfully!', true);
@@ -1680,7 +1680,7 @@
 
       async function fetchVitals() {
         try {
-          const res = await fetch(`../php/patient_info.php?action=get_vitals&patient_id=${patientInput.value}`);
+          const res = await fetch(`../php/register_patient/patient_info.php?action=get_vitals&patient_id=${patientInput.value}`);
           const data = await res.json();
           if (!data.success) return;
 
