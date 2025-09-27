@@ -7,56 +7,7 @@
     <title>Add patient</title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script>
-        async function loadPatients() {
-            try {
-                const res = await fetch("../php/getPatients.php");
-                const data = await res.json();
 
-                const tbody = document.getElementById("patientsBody");
-                tbody.innerHTML = "";
-
-                if (data.error) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-red-600">${data.error}</td></tr>`;
-                    return;
-                }
-                if (data.message) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3">${data.message}</td></tr>`;
-                    return;
-                }
-
-                data.forEach(p => {
-                    tbody.innerHTML += `
-          <tr class="border-b dark:border-gray-700">
-            <td class="px-4 py-3 text-center">${p.patient_id}</td>
-            <td class="px-4 py-3 text-center">
-              ${p.surname}, ${p.firstname} ${p.middlename ?? ""}
-            </td>
-            <td class="px-4 py-3 text-center">${p.sex}</td>
-            <td class="px-4 py-3 text-center">${p.age}</td>
-            <td class="px-4 py-3 text-center">${p.address}</td>
-            <td class="px-4 py-3 flex justify-center">
-              <button onclick="window.location.href='viewrecord.html?id=${p.patient_id}'"
-                class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 focus:ring-4 
-                focus:ring-blue-300 font-medium rounded-lg text-xs px-3 py-2">
-                View
-              </button>
-            </td>
-          </tr>`;
-                });
-            } catch (err) {
-                console.error("Error loading patients:", err);
-                document.getElementById("patientsBody").innerHTML =
-                    `<tr><td colspan="6" class="text-center py-3 text-red-600">Error loading data</td></tr>`;
-            }
-        }
-
-        function view(id) {
-            alert("View patient with ID: " + id);
-        }
-
-        window.onload = loadPatients;
-    </script>
     <style>
         /* Popup overlay */
         #validationPopup {
@@ -352,7 +303,7 @@
             <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
                     <!-- Start coding here -->
-                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg ">
                         <div>
                             <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Patient List</p>
                         </div>
@@ -392,7 +343,7 @@
                                     Add Patient
                                 </button>
                                 <!-- Filter -->
-                                <div class="flex items-center space-x-3 w-full md:w-auto">
+                                <div class="relative flex items-center space-x-3 w-full md:w-auto">
                                     <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
                                         class="w-full md:w-auto cursor-pointer flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                                         type="button">
@@ -410,44 +361,13 @@
                                         </svg>
                                     </button>
                                     <div id="filterDropdown"
-                                        class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                                        <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose
+                                        class="absolute z-9999 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
+                                        <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Filter by
                                             address
                                         </h6>
-                                        <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                                            <li class="flex items-center">
-                                                <input id="apple" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="apple"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Balansay</label>
-                                            </li>
-                                            <li class="flex items-center">
-                                                <input id="fitbit" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="fitbit"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Payompon</label>
-                                            </li>
-                                            <li class="flex items-center">
-                                                <input id="razor" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="razor"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
-                                                    1</label>
-                                            </li>
-                                            <li class="flex items-center">
-                                                <input id="nikon" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="nikon"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
-                                                    2</label>
-                                            </li>
-                                            <li class="flex items-center">
-                                                <input id="benq" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="benq"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
-                                                    3</label>
-                                            </li>
+                                        <ul class="space-y-2 text-sm" id="filterAddresses"
+                                            aria-labelledby="filterDropdownButton">
+
                                         </ul>
                                     </div>
                                 </div>
@@ -470,6 +390,10 @@
                                 <tbody id="patientsBody"></tbody>
                             </table>
                         </div>
+                        <nav id="paginationNav"
+                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
+                            aria-label="Table navigation">
+                        </nav>
                     </div>
                 </div>
             </section>
@@ -523,7 +447,7 @@
                                                 placeholder="Middle initial">
                                         </div>
                                     </div>
-                                    <!-- PlaceofBirth -->
+                                    <!-- PlaceofBirth&Address -->
                                     <div class="w-full">
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Place
@@ -607,7 +531,8 @@
                                         <div class="">
                                             <label for="name"
                                                 class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Parent/Guardian</label>
-                                            <input type="text" name="guardian" data-required data-label="Parent/Guardian"
+                                            <input type="text" name="guardian" data-required
+                                                data-label="Parent/Guardian"
                                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                                 placeholder="">
                                         </div>
@@ -738,14 +663,16 @@
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Blood
                                             Preassure</label>
-                                        <input type="text" name="blood_pressure" data-required data-label="Blood Pressure"
+                                        <input type="text" name="blood_pressure" data-required
+                                            data-label="Blood Pressure"
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                             placeholder="">
                                     </div>
                                     <div class="w-full">
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Temperature</label>
-                                        <input type="number" step="0.1" name="temperature" data-required data-label="Temperature"
+                                        <input type="number" step="0.1" name="temperature" data-required
+                                            data-label="Temperature"
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                             placeholder="">
                                     </div>
@@ -1084,8 +1011,8 @@
             e.preventDefault(); // <-- stops submission
         }
     </script>
-    <!-- ShowPregnant Input -->
 
+    <!-- ShowPregnant Input -->
     <script>
         const ageInput = document.getElementById('age');
         const sexInput = document.getElementById('sex');
@@ -1178,6 +1105,160 @@
                 }
             });
         });
+    </script>
+
+    <!-- Table  -->
+    <script>
+        const API_PATH = "../php/getPatients.php";
+        let currentSearch = "";
+        let currentPage = 1;
+        let limit = 10;
+        let selectedAddresses = [];
+
+        // debounce utility
+        function debounce(fn, delay = 300) {
+            let t;
+            return (...args) => {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
+        // render helper
+        function showMessageInTable(html) {
+            document.getElementById("patientsBody").innerHTML =
+                `<tr><td colspan="6" class="text-center py-6">${html}</td></tr>`;
+        }
+
+        // escape HTML
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return "";
+            return String(str)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        // load patients
+        async function loadPatients(page = 1) {
+            currentPage = page;
+            const url = `${API_PATH}?page=${page}&limit=${limit}&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}`;
+
+            try {
+                const res = await fetch(url, { cache: "no-store" });
+                if (!res.ok) {
+                    showMessageInTable("Server error: " + res.status);
+                    return;
+                }
+                const data = await res.json();
+                if (!data.patients || data.patients.length === 0) {
+                    showMessageInTable("No patients found.");
+                    document.getElementById("paginationNav").innerHTML = "";
+                    return;
+                }
+
+                // render table
+                const tbody = document.getElementById("patientsBody");
+                tbody.innerHTML = "";
+                data.patients.forEach(p => {
+                    tbody.insertAdjacentHTML("beforeend", `
+                        <tr class="border-b dark:border-gray-700">
+                        <td class="px-4 py-3 text-center">${p.patient_id}</td>
+                        <td class="px-4 py-3 text-center">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
+                        <td class="px-4 py-3 text-center">${escapeHtml(p.sex)}</td>
+                        <td class="px-4 py-3 text-center">${escapeHtml(String(p.age))}</td>
+                        <td class="px-4 py-3 text-center">${escapeHtml(p.address)}</td>
+                        <td class="px-4 py-3 flex justify-center">
+                            <button onclick="window.location.href='viewrecord.html?id=${encodeURIComponent(p.patient_id)}'"
+                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
+                            View
+                            </button>
+                        </td>
+                        </tr>
+                    `);
+                });
+
+                renderPagination(data.total, data.limit, data.page);
+                renderFilterAddresses(data.addresses);
+
+            } catch (err) {
+                console.error(err);
+                showMessageInTable("Error loading data.");
+            }
+        }
+
+        // pagination renderer
+        function renderPagination(total, limitVal, page) {
+            const paginationNav = document.getElementById("paginationNav");
+            const totalPages = Math.max(1, Math.ceil(total / limitVal));
+            const start = (page - 1) * limitVal + 1;
+            const end = Math.min(page * limitVal, total);
+
+            const showingText = `
+                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
+                of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
+                </span>
+            `;
+
+            let pagesHTML = "";
+            if (page > 1) {
+                pagesHTML += `<li><a href="#" onclick="loadPatients(${page - 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg></a></li>`;
+            }
+            for (let i = 1; i <= totalPages; i++) {
+                pagesHTML += (i === page)
+                    ? `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>`
+                    : `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 
+                         text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
+            }
+            if (page < totalPages) {
+                pagesHTML += `<li><a href="#" onclick="loadPatients(${page + 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"> <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg></a></li>`;
+            }
+
+            paginationNav.innerHTML = `${showingText} <ul class="inline-flex -space-x-1px">${pagesHTML}</ul>`;
+        }
+
+        // filter addresses dropdown
+        function renderFilterAddresses(addresses) {
+            const container = document.getElementById("filterAddresses");
+            container.innerHTML = "";
+            addresses.forEach(addr => {
+                const checked = selectedAddresses.includes(addr) ? "checked" : "";
+                container.insertAdjacentHTML("beforeend", `
+                    <li>
+                        <label class="flex items-center space-x-2">
+                        <input type="checkbox" value="${escapeHtml(addr)}" ${checked}
+                                class="address-filter">
+                        <span class="text-gray-700 dark:text-gray-200">${escapeHtml(addr)}</span>
+                        </label>
+                    </li>
+                `);
+            });
+
+            document.querySelectorAll(".address-filter").forEach(cb => {
+                cb.addEventListener("change", () => {
+                    selectedAddresses = Array.from(document.querySelectorAll(".address-filter:checked")).map(x => x.value);
+                    loadPatients(1);
+                });
+            });
+        }
+
+        // search input listener
+        const searchInput = document.getElementById("simple-search");
+        searchInput.addEventListener("input", debounce(() => {
+            currentSearch = searchInput.value.trim();
+            loadPatients(1);
+        }, 300));
+
+        // initial load
+        window.addEventListener("DOMContentLoaded", () => loadPatients(1));
     </script>
 
 </body>
