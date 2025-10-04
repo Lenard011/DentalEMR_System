@@ -49,6 +49,7 @@
             cursor: pointer;
             font-size: 12px;
         }
+
         .popup-content button:hover {
             background: darkred;
         }
@@ -689,7 +690,7 @@
                                 </div>
                             </div>
                             <div class=" overflow-auto h-[310px] mb-3">
-                                <!-- Other Patient Info -->
+                                <!-- Medical  History -->
                                 <div class="grid mb-4 gap-2 ">
                                     <p class="text-14 font-semibold text-gray-900 dark:text-white">Medical History
                                     </p>
@@ -896,89 +897,93 @@
                                 <p class="text-lg font-semibold mt-5 text-gray-900 dark:text-white">
                                     Individual Patient Treatment Record</p>
                             </div>
-                            <p class="text-14 font-semibold text-gray-900 dark:text-white">Dietary Habits / Social
-                                History
-                            </p>
-                            <div class="grid mb-4 gap-2">
-                                <div>
-                                    <div class="flex items-center mb-1">
-                                        <input type="checkbox" name="sugar_flag" value="1"
-                                            onchange="toggleInput(this, 'sugar_details')"
-                                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                        <div class="grid grid-cols-2 ">
-                                            <label for="default-checkbox"
-                                                class="ms-2 text-sm w-90 font-medium text-gray-900 dark:text-gray-300">Sugar
-                                                Sweetened Beverages/Food (Amount, Frequency & Duration)</label>
-                                            <input type="text" id="sugar_details" name="sugar_details" disabled
-                                                class="block py-1 h-4.5 px-0 w-70 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" " />
+                            <div>
+                                <p class="text-14 font-semibold text-gray-900 dark:text-white">Dietary Habits / Social
+                                    History
+                                </p>
+                                <div class="grid mb-4 gap-2">
+                                    <div>
+                                        <div class="flex items-center mb-1">
+                                            <input type="checkbox" name="sugar_flag" value="1"
+                                                onchange="toggleInput(this, 'sugar_details')"
+                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                            <div class="grid grid-cols-2 ">
+                                                <label for="default-checkbox"
+                                                    class="ms-2 text-sm w-90 font-medium text-gray-900 dark:text-gray-300">Sugar
+                                                    Sweetened Beverages/Food (Amount, Frequency & Duration)</label>
+                                                <input type="text" id="sugar_details" name="sugar_details" disabled
+                                                    class="block py-1 h-4.5 px-0 w-70 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                    placeholder=" " />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex items-center mb-1">
-                                        <input type="checkbox" name="alcohol_flag" value="1"
-                                            onchange="toggleInput(this, 'alcohol_details')"
-                                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                        <div class="grid grid-cols-2 gap-6.5">
-                                            <label for="default-checkbox"
-                                                class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use of
-                                                Alcohol (Amount, Frequency & Duration)</label>
-                                            <input type="text" id="alcohol_details" name="alcohol_details" disabled
-                                                class="block py-1 px-0 h-4.5 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" " />
+                                        <div class="flex items-center mb-1">
+                                            <input type="checkbox" name="alcohol_flag" value="1"
+                                                onchange="toggleInput(this, 'alcohol_details')"
+                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                            <div class="grid grid-cols-2 gap-6.5">
+                                                <label for="default-checkbox"
+                                                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use
+                                                    of
+                                                    Alcohol (Amount, Frequency & Duration)</label>
+                                                <input type="text" id="alcohol_details" name="alcohol_details" disabled
+                                                    class="block py-1 px-0 h-4.5 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                    placeholder=" " />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex items-center mb-1">
-                                        <input type="checkbox" name="tobacco_flag" value="1"
-                                            onchange="toggleInput(this, 'tobacco_details')"
-                                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                        <div class="grid grid-cols-2 gap-5.5">
-                                            <label for="default-checkbox"
-                                                class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use of
-                                                Tobacco (Amount, Frequency & Duration)</label>
-                                            <input type="text" id="tobacco_details" name="tobacco_details" disabled
-                                                class="block py-1 h-4.5 px-0 w-78 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" " />
+                                        <div class="flex items-center mb-1">
+                                            <input type="checkbox" name="tobacco_flag" value="1"
+                                                onchange="toggleInput(this, 'tobacco_details')"
+                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                            <div class="grid grid-cols-2 gap-5.5">
+                                                <label for="default-checkbox"
+                                                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use
+                                                    of
+                                                    Tobacco (Amount, Frequency & Duration)</label>
+                                                <input type="text" id="tobacco_details" name="tobacco_details" disabled
+                                                    class="block py-1 h-4.5 px-0 w-78 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                    placeholder=" " />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex items-center mb-1">
-                                        <input type="checkbox" name="betel_nut_flag" value="1"
-                                            onchange="toggleInput(this, 'betel_nut_details')"
-                                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <label for="default-checkbox"
-                                                class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Betel
-                                                Nut Chewing (Amount, Frequency & Duration)</label>
-                                            <input type="text" id="betel_nut_details" name="betel_nut_details" disabled
-                                                class="block py-1 h-4.5 px-0 w-73.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
-                                                placeholder=" " />
+                                        <div class="flex items-center mb-1">
+                                            <input type="checkbox" name="betel_nut_flag" value="1"
+                                                onchange="toggleInput(this, 'betel_nut_details')"
+                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <label for="default-checkbox"
+                                                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Betel
+                                                    Nut Chewing (Amount, Frequency & Duration)</label>
+                                                <input type="text" id="betel_nut_details" name="betel_nut_details"
+                                                    disabled
+                                                    class="block py-1 h-4.5 px-0 w-73.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                                    placeholder=" " />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div>
+                                <div>
 
-                            </div>
-                            <div class="flex justify-between w-full">
-                                <button type="button" id="Addpatientbtnb2" data-modal-target="addpatientModal2"
-                                    data-modal-toggle="addpatientModal2" data-modal-hide="addpatientModal3"
-                                    class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                    Back
-                                </button>
-                                <button type="submit" name="patient"
-                                    class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                    Submit
-                                </button>
+                                </div>
+                                <div class="flex justify-between w-full">
+                                    <button type="button" id="Addpatientbtnb2" data-modal-target="addpatientModal2"
+                                        data-modal-toggle="addpatientModal2" data-modal-hide="addpatientModal3"
+                                        class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                        Back
+                                    </button>
+                                    <button type="submit" name="patient"
+                                        class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                        Submit
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- Popup container (hidden by default) -->
-                <div id="validationPopup" style="display:none;">
-                    <div class="popup-content">
-                        <p id="validationMessage"></p>
-                        <button type="button" onclick="closeValidationPopup()">OK</button>
+                    <!-- Popup container (hidden by default) -->
+                    <div id="validationPopup" style="display:none;">
+                        <div class="popup-content">
+                            <p id="validationMessage"></p>
+                            <button type="button" onclick="closeValidationPopup()">OK</button>
+                        </div>
                     </div>
-                </div>
             </form>
         </main>
     </div>
