@@ -2308,19 +2308,21 @@
     <script>
         let selectedTreatmentCode = null;
 
+        // Handle treatment dropdown selection
         document.getElementById("selcttreatment").addEventListener("change", function () {
-            selectedTreatmentCode = this.value; // directly FV, PF, etc.
+            selectedTreatmentCode = this.value; // FV, PF, etc.
         });
 
+        // Handle single-click (apply treatment) and double-click (clear treatment)
         document.querySelectorAll("input[data-tooth-id]").forEach(input => {
             input.addEventListener("click", function () {
                 if (!selectedTreatmentCode) {
-                    alert("Please select a treatment first!");
+                    alert("⚠️ Please select a treatment first!");
                     return;
                 }
                 if (!this.disabled) {
                     this.value = selectedTreatmentCode;
-                    this.dataset.treatmentId = selectedTreatmentCode; // store code
+                    this.dataset.treatmentId = selectedTreatmentCode;
                     this.disabled = true;
                     this.style.backgroundColor = "#e5e7eb";
                 }
@@ -2334,8 +2336,13 @@
             });
         });
 
+        // Save function
         function saveOralCondition() {
-            let patientId = 1; // Replace dynamically
+            const patientId = document.getElementById("patient_id")?.value;
+            if (!patientId) {
+                alert("⚠️ Please select a patient before saving!");
+                return;
+            }
 
             let treatments = [];
             document.querySelectorAll("input[data-tooth-id]").forEach(input => {
@@ -2357,27 +2364,19 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ patient_id: patientId, treatments: treatments })
             })
-                .then(res => res.text())
-                .then(text => {
-                    console.log("RAW RESPONSE:", text);
-                    try {
-                        let data = JSON.parse(text);
-                        if (data.success) {
-                            alert("✅ Treatments saved successfully!");
-                        } else {
-                            alert("❌ Error: " + data.message);
-                        }
-                    } catch (e) {
-                        console.error("JSON parse error:", e);
-                        alert("❌ Server did not return valid JSON. Check console.");
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("✅ " + data.message);
+                    } else {
+                        alert("❌ " + data.message);
                     }
                 })
                 .catch(err => {
                     console.error("Request failed:", err);
-                    alert("❌ Request failed (maybe wrong path?). Check console & Network tab.");
+                    alert("❌ Request failed. Check console.");
                 });
         }
-
     </script>
 
 
