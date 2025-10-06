@@ -41,12 +41,13 @@ if ($q !== null) {
 }
 
 // --------------------
-// Case 2: fetch full patient (including latest vital_signs, medical_history, dietary_habits, patient_other_info)
-// GET ?id=...
+// Case 2: fetch full patient
 // --------------------
 if ($id !== null) {
     // patient
-    $stmt = $conn->prepare("SELECT * FROM patients WHERE patient_id = ?");
+    $stmt = $conn->prepare("SELECT patient_id, surname, firstname, middlename, date_of_birth, place_of_birth, age, sex, address, pregnant, occupation, guardian
+                            FROM patients
+                            WHERE patient_id = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
     $patient = $stmt->get_result()->fetch_assoc();
@@ -91,7 +92,7 @@ if ($id !== null) {
 }
 
 // --------------------
-// Case 3: update (POST JSON body) — update patients / upsert other info / upsert med & diet / upsert vital_signs
+// Case 3: update (POST JSON body)
 // --------------------
 if ($input && isset($input['patient_id'])) {
     $pid = intval($input['patient_id']);
@@ -107,7 +108,7 @@ if ($input && isset($input['patient_id'])) {
         return isset($input[$k]) && $input[$k] !== "" ? intval($input[$k]) : 0;
     };
 
-    // ------------ Update patients ------------
+    // ------------ Patient fields ------------
     $surname = $escStr('surname');
     $firstname = $escStr('firstname');
     $middlename = $escStr('middlename');
@@ -117,7 +118,9 @@ if ($input && isset($input['patient_id'])) {
     $sex = $escStr('sex');
     $address = $escStr('address');
     $occupation = $escStr('occupation');
+    $pregnant = isset($input['pregnant']) && in_array($input['pregnant'], ['Yes', 'No']) ? $input['pregnant'] : 'No';
 
+    // ------------ Update patients ------------
     $sql = "UPDATE patients SET
                 surname = '{$surname}',
                 firstname = '{$firstname}',
@@ -127,6 +130,7 @@ if ($input && isset($input['patient_id'])) {
                 age = " . ($age_val === "NULL" ? "NULL" : intval($age_val)) . ",
                 sex = '{$sex}',
                 address = '{$address}',
+                pregnant = '{$pregnant}',
                 occupation = '{$occupation}'
             WHERE patient_id = {$pid}";
     $conn->query($sql);
@@ -252,7 +256,7 @@ if ($input && isset($input['patient_id'])) {
         $conn->query($sql);
     }
 
-    // ------------ Upsert vital_signs (fixed) ------------
+    // ------------ Upsert vital_signs ------------
     $bp = $escStr('blood_pressure');
     $pr = $escStr('pulse_rate');
     $temp = $escStr('temperature');

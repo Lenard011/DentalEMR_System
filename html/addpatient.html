@@ -397,8 +397,8 @@
             <form id="patientForm" method="POST" action="../../DentalEMR_System/php/register_patient/addpatient.php">
                 <!-- FirstModal -->
                 <div id="addpatientModal" tabindex="-1" aria-hidden="true"
-                    class="hidden overflow-y-hidden overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-auto md:inset-y-13  max-h-152 md:h-152 ">
-                    <div class="relative  w-full max-w-4xl h-full md:h-auto">
+                    class="hidden realative overflow-y-hidden overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-auto md:inset-y-13  max-h-150 md:h-150 ">
+                    <div class="relative overflow-auto  w-full max-w-4xl h-full md:h-auto">
                         <!-- Modal content -->
                         <div class="scroll relative border-gray-900 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-2">
                             <!-- Modal header -->
@@ -977,13 +977,14 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Popup container (hidden by default) -->
-                    <div id="validationPopup" style="display:none;">
-                        <div class="popup-content">
-                            <p id="validationMessage"></p>
-                            <button type="button" onclick="closeValidationPopup()">OK</button>
-                        </div>
+                </div>
+                <!-- Popup container (hidden by default) -->
+                <div id="validationPopup" style="display:none;">
+                    <div class="popup-content">
+                        <p id="validationMessage"></p>
+                        <button type="button" onclick="closeValidationPopup()">OK</button>
                     </div>
+                </div>
             </form>
         </main>
     </div>

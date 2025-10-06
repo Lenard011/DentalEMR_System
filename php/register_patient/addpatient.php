@@ -1,4 +1,4 @@
-<?php include "conn.php"; ?> 
+<?php include "../conn.php"; ?> 
 <?php
 if (isset($_POST["patient"])) {
   // PATIENT INFO 
@@ -133,7 +133,7 @@ if (isset($_POST["patient"])) {
     <div id='popup'> 
         <div class='popup-content'> 
             <p>Patient regitration added successfully!</p> 
-            <button onclick=\"window.location.href='../html/addpatient.html'\">OK</button> 
+            <button onclick=\"window.location.href='/dentalemr_system/html/addpatient.html'\">OK</button> 
         </div> 
     </div> 
     <style> 
