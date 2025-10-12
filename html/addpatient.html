@@ -320,7 +320,7 @@
                                             </svg>
                                         </div>
                                         <input type="text" id="simple-search"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-blue-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             placeholder="Search" required="">
                                     </div>
                                 </form>
@@ -383,11 +383,17 @@
                                         <th class="px-4 py-3 text-center">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="patientsBody"></tbody>
+                                <tbody id="patientsBody">
+                                    <tr class="border-b dark:border-gray-700">
+                                        <td
+                                            class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            Loading ...</td>
+                                    </tr>
+                                </tbody>
                             </table>
                         </div>
                         <nav id="paginationNav"
-                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
+                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-3"
                             aria-label="Table navigation">
                         </nav>
                     </div>
@@ -1164,15 +1170,16 @@
                 // render table
                 const tbody = document.getElementById("patientsBody");
                 tbody.innerHTML = "";
-                data.patients.forEach(p => {
+                data.patients.forEach((p, index )=> {
+                    const displayId = (currentPage - 1) * limit + index + 1;
                     tbody.insertAdjacentHTML("beforeend", `
                         <tr class="border-b dark:border-gray-700">
-                        <td class="px-4 py-3 text-center">${p.patient_id}</td>
-                        <td class="px-4 py-3 text-center">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
-                        <td class="px-4 py-3 text-center">${escapeHtml(p.sex)}</td>
-                        <td class="px-4 py-3 text-center">${escapeHtml(String(p.age))}</td>
-                        <td class="px-4 py-3 text-center">${escapeHtml(p.address)}</td>
-                        <td class="px-4 py-3 flex justify-center">
+                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${displayId}</td>
+                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
+                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.sex)}</td>
+                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(String(p.age))}</td>
+                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.address)}</td>
+                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
                             <button onclick="window.location.href='viewrecord.html?id=${encodeURIComponent(p.patient_id)}'"
                             class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
                             View
@@ -1207,7 +1214,7 @@
 
             let pagesHTML = "";
             if (page > 1) {
-                pagesHTML += `<li><a href="#" onclick="loadPatients(${page - 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                pagesHTML += `<li><a href="#" onclick="loadPatients(${page - 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 ml-0 text-gray-500 bg-white rounded-l-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                     <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                     </svg></a></li>`;
@@ -1219,7 +1226,7 @@
                          text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
             }
             if (page < totalPages) {
-                pagesHTML += `<li><a href="#" onclick="loadPatients(${page + 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"> <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                pagesHTML += `<li><a href="#" onclick="loadPatients(${page + 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 leading-tight text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"> <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                             </svg></a></li>`;
             }

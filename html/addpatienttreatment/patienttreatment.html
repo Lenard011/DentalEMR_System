@@ -1340,7 +1340,7 @@
                                         <select id="blueSelect"
                                             class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-sm text-sm p-1.5 w-31.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                             <option selected value="">Blue</option>
-                                            <option value="S">Sound/Sealed✓</option>
+                                            <option value="✓">Sound/Sealed✓</option>
                                             <option value="D">Blue D/d</option>
                                             <option value="F">Blue F/f</option>
                                             <option value="M">Blue M/m</option>
@@ -1353,7 +1353,7 @@
                                         <select id="redSelect"
                                             class="text-white justify-center  cursor-pointer inline-flex items-center bg-red-600 hover:bg-red-700  focus:outline-none focus:ring-red-200 font-medium rounded-sm text-sm p-1.5 w-31.5 dark:bg-red-500 dark:hover:bg-red-700 dark:focus:ring-red-700">
                                             <option selected value="">Red</option>
-                                            <option value="S">Sound/Sealed✓</option>
+                                            <option value="✓">Sound/Sealed✓</option>
                                             <option value="D">Red D/d</option>
                                             <option value="F">Red F/f</option>
                                             <option value="M">Red M/m</option>
@@ -2067,380 +2067,6 @@
         }
     </script>
 
-    <!-- Tooth Function and Api for Backend -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
-            let selectedColor = '', selectedCondition = '', selectedCase = 'upper';
-            const historyStack = [], redoStack = [];
-
-            const blueSelect = document.getElementById('blueSelect');
-            const redSelect = document.getElementById('redSelect');
-            const upperCaseChk = document.getElementById('upperCaseChk');
-            const lowerCaseChk = document.getElementById('lowerCaseChk');
-            const treatmentSelect = document.getElementById('treatmentSelect');
-
-            // UI-only hard-coded fallback maps (used for quick UI labelling only).
-            // Server will resolve DB ids using codes we send (condition_code/treatment_code).
-            const fallbackConditionMap = { "✓": "S", "D": "D", "d": "d", "F": "F", "f": "f", "M": "M", "m": "m", "DX": "DX", "dx": "dx", "Un": "Un", "un": "un", "S": "S", "s": "s", "JC": "JC", "jc": "jc", "P": "P", "p": "p" };
-            const fallbackTreatmentMap = { "FV": "FV", "FG": "FG", "PFS": "PFS", "PF": "PF", "TF": "TF", "X": "X", "O": "O" };
-
-            blueSelect?.addEventListener('change', () => { selectedCondition = blueSelect.value; selectedColor = 'blue'; if (redSelect) redSelect.value = ''; });
-            redSelect?.addEventListener('change', () => { selectedCondition = redSelect.value; selectedColor = 'red'; if (blueSelect) blueSelect.value = ''; });
-            upperCaseChk?.addEventListener('change', () => { selectedCase = 'upper'; if (upperCaseChk) upperCaseChk.checked = true; if (lowerCaseChk) lowerCaseChk.checked = false; });
-            lowerCaseChk?.addEventListener('change', () => { selectedCase = 'lower'; if (lowerCaseChk) lowerCaseChk.checked = true; if (upperCaseChk) upperCaseChk.checked = false; });
-
-            function formatCondition(cond, textCase) {
-                if (!cond) return '';
-                if (cond.toLowerCase() === 's') return '✓';
-                return textCase === 'upper' ? cond.toUpperCase() : cond.toLowerCase();
-            }
-
-            function applyChange(key, color, cond, textCase, saveHistory = true, isTreatment = false) {
-                const el = document.querySelector(`[data-key="${key}"]`);
-                if (!el) return;
-
-                if (saveHistory) {
-                    historyStack.push({
-                        key: el.dataset.key,
-                        prevColor: el.dataset.color,
-                        prevCondition: el.dataset.condition,
-                        prevTreatment: el.dataset.treatment,
-                        prevCase: el.dataset.case,
-                        newColor: color,
-                        newCondition: cond,
-                        newTreatment: el.dataset.treatment,
-                        newCase: textCase,
-                        isTreatment: !!isTreatment
-                    });
-                    redoStack.length = 0;
-                }
-
-                if (isTreatment) {
-                    // treatment boxes must show text (no color background per your request)
-                    el.dataset.treatment = cond || '';
-                    el.textContent = cond || '';
-                    el.style.backgroundColor = '#fff';
-                    el.style.color = '#000';
-                    el.dataset.color = '';
-                    el.dataset.condition = '';
-                    el.dataset.case = '';
-                } else {
-                    el.dataset.condition = cond || '';
-                    el.dataset.color = color || '';
-                    el.dataset.case = textCase || 'upper';
-                    el.textContent = formatCondition(cond, textCase);
-                    if (cond && cond.toLowerCase() === 's') {
-                        // sound/sealed => no background color
-                        el.style.backgroundColor = '#fff';
-                        el.style.color = '#000';
-                    } else {
-                        el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
-                        el.style.color = '#fff';
-                    }
-                }
-            }
-
-            // UNDO / REDO / CLEAR
-            document.getElementById('undoBtn')?.addEventListener('click', () => {
-                if (!historyStack.length) return;
-                const last = historyStack.pop();
-                redoStack.push({ ...last });
-                const el = document.querySelector(`[data-key="${last.key}"]`);
-                const wasTreatment = last.isTreatment || (el && (el.classList.contains('treatment-box') || el.classList.contains('treatment1-box')));
-                applyChange(last.key, last.prevColor || '', wasTreatment ? last.prevTreatment || '' : last.prevCondition || '', last.prevCase || 'upper', false, !!wasTreatment);
-            });
-
-            document.getElementById('redoBtn')?.addEventListener('click', () => {
-                if (!redoStack.length) return;
-                const last = redoStack.pop();
-                historyStack.push({ ...last });
-                const wasTreatment = last.isTreatment;
-                applyChange(last.key, last.newColor || '', wasTreatment ? last.newTreatment || '' : last.newCondition || '', last.newCase || 'upper', false, !!wasTreatment);
-            });
-
-            document.getElementById('clearAll')?.addEventListener('click', () => {
-                document.querySelectorAll('.part, .treatment-box, .treatment1-box, .condition-box, .condition1-box').forEach(el => {
-                    el.dataset.color = ''; el.dataset.condition = ''; el.dataset.treatment = ''; el.dataset.case = 'upper';
-                    el.textContent = '';
-                    el.style.backgroundColor = '#fff';
-                    el.style.color = '#000';
-                });
-                historyStack.length = 0; redoStack.length = 0;
-            });
-
-            // Create tooth part
-            function createPart(toothId, partName) {
-                const part = document.createElement('div');
-                part.className = 'part part-' + partName;
-                const key = `${toothId}-${partName}`;
-                part.dataset.key = key;
-                part.addEventListener('click', () => {
-                    if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
-                    applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
-                });
-                return part;
-            }
-
-            // create tooth container; tooth_id must be the DB tooth_id (or FDI fallback)
-            function createTooth(id, label, position = 'bottom', tooth_id = null) {
-                const container = document.createElement('div');
-                container.className = 'tooth-container';
-
-                const toothLabel = document.createElement('div');
-                toothLabel.className = `tooth-label label-${position}`;
-                toothLabel.textContent = label;
-
-                const tooth = document.createElement('div');
-                tooth.className = 'tooth';
-                tooth.id = id;
-                // store actual tooth_id (DB) if available; otherwise store FDI number as fallback
-                tooth.dataset.toothId = tooth_id ?? '';
-
-                teethParts.forEach(p => tooth.appendChild(createPart(id, p)));
-
-                // tooltip
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = label;
-                tooth.appendChild(tooltip);
-
-                container.append(position === 'top' ? toothLabel : tooth, position === 'top' ? tooth : toothLabel);
-                return container;
-            }
-
-            // Load teeth mapping from server (if available) so dataset.toothId is DB tooth_id
-            async function loadGrid() {
-                const permTop = document.getElementById('permanentGridtop');
-                const permBot = document.getElementById('permanentGridbot');
-                const tempTop = document.getElementById('temporaryGridtop');
-                const tempBot = document.getElementById('temporaryGridbot');
-
-                let teethData = [];
-                try {
-                    const r = await fetch('/dentalemr_system/php/treatment/get_teeth.php');
-                    if (r.ok) teethData = await r.json();
-                } catch (e) {
-                    console.warn('Could not load teeth mapping, will fallback to FDI numbers', e);
-                }
-
-                const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
-                const permB = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
-                const tempT = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
-                const tempB = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
-
-                permT.forEach(n => {
-                    const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                    permTop.appendChild(createTooth(`P-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
-                });
-                permB.forEach(n => {
-                    const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                    permBot.appendChild(createTooth(`P-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
-                });
-                tempT.forEach(n => {
-                    const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                    tempTop.appendChild(createTooth(`T-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
-                });
-                tempB.forEach(n => {
-                    const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                    tempBot.appendChild(createTooth(`T-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
-                });
-            }
-
-            // Create boxes for treatment/condition rows
-            function createBox(id, row, kind) {
-                const box = document.createElement('div');
-                const key = `R${row}-${id}`;
-                box.dataset.key = key;
-
-                if (kind === 'treatment') {
-                    box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
-                    // no background color required for treatment boxes - they should be plain
-                    box.addEventListener('click', () => {
-                        const selectedTreat = treatmentSelect?.value || '';
-                        if (!selectedTreat) { alert('Select a treatment from dropdown'); return; }
-                        applyChange(key, '', selectedTreat, 'upper', true, true);
-                    });
-                } else {
-                    box.className = (row === 3) ? 'condition1-box' : 'condition-box';
-                    box.addEventListener('click', () => {
-                        if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
-                        applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
-                    });
-                }
-
-                return box;
-            }
-
-            function loadBoxes() {
-                const row1 = document.getElementById('treatRow1');
-                for (let i = 0; i < 16; i++) row1.appendChild(createBox(i, 1, 'treatment'));
-
-                const row2 = document.getElementById('treatRow2');
-                for (let i = 0; i < 16; i++) row2.appendChild(createBox(i, 2, 'condition'));
-
-                const row3 = document.getElementById('treatRow3');
-                for (let i = 0; i < 16; i++) row3.appendChild(createBox(i, 3, 'condition'));
-
-                const row4 = document.getElementById('treatRow4');
-                for (let i = 0; i < 16; i++) row4.appendChild(createBox(i, 4, 'treatment'));
-            }
-
-            // initialize UI
-            loadGrid();
-            loadBoxes();
-
-            // Save function — sends codes (condition_code / treatment_code). Server will resolve DB ids.
-            async function saveOralCondition() {
-                const pid = document.getElementById('patient_id')?.value;
-                if (!pid) { alert("Select patient"); return; }
-
-                const items = [];
-
-                // collect conditions from tooth parts
-                document.querySelectorAll('.part').forEach(part => {
-                    const condCode = part.dataset.condition; // e.g. 'D' or 'S'
-                    if (!condCode) return;
-                    const toothDiv = part.closest('.tooth');
-                    if (!toothDiv) return;
-                    const tooth_id = toothDiv.dataset.toothId || toothDiv.dataset.toothid || toothDiv.dataset.toothID;
-                    if (!tooth_id) return;
-                    items.push({
-                        type: 'condition',
-                        tooth_id: tooth_id,
-                        condition_code: condCode,
-                        box_key: part.dataset.key
-                    });
-                });
-
-                // collect treatments from treatment boxes
-                document.querySelectorAll('.treatment-box, .treatment1-box').forEach(box => {
-                    const treatCode = box.dataset.treatment; // e.g. 'FV'
-                    if (!treatCode) return;
-                    // optional: if you want to link treatments to a tooth, put a dataset.toothId on the box
-                    const tooth_id = box.dataset.toothId || null;
-                    items.push({
-                        type: 'treatment',
-                        tooth_id: tooth_id,
-                        treatment_code: treatCode,
-                        box_key: box.dataset.key,
-                        color: '', // not used in treatment boxes
-                        case_type: ''
-                    });
-                });
-
-                if (!items.length) { alert("No data to save"); return; }
-
-                try {
-                    const res = await fetch('/dentalemr_system/php/treatment/oral_condition_api.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'save',
-                            patient_id: pid,
-                            oral_data: items,
-                            visit_id: document.getElementById('visit_id')?.value ?? 0
-                        })
-                    });
-
-                    // robust parse: show server text if JSON.parse fails
-                    const text = await res.text();
-                    try {
-                        const data = JSON.parse(text);
-                        if (data.success) {
-                            // alert('Saved successfully!');
-                            if (data.visit_id) document.getElementById('visit_id').value = data.visit_id;
-                            if (data.warnings && data.warnings.length) console.warn('Warnings:', data.warnings);
-                        } else {
-                            alert('❌ Failed: ' + (data.error || 'Unknown'));
-                            if (data.warnings) console.warn('Warnings:', data.warnings);
-                        }
-                    } catch (err) {
-                        // not valid JSON — surface server response for debugging but do not break UI
-                        console.error('Server returned non-JSON response:', text);
-                        alert('❌ Server error: see console for details');
-                    }
-                } catch (err) {
-                    alert('❌ Network or server error: ' + err.message);
-                }
-            }
-
-            // expose save function globally (keeps existing form/button wiring)
-            window.saveOralCondition = saveOralCondition;
-        });
-        function ohcABandNext() {
-            saveOralCondition();
-            saveOralCondition1();
-            next3();
-        }
-    </script>
-
-    <!-- services monitoring chart -->
-    <script>
-        let selectedTreatmentCode = null;
-
-        // Treatment dropdown selection
-        document.getElementById("selcttreatment").addEventListener("change", function () {
-            selectedTreatmentCode = this.value;
-        });
-
-        // Apply treatment on click, unmark on double-click
-        document.querySelectorAll("input[data-tooth-id]").forEach(input => {
-
-            // Single click: mark treatment
-            input.addEventListener("click", function () {
-                if (!selectedTreatmentCode) {
-                    alert("⚠️ Please select a treatment first!");
-                    return;
-                }
-                this.value = selectedTreatmentCode;
-                this.dataset.treatmentId = selectedTreatmentCode;
-                this.style.backgroundColor = "#e5e7eb"; // highlight
-            });
-
-            // Double click: unmark
-            input.addEventListener("dblclick", function () {
-                this.value = "";
-                delete this.dataset.treatmentId;
-                this.style.backgroundColor = "white"; // remove highlight
-            });
-        });
-
-        // Save function
-        function saveOralCondition1() {
-            const patientId = document.getElementById("patient_id")?.value;
-            if (!patientId) {
-                alert("⚠️ Please select a patient!");
-                return;
-            }
-
-            let treatments = [];
-            document.querySelectorAll("input[data-tooth-id]").forEach(input => {
-                treatments.push({
-                    tooth_id: input.getAttribute("data-tooth-id"),
-                    treatment_id: input.dataset.treatmentId || null // send null if unmarked
-                });
-            });
-
-            fetch("/dentalemr_system/php/treatment/services_monitoring.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ patient_id: patientId, treatments: treatments })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        // alert("✅ " + data.message);
-                    } else {
-                        alert("❌ " + data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("❌ Request failed. Check console.");
-                });
-        }
-    </script>
 
     <!-- fetch patient -->
     <script>
@@ -2782,6 +2408,381 @@
 
             document.getElementById("perm_total_dmf").value = D + M + F;
             document.getElementById("temp_total_df").value = d + f;
+        }
+    </script>
+
+    <!-- Tooth Function and Api for Backend -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
+            let selectedColor = '', selectedCondition = '', selectedCase = 'upper';
+            const historyStack = [], redoStack = [];
+
+            const blueSelect = document.getElementById('blueSelect');
+            const redSelect = document.getElementById('redSelect');
+            const upperCaseChk = document.getElementById('upperCaseChk');
+            const lowerCaseChk = document.getElementById('lowerCaseChk');
+            const treatmentSelect = document.getElementById('treatmentSelect');
+
+            // UI-only hard-coded fallback maps (used for quick UI labelling only).
+            // Server will resolve DB ids using codes we send (condition_code/treatment_code).
+            const fallbackConditionMap = { "✓": "✓", "D": "D", "d": "d", "F": "F", "f": "f", "M": "M", "m": "m", "DX": "DX", "dx": "dx", "Un": "Un", "un": "un", "S": "S", "s": "s", "JC": "JC", "jc": "jc", "P": "P", "p": "p" };
+            const fallbackTreatmentMap = { "FV": "FV", "FG": "FG", "PFS": "PFS", "PF": "PF", "TF": "TF", "X": "X", "O": "O" };
+
+            blueSelect?.addEventListener('change', () => { selectedCondition = blueSelect.value; selectedColor = 'blue'; if (redSelect) redSelect.value = ''; });
+            redSelect?.addEventListener('change', () => { selectedCondition = redSelect.value; selectedColor = 'red'; if (blueSelect) blueSelect.value = ''; });
+            upperCaseChk?.addEventListener('change', () => { selectedCase = 'upper'; if (upperCaseChk) upperCaseChk.checked = true; if (lowerCaseChk) lowerCaseChk.checked = false; });
+            lowerCaseChk?.addEventListener('change', () => { selectedCase = 'lower'; if (lowerCaseChk) lowerCaseChk.checked = true; if (upperCaseChk) upperCaseChk.checked = false; });
+
+            function formatCondition(cond, textCase) {
+                if (!cond) return '';
+                if (cond.toLowerCase() === '✓') return '✓';
+                return textCase === 'upper' ? cond.toUpperCase() : cond.toLowerCase();
+            }
+
+            function applyChange(key, color, cond, textCase, saveHistory = true, isTreatment = false) {
+                const el = document.querySelector(`[data-key="${key}"]`);
+                if (!el) return;
+
+                if (saveHistory) {
+                    historyStack.push({
+                        key: el.dataset.key,
+                        prevColor: el.dataset.color,
+                        prevCondition: el.dataset.condition,
+                        prevTreatment: el.dataset.treatment,
+                        prevCase: el.dataset.case,
+                        newColor: color,
+                        newCondition: cond,
+                        newTreatment: el.dataset.treatment,
+                        newCase: textCase,
+                        isTreatment: !!isTreatment
+                    });
+                    redoStack.length = 0;
+                }
+
+                if (isTreatment) {
+                    // treatment boxes must show text (no color background per your request)
+                    el.dataset.treatment = cond || '';
+                    el.textContent = cond || '';
+                    el.style.backgroundColor = '#fff';
+                    el.style.color = '#000';
+                    el.dataset.color = '';
+                    el.dataset.condition = '';
+                    el.dataset.case = '';
+                } else {
+                    el.dataset.condition = cond || '';
+                    el.dataset.color = color || '';
+                    el.dataset.case = textCase || 'upper';
+                    el.textContent = formatCondition(cond, textCase);
+                    if (cond && cond.toLowerCase() === '✓') {
+                        // sound/sealed => no background color
+                        el.style.backgroundColor = '#fff';
+                        el.style.color = '#000';
+                    } else {
+                        el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
+                        el.style.color = '#fff';
+                    }
+                }
+            }
+
+            // UNDO / REDO / CLEAR
+            document.getElementById('undoBtn')?.addEventListener('click', () => {
+                if (!historyStack.length) return;
+                const last = historyStack.pop();
+                redoStack.push({ ...last });
+                const el = document.querySelector(`[data-key="${last.key}"]`);
+                const wasTreatment = last.isTreatment || (el && (el.classList.contains('treatment-box') || el.classList.contains('treatment1-box')));
+                applyChange(last.key, last.prevColor || '', wasTreatment ? last.prevTreatment || '' : last.prevCondition || '', last.prevCase || 'upper', false, !!wasTreatment);
+            });
+
+            document.getElementById('redoBtn')?.addEventListener('click', () => {
+                if (!redoStack.length) return;
+                const last = redoStack.pop();
+                historyStack.push({ ...last });
+                const wasTreatment = last.isTreatment;
+                applyChange(last.key, last.newColor || '', wasTreatment ? last.newTreatment || '' : last.newCondition || '', last.newCase || 'upper', false, !!wasTreatment);
+            });
+
+            document.getElementById('clearAll')?.addEventListener('click', () => {
+                document.querySelectorAll('.part, .treatment-box, .treatment1-box, .condition-box, .condition1-box').forEach(el => {
+                    el.dataset.color = ''; el.dataset.condition = ''; el.dataset.treatment = ''; el.dataset.case = 'upper';
+                    el.textContent = '';
+                    el.style.backgroundColor = '#fff';
+                    el.style.color = '#000';
+                });
+                historyStack.length = 0; redoStack.length = 0;
+            });
+
+            // Create tooth part
+            function createPart(toothId, partName) {
+                const part = document.createElement('div');
+                part.className = 'part part-' + partName;
+                const key = `${toothId}-${partName}`;
+                part.dataset.key = key;
+                part.addEventListener('click', () => {
+                    if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
+                    applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
+                });
+                return part;
+            }
+
+            // create tooth container; tooth_id must be the DB tooth_id (or FDI fallback)
+            function createTooth(id, label, position = 'bottom', tooth_id = null) {
+                const container = document.createElement('div');
+                container.className = 'tooth-container';
+
+                const toothLabel = document.createElement('div');
+                toothLabel.className = `tooth-label label-${position}`;
+                toothLabel.textContent = label;
+
+                const tooth = document.createElement('div');
+                tooth.className = 'tooth';
+                tooth.id = id;
+                // store actual tooth_id (DB) if available; otherwise store FDI number as fallback
+                tooth.dataset.toothId = tooth_id ?? '';
+
+                teethParts.forEach(p => tooth.appendChild(createPart(id, p)));
+
+                // tooltip
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.textContent = label;
+                tooth.appendChild(tooltip);
+
+                container.append(position === 'top' ? toothLabel : tooth, position === 'top' ? tooth : toothLabel);
+                return container;
+            }
+
+            // Load teeth mapping from server (if available) so dataset.toothId is DB tooth_id
+            async function loadGrid() {
+                const permTop = document.getElementById('permanentGridtop');
+                const permBot = document.getElementById('permanentGridbot');
+                const tempTop = document.getElementById('temporaryGridtop');
+                const tempBot = document.getElementById('temporaryGridbot');
+
+                let teethData = [];
+                try {
+                    const r = await fetch('/dentalemr_system/php/treatment/get_teeth.php');
+                    if (r.ok) teethData = await r.json();
+                } catch (e) {
+                    console.warn('Could not load teeth mapping, will fallback to FDI numbers', e);
+                }
+
+                const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
+                const permB = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+                const tempT = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+                const tempB = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
+
+                permT.forEach(n => {
+                    const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                    permTop.appendChild(createTooth(`P-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
+                });
+                permB.forEach(n => {
+                    const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                    permBot.appendChild(createTooth(`P-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+                });
+                tempT.forEach(n => {
+                    const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                    tempTop.appendChild(createTooth(`T-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
+                });
+                tempB.forEach(n => {
+                    const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                    tempBot.appendChild(createTooth(`T-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+                });
+            }
+
+            // Create boxes for treatment/condition rows
+            function createBox(id, row, kind) {
+                const box = document.createElement('div');
+                const key = `R${row}-${id}`;
+                box.dataset.key = key;
+
+                if (kind === 'treatment') {
+                    box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
+                    // no background color required for treatment boxes - they should be plain
+                    box.addEventListener('click', () => {
+                        const selectedTreat = treatmentSelect?.value || '';
+                        if (!selectedTreat) { alert('Select a treatment from dropdown'); return; }
+                        applyChange(key, '', selectedTreat, 'upper', true, true);
+                    });
+                } else {
+                    box.className = (row === 3) ? 'condition1-box' : 'condition-box';
+                    box.addEventListener('click', () => {
+                        if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
+                        applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
+                    });
+                }
+
+                return box;
+            }
+
+            function loadBoxes() {
+                const row1 = document.getElementById('treatRow1');
+                for (let i = 0; i < 16; i++) row1.appendChild(createBox(i, 1, 'treatment'));
+
+                const row2 = document.getElementById('treatRow2');
+                for (let i = 0; i < 16; i++) row2.appendChild(createBox(i, 2, 'condition'));
+
+                const row3 = document.getElementById('treatRow3');
+                for (let i = 0; i < 16; i++) row3.appendChild(createBox(i, 3, 'condition'));
+
+                const row4 = document.getElementById('treatRow4');
+                for (let i = 0; i < 16; i++) row4.appendChild(createBox(i, 4, 'treatment'));
+            }
+
+            // initialize UI
+            loadGrid();
+            loadBoxes();
+
+            // Save function — sends codes (condition_code / treatment_code). Server will resolve DB ids.
+            async function saveOralCondition() {
+                const pid = document.getElementById('patient_id')?.value;
+                if (!pid) { alert("Select patient"); return; }
+
+                const items = [];
+
+                // collect conditions from tooth parts
+                document.querySelectorAll('.part').forEach(part => {
+                    const condCode = part.dataset.condition; // e.g. 'D' or 'S'
+                    if (!condCode) return;
+                    const toothDiv = part.closest('.tooth');
+                    if (!toothDiv) return;
+                    const tooth_id = toothDiv.dataset.toothId || toothDiv.dataset.toothid || toothDiv.dataset.toothID;
+                    if (!tooth_id) return;
+                    items.push({
+                        type: 'condition',
+                        tooth_id: tooth_id,
+                        condition_code: condCode,
+                        box_key: part.dataset.key
+                    });
+                });
+
+                // collect treatments from treatment boxes
+                document.querySelectorAll('.treatment-box, .treatment1-box').forEach(box => {
+                    const treatCode = box.dataset.treatment; // e.g. 'FV'
+                    if (!treatCode) return;
+                    // optional: if you want to link treatments to a tooth, put a dataset.toothId on the box
+                    const tooth_id = box.dataset.toothId || null;
+                    items.push({
+                        type: 'treatment',
+                        tooth_id: tooth_id,
+                        treatment_code: treatCode,
+                        box_key: box.dataset.key,
+                        color: '', // not used in treatment boxes
+                        case_type: ''
+                    });
+                });
+
+                if (!items.length) { alert("No data to save"); return; }
+
+                try {
+                    const res = await fetch('/dentalemr_system/php/treatment/oral_condition_api.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'save',
+                            patient_id: pid,
+                            oral_data: items,
+                            visit_id: document.getElementById('visit_id')?.value ?? 0
+                        })
+                    });
+
+                    // robust parse: show server text if JSON.parse fails
+                    const text = await res.text();
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.success) {
+                            // alert('Saved successfully!');
+                            if (data.visit_id) document.getElementById('visit_id').value = data.visit_id;
+                            if (data.warnings && data.warnings.length) console.warn('Warnings:', data.warnings);
+                        } else {
+                            alert('❌ Failed: ' + (data.error || 'Unknown'));
+                            if (data.warnings) console.warn('Warnings:', data.warnings);
+                        }
+                    } catch (err) {
+                        // not valid JSON — surface server response for debugging but do not break UI
+                        console.error('Server returned non-JSON response:', text);
+                        alert('❌ Server error: see console for details');
+                    }
+                } catch (err) {
+                    alert('❌ Network or server error: ' + err.message);
+                }
+            }
+
+            // expose save function globally (keeps existing form/button wiring)
+            window.saveOralCondition = saveOralCondition;
+        });
+        function ohcABandNext() {
+            saveOralCondition();
+            saveOralCondition1();
+            next3();
+        }
+    </script>
+
+    <!-- services monitoring chart -->
+    <script>
+        let selectedTreatmentCode = null;
+
+        // Treatment dropdown selection
+        document.getElementById("selcttreatment").addEventListener("change", function () {
+            selectedTreatmentCode = this.value;
+        });
+
+        // Apply treatment on click, unmark on double-click
+        document.querySelectorAll("input[data-tooth-id]").forEach(input => {
+
+            // Single click: mark treatment
+            input.addEventListener("click", function () {
+                if (!selectedTreatmentCode) {
+                    alert("⚠️ Please select a treatment first!");
+                    return;
+                }
+                this.value = selectedTreatmentCode;
+                this.dataset.treatmentId = selectedTreatmentCode;
+                this.style.backgroundColor = "#e5e7eb"; // highlight
+            });
+
+            // Double click: unmark
+            input.addEventListener("dblclick", function () {
+                this.value = "";
+                delete this.dataset.treatmentId;
+                this.style.backgroundColor = "white"; // remove highlight
+            });
+        });
+
+        // Save function
+        function saveOralCondition1() {
+            const patientId = document.getElementById("patient_id")?.value;
+            if (!patientId) {
+                alert("⚠️ Please select a patient!");
+                return;
+            }
+
+            let treatments = [];
+            document.querySelectorAll("input[data-tooth-id]").forEach(input => {
+                treatments.push({
+                    tooth_id: input.getAttribute("data-tooth-id"),
+                    treatment_id: input.dataset.treatmentId || null // send null if unmarked
+                });
+            });
+
+            fetch("/dentalemr_system/php/treatment/services_monitoring.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ patient_id: patientId, treatments: treatments })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // alert("✅ " + data.message);
+                    } else {
+                        alert("❌ " + data.message);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("❌ Request failed. Check console.");
+                });
         }
     </script>
 

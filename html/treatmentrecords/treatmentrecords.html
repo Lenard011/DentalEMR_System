@@ -255,7 +255,7 @@
             <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 ">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
                     <!-- Start coding here -->
-                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow">
                         <div>
                             <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Patient Treatment
                                 Record List</p>
@@ -370,10 +370,15 @@
                                 </tbody>
                             </table>
                         </div>
+                        <nav id="paginationNav"
+                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-3"
+                            aria-label="Table navigation">
+                        </nav>
                     </div>
                 </div>
             </section>
         </main>
+
     </div>
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
@@ -386,76 +391,204 @@
     </script>
 
     <script>
-        let lastCount = 0;
+        let allPatients = [];
+        let uniqueAddresses = new Set();
+        let currentPage = 1;
+        const rowsPerPage = 10;
 
-        async function loadPatients() {
+        // Fetch patients (with optional pagination page)
+        async function loadPatients(page = 1) {
+            currentPage = page;
             try {
                 const response = await fetch("/dentalemr_system/php/teratmentrecords/treatment.php");
                 const data = await response.json();
-                const tbody = document.getElementById("patients-body");
+                allPatients = data;
 
-                // Only reload if data changed
-                if (data.length !== lastCount) {
-                    tbody.innerHTML = "";
-
-                    if (data.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-gray-500">No patient records found.</td></tr>`;
-                        return;
-                    }
-
-                    data.forEach(patient => {
-                        const row = `
-                        <tr class="border-b dark:border-gray-700">
-                        <th scope="row" class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            ${patient.patient_id}
-                        </th>
-                        <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            ${patient.fullname}
-                        </td>
-                        <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            ${patient.sex}
-                        </td>
-                        <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            ${patient.age}
-                        </td>
-                        <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            ${patient.address}
-                        </td>
-                        <td class="py-3 items-center gap-2 flex justify-center">
-                            <button type="button" onclick="window.location.href='view_info.html?id=${patient.patient_id}'"
-                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-1.5 dark:bg-blue-600 dark:hover:bg-blue-700">
-                            View
-                            </button>
-                            <button type="button" onclick="archivePatient(${patient.patient_id})"
-                            class="text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-1.5 dark:bg-red-500 dark:hover:bg-red-600">
-                            Archive
-                            </button>
-                        </td>
-                        </tr>`;
-                        tbody.insertAdjacentHTML("beforeend", row);
-                    });
-
-                    lastCount = data.length;
+                // Build unique address filters
+                const addresses = [...new Set(data.map(p => p.address))];
+                if (JSON.stringify([...uniqueAddresses]) !== JSON.stringify(addresses)) {
+                    uniqueAddresses = new Set(addresses);
+                    renderAddressFilters(addresses);
                 }
+
+                renderPatients();
             } catch (error) {
                 console.error("Error loading patients:", error);
             }
         }
 
-        function viewPatient(id) {
-            alert("View patient ID: " + id);
+        // Render table data with pagination + filters + sequential IDs
+        function renderPatients() {
+            const tbody = document.getElementById("patients-body");
+            const searchInput = document.getElementById("simple-search").value.toLowerCase();
+            const selectedAddresses = Array.from(document.querySelectorAll('#filterDropdown input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+
+            // Filter data
+            const filtered = allPatients.filter(patient => {
+                const matchesSearch = patient.fullname.toLowerCase().includes(searchInput);
+                const matchesAddress = selectedAddresses.length === 0 || selectedAddresses.includes(patient.address);
+                return matchesSearch && matchesAddress;
+            });
+
+            // Pagination logic
+            const total = filtered.length;
+            const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, total);
+            const paginated = filtered.slice(startIndex, endIndex);
+
+            // Render rows with sequential numbering
+            tbody.innerHTML = "";
+            if (paginated.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-gray-500">No patient records found.</td></tr>`;
+            } else {
+                paginated.forEach((patient, index) => {
+                    const rowNumber = startIndex + index + 1; // sequential number
+                    const row = `
+            <tr class="border-b dark:border-gray-700">
+                <th scope="row" class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${rowNumber}
+                </th>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${patient.fullname}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${patient.sex}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${patient.age}
+                </td>
+                <td class="px-4 py-3 text-center font-m edium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${patient.address}
+                </td>
+                <td class="py-3 flex justify-center gap-2">
+                    <button type="button" onclick="window.location.href='view_info.html?id=${patient.patient_id}'"
+                        class="text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-1.5 dark:bg-blue-600 dark:hover:bg-blue-700">
+                        View
+                    </button>
+                    <button type="button" onclick="archivePatient(${patient.patient_id})"
+                        class="text-white bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-1.5 dark:bg-red-500 dark:hover:bg-red-600">
+                        Archive
+                    </button>
+                </td>
+            </tr>`;
+                    tbody.insertAdjacentHTML("beforeend", row);
+                });
+            }
+
+            renderPagination(total, rowsPerPage, currentPage);
         }
 
-        function archivePatient(id) {
-            alert("Archive patient ID: " + id);
+        // ✅ Your pagination layout
+        function renderPagination(total, limitVal, page) {
+            const paginationNav = document.getElementById("paginationNav");
+            const totalPages = Math.max(1, Math.ceil(total / limitVal));
+            const start = (page - 1) * limitVal + 1;
+            const end = Math.min(page * limitVal, total);
+
+            const showingText = `
+        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+        Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
+        of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
+        </span>
+    `;
+
+            let pagesHTML = "";
+            if (page > 1) {
+                pagesHTML += `<li><a href="#" onclick="loadPatients(${page - 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 ml-0 text-gray-500 bg-white rounded-l-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg></a></li>`;
+            }
+            for (let i = 1; i <= totalPages; i++) {
+                pagesHTML += (i === page)
+                    ? `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>`
+                    : `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 
+                 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
+            }
+            if (page < totalPages) {
+                pagesHTML += `<li><a href="#" onclick="loadPatients(${page + 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 leading-tight text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            </svg></a></li>`;
+            }
+
+            paginationNav.innerHTML = `
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 w-full">
+            ${showingText}
+            <ul class="inline-flex -space-x-px">${pagesHTML}</ul>
+        </div>
+    `;
         }
 
-        // Initial load
-        window.onload = () => {
+        // Render address filters
+        function renderAddressFilters(addresses) {
+            const filterList = document.querySelector('#filterDropdown ul');
+            filterList.innerHTML = "";
+            addresses.forEach(address => {
+                const li = document.createElement("li");
+                li.className = "flex items-center";
+                li.innerHTML = `
+            <input id="filter-${address}" type="checkbox" value="${address}"
+                class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 dark:bg-gray-600 dark:border-gray-500">
+            <label for="filter-${address}"
+                class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">${address}</label>
+        `;
+                filterList.appendChild(li);
+            });
+
+            filterList.querySelectorAll("input[type='checkbox']").forEach(cb => {
+                cb.addEventListener("change", () => {
+                    currentPage = 1;
+                    renderPatients();
+                });
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
             loadPatients();
-            // Check for updates every 5 seconds
-            setInterval(loadPatients, 5000);
-        };
+            document.getElementById("simple-search").addEventListener("input", () => {
+                currentPage = 1;
+                renderPatients();
+            });
+        });
+    </script>
+
+    <script>
+        async function archivePatient(patientId) {
+            if (!confirm("Are you sure you want to archive this patient and all related records?")) return;
+
+            const API = "/dentalemr_system/php/teratmentrecords/treatment.php"; // ✅ make sure folder name is correct
+
+            try {
+                const formData = new FormData();
+                formData.append("archive_id", patientId);
+
+                const response = await fetch(API, { method: "POST", body: formData });
+                const text = await response.text(); // read raw first
+                console.log("Server response:", text); // ✅ debug output
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    alert("Server returned invalid JSON. Check PHP error logs.");
+                    console.error("Raw server response:", text);
+                    return;
+                }
+
+                if (response.ok && data.success) {
+                    alert(data.message || "Patient archived successfully!");
+                    loadPatients(currentPage);
+                } else {
+                    alert(data.message || "Failed to archive patient.");
+                }
+            } catch (err) {
+                console.error("Network error while archiving:", err);
+                alert("Network error while archiving.");
+            }
+        }
     </script>
 
 </body>

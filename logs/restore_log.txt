@@ -1,0 +1,57 @@
+[2025-10-10 19:17:34] === Restoring patient_id=16 ===
+[2025-10-10 19:19:55] === Restoring patient_id=16 ===
+[2025-10-10 19:19:58] === Restoring patient_id=16 ===
+[2025-10-10 19:20:23] === Restoring patient_id=18 ===
+[2025-10-10 19:20:30] === Restoring patient_id=18 ===
+[2025-10-10 19:20:33] === Restoring patient_id=18 ===
+[2025-10-10 19:22:41] === Restoring patient_id=18 ===
+[2025-10-10 19:22:44] === Restoring patient_id=18 ===
+[2025-10-10 19:24:48] === Restoring patient_id=18 ===
+[2025-10-10 19:34:06] START restore for archived patient_id=20
+[2025-10-10 19:34:06] Inserted patient: old_id=20 -> new_id=33
+[2025-10-10 19:34:06] archived_visits or visits table missing; skipping visits restore.
+[2025-10-10 19:34:06] Skipping pair: archived_oral_health_condition -> oral_health_condition (table missing)
+[2025-10-10 19:34:06] Skipping pair: archived_patient_treatment_record -> patient_treatment_record (table missing)
+[2025-10-10 19:34:06] Skipping pair: archived_services_monitoring_chart -> services_monitoring_chart (table missing)
+[2025-10-10 19:34:06] Skipping pair: archived_dietary_habits -> dietary_habits (table missing)
+[2025-10-10 19:34:06] Skipping pair: archived_medical_history -> medical_history (table missing)
+[2025-10-10 19:34:06] Skipping pair: archived_family_history -> family_history (table missing)
+[2025-10-10 19:34:06] Skipping pair: archived_dental_history -> dental_history (table missing)
+[2025-10-10 19:34:06] Skipping pair: archived_vital_signs -> vital_signs (table missing)
+[2025-10-10 19:34:06] SUCCESS restore completed for archived patient_id=20 -> new_patient_id=33
+[2025-10-10 19:34:09] START restore for archived patient_id=20
+[2025-10-10 19:34:09] Inserted patient: old_id=20 -> new_id=34
+[2025-10-10 19:34:09] archived_visits or visits table missing; skipping visits restore.
+[2025-10-10 19:34:09] Skipping pair: archived_oral_health_condition -> oral_health_condition (table missing)
+[2025-10-10 19:34:09] Skipping pair: archived_patient_treatment_record -> patient_treatment_record (table missing)
+[2025-10-10 19:34:09] Skipping pair: archived_services_monitoring_chart -> services_monitoring_chart (table missing)
+[2025-10-10 19:34:09] Skipping pair: archived_dietary_habits -> dietary_habits (table missing)
+[2025-10-10 19:34:09] Skipping pair: archived_medical_history -> medical_history (table missing)
+[2025-10-10 19:34:09] Skipping pair: archived_family_history -> family_history (table missing)
+[2025-10-10 19:34:09] Skipping pair: archived_dental_history -> dental_history (table missing)
+[2025-10-10 19:34:09] Skipping pair: archived_vital_signs -> vital_signs (table missing)
+[2025-10-10 19:34:09] SUCCESS restore completed for archived patient_id=20 -> new_patient_id=34
+[2025-10-10 19:34:20] START restore for archived patient_id=15
+[2025-10-10 19:34:20] Inserted patient: old_id=15 -> new_id=35
+[2025-10-10 19:34:20] archived_visits or visits table missing; skipping visits restore.
+[2025-10-10 19:34:20] Skipping pair: archived_oral_health_condition -> oral_health_condition (table missing)
+[2025-10-10 19:34:20] Skipping pair: archived_patient_treatment_record -> patient_treatment_record (table missing)
+[2025-10-10 19:34:20] Skipping pair: archived_services_monitoring_chart -> services_monitoring_chart (table missing)
+[2025-10-10 19:34:20] Skipping pair: archived_dietary_habits -> dietary_habits (table missing)
+[2025-10-10 19:34:20] Skipping pair: archived_medical_history -> medical_history (table missing)
+[2025-10-10 19:34:20] Skipping pair: archived_family_history -> family_history (table missing)
+[2025-10-10 19:34:20] Skipping pair: archived_dental_history -> dental_history (table missing)
+[2025-10-10 19:34:20] Skipping pair: archived_vital_signs -> vital_signs (table missing)
+[2025-10-10 19:34:20] SUCCESS restore completed for archived patient_id=15 -> new_patient_id=35
+[2025-10-11 02:27:14] START restore for archived patient_id=11
+[2025-10-11 02:27:14] Inserted patient: old_id=11 -> new_id=36
+[2025-10-11 02:27:14] archived_visits or visits table missing; skipping visits restore.
+[2025-10-11 02:27:14] Skipping pair: archived_oral_health_condition -> oral_health_condition (table missing)
+[2025-10-11 02:27:14] Skipping pair: archived_patient_treatment_record -> patient_treatment_record (table missing)
+[2025-10-11 02:27:14] Skipping pair: archived_services_monitoring_chart -> services_monitoring_chart (table missing)
+[2025-10-11 02:27:14] Skipping pair: archived_dietary_habits -> dietary_habits (table missing)
+[2025-10-11 02:27:14] Skipping pair: archived_medical_history -> medical_history (table missing)
+[2025-10-11 02:27:14] Skipping pair: archived_family_history -> family_history (table missing)
+[2025-10-11 02:27:14] Skipping pair: archived_dental_history -> dental_history (table missing)
+[2025-10-11 02:27:14] Skipping pair: archived_vital_signs -> vital_signs (table missing)
+[2025-10-11 02:27:14] SUCCESS restore completed for archived patient_id=11 -> new_patient_id=36

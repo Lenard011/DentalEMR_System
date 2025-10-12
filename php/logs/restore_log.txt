@@ -1,0 +1,14 @@
+[2025-10-11 02:28:50] === RESTORE START for patient_id=11 ===
+[2025-10-11 02:28:50] ERROR: Insert into patients failed: Unknown column 'archive_id' in 'field list'
+[2025-10-11 02:31:22] === RESTORE START for patient_id=15 ===
+[2025-10-11 02:31:22] ERROR: Insert into patients failed: Column 'created_at' specified twice
+[2025-10-11 02:40:55] === RESTORE START for patient_id=15 ===
+[2025-10-11 02:40:55] ✅ Inserted into patients → new ID: 37
+[2025-10-11 02:40:55] 🗑️ Removed patient from archived_patients
+[2025-10-11 02:40:55] ✅ RESTORE SUCCESS for patient_id=15 → new_id=37
+
+[2025-10-11 02:41:11] === RESTORE START for patient_id=23 ===
+[2025-10-11 02:41:11] ✅ Inserted into patients → new ID: 38
+[2025-10-11 02:41:11] 🗑️ Removed patient from archived_patients
+[2025-10-11 02:41:11] ✅ RESTORE SUCCESS for patient_id=23 → new_id=38
+
