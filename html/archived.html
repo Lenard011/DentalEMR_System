@@ -326,6 +326,10 @@
                                 </tbody>
                             </table>
                         </div>
+                        <nav id="paginationNav"
+                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-3"
+                            aria-label="Table navigation">
+                        </nav>
                     </div>
                 </div>
             </section>
@@ -343,82 +347,129 @@
 
     <!-- Archived  -->
     <script>
-        async function loadArchivedPatients() {
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let currentSearch = "";
+
+        async function loadArchivedPatients(page = 1, search = "") {
             const tbody = document.getElementById("archivedTableBody");
             const restoreAllBtn = document.getElementById("restoreAllBtn");
+            const paginationNav = document.getElementById("paginationNav");
+
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-5 text-gray-600 dark:text-gray-300">
+                    Loading archived patients...
+                </td>
+            </tr>`;
 
             try {
-                const response = await fetch("../php/archived/get_archived.php", { cache: "no-store" });
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const response = await fetch(`../php/archived/get_archived.php?page=${page}&limit=${rowsPerPage}&search=${encodeURIComponent(search)}&ts=${Date.now()}`);
+                const result = await response.json();
 
-                const text = await response.text();
-                let data = [];
-
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    console.warn("Invalid JSON from PHP:", text);
-                    data = [];
+                if (result.error) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-red-500">${result.error}</td></tr>`;
+                    restoreAllBtn.disabled = true;
+                    paginationNav.innerHTML = "";
+                    return;
                 }
+
+                const { data, total } = result;
+                currentPage = page;
+                currentSearch = search;
+                restoreAllBtn.disabled = (data.length === 0);
 
                 tbody.innerHTML = "";
 
                 if (!Array.isArray(data) || data.length === 0) {
                     tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-5 text-gray-700 dark:text-gray-300">
-                        No archived patients found.
-                    </td>
-                </tr>`;
-                    restoreAllBtn.disabled = true;
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-gray-600 dark:text-gray-300">
+                            No archived patients found.
+                        </td>
+                    </tr>`;
+                    paginationNav.innerHTML = "";
                     return;
                 }
 
-                restoreAllBtn.disabled = false;
-
                 data.forEach(p => {
-                    const row = document.createElement("tr");
-                    row.className = "border-b dark:border-gray-700";
-                    row.innerHTML = `
-                <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    ${(p.firstname || "")} ${(p.middlename || "")} ${(p.surname || "")}
-                </td>
-                <td class="px-4 py-3 text-center">${p.sex || "-"}</td>
-                <td class="px-4 py-3 text-center">${p.age || "-"}</td>
-                <td class="px-4 py-3 text-center">${p.address || "-"}</td>
-                <td class="px-4 py-3 text-center">${p.created_at || "-"}</td>
-                <td class="px-4 py-3 text-center">
-                    <button onclick="restorePatient(${p.patient_id})"
-                        class="bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg text-sm px-3 py-1.5 focus:ring-2 focus:ring-green-400">
-                        Restore
-                    </button>
-                </td>`;
-                    tbody.appendChild(row);
+                    const fullname = `${p.firstname ?? ""} ${p.middlename ?? ""} ${p.surname ?? ""}`.trim();
+                    const row = `
+                    <tr class="border-b dark:border-gray-700">
+                        <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">${fullname}</td>
+                        <td class="px-4 py-3 text-center">${p.sex ?? "-"}</td>
+                        <td class="px-4 py-3 text-center">${p.age ?? "-"}</td>
+                        <td class="px-4 py-3 text-center">${p.address ?? "-"}</td>
+                        <td class="px-4 py-3 text-center">${p.created_at ?? "-"}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="restorePatient(${p.patient_id})"
+                                class="bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg text-sm px-3 py-1.5 focus:ring-2 focus:ring-green-400">
+                                Restore
+                            </button>
+                        </td>
+                    </tr>`;
+                    tbody.insertAdjacentHTML("beforeend", row);
                 });
+
+                renderPagination(total, rowsPerPage, currentPage);
             } catch (err) {
                 console.error("Fetch error:", err);
                 tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center py-5 text-red-500">
-                    Error loading archived patients. Please check server connection.
-                </td>
-            </tr>`;
+                <tr><td colspan="6" class="text-center py-5 text-red-500">
+                    Error loading archived patients.
+                </td></tr>`;
                 restoreAllBtn.disabled = true;
+                paginationNav.innerHTML = "";
             }
+        }
+
+        function renderPagination(total, limit, page) {
+            const paginationNav = document.getElementById("paginationNav");
+            const totalPages = Math.ceil(total / limit);
+            if (totalPages <= 1) {
+                paginationNav.innerHTML = "";
+                return;
+            }
+
+            let html = `<div class="flex flex-col md:flex-row justify-between items-center w-full">
+                        <span class="text-sm text-gray-500">Showing 
+                            <span class="font-semibold text-gray-700">${(page - 1) * limit + 1}</span>-
+                            <span class="font-semibold text-gray-700">${Math.min(page * limit, total)}</span> 
+                            of <span class="font-semibold text-gray-700">${total}</span>
+                        </span>
+                        <ul class="inline-flex -space-x-px">`;
+
+            if (page > 1) {
+                html += `<li><a href="#" onclick="loadArchivedPatients(${page - 1}, currentSearch); return false;" 
+                        class="py-2 px-3 text-gray-500 bg-white border border-gray-300 rounded-l-sm hover:bg-gray-100">«</a></li>`;
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += (i === page)
+                    ? `<li><span class="py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300">${i}</span></li>`
+                    : `<li><a href="#" onclick="loadArchivedPatients(${i}, currentSearch); return false;" 
+                        class="py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100">${i}</a></li>`;
+            }
+
+            if (page < totalPages) {
+                html += `<li><a href="#" onclick="loadArchivedPatients(${page + 1}, currentSearch); return false;" 
+                        class="py-2 px-3 text-gray-500 bg-white border border-gray-300 rounded-r-sm hover:bg-gray-100">»</a></li>`;
+            }
+
+            html += `</ul></div>`;
+            paginationNav.innerHTML = html;
         }
 
         document.addEventListener("DOMContentLoaded", () => {
             loadArchivedPatients();
 
             document.getElementById("searchArchived").addEventListener("input", e => {
-                const term = e.target.value.toLowerCase();
-                document.querySelectorAll("#archivedTableBody tr").forEach(tr => {
-                    const name = tr.textContent.toLowerCase();
-                    tr.style.display = name.includes(term) ? "" : "none";
-                });
+                const term = e.target.value.trim();
+                loadArchivedPatients(1, term);
             });
         });
     </script>
+
 
     <!-- Restore  -->
     <script>
