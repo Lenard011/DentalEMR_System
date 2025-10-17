@@ -40,9 +40,9 @@ try {
             if ($row['four_ps']) $memberships[] = ["field" => "four_ps", "label" => "Pantawid Pamilyang Pilipino Program (4Ps)"];
             if ($row['indigenous_people']) $memberships[] = ["field" => "indigenous_people", "label" => "Indigenous People (IP)"];
             if ($row['pwd']) $memberships[] = ["field" => "pwd", "label" => "Person with Disabilities (PWD)"];
-            if ($row['philhealth_flag']) $memberships[] = ["field" => "philhealth_flag", "label" => "PhilHealth (" . ($row['philhealth_number'] ?: "N/A") . ")"];
-            if ($row['sss_flag']) $memberships[] = ["field" => "sss_flag", "label" => "SSS (" . ($row['sss_number'] ?: "N/A") . ")"];
-            if ($row['gsis_flag']) $memberships[] = ["field" => "gsis_flag", "label" => "GSIS (" . ($row['gsis_number'] ?: "N/A") . ")"];
+            if ($row['philhealth_flag']) $memberships[] = ["field" => "philhealth_flag", "label" => "PhilHealth: (" . ($row['philhealth_number'] ?: "N/A") . ")"];
+            if ($row['sss_flag']) $memberships[] = ["field" => "sss_flag", "label" => "SSS: (" . ($row['sss_number'] ?: "N/A") . ")"];
+            if ($row['gsis_flag']) $memberships[] = ["field" => "gsis_flag", "label" => "GSIS: (" . ($row['gsis_number'] ?: "N/A") . ")"];
         }
 
         echo json_encode(["success" => true, "memberships" => $memberships, "values" => $row ?? []]);

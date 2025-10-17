@@ -195,16 +195,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
 try {
     $sql = "
         SELECT 
-            p.patient_id,
-            CONCAT(p.firstname, ' ', p.middlename, ' ', p.surname) AS fullname,
-            p.sex,
-            p.age,
-            p.address,
-            MAX(v.visit_date) AS last_visit
-        FROM patients p
-        INNER JOIN visits v ON p.patient_id = v.patient_id
-        GROUP BY p.patient_id
-        ORDER BY p.patient_id ASC
+    p.patient_id,
+    CONCAT_WS(' ', p.firstname, p.middlename, p.surname) AS fullname,
+    p.sex,
+    p.age,
+    p.address,
+    MAX(v.visit_date) AS last_visit
+    FROM patients p
+    INNER JOIN visits v ON p.patient_id = v.patient_id
+    GROUP BY p.patient_id
+    ORDER BY p.patient_id ASC
+
     ";
     $result = $conn->query($sql);
     $patients = [];

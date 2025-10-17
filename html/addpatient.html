@@ -1123,7 +1123,7 @@
         let limit = 10;
         let selectedAddresses = [];
 
-        // debounce utility
+        // ✅ FIXED debounce utility
         function debounce(fn, delay = 300) {
             let t;
             return (...args) => {
@@ -1167,26 +1167,25 @@
                     return;
                 }
 
-                // render table
                 const tbody = document.getElementById("patientsBody");
                 tbody.innerHTML = "";
-                data.patients.forEach((p, index )=> {
+                data.patients.forEach((p, index) => {
                     const displayId = (currentPage - 1) * limit + index + 1;
                     tbody.insertAdjacentHTML("beforeend", `
-                        <tr class="border-b dark:border-gray-700">
-                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${displayId}</td>
-                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
-                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.sex)}</td>
-                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(String(p.age))}</td>
-                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.address)}</td>
-                        <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                            <button onclick="window.location.href='viewrecord.html?id=${encodeURIComponent(p.patient_id)}'"
+                <tr class="border-b dark:border-gray-700">
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${displayId}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.sex)}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(String(p.age))}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.address)}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                        <button onclick="window.location.href='viewrecord.html?id=${encodeURIComponent(p.patient_id)}'"
                             class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
                             View
-                            </button>
-                        </td>
-                        </tr>
-                    `);
+                        </button>
+                    </td>
+                </tr>
+            `);
                 });
 
                 renderPagination(data.total, data.limit, data.page);
@@ -1206,29 +1205,30 @@
             const end = Math.min(page * limitVal, total);
 
             const showingText = `
-                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
-                of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
-                </span>
-            `;
+        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+        Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
+        of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
+        </span>
+    `;
 
             let pagesHTML = "";
             if (page > 1) {
                 pagesHTML += `<li><a href="#" onclick="loadPatients(${page - 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 ml-0 text-gray-500 bg-white rounded-l-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg></a></li>`;
+            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg></a></li>`;
             }
             for (let i = 1; i <= totalPages; i++) {
                 pagesHTML += (i === page)
                     ? `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>`
                     : `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 
-                         text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
+                 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
             }
             if (page < totalPages) {
-                pagesHTML += `<li><a href="#" onclick="loadPatients(${page + 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 leading-tight text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"> <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                            </svg></a></li>`;
+                pagesHTML += `<li><a href="#" onclick="loadPatients(${page + 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 leading-tight text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"> 
+        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+        </svg></a></li>`;
             }
 
             paginationNav.innerHTML = `${showingText} <ul class="inline-flex -space-x-1px">${pagesHTML}</ul>`;
@@ -1241,14 +1241,14 @@
             addresses.forEach(addr => {
                 const checked = selectedAddresses.includes(addr) ? "checked" : "";
                 container.insertAdjacentHTML("beforeend", `
-                    <li>
-                        <label class="flex items-center space-x-2">
-                        <input type="checkbox" value="${escapeHtml(addr)}" ${checked}
-                                class="address-filter">
-                        <span class="text-gray-700 dark:text-gray-200">${escapeHtml(addr)}</span>
-                        </label>
-                    </li>
-                `);
+            <li>
+                <label class="flex items-center space-x-2">
+                <input type="checkbox" value="${escapeHtml(addr)}" ${checked}
+                        class="address-filter">
+                <span class="text-gray-700 dark:text-gray-200">${escapeHtml(addr)}</span>
+                </label>
+            </li>
+        `);
             });
 
             document.querySelectorAll(".address-filter").forEach(cb => {

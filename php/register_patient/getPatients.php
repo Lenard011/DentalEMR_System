@@ -1,6 +1,7 @@
 <?php
 header("Content-Type: application/json; charset=utf-8");
 
+// Database connection
 $DB_HOST = "localhost";
 $DB_USER = "root";
 $DB_PASS = "";
@@ -13,6 +14,7 @@ if ($mysqli->connect_errno) {
 }
 $mysqli->set_charset("utf8mb4");
 
+// Pagination parameters
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 if ($limit < 1) $limit = 10;
 if ($limit > 200) $limit = 200;
@@ -21,14 +23,16 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;
 
+// Filters
 $search = isset($_GET['search']) ? trim($_GET['search']) : "";
-$filterAddresses = isset($_GET['addresses']) ? $_GET['addresses'] : "";
+$filterAddresses = isset($_GET['addresses']) ? trim($_GET['addresses']) : "";
 
 try {
     $whereParts = [];
     $params = [];
     $types = "";
 
+    // 🔍 Search filter
     if ($search !== "") {
         $like = "%{$search}%";
         $whereParts[] = "(surname LIKE ? OR firstname LIKE ? OR middlename LIKE ? OR address LIKE ?)";
@@ -36,6 +40,7 @@ try {
         $types .= "ssss";
     }
 
+    // 🏠 Address filter
     if ($filterAddresses !== "") {
         $addrArr = array_map("trim", explode(",", $filterAddresses));
         $addrArr = array_filter($addrArr, fn($a) => $a !== "");
@@ -47,9 +52,10 @@ try {
         }
     }
 
+    // WHERE clause builder
     $whereSql = count($whereParts) > 0 ? "WHERE " . implode(" AND ", $whereParts) : "";
 
-    // main query
+    // 🧾 Main query
     $sql = "SELECT patient_id, surname, firstname, middlename, sex, age, address
             FROM patients
             $whereSql
@@ -65,10 +71,11 @@ try {
     $patients = $res->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 
-    // count query
+    // 📊 Total count query
     $countSql = "SELECT COUNT(*) as total FROM patients $whereSql";
     $cstmt = $mysqli->prepare($countSql);
     if ($types !== "") {
+        // remove last two "ii" from types/params used for LIMIT and OFFSET
         $ctypes = substr($types, 0, -2);
         $cparams = array_slice($params, 0, -2);
         if ($ctypes !== "") {
@@ -81,13 +88,14 @@ try {
     $total = (int)$countRow['total'];
     $cstmt->close();
 
-    // distinct addresses
+    // 📍 Distinct address list for filters
     $addrRes = $mysqli->query("SELECT DISTINCT address FROM patients WHERE address IS NOT NULL AND address <> '' ORDER BY address ASC");
     $addresses = [];
     while ($row = $addrRes->fetch_assoc()) {
         $addresses[] = $row['address'];
     }
 
+    // ✅ Output response
     echo json_encode([
         "patients"  => $patients,
         "total"     => $total,
