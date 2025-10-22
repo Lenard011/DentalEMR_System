@@ -285,12 +285,12 @@
                         id="mobile-menu-2">
                         <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                             <li>
-                                <a href="#"
+                                <a href="#" 
                                     class="block py-2 pr-4 pl-3 text-blue-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
                                     Information</a>
                             </li>
                             <li>
-                                <a href="view_oral.html"
+                                <a href="#" id="oralHealthLink"
                                     class="block py-2 pr-4 pl-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Oral
                                     Health Condition</a>
                             </li>
@@ -340,7 +340,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p id="patientName2" class="text-sm font-normal text-gray-950 dark:text-white"
+                                    <p id="patientName2" class="text-sm font-medium text-gray-950 dark:text-white"
                                         style="font-size:14.6px;">
                                         Loading ...</p>
                                     <p class="text-xs font-normal text-gray-950 dark:text-white"
@@ -360,7 +360,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p id="patientSex" class="text-sm font-normal text-gray-950 dark:text-white"
+                                    <p id="patientSex" class="text-sm font-medium text-gray-950 dark:text-white"
                                         style="font-size:14.6px;">
                                         Loading ...</p>
                                     <p class="text-xs font-normal text-gray-950 dark:text-white"
@@ -380,7 +380,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p id="patientAge" class="text-sm font-normal text-gray-950 dark:text-white"
+                                    <p id="patientAge" class="text-sm font-medium text-gray-950 dark:text-white"
                                         style="font-size:14.6px;">
                                         Loading ...</p>
                                     <p class="text-xs font-normal text-gray-950 dark:text-white"
@@ -402,7 +402,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p id="patientDob" class="text-sm font-normal text-gray-950 dark:text-white"
+                                    <p id="patientDob" class="text-sm font-medium text-gray-950 dark:text-white"
                                         style="font-size:14.6px;">
                                         Loading ...</p>
                                     <p class="text-xs font-normal text-gray-950 dark:text-white"
@@ -424,7 +424,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p id="patientOccupation" class="text-sm font-normal text-gray-950 dark:text-white"
+                                    <p id="patientOccupation" class="text-sm font-medium text-gray-950 dark:text-white"
                                         style="font-size:14.6px;">
                                         Loading ...</p>
                                     <p class="text-xs font-normal text-gray-950 dark:text-white"
@@ -448,7 +448,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p id="patientBirthPlace" class="text-sm font-normal text-gray-950 dark:text-white"
+                                    <p id="patientBirthPlace" class="text-sm font-medium text-gray-950 dark:text-white"
                                         style="font-size:14.6px;">
                                         Loading ...</p>
                                     <p class="text-xs font-normal text-gray-950 dark:text-white"
@@ -469,7 +469,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <p id="patientAddress" class="text-sm font-normal text-gray-950 dark:text-white"
+                                    <p id="patientAddress" class="text-sm font-medium text-gray-950 dark:text-white"
                                         style="font-size:14.6px;">
                                         Loading ...</p>
                                     <p class="text-xs font-normal text-gray-950 dark:text-white"
@@ -490,7 +490,7 @@
                                 </div>
                                 <div>
                                     <p id="patientGuardian"
-                                        class="relative text-sm font-normal text-gray-950 dark:text-white"
+                                        class="relative text-sm font-medium text-gray-950 dark:text-white"
                                         style="font-size:14.6px;">
                                         Loading ...</p>
                                     <p class="relative text-xs font-normal text-gray-950 dark:text-white"
@@ -1255,9 +1255,7 @@
                 return;
             }
 
-            // ----------------------------
-            // 🧍 LOAD PATIENT INFO
-            // ----------------------------
+            // LOAD PATIENT INFO
             async function loadPatient() {
                 try {
                     const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_patient&patient_id=${patientId}`);
@@ -1269,7 +1267,7 @@
                     }
 
                     const p = result.patient;
-                    const fullName = `${p.surname || ""}, ${p.firstname || ""} ${p.middlename || ""}`.trim();
+                    const fullName = `${p.firstname || ""} ${p.middlename || ""}. ${p.surname || ""}`.trim();
 
                     // Fill Display Info
                     document.getElementById("patientName").textContent = fullName || "N/A";
@@ -1300,9 +1298,7 @@
                 }
             }
 
-            // ----------------------------
-            // 💳 LOAD MEMBERSHIP INFO
-            // ----------------------------
+            // LOAD MEMBERSHIP INFO
             async function loadMembership() {
                 try {
                     const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_membership&patient_id=${patientId}`);
@@ -1341,9 +1337,7 @@
             await loadPatient();
             await loadMembership();
 
-            // ----------------------------
-            // ✏️ Patient Modal
-            // ----------------------------
+            //  Patient Modal
             const editModal = document.getElementById("editPatientModal");
             document.getElementById("editBtn").addEventListener("click", () => {
                 editModal.classList.remove("hidden");
@@ -1380,9 +1374,7 @@
                 }
             });
 
-            // ----------------------------
-            // 💳 Membership Modal
-            // ----------------------------
+            // Membership Modal
             const membershipModal = document.getElementById("membershipModal");
             document.getElementById("addBtn").addEventListener("click", () => {
                 membershipModal.classList.remove("hidden");
@@ -1420,8 +1412,6 @@
             });
         });
     </script>
-
-
 
     <!-- Vital Signs -->
     <script>
@@ -1554,9 +1544,7 @@
 
             const notice = document.getElementById("notice");
 
-            // ===============================
-            // 🔹 Notification Function
-            // ===============================
+            // Notification Function
             function showNotice(message, color = "blue") {
                 notice.textContent = message;
                 notice.style.background = color;
@@ -1573,9 +1561,7 @@
                 }, 3000);
             }
 
-            // ======================================================
-            // 🔹 MEDICAL HISTORY SECTION
-            // ======================================================
+            // MEDICAL HISTORY SECTION
             const medicalForm = document.querySelector("#medicalHistoryForm");
             const medicalList = document.querySelector("#medicalHistoryList");
 
@@ -1642,9 +1628,7 @@
                     });
             });
 
-            // ======================================================
-            // 🔹 MEDICAL HISTORY MODAL (FIXED)
-            // ======================================================
+            // MEDICAL HISTORY MODAL (FIXED)
             const medicalModal = document.getElementById("medicalModal");
             const addMedicalBtn = document.getElementById("addMedicalHistoryBtn");
             const cancelMedicalBtn = document.getElementById("cancelMedicalBtn");
@@ -1715,9 +1699,7 @@
                     });
             });
 
-            // ======================================================
-            // 🔹 DIETARY / SOCIAL HISTORY SECTION
-            // ======================================================
+            // DIETARY / SOCIAL HISTORY SECTION
             const dietaryModal = document.getElementById("dietaryModal");
             const addDietaryBtn = document.getElementById("addDietaryHistoryBtn");
             const cancelDietaryBtn = document.getElementById("cancelDietaryBtn");
@@ -1817,16 +1799,33 @@
                     });
             });
 
-            // ======================================================
-            // 🔹 INITIAL LOAD
-            // ======================================================
+            // INITIAL LOAD
             loadMedicalHistory();
             loadDietaryHistory();
         });
     </script>
+    <script>
+        // ✅ Example: get patient ID (you can modify this depending on your app logic)
+        // Option A: If it's already in the URL (e.g., ?id=3)
+        const params = new URLSearchParams(window.location.search);
+        const patientId = params.get('id');
 
+        // Option B: Or if you stored the selected patient in localStorage previously
+        // const patient = JSON.parse(localStorage.getItem('selectedPatient'));
+        // const patientId = patient?.patient_id;
 
-
+        // ✅ Set the Oral Health Condition link dynamically
+        const oralHealthLink = document.getElementById("oralHealthLink");
+        if (oralHealthLink && patientId) {
+            oralHealthLink.href = `view_oral.html?id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            oralHealthLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+    </script>
 
 </body>
 

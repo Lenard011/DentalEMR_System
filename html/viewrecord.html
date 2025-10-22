@@ -1125,12 +1125,20 @@
 
     let currentPatient = null;
 
-    function showNotice(msg, isError = false) {
-      const n = document.getElementById('notice');
-      n.style.background = isError ? 'blue' : 'red';
-      n.innerText = msg;
-      n.style.display = 'block';
-      setTimeout(() => n.style.display = 'none', 3000);
+    function showNotice(message, color = "blue") {
+      notice.textContent = message;
+      notice.style.background = color;
+      notice.style.display = "block";
+      notice.style.opacity = "1";
+
+      setTimeout(() => {
+        notice.style.transition = "opacity 0.6s";
+        notice.style.opacity = "0";
+        setTimeout(() => {
+          notice.style.display = "none";
+          notice.style.transition = "";
+        }, 1500);
+      }, 5000);
     }
 
     async function loadPatient() {
@@ -1146,8 +1154,8 @@
           currentPatient = data.patient;
 
           // Fill display fields (use your preferred ordering)
-          document.getElementById('patientName').innerText = currentPatient.surname + ' ' + currentPatient.firstname + ' ' + currentPatient.middlename;
-          document.getElementById('patientName2').innerText = currentPatient.surname + ' ' + currentPatient.firstname + ' ' + currentPatient.middlename;
+          document.getElementById('patientName').innerText = currentPatient.surname + ', ' + currentPatient.firstname + ' ' + currentPatient.middlename + '.';
+          document.getElementById('patientName2').innerText = currentPatient.surname + ', ' + currentPatient.firstname + ' ' + currentPatient.middlename + '.';
           document.getElementById('patientDob').innerText = currentPatient.date_of_birth || '';
           document.getElementById('patientSex').innerText = currentPatient.sex || '';
           document.getElementById('patientAge').innerText = currentPatient.age || '';
@@ -1202,11 +1210,10 @@
     }
 
     // when page loads
-    window.addEventListener('DOMContentLoaded', loadPatient);
+    window.addEventListener('DOMContentLoaded', loadPatient); 
   </script>
-  
-  <!-- Under ng patient_info.php  -->
-  <!-- membership, medical and dietary add -->
+
+  <!-- membership, medical and dietary  -->
   <script>
     function toggleInput(checkbox, inputId) {
       const input = document.getElementById(inputId);
@@ -1245,14 +1252,25 @@
     function showModal(id) { document.getElementById(id).classList.remove("hidden"); }
     function hideModal(id) { document.getElementById(id).classList.add("hidden"); }
 
-    function showNotice(msg, type = "success") {
-      const notice = document.getElementById("notice");
-      if (!notice) { alert(msg); return; }
-      notice.textContent = msg;
-      notice.style.display = "block";
-      notice.style.opacity = "1";
-      notice.style.background = type === "success" ? 'blue' : 'red';
-      setTimeout(() => { notice.style.opacity = "0"; setTimeout(() => notice.style.display = "none", 300); }, 1000);
+    /* ---------- Unified showNotice (matches vitals style) ---------- */
+    function showNotice(message, success = true) {
+      const notice = document.getElementById('notice');
+      if (!notice) return;
+
+      notice.textContent = message;
+      notice.style.background = success ? '#2563eb' : '#dc2626'; // blue for success, red for error
+      notice.style.color = 'white';
+      notice.style.display = 'block';
+      notice.style.opacity = '1';
+      notice.style.transition = 'opacity 0.6s';
+
+      // Fade out after 5 seconds
+      setTimeout(() => {
+        notice.style.opacity = '0';
+        setTimeout(() => {
+          notice.style.display = 'none';
+        }, 1500);
+      }, 3000);
     }
 
     /* ---------- Load membership ---------- */
@@ -1381,7 +1399,7 @@
         form.querySelectorAll("input[type=text]").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
 
         const pidEl = document.getElementById("patient_id");
-        if (!pidEl || !pidEl.value) { showNotice("No patient specified", "error"); return; }
+        if (!pidEl || !pidEl.value) { showNotice("No patient specified", false); return; }
         fd.set("patient_id", pidEl.value);
         fd.set("action", "save_membership");
 
@@ -1391,10 +1409,10 @@
           const json = JSON.parse(text);
           if (json.success) {
             hideModal("membershipModal");
-            showNotice("Membership saved");
-            setTimeout(() => location.reload(), 700);
-          } else showNotice("Error: " + (json.message || "Unknown"), "error");
-        } catch (err) { console.error(err); showNotice("Request failed", "error"); }
+            showNotice("Membership saved successfully!", true);
+            loadMemberships(pidEl.value);
+          } else showNotice("Error: " + (json.message || "Unknown"), false);
+        } catch (err) { console.error(err); showNotice("Request failed", false); }
       });
 
       /* --- Medical --- */
@@ -1411,7 +1429,7 @@
         if (btd) fd.set("blood_transfusion", btd.disabled ? "" : btd.value);
 
         const pidEl = document.getElementById("patient_id");
-        if (!pidEl || !pidEl.value) { showNotice("No patient specified", "error"); return; }
+        if (!pidEl || !pidEl.value) { showNotice("No patient specified", false); return; }
         fd.set("patient_id", pidEl.value);
         fd.set("action", "save_medical");
 
@@ -1421,10 +1439,10 @@
           const json = JSON.parse(text);
           if (json.success) {
             hideModal("medicalModal");
-            showNotice("Medical history saved");
-            setTimeout(() => location.reload(), 700);
-          } else showNotice("Error: " + (json.message || "Unknown"), "error");
-        } catch (err) { console.error(err); showNotice("Request failed", "error"); }
+            showNotice("Medical history saved successfully!", true);
+            loadMedicalHistory(pidEl.value);
+          } else showNotice("Error: " + (json.message || "Unknown"), false);
+        } catch (err) { console.error(err); showNotice("Request failed", false); }
       });
 
       /* --- Dietary --- */
@@ -1438,7 +1456,7 @@
         form.querySelectorAll("input[type=text]").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
 
         const pidEl = document.getElementById("patient_id");
-        if (!pidEl || !pidEl.value) { showNotice("No patient specified", "error"); return; }
+        if (!pidEl || !pidEl.value) { showNotice("No patient specified", false); return; }
         fd.set("patient_id", pidEl.value);
         fd.set("action", "save_dietary");
 
@@ -1448,13 +1466,15 @@
           const json = JSON.parse(text);
           if (json.success) {
             hideModal("dietaryModal");
-            showNotice("Dietary history saved");
-            setTimeout(() => location.reload(), 700);
-          } else showNotice("Error: " + (json.message || "Unknown"), "error");
-        } catch (err) { console.error(err); showNotice("Request failed", "error"); }
+            showNotice("Dietary history saved successfully!", true);
+            loadDietaryHistory(pidEl.value);
+          } else showNotice("Error: " + (json.message || "Unknown"), false);
+        } catch (err) { console.error(err); showNotice("Request failed", false); }
       });
     });
   </script>
+
+
   <!-- vital signs  -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -1470,11 +1490,20 @@
       const notice = document.getElementById('notice');
       const patientInput = document.getElementById('editPatientId'); // hidden input
 
-      function showNotice(msg, success = true) {
-        notice.textContent = msg;
-        notice.style.background = success ? 'blue' : 'red';
-        notice.style.display = 'block';
-        setTimeout(() => { notice.style.display = 'none'; }, 3000);
+      function showNotice(message, color = "blue") {
+        notice.textContent = message;
+        notice.style.background = color;
+        notice.style.display = "block";
+        notice.style.opacity = "1";
+
+        setTimeout(() => {
+          notice.style.transition = "opacity 0.6s";
+          notice.style.opacity = "0";
+          setTimeout(() => {
+            notice.style.display = "none";
+            notice.style.transition = "";
+          }, 1500);
+        }, 5000);
       }
 
       addBtn.addEventListener('click', () => modal.classList.remove('hidden'));

@@ -1102,6 +1102,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </section>
 
                 <div class="flex justify-between w-full">
@@ -2636,76 +2637,115 @@
 
             // Save function — sends codes (condition_code / treatment_code). Server will resolve DB ids.
             async function saveOralCondition() {
-                const pid = document.getElementById('patient_id')?.value;
-                if (!pid) { alert("Select patient"); return; }
+                const patient_id = document.querySelector("#patient_id").value;
+                const visit_id = document.querySelector("#visit_id").value || 0;
 
                 const items = [];
 
-                // collect conditions from tooth parts
-                document.querySelectorAll('.part').forEach(part => {
-                    const condCode = part.dataset.condition; // e.g. 'D' or 'S'
+                // Save condition parts (upper/lower areas)
+                document.querySelectorAll(".part").forEach(part => {
+                    const condCode = part.dataset.condition;
                     if (!condCode) return;
-                    const toothDiv = part.closest('.tooth');
+
+                    const toothDiv = part.closest(".tooth");
                     if (!toothDiv) return;
-                    const tooth_id = toothDiv.dataset.toothId || toothDiv.dataset.toothid || toothDiv.dataset.toothID;
+
+                    const tooth_id =
+                        toothDiv.dataset.toothId ||
+                        toothDiv.dataset.toothid ||
+                        toothDiv.dataset.toothID;
                     if (!tooth_id) return;
+
+                    // ✅ FIX: Get color and case type properly
+                    const color = part.dataset.color === "red"
+                        ? "red"
+                        : part.dataset.color === "blue"
+                            ? "blue"
+                            : "";
+
+                    const caseType =
+                        part.dataset.case === "lower"
+                            ? "temporary"
+                            : "permanent"; // default to permanent
+
                     items.push({
-                        type: 'condition',
-                        tooth_id: tooth_id,
+                        type: "condition",
+                        tooth_id,
                         condition_code: condCode,
-                        box_key: part.dataset.key
+                        box_key: part.dataset.key,
+                        color, // ✅ include color
+                        case_type: caseType // ✅ include case type
                     });
                 });
 
-                // collect treatments from treatment boxes
-                document.querySelectorAll('.treatment-box, .treatment1-box').forEach(box => {
-                    const treatCode = box.dataset.treatment; // e.g. 'FV'
-                    if (!treatCode) return;
-                    // optional: if you want to link treatments to a tooth, put a dataset.toothId on the box
-                    const tooth_id = box.dataset.toothId || null;
-                    items.push({
-                        type: 'treatment',
-                        tooth_id: tooth_id,
-                        treatment_code: treatCode,
-                        box_key: box.dataset.key,
-                        color: '', // not used in treatment boxes
-                        case_type: ''
-                    });
-                });
+                // Save condition/treatment boxes if present
+                document.querySelectorAll(".condition1-box, .condition-box").forEach(box => {
+                    const treatCode = box.dataset.treatment;
+                    const condCode = box.dataset.condition;
+                    const toothDiv = box.closest(".tooth");
+                    if (!toothDiv) return;
 
-                if (!items.length) { alert("No data to save"); return; }
+                    const tooth_id =
+                        toothDiv.dataset.toothId ||
+                        toothDiv.dataset.toothid ||
+                        toothDiv.dataset.toothID;
+                    if (!tooth_id) return;
 
-                try {
-                    const res = await fetch('/dentalemr_system/php/treatment/oral_condition_api.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'save',
-                            patient_id: pid,
-                            oral_data: items,
-                            visit_id: document.getElementById('visit_id')?.value ?? 0
-                        })
-                    });
+                    const color = box.dataset.color === "red"
+                        ? "red"
+                        : box.dataset.color === "blue"
+                            ? "blue"
+                            : "";
 
-                    // robust parse: show server text if JSON.parse fails
-                    const text = await res.text();
-                    try {
-                        const data = JSON.parse(text);
-                        if (data.success) {
-                            // alert('Saved successfully!');
-                            if (data.visit_id) document.getElementById('visit_id').value = data.visit_id;
-                            if (data.warnings && data.warnings.length) console.warn('Warnings:', data.warnings);
-                        } else {
-                            alert('❌ Failed: ' + (data.error || 'Unknown'));
-                            if (data.warnings) console.warn('Warnings:', data.warnings);
-                        }
-                    } catch (err) {
-                        // not valid JSON — surface server response for debugging but do not break UI
-                        console.error('Server returned non-JSON response:', text);
-                        alert('❌ Server error: see console for details');
+                    const caseType =
+                        box.dataset.case === "lower"
+                            ? "temporary"
+                            : "permanent";
+
+                    if (treatCode) {
+                        items.push({
+                            type: "treatment",
+                            tooth_id,
+                            treatment_code: treatCode,
+                            box_key: box.dataset.key,
+                            color,
+                            case_type: caseType
+                        });
+                    } else if (condCode) {
+                        items.push({
+                            type: "condition",
+                            tooth_id,
+                            condition_code: condCode,
+                            box_key: box.dataset.key,
+                            color,
+                            case_type: caseType
+                        });
                     }
-                } catch (err) {
-                    alert('❌ Network or server error: ' + err.message);
+                });
+
+                // Send to PHP
+                const payload = {
+                    action: "save",
+                    patient_id,
+                    visit_id,
+                    oral_data: items
+                };
+
+                console.log("🟦 Sending payload:", payload); // 👈 use this to verify in browser console
+
+                const response = await fetch("/php/treatment/oral_condition_api.php", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                console.log("🟥 Server response:", result);
+
+                if (result.success) {
+                    alert("Oral condition saved successfully!");
+                } else {
+                    alert("Error saving: " + result.error);
                 }
             }
 

@@ -8,45 +8,25 @@
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        .arch {
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .grid1 {
             display: flex;
-            flex-direction: row;
-            gap: 25px;
+            gap: 3px;
             justify-content: center;
-            margin-bottom: 10px;
-            /* margin-top: -10px; */
+            /* border: solid black 1px; */
+            align-items: center;
         }
 
-        .top {
-            margin-bottom: -15px;
-        }
-
-        .down {
-            margin-top: -10px;
-        }
-
-        .label {
+        .gridtop {
             display: flex;
-            flex-direction: row;
-            gap: 10px;
-            /* justify-content: center; */
-            text-align: left;
-        }
-
-        .treatmentbox {
-            display: flex;
-            flex-direction: row;
-            gap: 31px;
+            gap: 3px;
             justify-content: center;
-            margin-bottom: 5px;
-        }
-
-        .treatment-box {
-            width: 25px;
-            height: 25px;
-            border: 1px solid #555;
-            margin-bottom: 2px;
-            background: white;
+            align-items: center;
+            margin-bottom: 4px;
+            /* border: solid black 1px; */
         }
 
         .tooth-container {
@@ -56,9 +36,24 @@
         }
 
         .tooth {
-            width: 30px;
-            height: 30px;
+            width: 39px;
+            height: 39px;
             position: relative;
+            cursor: pointer;
+        }
+
+        .tooth-label {
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .label-top {
+            margin-bottom: 2px;
+        }
+
+        .label-bottom {
+            margin-top: 2px;
         }
 
         .part {
@@ -66,6 +61,13 @@
             box-sizing: border-box;
             background-color: white;
             border: 1px solid #747474;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #fff;
+            user-select: none;
         }
 
         .part-top-left {
@@ -73,6 +75,7 @@
             left: 0;
             width: 50%;
             height: 50%;
+            border: 1px solid #555;
             border-top-left-radius: 100%;
         }
 
@@ -81,6 +84,7 @@
             right: 0;
             width: 50%;
             height: 50%;
+            border: 1px solid #555;
             border-top-right-radius: 100%;
         }
 
@@ -89,6 +93,7 @@
             left: 0;
             width: 50%;
             height: 50%;
+            border: 1px solid #555;
             border-bottom-left-radius: 100%;
         }
 
@@ -97,32 +102,79 @@
             right: 0;
             width: 50%;
             height: 50%;
+            border: 1px solid #555;
             border-bottom-right-radius: 100%;
         }
 
         .part-center {
-            width: 15px;
-            height: 15px;
+            width: 18px;
+            height: 18px;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             border-radius: 50%;
-            border: 1px solid #747474;
+            border: 1px solid #555;
             position: absolute;
-            background: white;
         }
 
-        .tooth-label {
-            margin-top: 5px;
+        .tooltip {
+            visibility: hidden;
+            background-color: #222;
+            color: #fff;
+            padding: 4px 6px;
+            border-radius: 4px;
             font-size: 12px;
-            font-weight:normal;
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 10;
         }
 
-        .section-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            margin-top: 30px;
+        .tooth:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
         }
+
+        /* containers (your existing class names) */
+        .treatmentbox,
+        .treatmentbox1,
+        .conditionbox,
+        .conditionbox1 {
+            display: flex;
+            grid-template-columns: repeat(16, 2.51rem);
+            margin: 5px auto;
+            justify-content: space-between;
+            align-items: center;
+            /* border: solid 1px black; */
+        }
+
+        /* individual boxes (clickable) */
+        .treatment-box,
+        .treatment1-box,
+        .condition-box,
+        .condition1-box {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            text-align: center;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            background: #fff;
+            color: #000;
+        }
+
+        /* for condition boxes we will allow JS to set colors on the element */
     </style>
 </head>
 
@@ -247,7 +299,7 @@
                     <li>
                         <a href="../addpatient.html"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
-                            <svg aria-hidden="true" 
+                            <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path
@@ -256,7 +308,7 @@
                                     d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" />
                             </svg>
 
-                            <span class="ml-3" >Add Patient</span>
+                            <span class="ml-3">Add Patient</span>
                         </a>
                     </li>
                     <li>
@@ -280,7 +332,7 @@
                         </button>
                         <ul id="dropdown-pages" class="visible py-2 space-y-2">
                             <li>
-                                <a href="#"  style="color: blue;"
+                                <a href="#" style="color: blue;"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
@@ -421,16 +473,29 @@
                     </div>
                 </div>
             </nav>
-        </header>     
+        </header>
         <main class="p-1.5 md:ml-64 h-auto pt-1">
             <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg">
-                <p class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Lenard G. Galgo</p>
+                <div class="items-center justify-between flex flex-row mb-3">
+                    <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading
+                        ...
+                    </p>
+                    <button type="button" id="addTooth" onclick="openToothModal()"
+                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                        <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path clip-rule="evenodd" fill-rule="evenodd"
+                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+                        </svg>
+                        Add
+                    </button>
+                </div>
                 <div
                     class="mx-auto flex flex-col justify-center items-center max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
                     <div class="items-center justify-between flex flex-row w-full">
                         <p class="text-base font-normal text-gray-950 dark:text-white ">A. Oral Health Condition</p>
                     </div>
-                    <div >
+                    <div>
                         <div class="flex justify-between gap-4 p-1 mb-2">
                             <button type="button" onclick="year1()" style="font-size: 12px;"
                                 class="text-white shadow drop-shadow-sm justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
@@ -457,637 +522,34 @@
                     <div class="label ">
                         <p class="text-sm font-medium text-gray-950 dark:text-white ">Year I - Date</p>
                     </div>
-                    <div>
-                        <div class="label">
-                            <p class="text-sm font-normal text-gray-950 dark:text-white ">Treatment</p>
-                        </div>
-                        <div class="treatmentbox">
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                        </div>
-                        <div class="treatmentbox">
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                        </div>
-                        <div class="label">
-                            <p class="text-sm font-normal text-gray-950 dark:text-white ">Condition</p>
-                        </div>
-                        <div class="top">
-                            <!-- Upper 55-51,61-65 -->
-                            <div class="arch">
-                                <div class="tooth-container">
-                                    <div class="tooth-label">55</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">54</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">53</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">52</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">51</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">61</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">62</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">63</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">64</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">65</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-
-                                </div>
-                            </div>
-                            <!-- Upper 18-11,21-28 -->
-                            <div class="arch">
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">18</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">17</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">16</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">15</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">14</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">13</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">12</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">11</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">21</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">22</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">23</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">24</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">25</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">26</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">27</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">28</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="down">
-                            <!-- lower 48-41,31-38 -->
-                            <div class="arch">
-                                <div class="tooth-container">
-                                    <div class="tooth-label">48</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">47</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">46</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">45</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">44</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">43</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">42</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">41</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">31</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">32</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">33</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">34</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">35</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">36</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">37</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth-label">38</div>
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- lower 85-81,71-75 -->
-                            <div class="arch">
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">85</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">84</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">83</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">82</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">81</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">71</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">72</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">73</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">74</div>
-                                </div>
-                                <div class="tooth-container">
-                                    <div class="tooth">
-                                        <div class="part part-top-left"></div>
-                                        <div class="part part-top-right"></div>
-                                        <div class="part part-bottom-left"></div>
-                                        <div class="part part-bottom-right"></div>
-                                        <div class="part part-center"></div>
-                                    </div>
-                                    <div class="tooth-label">75</div>
-                                </div>
-                            </div>
+                    <div class=" flex flex-col">
+                        <div class="w-170">
+                            <p style="margin-bottom: -5px; margin-top: -10px;"
+                                class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">Treatment
+                            </p>
+                            <div class="treatmentbox" id="treatRow1"></div>
+                            <div class="conditionbox" id="treatRow2"></div>
+                            <p style="margin-bottom: -20px; margin-top: -5px;"
+                                class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">Condition
+                            </p>
                         </div>
 
-                        <div class="label">
-                            <p class="text-sm font-normal text-gray-950 dark:text-white ">Condition</p>
+                        <div class="w-170">
+                            <div class="gridtop" id="permanentGridtop"></div>
+                            <div class="grid1" id="permanentGridbot"></div>
+                            <div class="gridtop" id="temporaryGridtop"></div>
+                            <div class="grid1" id="temporaryGridbot"></div>
                         </div>
-                        <div class="treatmentbox">
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                        </div>
-                        <div class="treatmentbox">
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                            <div class="treatment-box"></div>
-                        </div>
-                        <div class="label">
-                            <p class="text-sm font-normal text-gray-950 dark:text-white ">Treatment</p>
+
+                        <div class="w-170">
+                            <p style="margin-top: -20px; margin-bottom: -5px;"
+                                class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">Condition
+                            </p>
+                            <div class="conditionbox1" id="treatRow3"></div>
+                            <div class="treatmentbox1" id="treatRow4"></div>
+                            <p style="margin-top: -5px;"
+                                class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white ">Treatment
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -1119,6 +581,229 @@
         }
 
     </script>
+
+    <script>
+        const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
+        // Create tooth part
+        function createPart(toothId, partName) {
+            const part = document.createElement('div');
+            part.className = 'part part-' + partName;
+            const key = `${toothId}-${partName}`;
+            part.dataset.key = key;
+            part.addEventListener('click', () => {
+                if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
+                applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
+            });
+            return part;
+        }
+
+        // create tooth container; tooth_id must be the DB tooth_id (or FDI fallback)
+        function createTooth(id, label, position = 'bottom', tooth_id = null) {
+            const container = document.createElement('div');
+            container.className = 'tooth-container';
+
+            const toothLabel = document.createElement('div');
+            toothLabel.className = `tooth-label label-${position}`;
+            toothLabel.textContent = label;
+
+            const tooth = document.createElement('div');
+            tooth.className = 'tooth';
+            tooth.id = id;
+            // store actual tooth_id (DB) if available; otherwise store FDI number as fallback
+            tooth.dataset.toothId = tooth_id ?? '';
+
+            teethParts.forEach(p => tooth.appendChild(createPart(id, p)));
+
+            // tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = label;
+            tooth.appendChild(tooltip);
+
+            container.append(position === 'top' ? toothLabel : tooth, position === 'top' ? tooth : toothLabel);
+            return container;
+        }
+
+        // Load teeth mapping from server (if available) so dataset.toothId is DB tooth_id
+        async function loadGrid() {
+            const permTop = document.getElementById('permanentGridtop');
+            const permBot = document.getElementById('permanentGridbot');
+            const tempTop = document.getElementById('temporaryGridtop');
+            const tempBot = document.getElementById('temporaryGridbot');
+
+            let teethData = [];
+            try {
+                const r = await fetch('/dentalemr_system/php/treatment/get_teeth.php');
+                if (r.ok) teethData = await r.json();
+            } catch (e) {
+                console.warn('Could not load teeth mapping, will fallback to FDI numbers', e);
+            }
+
+            const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
+            const permB = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+            const tempT = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+            const tempB = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
+
+            permT.forEach(n => {
+                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                permTop.appendChild(createTooth(`P-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
+            });
+            permB.forEach(n => {
+                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                permBot.appendChild(createTooth(`P-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+            });
+            tempT.forEach(n => {
+                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                tempTop.appendChild(createTooth(`T-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
+            });
+            tempB.forEach(n => {
+                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                tempBot.appendChild(createTooth(`T-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+            });
+        }
+
+        // Create boxes for treatment/condition rows
+        function createBox(id, row, kind) {
+            const box = document.createElement('div');
+            const key = `R${row}-${id}`;
+            box.dataset.key = key;
+
+            if (kind === 'treatment') {
+                box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
+                // no background color required for treatment boxes - they should be plain
+                box.addEventListener('click', () => {
+                    const selectedTreat = treatmentSelect?.value || '';
+                    if (!selectedTreat) { alert('Select a treatment from dropdown'); return; }
+                    applyChange(key, '', selectedTreat, 'upper', true, true);
+                });
+            } else {
+                box.className = (row === 3) ? 'condition1-box' : 'condition-box';
+                box.addEventListener('click', () => {
+                    if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
+                    applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
+                });
+            }
+
+            return box;
+        }
+
+        function loadBoxes() {
+            const row1 = document.getElementById('treatRow1');
+            for (let i = 0; i < 16; i++) row1.appendChild(createBox(i, 1, 'treatment'));
+
+            const row2 = document.getElementById('treatRow2');
+            for (let i = 0; i < 16; i++) row2.appendChild(createBox(i, 2, 'condition'));
+
+            const row3 = document.getElementById('treatRow3');
+            for (let i = 0; i < 16; i++) row3.appendChild(createBox(i, 3, 'condition'));
+
+            const row4 = document.getElementById('treatRow4');
+            for (let i = 0; i < 16; i++) row4.appendChild(createBox(i, 4, 'treatment'));
+        }
+
+        // initialize UI
+        loadGrid();
+        loadBoxes();
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            const patientId = params.get("id");
+            if (!patientId) return alert("Missing patient ID");
+
+            // Default to Year I
+            loadVisitData(patientId, 1);
+
+            // Year buttons
+            window.year1 = () => loadVisitData(patientId, 1);
+            window.year2 = () => loadVisitData(patientId, 2);
+            window.year3 = () => loadVisitData(patientId, 3);
+            window.year4 = () => loadVisitData(patientId, 4);
+            window.year5 = () => loadVisitData(patientId, 5);
+        });
+
+        /**
+         * Fetch and render all tooth data for the selected year
+         */
+        async function loadVisitData(patientId, visitNumber) {
+            try {
+                // 🧹 Clear previous colors and text
+                clearAllTeeth();
+
+                const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_oralA.php?patient_id=${patientId}`);
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || "Failed to load data");
+
+                const visit = data.visits.find(v => v.visit_number === visitNumber);
+                if (!visit) {
+                    console.warn("⚠️ No visit data found for Year " + visitNumber);
+                    return;
+                }
+
+                document.getElementById("patientName").textContent =
+                    `${visit.visit_label} — ${new Date(visit.visit_date).toLocaleDateString()}`;
+
+                // 🦷 Apply conditions (with DB color)
+                visit.conditions.forEach(c => {
+                    const el = document.querySelector(`[data-key='${c.box_key}']`);
+                    if (!el) return;
+
+                    // ✅ Use DB color if available; otherwise fallback
+                    const dbColor = c.color?.trim() || "";
+                    const fallbackColor = c.condition_code === "m" ? "#ef4444" : "#3b82f6";
+                    const fillColor = dbColor !== "" ? dbColor : fallbackColor;
+
+                    // Apply styling
+                    el.style.backgroundColor = fillColor;
+                    el.style.color = "#ffffff";
+                    el.style.fontWeight = "bold";
+                    el.style.fontSize = "10px";
+                    el.style.display = "flex";
+                    el.style.alignItems = "center";
+                    el.style.justifyContent = "center";
+                    el.style.border = "1px solid rgba(0,0,0,0.1)";
+                    el.textContent = c.condition_code?.toUpperCase() || "";
+                });
+
+                // 💉 Apply treatments (no fill color)
+                visit.treatments.forEach(t => {
+                    const treatEl = document.querySelector(`[data-key='${t.box_key}']`);
+                    if (!treatEl) return;
+
+                    treatEl.textContent = t.treatment_code?.toUpperCase() || "";
+                    treatEl.style.backgroundColor = "#ffffff"; // no fill
+                    treatEl.style.border = "1px solid #00000080";
+                    treatEl.style.color = "#000000";
+                    treatEl.style.fontSize = "10px";
+                    treatEl.style.fontWeight = "bold";
+                    treatEl.style.display = "flex";
+                    treatEl.style.alignItems = "center";
+                    treatEl.style.justifyContent = "center";
+                });
+
+                console.log(`✅ Loaded Year ${visitNumber}`, visit);
+            } catch (err) {
+                console.error("❌ Error loading visit data:", err);
+                alert("Failed to load visit data: " + err.message);
+            }
+        }
+
+        /**
+         * Clears all tooth colors and labels
+         */
+        function clearAllTeeth() {
+            document.querySelectorAll(".part, [data-key^='R']").forEach(el => {
+                el.style.backgroundColor = "";
+                el.style.color = "";
+                el.style.border = "";
+                el.textContent = "";
+            });
+        }
+    </script>
+
+
+
 </body>
 
 </html>
