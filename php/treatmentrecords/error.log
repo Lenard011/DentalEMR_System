@@ -1,0 +1,20 @@
+[30-Oct-2025 17:57:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function prepare() on string in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php:24
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php on line 24
+[30-Oct-2025 18:09:06 Europe/Berlin] PHP Warning:  require_once(C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords/../db.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php on line 14
+[30-Oct-2025 18:09:06 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords/../db.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php:14
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php on line 14
+[30-Oct-2025 18:12:57 Europe/Berlin] PHP Warning:  require_once(C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords/../db.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php on line 15
+[30-Oct-2025 18:12:57 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required 'C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords/../db.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php:15
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php on line 15
+[30-Oct-2025 18:15:29 Europe/Berlin] SMC save error: Database connection not available.
+[30-Oct-2025 18:15:31 Europe/Berlin] SMC save error: Database connection not available.
+[30-Oct-2025 18:15:53 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to a member function prepare() on string in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php:28
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\add_vieworalB.php on line 28

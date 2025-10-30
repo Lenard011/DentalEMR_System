@@ -18,7 +18,6 @@ $mysqli->set_charset("utf8mb4");
 $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
 if ($limit < 1) $limit = 10;
 if ($limit > 200) $limit = 200;
-
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;

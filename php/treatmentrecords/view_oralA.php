@@ -41,6 +41,33 @@ try {
 
     $patient_id = (int) $_GET['patient_id'];
 
+    // ✅ NEW: Fetch patient information
+    $stmtPatient = $db->prepare("
+        SELECT 
+            patient_id,
+            surname,
+            firstname,
+            middlename,
+            date_of_birth,
+            place_of_birth,
+            age,
+            sex,
+            address,
+            pregnant,
+            occupation,
+            guardian,
+            created_at
+        FROM patients
+        WHERE patient_id = ?
+        LIMIT 1
+    ");
+    $stmtPatient->execute([$patient_id]);
+    $patient = $stmtPatient->fetch(PDO::FETCH_ASSOC);
+
+    if (!$patient) {
+        throw new Exception('Patient not found for ID ' . $patient_id);
+    }
+
     // ✅ Optional: filter by visit_id
     $filter_visit_id = isset($_GET['visit_id']) ? (int) $_GET['visit_id'] : null;
 
@@ -65,10 +92,12 @@ try {
 
     $visits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // ✅ If no visits, still return patient info
     if (!$visits) {
         echo json_encode([
             'success' => true,
             'patient_id' => $patient_id,
+            'patient' => $patient,
             'visits' => []
         ]);
         exit;
@@ -92,7 +121,7 @@ try {
                 c.description AS condition_description,
                 c.is_permanent,
                 vc.box_key,
-                vc.color,           -- ✅ Fetch color from visittoothcondition
+                vc.color,
                 vc.case_type
             FROM visittoothcondition vc
             LEFT JOIN teeth t ON vc.tooth_id = t.tooth_id
@@ -135,9 +164,11 @@ try {
         ];
     }
 
+    // ✅ Output JSON (with patient details + visits)
     echo json_encode([
         'success' => true,
         'patient_id' => $patient_id,
+        'patient' => $patient,
         'visits' => $output
     ]);
     exit;

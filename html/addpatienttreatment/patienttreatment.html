@@ -1835,7 +1835,7 @@
                         class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-18 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         Back
                     </button>
-                    <button id="saveBtn" type="button" onclick=" ohcABandNext()"
+                    <button id="saveBtn" type="button" onclick="ohcABandNext()"
                         class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-18 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         Next
                     </button>
@@ -2733,7 +2733,7 @@
 
                 console.log("🟦 Sending payload:", payload); // 👈 use this to verify in browser console
 
-                const response = await fetch("/php/treatment/oral_condition_api.php", {
+                const response = await fetch("/dentalemr_system/php/treatment/oral_condition_api.php", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
@@ -2743,7 +2743,7 @@
                 console.log("🟥 Server response:", result);
 
                 if (result.success) {
-                    alert("Oral condition saved successfully!");
+                    // alert("Oral condition saved successfully!");
                 } else {
                     alert("Error saving: " + result.error);
                 }
