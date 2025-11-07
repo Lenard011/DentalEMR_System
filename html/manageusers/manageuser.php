@@ -1,10 +1,43 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    // Destroy session and redirect
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Treatment Records</title>
+    <title>MHO Dental Clinic </title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -74,13 +107,14 @@
                                     profile</a>
                             </li>
                             <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Accounts</a>
+                                <a href="./manageusers/manageuser.php"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage
+                                    users</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -90,7 +124,6 @@
             </div>
         </nav>
         <!-- Sidebar -->
-
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -113,7 +146,7 @@
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.html"
+                        <a href="../index.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -127,7 +160,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.html"
+                        <a href="../addpatient.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -160,14 +193,14 @@
                                     clip-rule="evenodd"></path>
                             </svg>
                         </button>
-                        <ul id="dropdown-pages" class="visible py-2 space-y-2">
+                        <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="#" style="color: blue;"
+                                <a href="./treatmentrecords/treatmentrecords.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="../addpatienttreatment/patienttreatment.html"
+                                <a href="./addpatienttreatment/patienttreatment.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -176,7 +209,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.html"
+                        <a href="./reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -191,7 +224,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.html"
+                        <a href="./reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -204,7 +237,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.html"
+                        <a href="./reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -219,7 +252,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../archived.html"
+                        <a href="./archived.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -229,8 +262,6 @@
                                     clip-rule="evenodd" />
                                 <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
                             </svg>
-
-
                             <span class="ml-3">Archived</span>
                         </a>
                     </li>
@@ -252,13 +283,66 @@
             </div>
         </aside>
         <main class="p-4 md:ml-64 h-auto pt-20">
-            <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 ">
+            <nav class="flex border" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+                    <li class="inline-flex items-center">
+                        <h1
+                            class="text-xl font-bold leading-none tracking-tight text-gray-900 md:text-2xl lg:text-2xl dark:text-white">
+                            Manage Users</h1>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 9 4-4-4-4" />
+                            </svg>
+                            <a href="#"
+                                class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
+                                <h3
+                                    class="text-lg font-semibold leading-none tracking-tight text-gray-900 md:text-lg lg:text-lg dark:text-white">
+                                    History Logs</h3>
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 9 4-4-4-4" />
+                            </svg>
+                            <a href="#"
+                                class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
+                                <h3
+                                    class="text-lg font-semibold leading-none tracking-tight text-gray-900 md:text-lg lg:text-lg dark:text-white">
+                                    Activity History</h3>
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="rtl:rotate-180 w-3 h-3 text-blue-900 mx-1" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 9 4-4-4-4" />
+                            </svg>
+                            <a href="#"
+                                class="ms-1 text-sm font-medium text-blue-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
+                                <h3
+                                    class="text-lg font-semibold leading-none tracking-tight text-blue-900 md:text-lg lg:text-lg dark:text-white">
+                                    Staff</h3>
+                            </a>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+            <section id="dentist" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
                     <!-- Start coding here -->
-                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow">
+                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg ">
                         <div>
-                            <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Patient Treatment
-                                Record List</p>
+                            <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Staff list</p>
                         </div>
                         <div
                             class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -277,92 +361,42 @@
                                             </svg>
                                         </div>
                                         <input type="text" id="simple-search"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-blue-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                             placeholder="Search" required="">
                                     </div>
                                 </form>
                             </div>
                             <div
                                 class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-
-                                <!-- Filter -->
-                                <div class="flex items-center space-x-3 w-full md:w-auto">
-                                    <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
-                                        class="w-full md:w-auto cursor-pointer flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                        type="button">
-                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
-                                            class="h-4 w-4 mr-2 text-gray-400" viewbox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd"
-                                                d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                                                clip-rule="evenodd" />
-                                        </svg>
-                                        Filter
-                                        <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
-                                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                            <path clip-rule="evenodd" fill-rule="evenodd"
-                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                        </svg>
-                                    </button>
-                                    <div id="filterDropdown"
-                                        class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                                        <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose
-                                            address
-                                        </h6>
-                                        <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                                            <li class="flex items-center">
-                                                <input id="apple" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="apple"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Balansay</label>
-                                            </li>
-                                            <li class="flex items-center">
-                                                <input id="fitbit" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="fitbit"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Payompon</label>
-                                            </li>
-                                            <li class="flex items-center">
-                                                <input id="razor" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="razor"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
-                                                    1</label>
-                                            </li>
-                                            <li class="flex items-center">
-                                                <input id="nikon" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="nikon"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
-                                                    2</label>
-                                            </li>
-                                            <li class="flex items-center">
-                                                <input id="benq" type="checkbox" value=""
-                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                                <label for="benq"
-                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
-                                                    3</label>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                <button type="button" id="Adddentistbtn" data-modal-target="addDentistModal"
+                                    data-modal-toggle="addDentistModal" class=" flex items-center justify-center cursor-pointer text-white bg-blue-700
+                                    hover:bg-blue-800 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600
+                                    dark:hover:bg-blue-700">
+                                    <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20"
+                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <path clip-rule="evenodd" fill-rule="evenodd"
+                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+                                    </svg>
+                                    Add Dentist
+                                </button>
                             </div>
                         </div>
                         <!-- Table -->
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <table id="patientsTable" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                 <thead
                                     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                    <tr class="">
-                                        <th scope="col" class="px-4 py-3 text-center">ID</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Name</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Sex</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Age</th>
-                                        <th scope="col" class="px-4 py-3 text-center">Address</th>
-                                        <th scope="col" class="py-3 text-center">Actions</th>
+                                    <tr>
+                                        <th class="px-4 py-3 text-center">Name</th>
+                                        <th class="px-4 py-3 text-center">Usename</th>
+                                        <th class="px-4 py-3 text-center">Email</th>
+                                        <th class="px-4 py-3 text-center">Created At</th>
+                                        <th class="px-4 py-3 text-center">Updated At</th>
+                                        <th class="px-4 py-3 text-center">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="patients-body">
-                                    <tr class="border-b dark:border-gray-700">
+                                <tbody id="patientsBody">
+                                    <tr class="border-b dark:border-gray-700 border-gray-200">
                                         <td
                                             class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                             Loading ...</td>
@@ -370,210 +404,109 @@
                                 </tbody>
                             </table>
                         </div>
-                        <nav id="paginationNav"
-                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-3"
-                            aria-label="Table navigation">
-                        </nav>
                     </div>
                 </div>
             </section>
+            <!-- Add patient Modal -->
+            <div id="addDentistModal" tabindex="-1" aria-hidden="true"
+                class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
+                <div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
+                    <!-- Modal content -->
+                    <div class="relative p-4 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
+                        <!-- Modal header -->
+                        <div
+                            class="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                Add Staff
+                            </h3>
+                            <button type="button"
+                                class="text-gray-400 bg-transparent cursor-pointer hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                data-modal-toggle="addDentistModal">
+                                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="sr-only">Close modal</span>
+                            </button>
+                        </div>
+                        <!-- Modal body -->
+                        <form action="#">
+                            <input type="hidden" name="userType" value="Staff">
+                            <div class="grid gap-4 mb-4 sm:grid-cols-2">
+                                <div class="sm:col-span-2">
+                                    <label for="staffname"
+                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                                    <input type="text" name="fullname" id="staffname" required
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label for="staffusername"
+                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
+                                    <input type="text" name="username" id="staffusername" required
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label for="staffemail"
+                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                                    <input type="email" name="email" id="staffemail" required
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label for="staffpassword"
+                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+                                    <input type="password" name="password" id="staffpassword" required
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label for="staffconfirm"
+                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm
+                                        Password</label>
+                                    <input type="password" name="confirm_password" id="staffconfirm" required
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                </div>
+                            </div>
+                            <button type="submit"
+                                class="text-white inline-flex items-center cursor-pointer bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                <svg class="mr-1 -ml-1 w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                                Create Account
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </main>
-
     </div>
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
     <script>
-        function view() {
-            location.href = ("view_info.html");
-        }
-    </script>
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
 
-    <script>
-        let allPatients = [];
-        let uniqueAddresses = new Set();
-        let currentPage = 1;
-        const rowsPerPage = 10;
-
-        // Fetch patients
-        async function loadPatients(page = 1) {
-            currentPage = page;
-            try {
-                const response = await fetch("/DentalEMR_System/php/treatmentrecords/treatment.php");
-                const text = await response.text();
-                console.log("Raw response:", text);
-
-                const data = JSON.parse(text);
-                if (!Array.isArray(data)) throw new Error("Invalid data format");
-                allPatients = data;
-
-                const addresses = [...new Set(data.map(p => p.address || ""))];
-                if (JSON.stringify([...uniqueAddresses]) !== JSON.stringify(addresses)) {
-                    uniqueAddresses = new Set(addresses);
-                    renderAddressFilters(addresses);
-                }
-
-                renderPatients();
-            } catch (error) {
-                console.error("Error loading patients:", error);
-                const tbody = document.getElementById("patients-body");
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-red-500">
-            Error loading patient data.
-        </td></tr>`;
-            }
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
         }
 
-        function renderPatients() {
-            const tbody = document.getElementById("patients-body");
-            const searchInput = (document.getElementById("simple-search").value || "").toLowerCase();
-            const selectedAddresses = Array.from(document.querySelectorAll('#filterDropdown input[type="checkbox"]:checked'))
-                .map(cb => cb.value);
-
-            const filtered = allPatients.filter(patient => {
-                const name = (patient.fullname || "").toLowerCase();
-                const address = patient.address || "";
-                const matchesSearch = name.includes(searchInput);
-                const matchesAddress = selectedAddresses.length === 0 || selectedAddresses.includes(address);
-                return matchesSearch && matchesAddress;
-            });
-
-            const total = filtered.length;
-            const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = Math.min(startIndex + rowsPerPage, total);
-            const paginated = filtered.slice(startIndex, endIndex);
-
-            tbody.innerHTML = "";
-            if (paginated.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-gray-500">No patient records found.</td></tr>`;
-            } else {
-                paginated.forEach((patient, index) => {
-                    const rowNumber = startIndex + index + 1;
-                    const row = `
-                <tr class="border-b dark:border-gray-700">
-                    <th scope="row" class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${rowNumber}
-                    </th>
-                    <td class="px-4 py-3 text-center">${patient.fullname || "—"}</td>
-                    <td class="px-4 py-3 text-center">${patient.sex || "—"}</td>
-                    <td class="px-4 py-3 text-center">${patient.age || "—"}</td>
-                    <td class="px-4 py-3 text-center">${patient.address || "—"}</td>
-                    <td class="py-3 flex justify-center gap-2">
-                        <button type="button" onclick="window.location.href='view_info.html?id=${patient.patient_id}'"
-                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-1.5">
-                            View
-                        </button>
-                        <button type="button" onclick="archivePatient(${patient.patient_id})"
-                            class="text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-1.5">
-                            Archive
-                        </button>
-                    </td>
-                </tr>`;
-                    tbody.insertAdjacentHTML("beforeend", row);
-                });
-            }
-
-            renderPagination(total, rowsPerPage, currentPage);
-        }
-
-        function renderPagination(total, limitVal, page) {
-            const paginationNav = document.getElementById("paginationNav");
-            const totalPages = Math.max(1, Math.ceil(total / limitVal));
-            const start = (page - 1) * limitVal + 1;
-            const end = Math.min(page * limitVal, total);
-
-            const showingText = `
-        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-        Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
-        of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
-        </span>
-    `;
-
-            let pagesHTML = "";
-            for (let i = 1; i <= totalPages; i++) {
-                pagesHTML += (i === page)
-                    ? `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300">${i}</span></li>`
-                    : `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">${i}</a></li>`;
-            }
-
-            paginationNav.innerHTML = `
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 w-full">
-            ${showingText}
-            <ul class="inline-flex -space-x-px">${pagesHTML}</ul>
-        </div>
-    `;
-        }
-
-        function renderAddressFilters(addresses) {
-            const filterList = document.querySelector('#filterDropdown ul');
-            filterList.innerHTML = "";
-            addresses.forEach(address => {
-                const safeAddress = address || "(Unknown)";
-                const li = document.createElement("li");
-                li.className = "flex items-center";
-                li.innerHTML = `
-            <input id="filter-${safeAddress}" type="checkbox" value="${safeAddress}"
-                class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600">
-            <label for="filter-${safeAddress}" class="ml-2 text-sm font-medium text-gray-900">${safeAddress}</label>
-        `;
-                filterList.appendChild(li);
-            });
-
-            filterList.querySelectorAll("input[type='checkbox']").forEach(cb => {
-                cb.addEventListener("change", () => {
-                    currentPage = 1;
-                    renderPatients();
-                });
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            loadPatients();
-            document.getElementById("simple-search").addEventListener("input", () => {
-                currentPage = 1;
-                renderPatients();
-            });
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
         });
+
+        resetTimer();
     </script>
-
-
-    <script>
-        async function archivePatient(patientId) {
-            if (!confirm("Are you sure you want to archive this patient and all related records?")) return;
-
-            const API = "/dentalemr_system/php/treatmentrecords/treatment.php"; // ✅ make sure folder name is correct
-
-            try {
-                const formData = new FormData();
-                formData.append("archive_id", patientId);
-
-                const response = await fetch(API, { method: "POST", body: formData });
-                const text = await response.text(); // read raw first
-                console.log("Server response:", text); // ✅ debug output
-
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch {
-                    alert("Server returned invalid JSON. Check PHP error logs.");
-                    console.error("Raw server response:", text);
-                    return;
-                }
-
-                if (response.ok && data.success) {
-                    alert(data.message || "Patient archived successfully!");
-                    loadPatients(currentPage);
-                } else {
-                    alert(data.message || "Failed to archive patient.");
-                }
-            } catch (err) {
-                console.error("Network error while archiving:", err);
-                alert("Network error while archiving.");
-            }
-        }
-    </script>
-
+    
 </body>
 
 </html>

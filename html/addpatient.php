@@ -1,3 +1,36 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    // Destroy session and redirect
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
@@ -127,7 +160,7 @@
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -159,7 +192,7 @@
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="index.html"
+                        <a href="index.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -208,12 +241,12 @@
                         </button>
                         <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="./treatmentrecords/treatmentrecords.html"
+                                <a href="./treatmentrecords/treatmentrecords.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="./addpatienttreatment/patienttreatment.html"
+                                <a href="./addpatienttreatment/patienttreatment.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -222,7 +255,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./reports/targetclientlist.html"
+                        <a href="./reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -237,7 +270,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/mho_ohp.html"
+                        <a href="./reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -250,7 +283,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/oralhygienefindings.html"
+                        <a href="./reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -265,7 +298,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./archived.html"
+                        <a href="./archived.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -414,7 +447,7 @@
                                     Patient Registration
                                 </h3>
                                 <button type="button"
-                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                    class="text-gray-400 bg-transparent cursor-pointer hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     data-modal-toggle="addpatientModal">
                                     <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -460,8 +493,25 @@
                                     <div class="w-full">
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Address</label>
-                                        <input type="text" name="address" data-required data-label="Address"
+                                        <select name="address" data-required data-label="Address"
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <option selected>-- Select Address --</option>
+                                            <option value="Balansay">Balansay</option>
+                                            <option value="Fatima">Fatima</option>
+                                            <option value="Payompon">Payompon</option>
+                                            <option value="Poblacion 1">Poblacion 1</option>
+                                            <option value="Poblacion 2">Poblacion 2</option>
+                                            <option value="Poblacion 3">Poblacion 3</option>
+                                            <option value="Poblacion 4">Poblacion 4</option>
+                                            <option value="Poblacion 5">Poblacion 5</option>
+                                            <option value="Poblacion 6">Poblacion 6</option>
+                                            <option value="Poblacion 7">Poblacion 7</option>
+                                            <option value="Poblacion 8">Poblacion 8</option>
+                                            <option value="San Luis">San Luis</option>
+                                            <option value="Talabaan">Talabaan</option>
+                                            <option value="Tangkalan">Tangkalan</option>
+                                            <option value="Tayamaan">Tayamaan</option>
+                                        </select>
                                     </div>
                                 </div>
                                 <!-- Second Col -->
@@ -471,19 +521,28 @@
                                         <label for="date"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Date of
                                             Birth</label>
-                                        <input type="date" name="dob" data-required data-label="date of Birth"
+                                        <input type="date" id="dob" name="dob" data-required data-label="date of Birth"
                                             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                     </div>
                                     <!-- Age,Sex,Pregnant -->
                                     <div id="form-container" class="grid grid-cols-2 gap-4 w-full">
                                         <!-- Age -->
-                                        <div id="age-wrapper">
-                                            <label for="age"
-                                                class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Age</label>
-                                            <input type="number" id="age" name="age" data-required data-label="Age"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <div class="flex flex-row items-center justify-between gap-2 ">
+                                            <div class="age-wrapper w-full ">
+                                                <label for="age"
+                                                    class="block mb-2 text-xs font-medium   text-gray-900 dark:text-white">Age</label>
+                                                <input type="number" id="age" name="age" min="0" data-required
+                                                    data-label="Age"
+                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 w-full focus:border-primary-600 block  p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            </div>
+                                            <div id="monthContainer" class="age-wrapper w-full ">
+                                                <label for="agemonth"
+                                                    class="block mb-2 text-xs font-medium  text-gray-900 dark:text-white">Month</label>
+                                                <input type="number" id="agemonth" name="agemonth" min="0" max="59"
+                                                    data-label="AgeMonth"
+                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 w-full focus:border-primary-600 block  p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            </div>
                                         </div>
-
                                         <!-- Sex -->
                                         <div id="sex-wrapper">
                                             <label for="sex"
@@ -640,7 +699,7 @@
                                     Patient Registration
                                 </h3>
                                 <button type="button"
-                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                    class="text-gray-400 bg-transparent  cursor-pointer hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     data-modal-toggle="addpatientModal2">
                                     <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -888,7 +947,7 @@
                                     Patient Registration
                                 </h3>
                                 <button type="button"
-                                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                    class="text-gray-400 bg-transparent  cursor-pointer hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
                                     data-modal-toggle="addpatientModal3">
                                     <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                                         xmlns="http://www.w3.org/2000/svg">
@@ -998,6 +1057,25 @@
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
+    <script>
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
+        }
+
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
+        });
+
+        resetTimer();
+    </script>
     <script>
         function toggleInput(checkbox, inputId) {
             document.getElementById(inputId).disabled = !checkbox.checked;
@@ -1015,7 +1093,7 @@
                 document.getElementById(id).disabled = !checkbox.checked;
             });
         }
-        form.onsubmit = function (e) {
+        form.onsubmit = function(e) {
             e.preventDefault(); // <-- stops submission
         }
     </script>
@@ -1066,10 +1144,10 @@
             document.getElementById("validationPopup").style.display = "none";
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const form = document.getElementById("patientForm");
 
-            form.addEventListener("submit", function (e) {
+            form.addEventListener("submit", function(e) {
                 let missing = [];
 
                 // --- Always required fields (text, number, date, select) ---
@@ -1155,7 +1233,9 @@
             const url = `${API_PATH}?page=${page}&limit=${limit}&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}`;
 
             try {
-                const res = await fetch(url, { cache: "no-store" });
+                const res = await fetch(url, {
+                    cache: "no-store"
+                });
                 if (!res.ok) {
                     showMessageInTable("Server error: " + res.status);
                     return;
@@ -1172,14 +1252,14 @@
                 data.patients.forEach((p, index) => {
                     const displayId = (currentPage - 1) * limit + index + 1;
                     tbody.insertAdjacentHTML("beforeend", `
-                <tr class="border-b dark:border-gray-700">
+                <tr class="border-b border-gray-200 dark:border-gray-700">
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${displayId}</td>
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.sex)}</td>
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(String(p.age))}</td>
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.address)}</td>
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        <button onclick="window.location.href='viewrecord.html?id=${encodeURIComponent(p.patient_id)}'"
+                        <button onclick="window.location.href='viewrecord.php?id=${encodeURIComponent(p.patient_id)}'"
                             class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
                             View
                         </button>
@@ -1219,9 +1299,9 @@
             </svg></a></li>`;
             }
             for (let i = 1; i <= totalPages; i++) {
-                pagesHTML += (i === page)
-                    ? `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>`
-                    : `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 
+                pagesHTML += (i === page) ?
+                    `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>` :
+                    `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 
                  text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
             }
             if (page < totalPages) {
@@ -1268,6 +1348,77 @@
 
         // initial load
         window.addEventListener("DOMContentLoaded", () => loadPatients(1));
+    </script>
+
+    <!-- age group  -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dobField = document.getElementById('dob');
+            const ageInput = document.getElementById('age');
+            const monthInput = document.getElementById('agemonth');
+            const monthContainer = document.getElementById('monthContainer');
+
+            // Hide month container initially
+            monthContainer.style.display = 'none';
+            monthInput.value = '';
+
+            // Function to calculate and display age/month from DOB
+            function updateFromDOB() {
+                const dob = new Date(dobField.value);
+                const today = new Date();
+
+                if (!dob || dob > today) {
+                    ageInput.value = '';
+                    monthInput.value = '';
+                    monthContainer.style.display = 'none';
+                    return;
+                }
+
+                let years = today.getFullYear() - dob.getFullYear();
+                let months = today.getMonth() - dob.getMonth();
+                const days = today.getDate() - dob.getDate();
+
+                // Adjust month/year differences
+                if (months < 0 || (months === 0 && days < 0)) {
+                    years--;
+                    months += 12;
+                }
+
+                if (years < 0) years = 0;
+                if (months < 0) months = 0;
+
+                ageInput.value = years;
+
+                // Show or hide month container depending on age
+                handleMonthVisibility(years, months);
+            }
+
+            // Function to show/hide the month field
+            function handleMonthVisibility(years, months = 0) {
+                if (years < 5) {
+                    const totalMonths = (years * 12) + months;
+                    if (totalMonths >= 0 && totalMonths <= 59) {
+                        monthContainer.style.display = 'block';
+                        monthInput.value = totalMonths;
+                    } else {
+                        monthContainer.style.display = 'none';
+                        monthInput.value = '';
+                    }
+                } else {
+                    monthContainer.style.display = 'none';
+                    monthInput.value = '';
+                }
+            }
+
+            // 📅 When user changes DOB → auto-fill age & month
+            dobField.addEventListener('change', updateFromDOB);
+
+            // ✍️ When user manually changes age → show/hide month field dynamically
+            ageInput.addEventListener('input', function() {
+                const years = parseInt(this.value) || 0;
+                handleMonthVisibility(years);
+            });
+        });
     </script>
 
 </body>

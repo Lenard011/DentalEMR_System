@@ -1,3 +1,123 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+$_SESSION['last_activity'] = time();
+
+// ✅ Store user session info safely
+$loggedUser = $_SESSION['logged_user'];
+
+// ---------------- DATABASE CONNECTION ----------------
+$host = "localhost";
+$dbUser = "root";
+$dbPass = "";
+$dbName = "dentalemr_system"; // update this if needed
+
+$conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// ---------------- KPI CARDS ----------------
+$totalPatients = $conn->query("SELECT COUNT(*) AS count FROM patients")->fetch_assoc()['count'];
+$today = date('Y-m-d');
+$activeVisits = $conn->query("SELECT COUNT(*) AS count FROM visits WHERE visit_date = '$today'")->fetch_assoc()['count'];
+$totalTreatments = $conn->query("SELECT COUNT(*) AS count FROM services_monitoring_chart")->fetch_assoc()['count'];
+$patientsWithConditions = $conn->query("
+    SELECT COUNT(DISTINCT patient_id) AS count 
+    FROM oral_health_condition 
+    WHERE dental_caries='✓' OR gingivitis='✓' OR periodontal_disease='✓' OR others='✓'
+")->fetch_assoc()['count'];
+
+// ---------------- PIE CHART ----------------
+$conditions = $conn->query("
+    SELECT
+        SUM(CASE WHEN dental_caries='✓' THEN 1 ELSE 0 END) AS dental_caries,
+        SUM(CASE WHEN gingivitis='✓' THEN 1 ELSE 0 END) AS gingivitis,
+        SUM(CASE WHEN periodontal_disease='✓' THEN 1 ELSE 0 END) AS periodontal_disease,
+        SUM(CASE WHEN others='✓' THEN 1 ELSE 0 END) AS others
+    FROM oral_health_condition
+")->fetch_assoc();
+
+$pieData = [
+    ['Condition', 'Cases'],
+    ['Dental Caries', (int)$conditions['dental_caries']],
+    ['Gingivitis', (int)$conditions['gingivitis']],
+    ['Periodontal Disease', (int)$conditions['periodontal_disease']],
+    ['Others', (int)$conditions['others']]
+];
+
+// ---------------- BAR CHART ----------------
+$treatmentsResult = $conn->query("
+    SELECT t.description AS treatment, COUNT(*) AS count
+    FROM services_monitoring_chart s
+    JOIN treatments t ON s.treatment_code = t.code
+    GROUP BY t.description
+    ORDER BY count DESC
+");
+
+$barData = [['Treatment', 'Count']];
+while ($row = $treatmentsResult->fetch_assoc()) {
+    $barData[] = [$row['treatment'], (int)$row['count']];
+}
+
+// ---------------- LINE CHART ----------------
+$trendResult = $conn->query("
+    SELECT DATE_FORMAT(visit_date, '%Y-%m') AS month, COUNT(*) AS count
+    FROM visits
+    GROUP BY month
+    ORDER BY month ASC
+");
+
+$lineData = [['Month', 'Visits']];
+while ($row = $trendResult->fetch_assoc()) {
+    $lineData[] = [$row['month'], (int)$row['count']];
+}
+
+// ---------------- TABLES ----------------
+$recentVisits = $conn->query("
+    SELECT v.visit_date, p.firstname, p.surname
+    FROM visits v
+    JOIN patients p ON v.patient_id = p.patient_id
+    ORDER BY v.visit_date DESC
+    LIMIT 5
+");
+
+$recentTreatments = $conn->query("
+    SELECT s.created_at, p.firstname, p.surname, t.description
+    FROM services_monitoring_chart s
+    JOIN treatments t ON s.treatment_code = t.code
+    JOIN patients p ON s.patient_id = p.patient_id
+    ORDER BY s.created_at DESC
+    LIMIT 5
+");
+
+$conn->close();
+?>
+
+
 <!doctype html>
 <html>
 
@@ -6,7 +126,209 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
     <link href="../css/style.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script>
+        google.charts.load('current', {
+            packages: ['corechart', 'bar', 'line']
+        });
+        google.charts.setOnLoadCallback(drawCharts);
 
+        function drawCharts() {
+            // Pie Chart
+            var pieData = google.visualization.arrayToDataTable(<?php echo json_encode($pieData); ?>);
+            var pieOptions = {
+                title: 'Oral Health Issues',
+                is3D: true,
+                pieSliceText: 'percentage',
+                animation: {
+                    duration: 1000,
+                    easing: 'out'
+                },
+                colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444']
+            };
+            new google.visualization.PieChart(document.getElementById('piechart')).draw(pieData, pieOptions);
+
+            // Bar Chart
+            var barData = google.visualization.arrayToDataTable(<?php echo json_encode($barData); ?>);
+            var barOptions = {
+                title: 'Most Common Treatments',
+                legend: {
+                    position: 'none'
+                },
+                animation: {
+                    startup: true,
+                    duration: 1000,
+                    easing: 'out'
+                },
+                colors: ['#4f46e5']
+            };
+            new google.visualization.ColumnChart(document.getElementById('barchart')).draw(barData, barOptions);
+
+            // Line Chart
+            var lineData = google.visualization.arrayToDataTable(<?php echo json_encode($lineData); ?>);
+            var lineOptions = {
+                title: 'Monthly Patient Visits Trend',
+                curveType: 'function',
+                legend: {
+                    position: 'bottom'
+                },
+                animation: {
+                    startup: true,
+                    duration: 1000,
+                    easing: 'inAndOut'
+                },
+                colors: ['#10b981']
+            };
+            new google.visualization.LineChart(document.getElementById('linechart')).draw(lineData, lineOptions);
+        }
+    </script>
+
+    <style>
+        .dashboard {
+            max-width: 1200px;
+            margin: auto;
+            animation: fadeIn 1s ease;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e3a8a;
+            animation: slideDown 1s ease;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform .3s, box-shadow .3s;
+            opacity: 0;
+            animation: fadeUp .8s ease forwards;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card:nth-child(1) {
+            animation-delay: .2s;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: .4s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: .6s;
+        }
+
+        .card:nth-child(4) {
+            animation-delay: .8s;
+        }
+
+        .card h3 {
+            color: #475569;
+            margin-bottom: 10px;
+        }
+
+        .card h2 {
+            color: #1e293b;
+            font-size: 2em;
+            margin: 0;
+        }
+
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .chart-box {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform .3s;
+        }
+
+        .chart-box:hover {
+            transform: scale(1.02);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        tr:hover {
+            background: #e0f2fe;
+            transition: .3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -74,13 +396,13 @@
                                     profile</a>
                             </li>
                             <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Accounts</a>
+                                <a href="./manageusers/manageuser.html"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -115,10 +437,9 @@
                 <ul class="space-y-2">
                     <li>
                         <a href="#"
-                            class="flex items-center p-2 text-base font-medium text-blue-900 rounded-lg dark:text-blue hover:bg-blue-100 dark:hover:bg-blue-700 group"
-                            style="color: blue;">
-                            <svg aria-hidden="true" style="color: blue;"
-                                class="w-6 h-6 text-gray-500 transition duration-75 dark:text-blue-400 group-hover:text-gray-900 dark:group-hover:text-blue"
+                            class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">
+                            <svg aria-hidden="true"
+                                class="w-6 h-6 text-blue-600 transition duration-75 dark:text-blue-400  dark:group-hover:text-blue"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
                                 <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
@@ -129,7 +450,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="addpatient.html"
+                        <a href="addpatient.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -164,12 +485,12 @@
                         </button>
                         <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="./treatmentrecords/treatmentrecords.html"
+                                <a href="./treatmentrecords/treatmentrecords.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="./addpatienttreatment/patienttreatment.html"
+                                <a href="./addpatienttreatment/patienttreatment.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -178,7 +499,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./reports/targetclientlist.html"
+                        <a href="./reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -193,7 +514,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/mho_ohp.html"
+                        <a href="./reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -206,7 +527,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/oralhygienefindings.html"
+                        <a href="./reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -221,7 +542,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./archived.html"
+                        <a href="./archived.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -255,12 +576,112 @@
         </aside>
 
         <main class="p-4 md:ml-64 h-auto pt-20">
+            <div class="dashboard">
+                <h1>🦷 Dental EMR Interactive Dashboard</h1>
+                <h1 class="text-2xl font-bold mb-4">
+                    Welcome,
+                    <?php
+                    echo htmlspecialchars(
+                        !empty($loggedUser['name'])
+                            ? $loggedUser['name']
+                            : ($loggedUser['email'] ?? 'User')
+                    );
+                    ?>!
+                </h1>
 
+                <p class="text-gray-600 mb-6">
+                    You are logged in as <strong><?php echo htmlspecialchars($loggedUser['type']); ?></strong>.
+                </p>
+                <!-- KPI Cards -->
+                <div class="cards">
+                    <div class="card">
+                        <h3>Total Patients</h3>
+                        <h2><?php echo $totalPatients; ?></h2>
+                    </div>
+                    <div class="card">
+                        <h3>Active Visits Today</h3>
+                        <h2><?php echo $activeVisits; ?></h2>
+                    </div>
+                    <div class="card">
+                        <h3>Total Treatments Done</h3>
+                        <h2><?php echo $totalTreatments; ?></h2>
+                    </div>
+                    <div class="card">
+                        <h3>Patients with Conditions</h3>
+                        <h2><?php echo $patientsWithConditions; ?></h2>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts">
+                    <div class="chart-box">
+                        <div id="piechart" style="height: 300px;"></div>
+                    </div>
+                    <div class="chart-box">
+                        <div id="barchart" style="height: 300px;"></div>
+                    </div>
+                    <div class="chart-box" style="grid-column: 1 / -1;">
+                        <div id="linechart" style="height: 350px;"></div>
+                    </div>
+                </div>
+
+                <!-- Tables -->
+                <h3>Recent Visits</h3>
+                <table>
+                    <tr>
+                        <th>Date</th>
+                        <th>Patient Name</th>
+                    </tr>
+                    <?php while ($v = $recentVisits->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo $v['visit_date']; ?></td>
+                            <td><?php echo $v['firstname'] . " " . $v['surname']; ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </table>
+
+                <h3>Recent Treatments</h3>
+                <table>
+                    <tr>
+                        <th>Date</th>
+                        <th>Patient Name</th>
+                        <th>Treatment</th>
+                    </tr>
+                    <?php while ($t = $recentTreatments->fetch_assoc()): ?>
+                        <tr>
+                            <td><?php echo $t['created_at']; ?></td>
+                            <td><?php echo $t['firstname'] . " " . $t['surname']; ?></td>
+                            <td><?php echo $t['description']; ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </table>
+            </div>
         </main>
     </div>
 
     <script src="../node_modules/flowbite/dist/flowbite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
+
+    <!-- Client-side 10-minute inactivity logout -->
+    <script>
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
+        }
+
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
+        });
+
+        resetTimer();
+    </script>
 </body>
+
 </html>

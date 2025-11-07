@@ -1,13 +1,45 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    // Destroy session and redirect
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Treatment Records</title>
+    <title>Add patient</title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
 </head>
 
 <body>
@@ -81,7 +113,7 @@
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -115,7 +147,7 @@
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.html"
+                        <a href="index.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -129,9 +161,9 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.html"
+                        <a href="./addpatient.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
-                            <svg aria-hidden="true" 
+                            <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path
@@ -140,7 +172,7 @@
                                     d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" />
                             </svg>
 
-                            <span class="ml-3" >Add Patient</span>
+                            <span class="ml-3">Add Patient</span>
                         </a>
                     </li>
                     <li>
@@ -162,14 +194,14 @@
                                     clip-rule="evenodd"></path>
                             </svg>
                         </button>
-                        <ul id="dropdown-pages" class="visible py-2 space-y-2">
+                        <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="#"  style="color: blue;"
+                                <a href="./treatmentrecords/treatmentrecords.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="../addpatienttreatment/patienttreatment.html"
+                                <a href="./addpatienttreatment/patienttreatment.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -178,7 +210,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.html"
+                        <a href="./reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -193,7 +225,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.html"
+                        <a href="./reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -206,7 +238,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.html"
+                        <a href="./reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -221,9 +253,9 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../archived.html"
+                        <a href="#"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                            <svg class="flex-shrink-0 w-6 h-6 text-blue-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 fill="currentColor" viewBox="0 0 24 24">
                                 <path fill-rule="evenodd"
@@ -233,7 +265,7 @@
                             </svg>
 
 
-                            <span class="ml-3">Archived</span>
+                            <span class="ml-3" style="color: blue;">Archived</span>
                         </a>
                     </li>
                     <li>
@@ -254,124 +286,83 @@
             </div>
         </aside>
 
-        <header class="md:ml-64 pt-13 ">
-            <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full drop-shadow-sm pb-2">
-                <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
-                    <div class="flex items-center justify-between lg:order-1 w-full ">
-                        <!-- Back Btn-->
-                        <button type="button" onclick="back()" class="cursor-pointer">
-                            <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2.5" d="M5 12h14M5 12l4-4m-4 4 4 4" />
-                            </svg>
-                        </button>
-                        <p class="text-xl font-semibold px-5  text-gray-900 dark:text-white">Patient Treatment
-                            Record
-                        </p>
-                        <!-- Print Btn -->
-                        <button type="button"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 mt-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            <svg class="w-5 h-4 text-primary-800 dark:text-white" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                                viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            Print
-                        </button>
-                    </div>
-                    <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
-                        id="mobile-menu-2">
-                        <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
-                            <li>
-                                <a href="view_info.html" id="patientInfoLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
-                                    Information</a>
-                            </li>
-                            <li>
-                                <a href="view_oral.html"
-                                    class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Oral
-                                    Health Condition</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block py-2 pr-4 pl-3 text-blue-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Record
-                                    of Sevices Rendered</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-        </header>
-        <main class="p-1.5 md:ml-64 h-auto pt-1">
-            <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg">
-                <p class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Lenard G. Galgo</p>
-                <div
-                    class="mx-auto flex flex-col justify-center items-center max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row w-full">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Record of Services Rendered</p>
-                    </div>
-                    <!-- Table -->
-                    <div class="mx-auto max-w-screen-xl px-4 lg:px-12 mt-10 mb-10">
-                        <!-- Start coding here -->
-                        <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
-                            <!-- Table -->
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                    <thead
-                                        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                        <tr class="">
-                                            <th scope="col" class="px-4 py-3 text-center">Date</th>
-                                            <th scope="col" class="px-4 py-3 text-center">Oral Prophylaxis</th>
-                                            <th scope="col" class="px-4 py-3 text-center">Flouride Varnish / Flouride
-                                                Gel</th>
-                                            <th scope="col" class="px-4 py-3 text-center">Pit Fissure Sealant</th>
-                                            <th scope="col" class="px-4 py-3 text-center">Permanent Filling</th>
-                                            <th scope="col" class="px-4 py-3 text-center">Temporary Filling</th>
-                                            <th scope="col" class="px-4 py-3 text-center">Extraction</th>
-                                            <th scope="col" class="px-4 py-3 text-center">Consulation</th>
-                                            <th scope="col" class="px-4 py-3 text-center">Remarks / Others (Specify)
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="border-b dark:border-gray-700">
-                                            <th scope="row"
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                1/20/2025</th>
-                                            <td
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                X</td>
-                                            <td
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            </td>
-                                            <td
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                X</td>
-                                            <td
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            </td>
-                                            <td
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                X</td>
-                                            <td
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            </td>
-                                            <td
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            </td>
-                                            <td
-                                                class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                                X</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+        <main class="p-4 md:ml-64 h-auto pt-20">
+            <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
+                <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
+                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+                        <div>
+                            <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Archived</p>
+                        </div>
+
+                        <div
+                            class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
+                            <!-- 🔍 Search -->
+                            <div class="w-full md:w-1/2">
+                                <form class="flex items-center">
+                                    <label for="searchArchived" class="sr-only">Search</label>
+                                    <div class="relative w-full">
+                                        <div
+                                            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400"
+                                                fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <input type="text" id="searchArchived"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                            placeholder="Search archived patients..." />
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- 🧩 Restore All Button -->
+                            <div class="flex items-center justify-end w-full md:w-auto">
+                                <button id="restoreAllBtn" onclick="restoreAllPatients()"
+                                    class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm px-4 py-2 focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled>
+                                    <svg id="restoreSpinner" class="hidden animate-spin h-4 w-4 mr-2 text-white"
+                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+                                        </path>
+                                    </svg>
+                                    <span id="restoreBtnText">Restore All</span>
+                                </button>
                             </div>
                         </div>
+
+                        <!-- 📋 Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead
+                                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th class="px-4 py-3 text-center">Name</th>
+                                        <th class="px-4 py-3 text-center">Sex</th>
+                                        <th class="px-4 py-3 text-center">Age</th>
+                                        <th class="px-4 py-3 text-center">Address</th>
+                                        <th class="px-4 py-3 text-center">Archived Date</th>
+                                        <th class="px-4 py-3 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archivedTableBody">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-gray-600 dark:text-gray-300">
+                                            Loading archived patients...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav id="paginationNav"
+                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-3"
+                            aria-label="Table navigation">
+                        </nav>
                     </div>
                 </div>
             </section>
@@ -380,7 +371,219 @@
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="../js/tailwind.config.js"></script>
+    <script src="/dentalemr_system/js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
+    <script>
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
+        }
+
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
+        });
+
+        resetTimer();
+    </script>
+
+    <!-- Archived  -->
+    <script>
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let currentSearch = "";
+
+        async function loadArchivedPatients(page = 1, search = "") {
+            const tbody = document.getElementById("archivedTableBody");
+            const restoreAllBtn = document.getElementById("restoreAllBtn");
+            const paginationNav = document.getElementById("paginationNav");
+
+            tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-5 text-gray-600 dark:text-gray-300">
+                    Loading archived patients...
+                </td>
+            </tr>`;
+
+            try {
+                const response = await fetch(`../php/archived/get_archived.php?page=${page}&limit=${rowsPerPage}&search=${encodeURIComponent(search)}&ts=${Date.now()}`);
+                const result = await response.json();
+
+                if (result.error) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-red-500">${result.error}</td></tr>`;
+                    restoreAllBtn.disabled = true;
+                    paginationNav.innerHTML = "";
+                    return;
+                }
+
+                const {
+                    data,
+                    total
+                } = result;
+                currentPage = page;
+                currentSearch = search;
+                restoreAllBtn.disabled = (data.length === 0);
+
+                tbody.innerHTML = "";
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-gray-600 dark:text-gray-300">
+                            No archived patients found.
+                        </td>
+                    </tr>`;
+                    paginationNav.innerHTML = "";
+                    return;
+                }
+
+                data.forEach(p => {
+                    const fullname = `${p.firstname ?? ""} ${p.middlename ?? ""} ${p.surname ?? ""}`.trim();
+                    const row = `
+                    <tr class="border-b dark:border-gray-700">
+                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${fullname}</td>
+                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${p.sex ?? "-"}</td>
+                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${p.age ?? "-"}</td>
+                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${p.address ?? "-"}</td>
+                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${p.created_at ?? "-"}</td>
+                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">
+                            <button onclick="restorePatient(${p.patient_id})"
+                                class="bg-blue-600 hover:bg-blue-700 cursor-pointer text-white font-medium rounded-sm text-xs px-2 py-1.5 focus:ring-2 focus:ring-blue-400">
+                                Restore
+                            </button>
+                        </td>
+                    </tr>`;
+                    tbody.insertAdjacentHTML("beforeend", row);
+                });
+
+                renderPagination(total, rowsPerPage, currentPage);
+            } catch (err) {
+                console.error("Fetch error:", err);
+                tbody.innerHTML = `
+                <tr><td colspan="6" class="text-center py-5 text-red-500">
+                    Error loading archived patients.
+                </td></tr>`;
+                restoreAllBtn.disabled = true;
+                paginationNav.innerHTML = "";
+            }
+        }
+
+        function renderPagination(total, limit, page) {
+            const paginationNav = document.getElementById("paginationNav");
+            const totalPages = Math.ceil(total / limit);
+            if (totalPages <= 1) {
+                paginationNav.innerHTML = "";
+                return;
+            }
+
+            let html = `<div class="flex flex-col md:flex-row justify-between items-center w-full">
+                        <span class="text-sm text-gray-500">Showing 
+                            <span class="font-semibold text-gray-700">${(page - 1) * limit + 1}</span>-
+                            <span class="font-semibold text-gray-700">${Math.min(page * limit, total)}</span> 
+                            of <span class="font-semibold text-gray-700">${total}</span>
+                        </span>
+                        <ul class="inline-flex -space-x-px">`;
+
+            if (page > 1) {
+                html += `<li><a href="#" onclick="loadArchivedPatients(${page - 1}, currentSearch); return false;" 
+                        class="flex items-center justify-center py-1.5 px-2  text-gray-500 bg-white rounded-l-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"><svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg></a></li>`;
+            }
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += (i === page) ?
+                    `<li><span class="flex items-center justify-center text-sm z-10 py-1.5 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>` :
+                    `<li><a href="#" onclick="loadArchivedPatients(${i}, currentSearch); return false;" 
+                        class="flex items-center justify-center text-sm py-1.5 px-3 
+                 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
+            }
+
+            if (page < totalPages) {
+                html += `<li><a href="#" onclick="loadArchivedPatients(${page + 1}, currentSearch); return false;" 
+                        class="flex items-center justify-center py-1.5 px-2 text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"><svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg></a></li>`;
+            }
+
+            html += `</ul></div>`;
+            paginationNav.innerHTML = html;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadArchivedPatients();
+
+            document.getElementById("searchArchived").addEventListener("input", e => {
+                const term = e.target.value.trim();
+                loadArchivedPatients(1, term);
+            });
+        });
+    </script>
+
+
+    <!-- Restore  -->
+    <script>
+        const API_RESTORE = "/dentalemr_system/php/archived/restore_patient.php";
+
+        // 🟢 Restore a single patient
+        async function restorePatient(patientId) {
+            if (!confirm("Are you sure you want to restore this archived patient and all related records?")) return;
+
+            try {
+                const formData = new FormData();
+                formData.append("restore_id", patientId);
+
+                const response = await fetch(API_RESTORE, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const text = await response.text(); // handle invalid JSON safely
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    console.error("Invalid JSON returned:", text);
+                    alert("Restore failed: Server returned invalid JSON.");
+                    return;
+                }
+
+                if (response.ok && data.success) {
+                    alert(data.message || "Patient restored successfully!");
+                    // 🔄 Reload your archived list (or refresh page)
+                    loadArchivedPatients();
+                } else {
+                    alert(data.message || "Restore failed. Check the PHP logs.");
+                }
+            } catch (err) {
+                console.error("Network error while restoring:", err);
+                alert("Network error while restoring patient.");
+            }
+        }
+
+        // 🔄 Restore all patients at once
+        async function restoreAllPatients() {
+            if (!confirm("Are you sure you want to restore ALL archived patients?")) return;
+
+            try {
+                // You can modify this to loop over all archive rows if needed
+                const restoreButtons = document.querySelectorAll(".restore-btn");
+                for (const btn of restoreButtons) {
+                    const id = btn.getAttribute("data-id");
+                    await restorePatient(id);
+                }
+            } catch (err) {
+                alert("Restore all failed. Check console for details.");
+                console.error(err);
+            }
+        }
+    </script>
+
 </body>
 
 </html>

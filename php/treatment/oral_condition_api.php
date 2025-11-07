@@ -95,7 +95,7 @@ try {
         $tooth = resolveToothId($db, $item['tooth_id'] ?? null);
         $box = $item['box_key'] ?? '';
 
-        // ✅ Normalize color and case type
+        // Normalize color and case type
         $color = strtolower(trim($item['color'] ?? ''));
         if ($color !== 'blue' && $color !== 'red') $color = '';
 

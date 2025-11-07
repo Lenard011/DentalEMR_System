@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->begin_transaction();
 
     try {
-        // 1️⃣ Get all archived patients
+        // Get all archived patients
         $patients = $conn->query("SELECT * FROM archived_patients");
         if (!$patients || $patients->num_rows === 0) {
             throw new Exception("No archived patients found.");
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         while ($patient = $patients->fetch_assoc()) {
-            // 2️⃣ Insert into main `patients` table
+            // Insert into main `patients` table
             $insert_patient = $conn->prepare("
                 INSERT INTO patients (firstname, middlename, surname, date_of_birth, place_of_birth, age, sex, address, pregnant, occupation, guardian, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $new_patient_id = $conn->insert_id;
             $old_patient_id = $patient['patient_id'];
 
-            // 3️⃣ Restore all related archived data
+            // Restore all related archived data
             foreach ($tables as $archive_table => $main_table) {
                 // Check if archive table exists
                 $check_table = $conn->query("SHOW TABLES LIKE '$archive_table'");
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            // 4️⃣ Delete patient from archived_patients
+            // Delete patient from archived_patients
             $delete_patient = $conn->prepare("DELETE FROM archived_patients WHERE patient_id = ?");
             $delete_patient->bind_param("i", $old_patient_id);
             $delete_patient->execute();

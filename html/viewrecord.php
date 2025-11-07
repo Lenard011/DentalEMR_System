@@ -1,3 +1,36 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+  echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+  exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+  // Destroy session and redirect
+  session_unset();
+  session_destroy();
+  echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+  exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
@@ -81,7 +114,7 @@
             </ul>
             <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
               <li>
-                <a href="#"
+                <a href="/dentalemr_system/php/login/logout.php"
                   class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                   out</a>
               </li>
@@ -113,7 +146,7 @@
         </form>
         <ul class="space-y-2">
           <li>
-            <a href="index.html"
+            <a href="index.php"
               class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
               <svg aria-hidden="true"
                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -162,12 +195,12 @@
             </button>
             <ul id="dropdown-pages" class="hidden py-2 space-y-2">
               <li>
-                <a href="./treatmentrecords/treatmentrecords.html"
+                <a href="./treatmentrecords/treatmentrecords.php"
                   class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                   Records</a>
               </li>
               <li>
-                <a href="./addpatienttreatment/patienttreatment.html"
+                <a href="./addpatienttreatment/patienttreatment.php"
                   class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                   Patient Treatment</a>
               </li>
@@ -176,7 +209,7 @@
         </ul>
         <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
           <li>
-            <a href="./reports/targetclientlist.html"
+            <a href="./reports/targetclientlist.php"
               class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
               <svg aria-hidden="true"
                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -191,7 +224,7 @@
             </a>
           </li>
           <li>
-            <a href="./reports/mho_ohp.html"
+            <a href="./reports/mho_ohp.php"
               class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
               <svg
                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -204,7 +237,7 @@
             </a>
           </li>
           <li>
-            <a href="./reports/oralhygienefindings.html"
+            <a href="./reports/oralhygienefindings.php"
               class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
               <svg
                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -220,7 +253,7 @@
         </ul>
         <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
           <li>
-            <a href="./archived.html"
+            <a href="./archived.php"
               class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
               <svg
                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -619,7 +652,7 @@
             <div class="flex flex-row justify-between items-center mb-4">
               <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Patient Details</h2>
               <button type="button" onclick="closeModal()"
-                class="realative  cursor-pointer right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                class="cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white">
                 <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                   xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd"
@@ -628,7 +661,7 @@
                 </svg>
               </button>
             </div>
-            <!-- Form uses action + POST -->
+
             <form id="editPatientForm" action="../php/register_patient/update_patient.php" method="POST">
               <input type="hidden" id="editPatientId" name="patient_id">
 
@@ -657,35 +690,90 @@
                   <input type="date" id="editDob" name="date_of_birth"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                 </div>
-                <div>
-                  <label for="editSex" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Sex</label>
-                  <select id="editSex" name="sex"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
-                    <option value="">-- Select --</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label for="editOccupation"
-                    class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Age</label>
-                  <input type="text" id="editAge" name="age"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
-                </div>
               </div>
+
+              <div id="form-container" class="grid sm:grid-cols-2 mt-4 gap-4 w-full ">
+                <!-- Age -->
+                <div class="flex flex-row items-center justify-between gap-2">
+                  <div class="age-wrapper w-full">
+                    <label for="age" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Age</label>
+                    <input type="number" id="age" name="age" min="0"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm w-full p-1">
+                  </div>
+                  <div id="monthContainer" class="age-wrapper w-full">
+                    <label for="agemonth"
+                      class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Month</label>
+                    <input type="number" id="agemonth" name="agemonth" min="0" max="59"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm w-full p-1">
+                  </div>
+                </div>
+
+                <!-- Sex -->
+                <div class="flex flex-row items-center justify-center gap-5 w-full">
+                  <div class="w-full">
+                    <label for="editSex"
+                      class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Sex</label>
+                    <select id="editSex" name="sex" required
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                      <option value="" disabled selected>-- Select Sex --</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+
+                  <!-- Pregnant (hidden by default) -->
+                  <div id="pregnant-section" class="hidden">
+                    <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Pregnant</label>
+                    <div class="flex flex-row gap-2  items-center ">
+                      <div class="flex items-center">
+                        <input id="pregnant-yes" type="radio" value="yes" name="pregnant" disabled
+                          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300">
+                        <label for="pregnant-yes"
+                          class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Yes</label>
+                      </div>
+                      <div class="flex items-center">
+                        <input id="pregnant-no" type="radio" value="no" name="pregnant" checked disabled
+                          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300">
+                        <label for="pregnant-no"
+                          class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">No</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
               <div class="mt-4">
-                <label for="editAddress" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Place of
+                <label for="editPob" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Place of
                   Birth</label>
                 <input type="text" id="editPob" name="place_of_birth"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
               </div>
+
               <div class="mt-4">
                 <label for="editAddress"
                   class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Address</label>
-                <input type="text" id="editAddress" name="address"
-                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
+                <select id="editAddress" name="address"
+                  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                  <option selected>-- Select Address --</option>
+                  <option value="Balansay">Balansay</option>
+                  <option value="Fatima">Fatima</option>
+                  <option value="Payompon">Payompon</option>
+                  <option value="Poblacion 1">Poblacion 1</option>
+                  <option value="Poblacion 2">Poblacion 2</option>
+                  <option value="Poblacion 3">Poblacion 3</option>
+                  <option value="Poblacion 4">Poblacion 4</option>
+                  <option value="Poblacion 5">Poblacion 5</option>
+                  <option value="Poblacion 6">Poblacion 6</option>
+                  <option value="Poblacion 7">Poblacion 7</option>
+                  <option value="Poblacion 8">Poblacion 8</option>
+                  <option value="San Luis">San Luis</option>
+                  <option value="Talabaan">Talabaan</option>
+                  <option value="Tangkalan">Tangkalan</option>
+                  <option value="Tayamaan">Tayamaan</option>
+                </select>
               </div>
+
               <div class="mt-4 grid grid-cols-2 gap-4">
                 <div>
                   <label for="editOccupation"
@@ -702,7 +790,6 @@
               </div>
 
               <div class="mt-6 flex justify-end">
-                <!-- Submit button now has a name -->
                 <button type="submit" name="update_patient"
                   class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-sm px-3 py-2">
                   Save Changes
@@ -1108,109 +1195,215 @@
   <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
   <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
   <script src="../js/tailwind.config.js"></script>
+  <!-- Client-side 10-minute inactivity logout -->
+  <script>
+    let inactivityTime = 600000; // 10 minutes in ms
+    let logoutTimer;
+
+    function resetTimer() {
+      clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(() => {
+        alert("You've been logged out due to 10 minutes of inactivity.");
+        window.location.href = "../php/logout.php";
+      }, inactivityTime);
+    }
+
+    ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+      document.addEventListener(evt, resetTimer, false);
+    });
+
+    resetTimer();
+  </script>
 
   <!-- Backbtn -->
   <script>
     function back() {
-      location.href = ("addpatient.html");
+      location.href = ("addpatient.php");
     }
   </script>
 
-  <!-- edit/upadte patient details -->
+
+  <!-- edit/update patient details -->
   <script>
-    // parse id from URL: viewrecord.html?id=123
-    const urlParams = new URLSearchParams(window.location.search);
-    const patientId = urlParams.get('id'); // MUST supply ?id=123 when opening this page
-    const wasUpdated = urlParams.get('updated'); // optional ?updated=1
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const patientId = urlParams.get('id');
+      const wasUpdated = urlParams.get('updated');
 
-    let currentPatient = null;
+      const notice = document.getElementById('notice');
+      const editBtn = document.getElementById('editBtn');
+      const modal = document.getElementById('editPatientModal');
+      const form = document.getElementById('editPatientForm');
 
-    function showNotice(message, color = "blue") {
-      notice.textContent = message;
-      notice.style.background = color;
-      notice.style.display = "block";
-      notice.style.opacity = "1";
+      const dobField = document.getElementById('editDob');
+      const ageInput = document.getElementById('age');
+      const sexInput = document.getElementById('editSex');
+      const monthInput = document.getElementById('agemonth');
+      const monthContainer = document.getElementById('monthContainer');
+      const formContainer = document.getElementById('form-container');
+      const pregnantSection = document.getElementById('pregnant-section');
+      const pregnantRadios = pregnantSection ? pregnantSection.querySelectorAll('input[name="pregnant"]') : [];
 
-      setTimeout(() => {
-        notice.style.transition = "opacity 0.6s";
-        notice.style.opacity = "0";
+      let currentPatient = null;
+
+      function showNotice(msg, color = 'blue') {
+        if (!notice) return;
+        notice.textContent = msg;
+        notice.style.background = color;
+        notice.style.display = 'block';
+        notice.style.opacity = '1';
+        notice.style.transition = '';
         setTimeout(() => {
-          notice.style.display = "none";
-          notice.style.transition = "";
-        }, 1500);
-      }, 5000);
-    }
-
-    async function loadPatient() {
-      if (!patientId) {
-        document.getElementById('patientName2').innerText = 'No patient id provided';
-        return;
+          notice.style.transition = 'opacity 0.6s';
+          notice.style.opacity = '0';
+          setTimeout(() => notice.style.display = 'none', 800);
+        }, 4000);
       }
 
-      try {
-        const res = await fetch(`../php/register_patient/get_patient.php?id=${encodeURIComponent(patientId)}`);
-        const data = await res.json();
-        if (data.success) {
+      async function loadPatient() {
+        if (!patientId) return;
+        try {
+          const res = await fetch(`../php/register_patient/get_patient.php?id=${encodeURIComponent(patientId)}`);
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error || 'Failed to fetch patient data.');
           currentPatient = data.patient;
 
-          // Fill display fields (use your preferred ordering)
-          document.getElementById('patientName').innerText = currentPatient.surname + ', ' + currentPatient.firstname + ' ' + currentPatient.middlename + '.';
-          document.getElementById('patientName2').innerText = currentPatient.surname + ', ' + currentPatient.firstname + ' ' + currentPatient.middlename + '.';
-          document.getElementById('patientDob').innerText = currentPatient.date_of_birth || '';
-          document.getElementById('patientSex').innerText = currentPatient.sex || '';
-          document.getElementById('patientAge').innerText = currentPatient.age || '';
-          document.getElementById('patientBirthPlace').innerText = currentPatient.place_of_birth || '';
-          document.getElementById('patientOccupation').innerText = currentPatient.occupation || '';
-          document.getElementById('patientAddress').innerText = currentPatient.address || '';
-          document.getElementById('patientGuardian').innerText = currentPatient.guardian || '';
+          if (editBtn) editBtn.onclick = () => openModal(currentPatient);
+          if (wasUpdated === '1') showNotice('Patient updated successfully', 'blue');
 
-          // Attach edit button to open modal with this patient data
-          document.getElementById('editBtn').onclick = () => openModal(currentPatient);
-
-          // if redirected after update show success
-          if (wasUpdated === '1') {
-            showNotice('Patient updated successfully');
-            // optional: remove updated param from URL so notice doesn't reappear when reloading
-            history.replaceState(null, '', window.location.pathname + '?id=' + encodeURIComponent(patientId));
-          }
-        } else {
-          alert('Error loading patient: ' + data.error);
+          updateDisplay(currentPatient);
+        } catch (err) {
+          console.error('Error loading patient:', err);
+          alert('Error loading patient details. Please try again.');
         }
-      } catch (err) {
-        console.error(err);
-        alert('Failed to load patient');
       }
-    }
 
-    function openModal(patient) {
-      // fill modal inputs (keep classes unchanged)
-      document.getElementById('editPatientId').value = patient.patient_id;
-      document.getElementById('editFirstname').value = patient.firstname || '';
-      document.getElementById('editSurname').value = patient.surname || '';
-      document.getElementById('editMiddlename').value = patient.middlename || '';
-      // date input expects yyyy-mm-dd; DB date should already be in that format
-      document.getElementById('editDob').value = patient.date_of_birth || '';
-      document.getElementById('editSex').value = patient.sex || '';
-      document.getElementById('editAge').value = patient.age || '';
-      document.getElementById('editPob').value = patient.place_of_birth || '';
-      document.getElementById('editOccupation').value = patient.occupation || '';
-      document.getElementById('editAddress').value = patient.address || '';
-      document.getElementById('editGuardian').value = patient.guardian || '';
+      function updateDisplay(patient) {
+        const name = `${patient.surname}, ${patient.firstname} ${patient.middlename || ''}`.trim();
+        const ageText = patient.display_age || `${patient.age} years old`;
 
-      // show modal (keeps classes you used)
-      const modal = document.getElementById('editPatientModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
+        const fields = {
+          patientName: `${name}.`,
+          patientName2: `${name}.`,
+          patientDob: patient.date_of_birth || '',
+          patientSex: patient.sex || '',
+          patientAge: ageText,
+          patientBirthPlace: patient.place_of_birth || '',
+          patientOccupation: patient.occupation || '',
+          patientAddress: patient.address || '',
+          patientGuardian: patient.guardian || ''
+        };
 
-    function closeModal() {
-      const modal = document.getElementById('editPatientModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
+        for (const [id, value] of Object.entries(fields)) {
+          const el = document.getElementById(id);
+          if (el) el.textContent = value;
+        }
+      }
 
-    // when page loads
-    window.addEventListener('DOMContentLoaded', loadPatient); 
+      // --- Robust function to set Sex field ---
+      function setSexField(value) {
+        if (!sexInput) return;
+        const validValues = ['Male', 'Female'];
+        value = (value || '').trim();
+        value = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+        sexInput.value = validValues.includes(value) ? value : '';
+      }
+
+      function openModal(patient) {
+        if (!patient || !form) return;
+
+        form.editPatientId.value = patient.patient_id ?? '';
+        form.editFirstname.value = patient.firstname ?? '';
+        form.editSurname.value = patient.surname ?? '';
+        form.editMiddlename.value = patient.middlename ?? '';
+        form.editDob.value = patient.date_of_birth ?? '';
+        form.editPob.value = patient.place_of_birth ?? '';
+        form.editOccupation.value = patient.occupation ?? '';
+        form.editAddress.value = patient.address ?? '';
+        form.editGuardian.value = patient.guardian ?? '';
+        ageInput.value = patient.age ?? '';
+
+        setSexField(patient.sex); // <-- ensures select matches stored DB value
+
+        handleMonthVisibility(parseInt(patient.age) || 0, parseInt(patient.agemonth) || 0);
+        togglePregnantSection();
+
+        if (patient.pregnant) {
+          pregnantRadios.forEach(r => r.checked = r.value.toLowerCase() === patient.pregnant.toLowerCase());
+        } else {
+          pregnantRadios.forEach(r => r.checked = r.value.toLowerCase() === 'no');
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      window.closeModal = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      };
+
+      function handleMonthVisibility(years, months = 0) {
+        if (years < 5) {
+          monthContainer.style.display = 'block';
+          monthInput.value = years * 12 + months;
+        } else {
+          monthContainer.style.display = 'none';
+          monthInput.value = '';
+        }
+      }
+
+      function togglePregnantSection() {
+        const age = parseInt(ageInput.value, 10) || 0;
+        const sex = sexInput.value;
+        const showPregnant = sex === 'Female' && age >= 10 && age <= 49;
+
+        pregnantSection.classList.toggle('hidden', !showPregnant);
+        formContainer.classList.toggle('grid-cols-3', showPregnant);
+        formContainer.classList.toggle('grid-cols-2', !showPregnant);
+
+        pregnantRadios.forEach(r => {
+          r.disabled = !showPregnant;
+          r.required = showPregnant;
+          if (!showPregnant && r.value.toLowerCase() === 'no') r.checked = true;
+        });
+      }
+
+      function updateFromDOB() {
+        const dob = new Date(dobField.value);
+        const today = new Date();
+        if (!dobField.value || isNaN(dob.getTime()) || dob > today) return;
+
+        let years = today.getFullYear() - dob.getFullYear();
+        let months = today.getMonth() - dob.getMonth();
+        if (today.getDate() < dob.getDate()) months--;
+        if (months < 0) {
+          years--;
+          months += 12;
+        }
+
+        ageInput.value = Math.max(0, years);
+        handleMonthVisibility(Math.max(0, years), Math.max(0, months));
+        togglePregnantSection();
+      }
+
+      // --- Ensure sex always submits a valid value ---
+      form.addEventListener('submit', e => {
+        if (!sexInput.value) {
+          alert('Please select Male or Female.');
+          e.preventDefault();
+        }
+      });
+
+      dobField?.addEventListener('change', updateFromDOB);
+      ageInput?.addEventListener('input', () => {
+        togglePregnantSection();
+        handleMonthVisibility(parseInt(ageInput.value) || 0);
+      });
+      sexInput?.addEventListener('change', togglePregnantSection);
+
+      loadPatient();
+    });
   </script>
 
   <!-- membership, medical and dietary  -->
@@ -1232,9 +1425,18 @@
         if (cause) cause.disabled = false;
         if (surgery) surgery.disabled = false;
       } else {
-        if (last) { last.disabled = true; last.value = ""; }
-        if (cause) { cause.disabled = true; cause.value = ""; }
-        if (surgery) { surgery.disabled = true; surgery.value = ""; }
+        if (last) {
+          last.disabled = true;
+          last.value = "";
+        }
+        if (cause) {
+          cause.disabled = true;
+          cause.value = "";
+        }
+        if (surgery) {
+          surgery.disabled = true;
+          surgery.value = "";
+        }
       }
     }
 
@@ -1249,8 +1451,13 @@
       loadDietaryHistory(pid);
     }
 
-    function showModal(id) { document.getElementById(id).classList.remove("hidden"); }
-    function hideModal(id) { document.getElementById(id).classList.add("hidden"); }
+    function showModal(id) {
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    function hideModal(id) {
+      document.getElementById(id).classList.add("hidden");
+    }
 
     /* ---------- Unified showNotice (matches vitals style) ---------- */
     function showNotice(message, success = true) {
@@ -1282,7 +1489,10 @@
         membershipList.innerHTML = "";
 
         document.querySelectorAll("#membershipForm input[type=checkbox]").forEach(cb => cb.checked = false);
-        document.querySelectorAll("#membershipForm input[type=text]").forEach(inp => { inp.value = ""; inp.disabled = true; });
+        document.querySelectorAll("#membershipForm input[type=text]").forEach(inp => {
+          inp.value = "";
+          inp.disabled = true;
+        });
 
         if (json.success && json.values) {
           const v = json.values;
@@ -1292,15 +1502,37 @@
             cb.checked = (flag == 1 || flag === "1");
           });
 
-          if (v.philhealth_flag == 1) { const el = document.getElementById("philhealth_number"); if (el) { el.disabled = false; el.value = v.philhealth_number || ""; } }
-          if (v.sss_flag == 1) { const el = document.getElementById("sss_number"); if (el) { el.disabled = false; el.value = v.sss_number || ""; } }
-          if (v.gsis_flag == 1) { const el = document.getElementById("gsis_number"); if (el) { el.disabled = false; el.value = v.gsis_number || ""; } }
+          if (v.philhealth_flag == 1) {
+            const el = document.getElementById("philhealth_number");
+            if (el) {
+              el.disabled = false;
+              el.value = v.philhealth_number || "";
+            }
+          }
+          if (v.sss_flag == 1) {
+            const el = document.getElementById("sss_number");
+            if (el) {
+              el.disabled = false;
+              el.value = v.sss_number || "";
+            }
+          }
+          if (v.gsis_flag == 1) {
+            const el = document.getElementById("gsis_number");
+            if (el) {
+              el.disabled = false;
+              el.value = v.gsis_number || "";
+            }
+          }
 
           (json.memberships || []).forEach(m => {
-            const li = document.createElement("li"); li.textContent = m.label; membershipList.appendChild(li);
+            const li = document.createElement("li");
+            li.textContent = m.label;
+            membershipList.appendChild(li);
           });
         }
-      } catch (err) { console.error("loadMemberships", err); }
+      } catch (err) {
+        console.error("loadMemberships", err);
+      }
     }
 
     /* ---------- Load medical ---------- */
@@ -1313,7 +1545,10 @@
 
         document.querySelectorAll("#medicalForm input[type=checkbox]").forEach(cb => cb.checked = false);
         document.querySelectorAll("#medicalForm input[type=text], #medicalForm input[type=date], #medicalForm textarea")
-          .forEach(inp => { inp.value = ""; inp.disabled = true; });
+          .forEach(inp => {
+            inp.value = "";
+            inp.disabled = true;
+          });
 
         if (json.success) {
           const v = json.values || {};
@@ -1322,29 +1557,68 @@
             cb.checked = (val == 1 || val === "1");
           });
 
-          if (v.allergies_flag == 1) { const el = document.getElementById("allergies_details"); if (el) { el.disabled = false; el.value = v.allergies_details || ""; } }
-          if (v.hepatitis_flag == 1) { const el = document.getElementById("hepatitis_details"); if (el) { el.disabled = false; el.value = v.hepatitis_details || ""; } }
-          if (v.malignancy_flag == 1) { const el = document.getElementById("malignancy_details"); if (el) { el.disabled = false; el.value = v.malignancy_details || ""; } }
+          if (v.allergies_flag == 1) {
+            const el = document.getElementById("allergies_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.allergies_details || "";
+            }
+          }
+          if (v.hepatitis_flag == 1) {
+            const el = document.getElementById("hepatitis_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.hepatitis_details || "";
+            }
+          }
+          if (v.malignancy_flag == 1) {
+            const el = document.getElementById("malignancy_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.malignancy_details || "";
+            }
+          }
           if (v.prev_hospitalization_flag == 1) {
             const d = document.getElementById("last_admission_date");
             const c = document.getElementById("admission_cause");
             const s = document.getElementById("surgery_details");
-            if (d) { d.disabled = false; d.value = v.last_admission_date || ""; }
-            if (c) { c.disabled = false; c.value = v.admission_cause || ""; }
-            if (s) { s.disabled = false; s.value = v.surgery_details || ""; }
+            if (d) {
+              d.disabled = false;
+              d.value = v.last_admission_date || "";
+            }
+            if (c) {
+              c.disabled = false;
+              c.value = v.admission_cause || "";
+            }
+            if (s) {
+              s.disabled = false;
+              s.value = v.surgery_details || "";
+            }
           }
           if (v.blood_transfusion_flag == 1) {
-            const b = document.getElementById("blood_transfusion_date"); if (b) { b.disabled = false; b.value = v.blood_transfusion || ""; }
+            const b = document.getElementById("blood_transfusion_date");
+            if (b) {
+              b.disabled = false;
+              b.value = v.blood_transfusion || "";
+            }
           }
           if (v.other_conditions_flag == 1) {
-            const o = document.getElementById("other_conditions"); if (o) { o.disabled = false; o.value = v.other_conditions || ""; }
+            const o = document.getElementById("other_conditions");
+            if (o) {
+              o.disabled = false;
+              o.value = v.other_conditions || "";
+            }
           }
 
           (json.medical || []).forEach(m => {
-            const li = document.createElement("li"); li.textContent = m.label; medicalList.appendChild(li);
+            const li = document.createElement("li");
+            li.textContent = m.label;
+            medicalList.appendChild(li);
           });
         }
-      } catch (err) { console.error("loadMedicalHistory", err); }
+      } catch (err) {
+        console.error("loadMedicalHistory", err);
+      }
     }
 
     /* ---------- Load dietary ---------- */
@@ -1356,7 +1630,10 @@
         dietaryList.innerHTML = "";
 
         document.querySelectorAll("#dietaryForm input[type=checkbox]").forEach(cb => cb.checked = false);
-        document.querySelectorAll("#dietaryForm input[type=text]").forEach(inp => { inp.value = ""; inp.disabled = true; });
+        document.querySelectorAll("#dietaryForm input[type=text]").forEach(inp => {
+          inp.value = "";
+          inp.disabled = true;
+        });
 
         if (json.success) {
           const v = json.values || {};
@@ -1365,16 +1642,44 @@
             cb.checked = (val == 1 || val === "1");
           });
 
-          if (v.sugar_flag == 1) { const el = document.getElementById("sugar_details"); if (el) { el.disabled = false; el.value = v.sugar_details || ""; } }
-          if (v.alcohol_flag == 1) { const el = document.getElementById("alcohol_details"); if (el) { el.disabled = false; el.value = v.alcohol_details || ""; } }
-          if (v.tobacco_flag == 1) { const el = document.getElementById("tobacco_details"); if (el) { el.disabled = false; el.value = v.tobacco_details || ""; } }
-          if (v.betel_nut_flag == 1) { const el = document.getElementById("betel_nut_details"); if (el) { el.disabled = false; el.value = v.betel_nut_details || ""; } }
+          if (v.sugar_flag == 1) {
+            const el = document.getElementById("sugar_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.sugar_details || "";
+            }
+          }
+          if (v.alcohol_flag == 1) {
+            const el = document.getElementById("alcohol_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.alcohol_details || "";
+            }
+          }
+          if (v.tobacco_flag == 1) {
+            const el = document.getElementById("tobacco_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.tobacco_details || "";
+            }
+          }
+          if (v.betel_nut_flag == 1) {
+            const el = document.getElementById("betel_nut_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.betel_nut_details || "";
+            }
+          }
 
           (json.dietary || []).forEach(m => {
-            const li = document.createElement("li"); li.textContent = m.label; dietaryList.appendChild(li);
+            const li = document.createElement("li");
+            li.textContent = m.label;
+            dietaryList.appendChild(li);
           });
         }
-      } catch (err) { console.error("loadDietaryHistory", err); }
+      } catch (err) {
+        console.error("loadDietaryHistory", err);
+      }
     }
 
     /* ---------- Submit handlers ---------- */
@@ -1399,20 +1704,30 @@
         form.querySelectorAll("input[type=text]").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
 
         const pidEl = document.getElementById("patient_id");
-        if (!pidEl || !pidEl.value) { showNotice("No patient specified", false); return; }
+        if (!pidEl || !pidEl.value) {
+          showNotice("No patient specified", false);
+          return;
+        }
         fd.set("patient_id", pidEl.value);
         fd.set("action", "save_membership");
 
         try {
-          const r = await fetch("../php/register_patient/patient_info.php", { method: "POST", body: fd });
-          const text = await r.text(); console.log("membership raw:", text);
+          const r = await fetch("../php/register_patient/patient_info.php", {
+            method: "POST",
+            body: fd
+          });
+          const text = await r.text();
+          console.log("membership raw:", text);
           const json = JSON.parse(text);
           if (json.success) {
             hideModal("membershipModal");
             showNotice("Membership saved successfully!", true);
             loadMemberships(pidEl.value);
           } else showNotice("Error: " + (json.message || "Unknown"), false);
-        } catch (err) { console.error(err); showNotice("Request failed", false); }
+        } catch (err) {
+          console.error(err);
+          showNotice("Request failed", false);
+        }
       });
 
       /* --- Medical --- */
@@ -1429,20 +1744,30 @@
         if (btd) fd.set("blood_transfusion", btd.disabled ? "" : btd.value);
 
         const pidEl = document.getElementById("patient_id");
-        if (!pidEl || !pidEl.value) { showNotice("No patient specified", false); return; }
+        if (!pidEl || !pidEl.value) {
+          showNotice("No patient specified", false);
+          return;
+        }
         fd.set("patient_id", pidEl.value);
         fd.set("action", "save_medical");
 
         try {
-          const r = await fetch("../php/register_patient/patient_info.php", { method: "POST", body: fd });
-          const text = await r.text(); console.log("medical raw:", text);
+          const r = await fetch("../php/register_patient/patient_info.php", {
+            method: "POST",
+            body: fd
+          });
+          const text = await r.text();
+          console.log("medical raw:", text);
           const json = JSON.parse(text);
           if (json.success) {
             hideModal("medicalModal");
             showNotice("Medical history saved successfully!", true);
             loadMedicalHistory(pidEl.value);
           } else showNotice("Error: " + (json.message || "Unknown"), false);
-        } catch (err) { console.error(err); showNotice("Request failed", false); }
+        } catch (err) {
+          console.error(err);
+          showNotice("Request failed", false);
+        }
       });
 
       /* --- Dietary --- */
@@ -1456,20 +1781,30 @@
         form.querySelectorAll("input[type=text]").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
 
         const pidEl = document.getElementById("patient_id");
-        if (!pidEl || !pidEl.value) { showNotice("No patient specified", false); return; }
+        if (!pidEl || !pidEl.value) {
+          showNotice("No patient specified", false);
+          return;
+        }
         fd.set("patient_id", pidEl.value);
         fd.set("action", "save_dietary");
 
         try {
-          const r = await fetch("../php/register_patient/patient_info.php", { method: "POST", body: fd });
-          const text = await r.text(); console.log("dietary raw:", text);
+          const r = await fetch("../php/register_patient/patient_info.php", {
+            method: "POST",
+            body: fd
+          });
+          const text = await r.text();
+          console.log("dietary raw:", text);
           const json = JSON.parse(text);
           if (json.success) {
             hideModal("dietaryModal");
             showNotice("Dietary history saved successfully!", true);
             loadDietaryHistory(pidEl.value);
           } else showNotice("Error: " + (json.message || "Unknown"), false);
-        } catch (err) { console.error(err); showNotice("Request failed", false); }
+        } catch (err) {
+          console.error(err);
+          showNotice("Request failed", false);
+        }
       });
     });
   </script>
@@ -1524,7 +1859,10 @@
         data.append('weight', formData.get('weight'));
 
         try {
-          const res = await fetch('../php/register_patient/patient_info.php', { method: 'POST', body: data });
+          const res = await fetch('../php/register_patient/patient_info.php', {
+            method: 'POST',
+            body: data
+          });
           const result = await res.json();
           if (result.success) {
             showNotice('Vital signs added successfully!', true);
@@ -1553,9 +1891,9 @@
 
           data.vitals.forEach(v => {
             const d = new Date(v.recorded_at);
-            const recorded = d.getFullYear() + '-'
-              + String(d.getMonth() + 1).padStart(2, '0') + '-'
-              + String(d.getDate()).padStart(2, '0');
+            const recorded = d.getFullYear() + '-' +
+              String(d.getMonth() + 1).padStart(2, '0') + '-' +
+              String(d.getDate()).padStart(2, '0');
 
             bpTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.blood_pressure}</td></tr>`;
             tempTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.temperature}</td></tr>`;

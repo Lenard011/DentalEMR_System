@@ -10,7 +10,7 @@ if (!is_array($input)) exit(json_encode(["success" => false, "message" => "Inval
 $patient_id = isset($input['patient_id']) ? intval($input['patient_id']) : 0;
 if ($patient_id <= 0) exit(json_encode(["success" => false, "message" => "No patient selected"]));
 
-// ✅ Check patient exists
+// Check patient exists
 $checkPatient = $db->prepare("SELECT 1 FROM patients WHERE patient_id = :id LIMIT 1");
 $checkPatient->execute([':id' => $patient_id]);
 if (!$checkPatient->fetchColumn()) {

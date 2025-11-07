@@ -6,7 +6,7 @@ header('Content-Type: application/json');
 require_once('../conn.php');
 
 /**
- * 🔧 Helper function: dynamic bind_param
+ * Helper function: dynamic bind_param
  */
 function bind_params_dynamic($stmt, $params)
 {

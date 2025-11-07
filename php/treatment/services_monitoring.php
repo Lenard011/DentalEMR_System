@@ -11,13 +11,15 @@ if (!is_array($input)) exit(json_encode(["success" => false, "message" => "Inval
 $patient_id = isset($input['patient_id']) ? intval($input['patient_id']) : 0;
 if ($patient_id <= 0) exit(json_encode(["success" => false, "message" => "No patient selected"]));
 
-// Check patient exists
+// Check if patient exists
 $checkPatient = $db->prepare("SELECT 1 FROM patients WHERE patient_id = :id LIMIT 1");
 $checkPatient->execute([':id' => $patient_id]);
 if (!$checkPatient->fetchColumn()) exit(json_encode(["success" => false, "message" => "Patient not found"]));
 
 $treatments = $input['treatments'] ?? [];
-if (!is_array($treatments)) exit(json_encode(["success" => false, "message" => "No treatments provided"]));
+if (!is_array($treatments) || empty($treatments)) {
+    exit(json_encode(["success" => false, "message" => "No treatments provided"]));
+}
 
 try {
     $findTooth = $db->prepare("SELECT tooth_id FROM teeth WHERE fdi_number = :fdi LIMIT 1");
@@ -29,58 +31,72 @@ try {
     ");
 
     $deleteStmt = $db->prepare("
-        DELETE FROM services_monitoring_chart 
+        DELETE FROM services_monitoring_chart
         WHERE patient_id = :patient_id AND tooth_id = :tooth_id
     ");
 
     $db->beginTransaction();
 
-    $summary = [
-        'added' => 0,
-        'updated' => 0,
-        'deleted' => 0
-    ];
+    $summary = ['added' => 0, 'updated' => 0, 'deleted' => 0];
 
     foreach ($treatments as $t) {
         $fdi = trim((string)($t['tooth_id'] ?? ''));
         $treatment_code = isset($t['treatment_id']) ? trim((string)$t['treatment_id']) : null;
+
         if ($fdi === '') continue;
 
+        // Find tooth_id
         $findTooth->execute([':fdi' => $fdi]);
         $row = $findTooth->fetch(PDO::FETCH_ASSOC);
+
         if (!$row) {
-            $db->rollBack();
-            exit(json_encode(["success" => false, "message" => "Tooth {$fdi} not found"]));
+            // Debug log: missing tooth
+            error_log("⚠️ Tooth with FDI {$fdi} not found in teeth table!");
+            continue;
         }
+
         $tooth_id = intval($row['tooth_id']);
 
+        // Delete if treatment is empty
         if ($treatment_code === null || $treatment_code === '') {
-            $deleteStmt->execute([':patient_id' => $patient_id, ':tooth_id' => $tooth_id]);
-            if ($deleteStmt->rowCount()) $summary['deleted']++;
-        } else {
-            $insertStmt->execute([
+            $deleteStmt->execute([
                 ':patient_id' => $patient_id,
-                ':tooth_id' => $tooth_id,
-                ':treatment_code' => $treatment_code,
-                ':treatment_code_update' => $treatment_code
+                ':tooth_id' => $tooth_id
             ]);
-            $affected = $insertStmt->rowCount();
-            if ($affected === 1) $summary['added']++;
-            elseif ($affected === 2) $summary['updated']++;
+            if ($deleteStmt->rowCount()) $summary['deleted']++;
+            error_log("🗑 Deleted treatment for tooth_id {$tooth_id} (FDI {$fdi})");
+            continue;
+        }
+
+        // Insert or update treatment record
+        $insertStmt->execute([
+            ':patient_id' => $patient_id,
+            ':tooth_id' => $tooth_id,
+            ':treatment_code' => $treatment_code,
+            ':treatment_code_update' => $treatment_code
+        ]);
+
+        $affected = $insertStmt->rowCount();
+        if ($affected === 1) {
+            $summary['added']++;
+            error_log("Added treatment {$treatment_code} for tooth_id {$tooth_id} (FDI {$fdi})");
+        } elseif ($affected === 2) {
+            $summary['updated']++;
+            error_log("Updated treatment {$treatment_code} for tooth_id {$tooth_id} (FDI {$fdi})");
         }
     }
 
     $db->commit();
 
-    // Build message
     $messages = [];
     if ($summary['added']) $messages[] = "{$summary['added']} treatment(s) added";
     if ($summary['updated']) $messages[] = "{$summary['updated']} treatment(s) updated";
     if ($summary['deleted']) $messages[] = "{$summary['deleted']} treatment(s) removed";
+    if (empty($messages)) $messages[] = "No changes made.";
 
-    $msg = implode(", ", $messages);
-    exit(json_encode(["success" => true, "message" => $msg]));
+    echo json_encode(["success" => true, "message" => implode(", ", $messages)]);
 } catch (Exception $e) {
     if ($db->inTransaction()) $db->rollBack();
-    exit(json_encode(["success" => false, "message" => "Execute failed: " . $e->getMessage()]));
+    error_log("Execute failed: " . $e->getMessage());
+    echo json_encode(["success" => false, "message" => "Execute failed: " . $e->getMessage()]);
 }

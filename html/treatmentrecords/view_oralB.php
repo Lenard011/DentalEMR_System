@@ -1,3 +1,36 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    // Destroy session and redirect
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
@@ -81,7 +114,7 @@
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -115,7 +148,7 @@
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.html"
+                        <a href="../index.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -129,7 +162,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.html"
+                        <a href="../addpatient.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -169,7 +202,7 @@
                                     Records</a>
                             </li>
                             <li>
-                                <a href="../addpatienttreatment/patienttreatment.html"
+                                <a href="../addpatienttreatment/patienttreatment.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -178,7 +211,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.html"
+                        <a href="../reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -193,7 +226,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.html"
+                        <a href="../reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -206,7 +239,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.html"
+                        <a href="../reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -221,7 +254,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../archived.html"
+                        <a href="../archived.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -259,14 +292,21 @@
                 <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
                     <div class="flex items-center justify-between lg:order-1 w-full ">
                         <!-- Back Btn-->
-                        <button type="button" onclick="backmain()" class="cursor-pointer">
-                            <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2.5" d="M5 12h14M5 12l4-4m-4 4 4 4" />
-                            </svg>
-                        </button>
+                        <div class="relative group inline-block ">
+                            <button type="button" onclick="backmain()" class="cursor-pointer">
+                                <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2.5" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                </svg>
+                            </button>
+                            <!-- Tooltip -->
+                            <span class="absolute left-1/4 -translate-x-1/4  hidden group-hover:block 
+                             bg-gray-100/50 text-gray-900 text-sm px-2 py-1 rounded-sm shadow-sm whitespace-nowrap">
+                                Go back
+                            </span>
+                        </div>
                         <p class="text-xl font-semibold px-5  text-gray-900 dark:text-white">Patient Treatment
                             Record
                         </p>
@@ -287,7 +327,7 @@
                         id="mobile-menu-2">
                         <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                             <li>
-                                <a href="view_info.html" id="patientInfoLink"
+                                <a href="view_info.php" id="patientInfoLink"
                                     class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
                                     Information</a>
                             </li>
@@ -297,7 +337,7 @@
                                     Health Condition</a>
                             </li>
                             <li>
-                                <a href="view_record.html"
+                                <a href="#" id="servicesRenderedLink"
                                     class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Record
                                     of Sevices Rendered</a>
                             </li>
@@ -474,6 +514,7 @@
                     </div>
                 </div>
             </section>
+            <!-- modal  -->
             <div id="SMCModal" tabindex="-1" aria-hidden="true"
                 class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl p-6">
@@ -911,28 +952,61 @@
                     </form>
                 </div>
             </div>
+            <div id="notice"
+                style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
+            </div>
         </main>
     </div>
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
     <script>
-        function backmain() {
-            location.href = ("treatmentrecords.html");
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
         }
 
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
+        });
+
+        resetTimer();
     </script>
 
     <script>
-        const params1 = new URLSearchParams(window.location.search);
-        const patientId1 = params1.get('id');
+        function backmain() {
+            location.href = ("treatmentrecords.php");
+        }
+    </script>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const patientId = params.get('id');
 
         const patientInfoLink = document.getElementById("patientInfoLink");
-        if (patientInfoLink && patientId1) {
-            patientInfoLink.href = `view_info.html?id=${encodeURIComponent(patientId1)}`;
+        if (patientInfoLink && patientId) {
+            patientInfoLink.href = `view_info.php?id=${encodeURIComponent(patientId)}`;
         } else {
             patientInfoLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+
+        const servicesRenderedLink = document.getElementById("servicesRenderedLink");
+        if (servicesRenderedLink && patientId) {
+            servicesRenderedLink.href = `view_record.php?id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            servicesRenderedLink.addEventListener("click", (e) => {
                 e.preventDefault();
                 alert("Please select a patient first.");
             });
@@ -947,14 +1021,14 @@
                 alert("Missing patient ID.");
                 return;
             }
-            // Navigate to view_oralA.html while keeping patient ID in the URL
-            window.location.href = `view_oralA.html?id=${encodeURIComponent(patientId)}`;
+            // Navigate to view_oralA.php while keeping patient ID in the URL
+            window.location.href = `view_oralA.php?id=${encodeURIComponent(patientId)}`;
         }
     </script>
 
     <!-- table fetch  -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
             const patientId = urlParams.get("id");
 
@@ -966,57 +1040,74 @@
             fetch(`/dentalemr_system/php/treatmentrecords/view_oralB.php?patient_id=${patientId}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (!data.records || data.records.length === 0) {
-                        console.warn("No records found for this patient.");
-                    }
+                    if (!data.records) data.records = [];
 
-                    // Set patient name dynamically
+                    // Set patient name
                     const nameEl = document.getElementById("patientName");
                     if (nameEl && data.patient_name) {
                         nameEl.textContent = data.patient_name;
                     }
 
-                    // Populate tables
                     populateTables(data.records);
                 })
                 .catch(error => console.error('Error loading data:', error));
         });
 
-
-        function populateTables(data) {
-            const groups = {
-                first: [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
-                second: [85, 84, 83, 82, 81, 71, 72, 73, 74, 75],
-                third: [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
-                fourth: [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
+        function populateTables(records) {
+            const tableGroups = {
+                "table-first": [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
+                "table-second": [85, 84, 83, 82, 81, 71, 72, 73, 74, 75],
+                "table-third": [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
+                "table-fourth": [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
             };
 
-            for (const [key, teeth] of Object.entries(groups)) {
-                const tbody = document.querySelector(`#table-${key} tbody`);
+            // Group by date and FDI number
+            const groupedByDate = {};
+            records.forEach(row => {
+                const date = new Date(row.created_at).toLocaleDateString();
+                if (!groupedByDate[date]) groupedByDate[date] = {};
+                groupedByDate[date][row.fdi_number] = row.treatment_code;
+            });
+
+            for (const [tableId, teeth] of Object.entries(tableGroups)) {
+                const tbody = document.querySelector(`#${tableId} tbody`);
                 tbody.innerHTML = "";
 
-                // Group records by date
-                const groupedByDate = {};
-                data.forEach(row => {
-                    const date = new Date(row.created_at).toLocaleDateString();
-                    if (!groupedByDate[date]) groupedByDate[date] = {};
-                    groupedByDate[date][row.tooth_id] = row.treatment_code; // <-- show treatment_code instead of "X"
-                });
-
-                // Populate table rows
-                for (const [date, teethData] of Object.entries(groupedByDate)) {
+                for (const date of Object.keys(groupedByDate)) {
                     const tr = document.createElement("tr");
-                    tr.classList.add("border-b", "dark:border-gray-700");
+                    tr.classList.add("border-b", "border-gray-200", "dark:border-gray-700");
 
+                    // Date cell
                     const th = document.createElement("th");
-                    th.classList.add("px-4", "py-3", "text-center", "font-medium", "text-gray-900", "dark:text-white");
+                    th.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
                     th.textContent = date;
                     tr.appendChild(th);
 
-                    teeth.forEach(t => {
+                    // Tooth cells (match FDI numbers)
+                    teeth.forEach(fdi => {
                         const td = document.createElement("td");
-                        td.classList.add("px-4", "py-3", "text-center", "font-medium", "text-gray-900", "dark:text-white");
-                        td.textContent = teethData[t] || ""; // <-- show treatment code if exists
+                        td.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
+                        td.textContent = groupedByDate[date][fdi] || "";
+                        tr.appendChild(td);
+                    });
+
+                    tbody.appendChild(tr);
+                }
+
+                // If no records at all, show empty row
+                if (Object.keys(groupedByDate).length === 0) {
+                    const tr = document.createElement("tr");
+                    tr.classList.add("border-b", "border-gray-200", "dark:border-gray-700");
+
+                    const th = document.createElement("th");
+                    th.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
+                    th.textContent = "";
+                    tr.appendChild(th);
+
+                    teeth.forEach(() => {
+                        const td = document.createElement("td");
+                        td.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
+                        td.textContent = "";
                         tr.appendChild(td);
                     });
 
@@ -1024,14 +1115,31 @@
                 }
             }
         }
-
     </script>
 
     <script>
+        const notice = document.getElementById("notice");
+
+        function showNotice(message, color = "blue") {
+            notice.textContent = message;
+            notice.style.background = color;
+            notice.style.display = "block";
+            notice.style.opacity = "1";
+
+            setTimeout(() => {
+                notice.style.transition = "opacity 0.6s";
+                notice.style.opacity = "0";
+                setTimeout(() => {
+                    notice.style.display = "none";
+                    notice.style.transition = "";
+                }, 1500);
+            }, 5000);
+        }
+
         let selectedTreatmentCode = null;
 
         // Treatment dropdown selection
-        document.getElementById("selcttreatment").addEventListener("change", function () {
+        document.getElementById("selcttreatment").addEventListener("change", function() {
             selectedTreatmentCode = this.value;
         });
 
@@ -1045,7 +1153,7 @@
 
             document.querySelectorAll("#SMCModal input[data-tooth-id]").forEach(input => {
                 input.addEventListener("click", () => {
-                    if (!selectedTreatmentCode) return alert("⚠️ Please select a treatment first!");
+                    if (!selectedTreatmentCode) return showNotice("Please select a treatment first!", "red");
                     input.value = selectedTreatmentCode;
                     input.dataset.treatmentId = selectedTreatmentCode;
                     input.style.backgroundColor = "#e5e7eb";
@@ -1059,62 +1167,116 @@
             });
         }
 
-        // Open modal
-        document.getElementById("addSMC").addEventListener("click", () => {
+        // Open modal and load today's treatments
+        document.getElementById("addSMC").addEventListener("click", async () => {
             const patientId = new URLSearchParams(window.location.search).get("id");
-            if (!patientId) return alert("⚠️ No patient selected");
+            if (!patientId) return showNotice("No patient selected", "red");
 
             document.getElementById("patient_id").value = patientId;
-            document.getElementById("SMCModal").classList.remove("hidden");
-            initSMCTreatmentClick();
+
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date().toISOString().split('T')[0];
+
+            try {
+                const response = await fetch(`/dentalemr_system/php/treatmentrecords/get_today_smc.php?patient_id=${patientId}&date=${today}`);
+                const data = await response.json();
+
+                // Clear all previous inputs first
+                document.querySelectorAll("#SMCModal input[data-tooth-id]").forEach(input => {
+                    input.value = "";
+                    delete input.dataset.treatmentId;
+                    input.style.backgroundColor = "white";
+                });
+
+                // Fill modal inputs with today's records if available
+                if (data.records && data.records.length > 0) {
+                    data.records.forEach(rec => {
+                        const input = document.querySelector(`#SMCModal input[data-tooth-id='${rec.fdi_number}']`);
+                        if (input) {
+                            input.value = rec.treatment_code;
+                            input.dataset.treatmentId = rec.treatment_code;
+                            input.style.backgroundColor = "#e5e7eb";
+                        }
+                    });
+                }
+
+                document.getElementById("SMCModal").classList.remove("hidden");
+                initSMCTreatmentClick();
+            } catch (err) {
+                console.error("Failed to load today's treatments", err);
+                showNotice("❌ Failed to load today's treatments", "red");
+            }
         });
 
-        // Save SMC
+
+        // Save SMC with update or insert logic
         function saveSMC() {
             const patientId = document.getElementById("patient_id").value;
-            if (!patientId) return alert("⚠️ Patient ID not set");
+            if (!patientId) return showNotice("Patient ID not set", "red");
 
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
             const treatments = [];
+
             document.querySelectorAll("#SMCModal input[data-tooth-id]").forEach(input => {
-                if (input.dataset.treatmentId) treatments.push({
+                treatments.push({
                     tooth_id: input.dataset.toothId,
-                    treatment_id: input.dataset.treatmentId
+                    treatment_code: input.dataset.treatmentId || "" // empty if cleared
                 });
             });
 
-            if (treatments.length === 0) return alert("⚠️ No treatments selected!");
-
-            fetch("/dentalemr_system/php/treatmentrecords/add_vieworalB.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ patient_id: parseInt(patientId), treatments })
-            })
+            fetch("/dentalemr_system/php/treatmentrecords/add_or_update_vieworalB.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        patient_id: parseInt(patientId),
+                        treatments,
+                        date: today
+                    })
+                })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert("✅ " + data.message);
+                        showNotice(data.message, "blue");
                         document.getElementById("SMCModal").classList.add("hidden");
-                        // Clear previous selections
-                        document.querySelectorAll("#SMCModal input[data-tooth-id]").forEach(input => {
-                            input.value = "";
-                            delete input.dataset.treatmentId;
-                            input.style.backgroundColor = "white";
-                        });
+                        refreshTables(); // reload tables dynamically
                     } else {
-                        alert("❌ " + data.message);
+                        showNotice("❌ " + data.message, "red");
                     }
                 })
                 .catch(err => {
                     console.error("Save SMC error:", err);
-                    alert("❌ Request failed. Check console.");
+                    showNotice("❌ Request failed. Check console.", "red");
                 });
         }
+
 
         // Close modal
         function closeSMC() {
             document.getElementById("SMCModal").classList.add("hidden");
         }
     </script>
+
+    <script>
+        function refreshTables() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const patientId = urlParams.get("id");
+            if (!patientId) return;
+
+            fetch(`/dentalemr_system/php/treatmentrecords/view_oralB.php?patient_id=${patientId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.records) data.records = [];
+                    populateTables(data.records); // Reuse your existing function
+                })
+                .catch(error => {
+                    console.error('Error refreshing tables:', error);
+                    showNotice("❌ Failed to refresh tables", "red");
+                });
+        }
+    </script>
+
 
 </body>
 

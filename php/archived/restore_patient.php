@@ -59,10 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['restore_id'])) {
     $conn->begin_transaction();
 
     try {
-        // 1️⃣ Restore patient
+        // Restore patient
         restoreTable($conn, "patients", "archived_patients", "patient_id", $patient_id);
 
-        // 2️⃣ Restore related patient_id tables
+        // Restore related patient_id tables
         $relatedTables = [
             "oral_health_condition",
             "patient_treatment_record",
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['restore_id'])) {
             restoreTable($conn, $table, "archived_$table", "patient_id", $patient_id);
         }
 
-        // 3️⃣ Get all restored visit IDs
+        // Get all restored visit IDs
         $visit_ids = [];
         $stmt = $conn->prepare("SELECT visit_id FROM visits WHERE patient_id = ?");
         $stmt->bind_param("i", $patient_id);
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['restore_id'])) {
             $visit_ids[] = $r['visit_id'];
         }
 
-        // 4️⃣ Restore visit-based tables dynamically
+        // Restore visit-based tables dynamically
         if (!empty($visit_ids)) {
             foreach (["visittoothcondition", "visittoothtreatment"] as $table) {
                 $mainCols = getColumns($conn, $table);
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['restore_id'])) {
             }
         }
 
-        // 5️⃣ Delete restored patient from archive
+        // Delete restored patient from archive
         $del = $conn->prepare("DELETE FROM archived_patients WHERE patient_id = ?");
         $del->bind_param("i", $patient_id);
         $del->execute();

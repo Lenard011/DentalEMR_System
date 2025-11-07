@@ -5,7 +5,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/conns.php';
 
-// ✅ Detect valid DB connection variable
+// Detect valid DB connection variable
 $db = $pdo ?? ($db ?? ($conn ?? null));
 if (!$db) {
     http_response_code(500);
@@ -16,7 +16,7 @@ if (!$db) {
     exit;
 }
 
-// ✅ Roman numeral converter
+// Roman numeral converter
 function romanNumeral($num): string
 {
     $map = [
@@ -41,7 +41,7 @@ try {
 
     $patient_id = (int) $_GET['patient_id'];
 
-    // ✅ NEW: Fetch patient information
+    // NEW: Fetch patient information
     $stmtPatient = $db->prepare("
         SELECT 
             patient_id,
@@ -68,10 +68,10 @@ try {
         throw new Exception('Patient not found for ID ' . $patient_id);
     }
 
-    // ✅ Optional: filter by visit_id
+    // Optional: filter by visit_id
     $filter_visit_id = isset($_GET['visit_id']) ? (int) $_GET['visit_id'] : null;
 
-    // ✅ Fetch visits
+    // Fetch visits
     if ($filter_visit_id) {
         $stmt = $db->prepare("
             SELECT visit_id, patient_id, visit_date, visit_number
@@ -92,7 +92,7 @@ try {
 
     $visits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // ✅ If no visits, still return patient info
+    // If no visits, still return patient info
     if (!$visits) {
         echo json_encode([
             'success' => true,
@@ -108,7 +108,7 @@ try {
     foreach ($visits as $v) {
         $visit_id = $v['visit_id'];
 
-        // 🦷 Fetch conditions (with correct color source)
+        // Fetch conditions (with correct color source)
         $stmtCond = $db->prepare("
             SELECT 
                 vc.id,
@@ -117,7 +117,11 @@ try {
                 t.type AS tooth_type,
                 t.location AS tooth_location,
                 c.condition_id,
-                c.code AS condition_code,
+                -- auto-adjust code casing using tooth type or condition flag
+                CASE
+                    WHEN t.type = 'temporary' OR c.is_permanent = 0 THEN LOWER(c.code)
+                    ELSE UPPER(c.code)
+                END AS condition_code,
                 c.description AS condition_description,
                 c.is_permanent,
                 vc.box_key,
@@ -127,6 +131,7 @@ try {
             LEFT JOIN teeth t ON vc.tooth_id = t.tooth_id
             LEFT JOIN conditions c ON vc.condition_id = c.condition_id
             WHERE vc.visit_id = ?
+
         ");
         $stmtCond->execute([$visit_id]);
         $conditions = $stmtCond->fetchAll(PDO::FETCH_ASSOC);
@@ -164,7 +169,7 @@ try {
         ];
     }
 
-    // ✅ Output JSON (with patient details + visits)
+    // Output JSON (with patient details + visits)
     echo json_encode([
         'success' => true,
         'patient_id' => $patient_id,

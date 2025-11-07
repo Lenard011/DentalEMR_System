@@ -1,3 +1,36 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    // Destroy session and redirect
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
@@ -407,7 +440,7 @@
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -441,7 +474,7 @@
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.html"
+                        <a href="../index.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -455,7 +488,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.html"
+                        <a href="../addpatient.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -495,7 +528,7 @@
                                     Records</a>
                             </li>
                             <li>
-                                <a href="../addpatienttreatment/patienttreatment.html"
+                                <a href="../addpatienttreatment/patienttreatment.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -504,7 +537,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.html"
+                        <a href="../reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -519,7 +552,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.html"
+                        <a href="../reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -532,7 +565,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.html"
+                        <a href="../reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -547,7 +580,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../archived.html"
+                        <a href="../archived.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -585,14 +618,21 @@
                 <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
                     <div class="flex items-center justify-between lg:order-1 w-full ">
                         <!-- Back Btn-->
-                        <button type="button" onclick="backmain()" class="cursor-pointer">
-                            <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2.5" d="M5 12h14M5 12l4-4m-4 4 4 4" />
-                            </svg>
-                        </button>
+                        <div class="relative group inline-block ">
+                            <button type="button" onclick="backmain()" class="cursor-pointer">
+                                <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2.5" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                </svg>
+                            </button>
+                            <!-- Tooltip -->
+                            <span class="absolute left-1/4 -translate-x-1/4  hidden group-hover:block 
+                             bg-gray-100/50 text-gray-900 text-sm px-2 py-1 rounded-sm shadow-sm whitespace-nowrap">
+                                Go back
+                            </span>
+                        </div>
                         <p class="text-xl font-semibold px-5  text-gray-900 dark:text-white">Patient Treatment
                             Record
                         </p>
@@ -613,7 +653,7 @@
                         id="mobile-menu-2">
                         <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                             <li>
-                                <a href="view_info.html" id="patientInfoLink"
+                                <a href="#" id="patientInfoLink"
                                     class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
                                     Information</a>
                             </li>
@@ -623,7 +663,7 @@
                                     Health Condition</a>
                             </li>
                             <li>
-                                <a href="view_record.html"
+                                <a href="#" id="servicesRenderedLink"
                                     class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Record
                                     of Sevices Rendered</a>
                             </li>
@@ -1069,21 +1109,51 @@
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
     <script>
-        function backmain() {
-            location.href = ("treatmentrecords.html");
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
         }
 
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
+        });
+
+        resetTimer();
+    </script>
+
+    <script>
+        function backmain() {
+            location.href = ("treatmentrecords.php");
+        }
     </script>
     <script>
-        const params1 = new URLSearchParams(window.location.search);
-        const patientId1 = params1.get('id');
+        const params = new URLSearchParams(window.location.search);
+        const patientId = params.get('id');
 
         const patientInfoLink = document.getElementById("patientInfoLink");
-        if (patientInfoLink && patientId1) {
-            patientInfoLink.href = `view_info.html?id=${encodeURIComponent(patientId1)}`;
+        if (patientInfoLink && patientId) {
+            patientInfoLink.href = `view_info.php?id=${encodeURIComponent(patientId)}`;
         } else {
             patientInfoLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+
+        const servicesRenderedLink = document.getElementById("servicesRenderedLink");
+        if (servicesRenderedLink && patientId) {
+            servicesRenderedLink.href = `view_record.php?id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            servicesRenderedLink.addEventListener("click", (e) => {
                 e.preventDefault();
                 alert("Please select a patient first.");
             });
@@ -1099,9 +1169,10 @@
                 return;
             }
 
-            // Navigate to view_oralA.html while keeping patient ID in the URL
-            window.location.href = `view_oralB.html?id=${encodeURIComponent(patientId)}`;
+            // Navigate to view_oralA.php while keeping patient ID in the URL
+            window.location.href = `view_oralB.php?id=${encodeURIComponent(patientId)}`;
         }
+
         function back() {
             // Get patient ID from URL
             const params = new URLSearchParams(window.location.search);
@@ -1112,8 +1183,8 @@
                 return;
             }
 
-            // Navigate to view_oralA.html while keeping patient ID in the URL
-            window.location.href = `view_oral.html?id=${encodeURIComponent(patientId)}`;
+            // Navigate to view_oralA.php while keeping patient ID in the URL
+            window.location.href = `view_oral.php?id=${encodeURIComponent(patientId)}`;
         }
     </script>
 
@@ -1127,7 +1198,10 @@
             const key = `${toothId}-${partName}`;
             part.dataset.key = key;
             part.addEventListener('click', () => {
-                if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
+                if (!selectedCondition) {
+                    alert('Select a condition from the Blue/Red selector');
+                    return;
+                }
                 applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
             });
             return part;
@@ -1209,13 +1283,19 @@
                 // no background color required for treatment boxes - they should be plain
                 box.addEventListener('click', () => {
                     const selectedTreat = treatmentSelect?.value || '';
-                    if (!selectedTreat) { alert('Select a treatment from dropdown'); return; }
+                    if (!selectedTreat) {
+                        alert('Select a treatment from dropdown');
+                        return;
+                    }
                     applyChange(key, '', selectedTreat, 'upper', true, true);
                 });
             } else {
                 box.className = (row === 3) ? 'condition1-box' : 'condition-box';
                 box.addEventListener('click', () => {
-                    if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
+                    if (!selectedCondition) {
+                        alert('Select a condition from the Blue/Red selector');
+                        return;
+                    }
                     applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
                 });
             }
@@ -1254,11 +1334,26 @@
             loadVisitData(patientId, 1);
 
             // Year button functions
-            window.year1 = () => { highlightActiveButton(1); loadVisitData(patientId, 1); };
-            window.year2 = () => { highlightActiveButton(2); loadVisitData(patientId, 2); };
-            window.year3 = () => { highlightActiveButton(3); loadVisitData(patientId, 3); };
-            window.year4 = () => { highlightActiveButton(4); loadVisitData(patientId, 4); };
-            window.year5 = () => { highlightActiveButton(5); loadVisitData(patientId, 5); };
+            window.year1 = () => {
+                highlightActiveButton(1);
+                loadVisitData(patientId, 1);
+            };
+            window.year2 = () => {
+                highlightActiveButton(2);
+                loadVisitData(patientId, 2);
+            };
+            window.year3 = () => {
+                highlightActiveButton(3);
+                loadVisitData(patientId, 3);
+            };
+            window.year4 = () => {
+                highlightActiveButton(4);
+                loadVisitData(patientId, 4);
+            };
+            window.year5 = () => {
+                highlightActiveButton(5);
+                loadVisitData(patientId, 5);
+            };
         });
 
         /**
@@ -1292,7 +1387,11 @@
 
                 // 🧍 Display patient full name
                 if (data.patient) {
-                    const { firstname, middlename, surname } = data.patient;
+                    const {
+                        firstname,
+                        middlename,
+                        surname
+                    } = data.patient;
                     const middleInitial = middlename ? `${middlename.charAt(0).toUpperCase()}.` : "";
                     document.getElementById("patientName").textContent =
                         `${firstname} ${middleInitial} ${surname}`.trim();
@@ -1315,9 +1414,11 @@
                 visit.conditions.forEach(c => {
                     const el = document.querySelector(`[data-key='${c.box_key}']`);
                     if (!el) return;
+
                     const dbColor = c.color?.trim() || "";
-                    const fallbackColor = c.condition_code === "m" ? "#ef4444" : "#3b82f6";
+                    const fallbackColor = c.condition_code?.toLowerCase() === "m" ? "#ef4444" : "#3b82f6";
                     const fillColor = dbColor !== "" ? dbColor : fallbackColor;
+
                     el.style.backgroundColor = fillColor;
                     el.style.color = "#ffffff";
                     el.style.fontWeight = "bold";
@@ -1326,7 +1427,9 @@
                     el.style.alignItems = "center";
                     el.style.justifyContent = "center";
                     el.style.border = "1px solid rgba(0,0,0,0.1)";
-                    el.textContent = c.condition_code?.toUpperCase() || "";
+
+                    // ✅ keep the correct case from PHP
+                    el.textContent = c.condition_code || "";
                 });
 
                 // Apply treatments
@@ -1381,8 +1484,11 @@
             if (!modal) return;
 
             const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
-            let selectedColor = '', selectedCondition = '', selectedCase = 'upper';
-            const historyStack = [], redoStack = [];
+            let selectedColor = '',
+                selectedCondition = '',
+                selectedCase = 'upper';
+            const historyStack = [],
+                redoStack = [];
 
             // Scoped selectors inside the modal
             const blueSelect = modal.querySelector('#blueSelect');
@@ -1471,7 +1577,9 @@
             modal.querySelector('#undoBtn')?.addEventListener('click', () => {
                 if (!historyStack.length) return;
                 const last = historyStack.pop();
-                redoStack.push({ ...last });
+                redoStack.push({
+                    ...last
+                });
                 const wasTreatment = last.isTreatment;
                 applyChange(last.key, last.prevColor || '', wasTreatment ? last.prevTreatment || '' : last.prevCondition || '', last.prevCase || 'upper', false, wasTreatment);
             });
@@ -1479,7 +1587,9 @@
             modal.querySelector('#redoBtn')?.addEventListener('click', () => {
                 if (!redoStack.length) return;
                 const last = redoStack.pop();
-                historyStack.push({ ...last });
+                historyStack.push({
+                    ...last
+                });
                 applyChange(last.key, last.newColor || '', last.isTreatment ? last.newTreatment || '' : last.newCondition || '', last.newCase || 'upper', false, last.isTreatment);
             });
 
@@ -1589,7 +1699,7 @@
             loadBoxes();
 
             // ---------------- SAVE FUNCTION ----------------
-            window.saveOHCA = async function () {
+            window.saveOHCA = async function() {
                 const patient_id = modal.querySelector("#patient_id")?.value || '';
                 const visit_id = modal.querySelector("#visit_id")?.value || 0;
                 const items = [];
@@ -1637,7 +1747,9 @@
 
                 const res = await fetch("/dentalemr_system/php/treatment/oral_condition_api.php", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify(payload)
                 });
 

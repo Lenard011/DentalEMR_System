@@ -1,10 +1,43 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    // Destroy session and redirect
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add patient</title>
+    <title>Patient Treatment Records</title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -80,7 +113,7 @@
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -89,7 +122,6 @@
                 </div>
             </div>
         </nav>
-
         <!-- Sidebar -->
 
         <aside
@@ -114,7 +146,7 @@
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="index.html"
+                        <a href="../index.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -128,7 +160,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./addpatient.html"
+                        <a href="../addpatient.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -161,14 +193,14 @@
                                     clip-rule="evenodd"></path>
                             </svg>
                         </button>
-                        <ul id="dropdown-pages" class="hidden py-2 space-y-2">
+                        <ul id="dropdown-pages" class="visible py-2 space-y-2">
                             <li>
-                                <a href="./treatmentrecords/treatmentrecords.html"
+                                <a href="#" style="color: blue;"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="./addpatienttreatment/patienttreatment.html"
+                                <a href="../addpatienttreatment/patienttreatment.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -177,7 +209,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./reports/targetclientlist.html"
+                        <a href="../reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -192,7 +224,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/mho_ohp.html"
+                        <a href="../reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -205,7 +237,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/oralhygienefindings.html"
+                        <a href="../reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -220,9 +252,9 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="#"
+                        <a href="../archived.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-blue-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 fill="currentColor" viewBox="0 0 24 24">
                                 <path fill-rule="evenodd"
@@ -232,7 +264,7 @@
                             </svg>
 
 
-                            <span class="ml-3" style="color: blue;">Archived</span>
+                            <span class="ml-3">Archived</span>
                         </a>
                     </li>
                     <li>
@@ -252,76 +284,121 @@
                 </ul>
             </div>
         </aside>
-
-
         <main class="p-4 md:ml-64 h-auto pt-20">
-            <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
+            <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 ">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+                    <!-- Start coding here -->
+                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow">
                         <div>
-                            <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Archived</p>
+                            <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Patient Treatment
+                                Record List</p>
                         </div>
-
                         <div
                             class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
-                            <!-- 🔍 Search -->
                             <div class="w-full md:w-1/2">
                                 <form class="flex items-center">
-                                    <label for="searchArchived" class="sr-only">Search</label>
+                                    <label for="simple-search" class="sr-only">Search</label>
                                     <div class="relative w-full">
                                         <div
                                             class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                             <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400"
-                                                fill="currentColor" viewBox="0 0 20 20">
+                                                fill="currentColor" viewbox="0 0 20 20"
+                                                xmlns="http://www.w3.org/2000/svg">
                                                 <path fill-rule="evenodd"
                                                     d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
                                                     clip-rule="evenodd" />
                                             </svg>
                                         </div>
-                                        <input type="text" id="searchArchived"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                            placeholder="Search archived patients..." />
+                                        <input type="text" id="simple-search"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                            placeholder="Search" required="">
                                     </div>
                                 </form>
                             </div>
+                            <div
+                                class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
 
-                            <!-- 🧩 Restore All Button -->
-                            <div class="flex items-center justify-end w-full md:w-auto">
-                                <button id="restoreAllBtn" onclick="restoreAllPatients()"
-                                    class="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm px-4 py-2 focus:ring-2 focus:ring-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled>
-                                    <svg id="restoreSpinner" class="hidden animate-spin h-4 w-4 mr-2 text-white"
-                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
-                                        </path>
-                                    </svg>
-                                    <span id="restoreBtnText">Restore All</span>
-                                </button>
+                                <!-- Filter -->
+                                <div class="flex items-center space-x-3 w-full md:w-auto">
+                                    <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
+                                        class="w-full md:w-auto cursor-pointer flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                        type="button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
+                                            class="h-4 w-4 mr-2 text-gray-400" viewbox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        Filter
+                                        <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path clip-rule="evenodd" fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                        </svg>
+                                    </button>
+                                    <div id="filterDropdown"
+                                        class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
+                                        <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose
+                                            address
+                                        </h6>
+                                        <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
+                                            <li class="flex items-center">
+                                                <input id="apple" type="checkbox" value=""
+                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
+                                                <label for="apple"
+                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Balansay</label>
+                                            </li>
+                                            <li class="flex items-center">
+                                                <input id="fitbit" type="checkbox" value=""
+                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
+                                                <label for="fitbit"
+                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Payompon</label>
+                                            </li>
+                                            <li class="flex items-center">
+                                                <input id="razor" type="checkbox" value=""
+                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
+                                                <label for="razor"
+                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
+                                                    1</label>
+                                            </li>
+                                            <li class="flex items-center">
+                                                <input id="nikon" type="checkbox" value=""
+                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
+                                                <label for="nikon"
+                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
+                                                    2</label>
+                                            </li>
+                                            <li class="flex items-center">
+                                                <input id="benq" type="checkbox" value=""
+                                                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
+                                                <label for="benq"
+                                                    class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Poblacion
+                                                    3</label>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- 📋 Table -->
+                        <!-- Table -->
                         <div class="overflow-x-auto">
                             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                 <thead
                                     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                    <tr>
-                                        <th class="px-4 py-3 text-center">Name</th>
-                                        <th class="px-4 py-3 text-center">Sex</th>
-                                        <th class="px-4 py-3 text-center">Age</th>
-                                        <th class="px-4 py-3 text-center">Address</th>
-                                        <th class="px-4 py-3 text-center">Archived Date</th>
-                                        <th class="px-4 py-3 text-center">Actions</th>
+                                    <tr class="">
+                                        <th scope="col" class="px-4 py-3 text-center">ID</th>
+                                        <th scope="col" class="px-4 py-3 text-center">Name</th>
+                                        <th scope="col" class="px-4 py-3 text-center">Sex</th>
+                                        <th scope="col" class="px-4 py-3 text-center">Age</th>
+                                        <th scope="col" class="px-4 py-3 text-center">Address</th>
+                                        <th scope="col" class="py-3 text-center">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="archivedTableBody">
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5 text-gray-600 dark:text-gray-300">
-                                            Loading archived patients...
-                                        </td>
+                                <tbody id="patients-body">
+                                    <tr class="border-b dark:border-gray-700">
+                                        <td
+                                            class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            Loading ...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -334,202 +411,223 @@
                 </div>
             </section>
         </main>
+
     </div>
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="/dentalemr_system/js/tailwind.config.js"></script>
+    <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
+    <script>
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
+        }
+
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
+        });
+
+        resetTimer();
+    </script>
+
     <script>
         function view() {
-            location.href = ("viewrecord.html");
+            location.href = ("view_info.html");
         }
     </script>
 
-    <!-- Archived  -->
+    <!-- tabel fetch  -->
     <script>
+        let allPatients = [];
+        let uniqueAddresses = new Set();
         let currentPage = 1;
-        const rowsPerPage = 5;
-        let currentSearch = "";
+        const rowsPerPage = 10;
 
-        async function loadArchivedPatients(page = 1, search = "") {
-            const tbody = document.getElementById("archivedTableBody");
-            const restoreAllBtn = document.getElementById("restoreAllBtn");
-            const paginationNav = document.getElementById("paginationNav");
-
-            tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center py-5 text-gray-600 dark:text-gray-300">
-                    Loading archived patients...
-                </td>
-            </tr>`;
-
+        // Fetch patients
+        async function loadPatients(page = 1) {
+            currentPage = page;
             try {
-                const response = await fetch(`../php/archived/get_archived.php?page=${page}&limit=${rowsPerPage}&search=${encodeURIComponent(search)}&ts=${Date.now()}`);
-                const result = await response.json();
+                const response = await fetch("/DentalEMR_System/php/treatmentrecords/treatment.php");
+                const text = await response.text();
+                console.log("Raw response:", text);
 
-                if (result.error) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-red-500">${result.error}</td></tr>`;
-                    restoreAllBtn.disabled = true;
-                    paginationNav.innerHTML = "";
-                    return;
+                const data = JSON.parse(text);
+                if (!Array.isArray(data)) throw new Error("Invalid data format");
+                allPatients = data;
+
+                const addresses = [...new Set(data.map(p => p.address || ""))];
+                if (JSON.stringify([...uniqueAddresses]) !== JSON.stringify(addresses)) {
+                    uniqueAddresses = new Set(addresses);
+                    renderAddressFilters(addresses);
                 }
 
-                const { data, total } = result;
-                currentPage = page;
-                currentSearch = search;
-                restoreAllBtn.disabled = (data.length === 0);
-
-                tbody.innerHTML = "";
-
-                if (!Array.isArray(data) || data.length === 0) {
-                    tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-gray-600 dark:text-gray-300">
-                            No archived patients found.
-                        </td>
-                    </tr>`;
-                    paginationNav.innerHTML = "";
-                    return;
-                }
-
-                data.forEach(p => {
-                    const fullname = `${p.firstname ?? ""} ${p.middlename ?? ""} ${p.surname ?? ""}`.trim();
-                    const row = `
-                    <tr class="border-b dark:border-gray-700">
-                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${fullname}</td>
-                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${p.sex ?? "-"}</td>
-                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${p.age ?? "-"}</td>
-                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${p.address ?? "-"}</td>
-                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">${p.created_at ?? "-"}</td>
-                        <td class="px-4 py-3 text-center  text-gray-700 whitespace-nowrap dark:text-white">
-                            <button onclick="restorePatient(${p.patient_id})"
-                                class="bg-blue-600 hover:bg-blue-700 cursor-pointer text-white font-medium rounded-sm text-xs px-2 py-1.5 focus:ring-2 focus:ring-blue-400">
-                                Restore
-                            </button>
-                        </td>
-                    </tr>`;
-                    tbody.insertAdjacentHTML("beforeend", row);
-                });
-
-                renderPagination(total, rowsPerPage, currentPage);
-            } catch (err) {
-                console.error("Fetch error:", err);
-                tbody.innerHTML = `
-                <tr><td colspan="6" class="text-center py-5 text-red-500">
-                    Error loading archived patients.
-                </td></tr>`;
-                restoreAllBtn.disabled = true;
-                paginationNav.innerHTML = "";
+                renderPatients();
+            } catch (error) {
+                console.error("Error loading patients:", error);
+                const tbody = document.getElementById("patients-body");
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-red-500">
+            Error loading patient data.
+        </td></tr>`;
             }
         }
 
-        function renderPagination(total, limit, page) {
+        function renderPatients() {
+            const tbody = document.getElementById("patients-body");
+            const searchInput = (document.getElementById("simple-search").value || "").toLowerCase();
+            const selectedAddresses = Array.from(document.querySelectorAll('#filterDropdown input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+
+            const filtered = allPatients.filter(patient => {
+                const name = (patient.fullname || "").toLowerCase();
+                const address = patient.address || "";
+                const matchesSearch = name.includes(searchInput);
+                const matchesAddress = selectedAddresses.length === 0 || selectedAddresses.includes(address);
+                return matchesSearch && matchesAddress;
+            });
+
+            const total = filtered.length;
+            const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, total);
+            const paginated = filtered.slice(startIndex, endIndex);
+
+            tbody.innerHTML = "";
+            if (paginated.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-gray-500">No patient records found.</td></tr>`;
+            } else {
+                paginated.forEach((patient, index) => {
+                    const rowNumber = startIndex + index + 1;
+                    const row = `
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                    <th scope="row" class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                        ${rowNumber}
+                    </th>
+                    <td class="px-4 py-3 text-center">${patient.fullname || "—"}</td>
+                    <td class="px-4 py-3 text-center">${patient.sex || "—"}</td>
+                    <td class="px-4 py-3 text-center">${patient.age || "—"}</td>
+                    <td class="px-4 py-3 text-center">${patient.address || "—"}</td>
+                    <td class="py-3 flex justify-center gap-2">
+                        <button type="button" onclick="window.location.href='view_info.php?id=${patient.patient_id}'"
+                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-1.5">
+                            View
+                        </button>
+                        <button type="button" onclick="archivePatient(${patient.patient_id})"
+                            class="text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-1.5">
+                            Archive
+                        </button>
+                    </td>
+                </tr>`;
+                    tbody.insertAdjacentHTML("beforeend", row);
+                });
+            }
+
+            renderPagination(total, rowsPerPage, currentPage);
+        }
+
+        function renderPagination(total, limitVal, page) {
             const paginationNav = document.getElementById("paginationNav");
-            const totalPages = Math.ceil(total / limit);
-            if (totalPages <= 1) {
-                paginationNav.innerHTML = "";
-                return;
-            }
+            const totalPages = Math.max(1, Math.ceil(total / limitVal));
+            const start = (page - 1) * limitVal + 1;
+            const end = Math.min(page * limitVal, total);
 
-            let html = `<div class="flex flex-col md:flex-row justify-between items-center w-full">
-                        <span class="text-sm text-gray-500">Showing 
-                            <span class="font-semibold text-gray-700">${(page - 1) * limit + 1}</span>-
-                            <span class="font-semibold text-gray-700">${Math.min(page * limit, total)}</span> 
-                            of <span class="font-semibold text-gray-700">${total}</span>
-                        </span>
-                        <ul class="inline-flex -space-x-px">`;
+            const showingText = `
+        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+        Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
+        of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
+        </span>
+    `;
 
-            if (page > 1) {
-                html += `<li><a href="#" onclick="loadArchivedPatients(${page - 1}, currentSearch); return false;" 
-                        class="flex items-center justify-center py-1.5 px-2  text-gray-500 bg-white rounded-l-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"><svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg></a></li>`;
-            }
-
+            let pagesHTML = "";
             for (let i = 1; i <= totalPages; i++) {
-                html += (i === page)
-                    ? `<li><span class="flex items-center justify-center text-sm z-10 py-1.5 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>`
-                    : `<li><a href="#" onclick="loadArchivedPatients(${i}, currentSearch); return false;" 
-                        class="flex items-center justify-center text-sm py-1.5 px-3 
-                 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
+                pagesHTML += (i === page) ?
+                    `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300">${i}</span></li>` :
+                    `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">${i}</a></li>`;
             }
 
-            if (page < totalPages) {
-                html += `<li><a href="#" onclick="loadArchivedPatients(${page + 1}, currentSearch); return false;" 
-                        class="flex items-center justify-center py-1.5 px-2 text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"><svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                    </svg></a></li>`;
-            }
+            paginationNav.innerHTML = `
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 w-full">
+            ${showingText}
+            <ul class="inline-flex -space-x-px">${pagesHTML}</ul>
+        </div>
+    `;
+        }
 
-            html += `</ul></div>`;
-            paginationNav.innerHTML = html;
+        function renderAddressFilters(addresses) {
+            const filterList = document.querySelector('#filterDropdown ul');
+            filterList.innerHTML = "";
+            addresses.forEach(address => {
+                const safeAddress = address || "(Unknown)";
+                const li = document.createElement("li");
+                li.className = "flex items-center";
+                li.innerHTML = `
+            <input id="filter-${safeAddress}" type="checkbox" value="${safeAddress}"
+                class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600">
+            <label for="filter-${safeAddress}" class="ml-2 text-sm font-medium text-gray-900">${safeAddress}</label>
+        `;
+                filterList.appendChild(li);
+            });
+
+            filterList.querySelectorAll("input[type='checkbox']").forEach(cb => {
+                cb.addEventListener("change", () => {
+                    currentPage = 1;
+                    renderPatients();
+                });
+            });
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            loadArchivedPatients();
-
-            document.getElementById("searchArchived").addEventListener("input", e => {
-                const term = e.target.value.trim();
-                loadArchivedPatients(1, term);
+            loadPatients();
+            document.getElementById("simple-search").addEventListener("input", () => {
+                currentPage = 1;
+                renderPatients();
             });
         });
     </script>
 
 
-    <!-- Restore  -->
+    <!-- Archive  -->
     <script>
-        const API_RESTORE = "/dentalemr_system/php/archived/restore_patient.php";
+        async function archivePatient(patientId) {
+            if (!confirm("Are you sure you want to archive this patient and all related records?")) return;
 
-        // 🟢 Restore a single patient
-        async function restorePatient(patientId) {
-            if (!confirm("Are you sure you want to restore this archived patient and all related records?")) return;
+            const API = "/dentalemr_system/php/treatmentrecords/treatment.php"; // ✅ make sure folder name is correct
 
             try {
                 const formData = new FormData();
-                formData.append("restore_id", patientId);
+                formData.append("archive_id", patientId);
 
-                const response = await fetch(API_RESTORE, {
+                const response = await fetch(API, {
                     method: "POST",
-                    body: formData,
+                    body: formData
                 });
+                const text = await response.text(); // read raw first
+                console.log("Server response:", text); // ✅ debug output
 
-                const text = await response.text(); // handle invalid JSON safely
                 let data;
                 try {
                     data = JSON.parse(text);
                 } catch {
-                    console.error("Invalid JSON returned:", text);
-                    alert("Restore failed: Server returned invalid JSON.");
+                    alert("Server returned invalid JSON. Check PHP error logs.");
+                    console.error("Raw server response:", text);
                     return;
                 }
 
                 if (response.ok && data.success) {
-                    alert(data.message || "Patient restored successfully!");
-                    // 🔄 Reload your archived list (or refresh page)
-                    loadArchivedPatients();
+                    alert(data.message || "Patient archived successfully!");
+                    loadPatients(currentPage);
                 } else {
-                    alert(data.message || "Restore failed. Check the PHP logs.");
+                    alert(data.message || "Failed to archive patient.");
                 }
             } catch (err) {
-                console.error("Network error while restoring:", err);
-                alert("Network error while restoring patient.");
-            }
-        }
-
-        // 🔄 Restore all patients at once
-        async function restoreAllPatients() {
-            if (!confirm("Are you sure you want to restore ALL archived patients?")) return;
-
-            try {
-                // You can modify this to loop over all archive rows if needed
-                const restoreButtons = document.querySelectorAll(".restore-btn");
-                for (const btn of restoreButtons) {
-                    const id = btn.getAttribute("data-id");
-                    await restorePatient(id);
-                }
-            } catch (err) {
-                alert("Restore all failed. Check console for details.");
-                console.error(err);
+                console.error("Network error while archiving:", err);
+                alert("Network error while archiving.");
             }
         }
     </script>

@@ -1,7 +1,6 @@
 <?php
 header("Content-Type: application/json");
-include_once("../conn.php"); // ✅ Ensure this path is correct and provides $conn (MySQLi)
-
+include_once("../conn.php"); // Ensure this path is correct and provides $conn (MySQLi)
 // Handle "fetch single record" mode (used when changing date)
 if (isset($_GET['record'])) {
     $record_id = intval($_GET['record']);

@@ -1,3 +1,36 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    // Destroy session and redirect
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
@@ -80,7 +113,7 @@
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -113,7 +146,7 @@
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.html"
+                        <a href="../index.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -127,7 +160,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.html"
+                        <a href="../addpatient.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -167,7 +200,7 @@
                                     Records</a>
                             </li>
                             <li>
-                                <a href="../addpatienttreatment/patienttreatment.html"
+                                <a href="../addpatienttreatment/patienttreatment.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -176,7 +209,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.html"
+                        <a href="../reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -191,7 +224,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.html"
+                        <a href="../reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -204,7 +237,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.html"
+                        <a href="../reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -219,7 +252,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../archived.html"
+                        <a href="../archived.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -257,19 +290,26 @@
                 <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
                     <div class="flex items-center justify-between lg:order-1 w-full ">
                         <!-- Back Btn-->
-                        <button type="button" onclick="back()" class="cursor-pointer">
-                            <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2.5" d="M5 12h14M5 12l4-4m-4 4 4 4" />
-                            </svg>
-                        </button>
+                        <div class="relative group inline-block ">
+                            <button type="button" onclick="back()" class="cursor-pointer">
+                                <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="2.5" d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                                </svg>
+                            </button>
+                            <!-- Tooltip -->
+                            <span class="absolute left-1/4 -translate-x-1/4  hidden group-hover:block 
+                             bg-gray-100/50 text-gray-900 text-sm px-2 py-1 rounded-sm shadow-sm whitespace-nowrap">
+                                Go back
+                            </span>
+                        </div>
                         <p class="text-xl font-semibold px-5  text-gray-900 dark:text-white">Patient Treatment
                             Record
                         </p>
                         <!-- Print Btn -->
-                        <button type="button"
+                        <a href="" id="printdLink"
                             class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 mt-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
                             <svg class="w-5 h-4 text-primary-800 dark:text-white" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
@@ -279,13 +319,13 @@
                                     clip-rule="evenodd" />
                             </svg>
                             Print
-                        </button>
+                        </a>
                     </div>
                     <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
                         id="mobile-menu-2">
                         <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                             <li>
-                                <a href="#" 
+                                <a href="#"
                                     class="block py-2 pr-4 pl-3 text-blue-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
                                     Information</a>
                             </li>
@@ -295,7 +335,7 @@
                                     Health Condition</a>
                             </li>
                             <li>
-                                <a href="view_record.html"
+                                <a href="#" id="servicesRenderedLink"
                                     class="block py-2 pr-4 pl-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Record
                                     of Sevices Rendered</a>
                             </li>
@@ -1198,10 +1238,31 @@
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
+    <script>
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
+        }
+
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
+        });
+
+        resetTimer();
+    </script>
+
     <script>
         function back() {
-            location.href = ("treatmentrecords.html");
+            location.href = ("treatmentrecords.php");
         }
+
         function toggleInput(checkbox, inputId) {
             const input = document.getElementById(inputId);
             if (!input) return;
@@ -1219,9 +1280,18 @@
                 if (cause) cause.disabled = false;
                 if (surgery) surgery.disabled = false;
             } else {
-                if (last) { last.disabled = true; last.value = ""; }
-                if (cause) { cause.disabled = true; cause.value = ""; }
-                if (surgery) { surgery.disabled = true; surgery.value = ""; }
+                if (last) {
+                    last.disabled = true;
+                    last.value = "";
+                }
+                if (cause) {
+                    cause.disabled = true;
+                    cause.value = "";
+                }
+                if (surgery) {
+                    surgery.disabled = true;
+                    surgery.value = "";
+                }
             }
         }
     </script>
@@ -1609,9 +1679,9 @@
                 formData.append("patient_id", patient_id);
 
                 fetch("/dentalemr_system/php/treatmentrecords/view_info.php", {
-                    method: "POST",
-                    body: formData
-                })
+                        method: "POST",
+                        body: formData
+                    })
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
@@ -1679,9 +1749,9 @@
                 formData.append("patient_id", patient_id);
 
                 fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
-                    method: "POST",
-                    body: formData
-                })
+                        method: "POST",
+                        body: formData
+                    })
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
@@ -1779,9 +1849,9 @@
                 formData.append("patient_id", patient_id);
 
                 fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
-                    method: "POST",
-                    body: formData
-                })
+                        method: "POST",
+                        body: formData
+                    })
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
@@ -1804,23 +1874,38 @@
             loadDietaryHistory();
         });
     </script>
+
     <script>
-        // ✅ Example: get patient ID (you can modify this depending on your app logic)
-        // Option A: If it's already in the URL (e.g., ?id=3)
         const params = new URLSearchParams(window.location.search);
         const patientId = params.get('id');
-
-        // Option B: Or if you stored the selected patient in localStorage previously
-        // const patient = JSON.parse(localStorage.getItem('selectedPatient'));
-        // const patientId = patient?.patient_id;
-
-        // ✅ Set the Oral Health Condition link dynamically
+        //  Set the Oral Health Condition link dynamically
         const oralHealthLink = document.getElementById("oralHealthLink");
         if (oralHealthLink && patientId) {
-            oralHealthLink.href = `view_oral.html?id=${encodeURIComponent(patientId)}`;
+            oralHealthLink.href = `view_oral.php?id=${encodeURIComponent(patientId)}`;
         } else {
             // Optional fallback: disable link if no patient selected
             oralHealthLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+
+        const servicesRenderedLink = document.getElementById("servicesRenderedLink");
+        if (servicesRenderedLink && patientId) {
+            servicesRenderedLink.href = `view_record.php?id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            servicesRenderedLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+        const printdLink = document.getElementById("printdLink");
+        if (printdLink && patientId) {
+            printdLink.href = `print.php?id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            printdLink.addEventListener("click", (e) => {
                 e.preventDefault();
                 alert("Please select a patient first.");
             });

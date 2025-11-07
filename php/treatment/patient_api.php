@@ -19,11 +19,15 @@ $input = json_decode(file_get_contents('php://input'), true);
 // --------------------
 // Case 1: suggestions
 // --------------------
+// --------------------
+// Case 1: suggestions (improved: only if_treatment = 0)
+// --------------------
 if ($q !== null) {
     $qLike = "%{$q}%";
-    $sql = "SELECT patient_id, surname, firstname, middlename, address, guardian
+
+    $sql = "SELECT patient_id, surname, firstname, middlename, address, guardian, if_treatment
             FROM patients
-            WHERE surname LIKE ? OR firstname LIKE ?
+            WHERE (surname LIKE ? OR firstname LIKE ?)
             ORDER BY surname ASC
             LIMIT 10";
     $stmt = $conn->prepare($sql);
@@ -36,16 +40,18 @@ if ($q !== null) {
         $patients[] = $row;
     }
 
-    echo json_encode($patients);
+    echo json_encode($patients); // JS will handle if_treatment
     exit;
 }
+
+
 
 // --------------------
 // Case 2: fetch full patient
 // --------------------
 if ($id !== null) {
     // patient
-    $stmt = $conn->prepare("SELECT patient_id, surname, firstname, middlename, date_of_birth, place_of_birth, age, sex, address, pregnant, occupation, guardian
+    $stmt = $conn->prepare("SELECT patient_id, surname, firstname, middlename, date_of_birth, place_of_birth, age, months_old, sex, address, pregnant, occupation, guardian
                             FROM patients
                             WHERE patient_id = ?");
     $stmt->bind_param("i", $id);
@@ -131,8 +137,11 @@ if ($input && isset($input['patient_id'])) {
                 sex = '{$sex}',
                 address = '{$address}',
                 pregnant = '{$pregnant}',
-                occupation = '{$occupation}'
+                occupation = '{$occupation}',
+                if_treatment = 1,             -- always mark as treated
+                updated_at = NOW()            -- refresh timestamp
             WHERE patient_id = {$pid}";
+
     $conn->query($sql);
 
     // ------------ Upsert patient_other_info ------------

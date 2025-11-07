@@ -27,7 +27,7 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : "";
 $filterAddresses = isset($_GET['addresses']) ? trim($_GET['addresses']) : "";
 
 try {
-    $whereParts = [];
+    $whereParts = ["if_treatment = 0"]; // ✅ always filter for if_treatment = 0
     $params = [];
     $types = "";
 
@@ -52,7 +52,7 @@ try {
     }
 
     // WHERE clause builder
-    $whereSql = count($whereParts) > 0 ? "WHERE " . implode(" AND ", $whereParts) : "";
+    $whereSql = "WHERE " . implode(" AND ", $whereParts);
 
     // 🧾 Main query
     $sql = "SELECT patient_id, surname, firstname, middlename, sex, age, address
@@ -87,8 +87,8 @@ try {
     $total = (int)$countRow['total'];
     $cstmt->close();
 
-    // 📍 Distinct address list for filters
-    $addrRes = $mysqli->query("SELECT DISTINCT address FROM patients WHERE address IS NOT NULL AND address <> '' ORDER BY address ASC");
+    // 📍 Distinct address list for filters (still includes only those with if_treatment=0)
+    $addrRes = $mysqli->query("SELECT DISTINCT address FROM patients WHERE if_treatment = 0 AND address IS NOT NULL AND address <> '' ORDER BY address ASC");
     $addresses = [];
     while ($row = $addrRes->fetch_assoc()) {
         $addresses[] = $row['address'];

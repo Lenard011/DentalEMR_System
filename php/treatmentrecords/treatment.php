@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
     $conn->begin_transaction();
 
     try {
-        // 1️⃣ Fetch patient
+        // Fetch patient
         $stmt = $conn->prepare("SELECT * FROM patients WHERE patient_id = ?");
         $stmt->bind_param("i", $patient_id);
         $stmt->execute();
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
         $patient = $result->fetch_assoc();
         $original_json = json_encode($patient, JSON_UNESCAPED_UNICODE);
 
-        // 2️⃣ Archive patient
+        // Archive patient
         $insert_sql = "
             INSERT INTO archived_patients
             (patient_id, firstname, middlename, surname, date_of_birth, place_of_birth,
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
         );
         $insert_stmt->execute();
 
-        // 3️⃣ Get all visit IDs for this patient
+        // Get all visit IDs for this patient
         $visit_ids = [];
         $res = $conn->prepare("SELECT visit_id FROM visits WHERE patient_id = ?");
         $res->bind_param("i", $patient_id);
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
             $visit_ids[] = $row['visit_id'];
         }
 
-        // 4️⃣ Archive related tables that have patient_id
+        // Archive related tables that have patient_id
         $relatedTables = [
             'visits',
             'oral_health_condition',
@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
             $copy_stmt->execute();
         }
 
-        // 5️⃣ Archive visit-based tables (tooth treatment & condition)
+        // Archive visit-based tables (tooth treatment & condition)
         if (!empty($visit_ids)) {
             $visit_ids_list = implode(",", $visit_ids);
 
@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
             }
         }
 
-        // 6️⃣ Delete original records
+        // Delete original records
         $deleteOrder = [
             'visittoothtreatment',
             'visittoothcondition',

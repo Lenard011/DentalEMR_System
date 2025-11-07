@@ -1,3 +1,36 @@
+<?php
+session_start();
+date_default_timezone_set('Asia/Manila');
+
+// Check if the user is logged in
+if (!isset($_SESSION['logged_user'])) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Auto logout after 10 minutes of inactivity
+$inactiveLimit = 600; // seconds (10 minutes)
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
+    // Destroy session and redirect
+    session_unset();
+    session_destroy();
+    echo "<script>
+        alert('You have been logged out due to inactivity.');
+        window.location.href = './login/login.html';
+    </script>";
+    exit;
+}
+
+// Update activity timestamp
+$_SESSION['last_activity'] = time();
+
+// Get logged-in user details
+$user = $_SESSION['logged_user'];
+?>
 <!doctype html>
 <html>
 
@@ -247,7 +280,7 @@
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="#"
+                                <a href="/dentalemr_system/php/login/logout.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -280,7 +313,7 @@
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.html"
+                        <a href="../index.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -294,7 +327,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.html"
+                        <a href="../addpatient.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -329,7 +362,7 @@
                         </button>
                         <ul id="dropdown-pages" class="visible py-2 space-y-2">
                             <li>
-                                <a href="../treatmentrecords/treatmentrecords.html"
+                                <a href="../treatmentrecords/treatmentrecords.php"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
@@ -343,7 +376,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.html"
+                        <a href="../reports/targetclientlist.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -358,7 +391,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.html"
+                        <a href="../reports/mho_ohp.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -371,7 +404,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.html"
+                        <a href="../reports/oralhygienefindings.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -386,7 +419,7 @@
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../archived.html"
+                        <a href="../archived.php"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -497,11 +530,20 @@
                             <!-- Age,Sex,Pregnant -->
                             <div id="form-container" class="grid grid-cols-2 gap-4 w-full">
                                 <!-- Age -->
-                                <div id="age-wrapper">
-                                    <label for="age"
-                                        class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Age</label>
-                                    <input type="number" id="age" name="age" data-required data-label="Age"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                <div class="flex flex-row items-center justify-between gap-2 ">
+                                    <div class="age-wrapper w-full ">
+                                        <label for="age"
+                                            class="block mb-2 text-xs font-medium   text-gray-900 dark:text-white">Age</label>
+                                        <input type="number" id="age" name="age" min="0" data-required data-label="Age"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 w-full focus:border-primary-600 block  p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    </div>
+                                    <div id="monthContainer" class="age-wrapper w-full ">
+                                        <label for="agemonth"
+                                            class="block mb-2 text-xs font-medium  text-gray-900 dark:text-white">Month</label>
+                                        <input type="number" id="agemonth" name="agemonth" min="0" max="59"
+                                            data-label="AgeMonth"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 w-full focus:border-primary-600 block  p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    </div>
                                 </div>
 
                                 <!-- Sex -->
@@ -1200,7 +1242,7 @@
                                     class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white ">Treatment
                                 </p>
                             </div>
-                            <!-- Legend Condition -->
+                            <!-- Legend Condition & Treatment-->
                             <div class="flex flex-row gap-1 px-1  w-full  overflow-auto [scrollbar-width:none] [-ms-overflow-style:none] 
                                 [&::-webkit-scrollbar]:hidden">
                                 <!-- Condition -->
@@ -1422,191 +1464,58 @@
                     <!-- Set B -->
                     <div>
                         <div class="mb-3">
-                            <p class="text-14 font-semibold  text-gray-900 dark:text-white">B. Services Monitoring Chart
+                            <p class="text-14 font-semibold  text-gray-900 dark:text-white">B. Services Monitoring
+                                Chart
                             </p>
                         </div>
                         <div class="flex flex-col w-full justify-between items-center">
-                            <!-- top -->
-                            <div class="w-full flex flex-row  gap-10">
+                            <!-- Top Teeth Section -->
+                            <div class="w-full flex flex-row gap-10">
                                 <div class="w-160 flex flex-col">
                                     <p style="font-size: 14.2px;"
-                                        class=" font-normal text-gray-900 dark:text-white p-1 mb-2"> Fluoride
-                                        Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling, temporary
-                                        Filling, Extraction
+                                        class="font-normal text-gray-900 dark:text-white p-1 mb-2">
+                                        Fluoride Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling,
+                                        temporary Filling, Extraction
                                     </p>
-                                    <div class="flex flex-row justify-between items-center w-full px-1 mb-5">
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" data-tooth-id="55" readonly
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">55</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="54"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">54</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="53"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">53</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="52"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">52</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="51"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">51</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="61"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">61</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="62"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">62</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="63"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">63</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="64"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">64</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="65"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">65</label>
-                                        </div>
+                                    <div class="flex flex-row justify-between items-center w-full px-1 mb-5"
+                                        id="top-teeth-row1">
+                                        <!-- Upper teeth 55-51 + 61-65 dynamically inserted here -->
                                     </div>
-                                    <div class="flex flex-row justify-between items-center w-full px-1">
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="85"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"><label
-                                                for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">85</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="84"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">84</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="83"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">83</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="82"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">82</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="81"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">81</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="71"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">71</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="72"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">72</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="73"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">73</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="74"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">74</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="75"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">75</label>
-                                        </div>
+                                    <div class="flex flex-row justify-between items-center w-full px-1"
+                                        id="top-teeth-row2">
+                                        <!-- Upper teeth 85-81 + 71-75 dynamically inserted here -->
                                     </div>
                                 </div>
-                                <div class="controls  flex rounded-sm flex-col ">
-                                    <div class="w-full flex flex-col justify-center items-center ">
+
+                                <!-- Legend -->
+                                <div class="controls flex rounded-sm flex-col">
+                                    <div class="w-full flex flex-col justify-center items-center">
                                         <div class="flex flex-col gap-0.5">
                                             <p style="font-size: 14.2px;"
-                                                class="text-sm font-medium  text-gray-900 dark:text-white">Legend: <span
-                                                    class="font-normal">Treament</span>
+                                                class="text-sm font-medium text-gray-900 dark:text-white">
+                                                Legend: <span class="font-normal">Treatment</span>
                                             </p>
-                                            <div class="flex flex-col gap-0.5">
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-normal  text-gray-900 dark:text-white">Topical
-                                                    Fluoride
-                                                    Application:
-                                                </p>
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-normal ml-5 text-gray-900 dark:text-white">FV -
-                                                    Fluoride
-                                                    Varnish
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-normal ml-5 text-gray-900 dark:text-white">FG -
-                                                    Fluoride
-                                                    Gel
+                                            <div class="flex flex-col gap-0.5 ml-5">
+                                                <p class="text-sm font-normal text-gray-900 dark:text-white">FV -
+                                                    Fluoride Varnish</p>
+                                                <p class="text-sm font-normal text-gray-900 dark:text-white">FG -
+                                                    Fluoride Gel</p>
+                                                <p class="text-sm font-normal text-gray-900 dark:text-white">PFS - Pit
+                                                    and Fissure Sealant</p>
+                                                <p class="text-sm font-normal text-gray-900 dark:text-white">PF -
+                                                    Permanent Filling (Composite, Am, ART)</p>
+                                                <p class="text-sm font-normal text-gray-900 dark:text-white">TF -
+                                                    Temporary Filling</p>
+                                                <p class="text-sm font-normal text-gray-900 dark:text-white">X -
+                                                    Extraction</p>
+                                                <p class="text-sm font-normal text-gray-900 dark:text-white">O - Others
                                                 </p>
                                             </div>
-                                            <p style="font-size: 14.2px;"
-                                                class="text-sm font-normal  text-gray-900 dark:text-white">PFS - Pit and
-                                                Fissure Sealant
-                                            </p>
-                                            <p style="font-size: 14.2px;"
-                                                class="text-sm font-normal  text-gray-900 dark:text-white">PF -
-                                                Permanent
-                                                Filling (Composite, Am, ART)
-                                            </p>
-                                            <p style="font-size: 14.2px;"
-                                                class="text-sm font-normal  text-gray-900 dark:text-white">TF -
-                                                Temporary
-                                                Filling
-                                            </p>
-                                            <p style="font-size: 14.2px;"
-                                                class="text-sm font-normal  text-gray-900 dark:text-white">X -
-                                                Extraction
-                                            </p>
-                                            <p style="font-size: 14.2px;"
-                                                class="text-sm font-normal  text-gray-900 dark:text-white">O - Others
-                                            </p>
                                         </div>
-
                                     </div>
                                 </div>
+
+                                <!-- Treatment Selection -->
                                 <div class="w-48 flex flex-col p-2">
                                     <select id="selcttreatment"
                                         class="bg-gray-50 border border-gray-300 w-full text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
@@ -1621,214 +1530,28 @@
                                     </select>
                                 </div>
                             </div>
-                            <!-- Bot -->
+
+                            <!-- Bottom Teeth Section -->
                             <div style="margin-top: -25px;" class="w-full flex flex-row gap-5">
                                 <div class="w-full flex flex-col">
                                     <p style="font-size: 14.2px;"
-                                        class=" font-normal text-gray-900 dark:text-white p-1 mb-2"> Fluoride
-                                        Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling, temporary
-                                        Filling, Extraction
+                                        class="font-normal text-gray-900 dark:text-white p-1 mb-2">
+                                        Fluoride Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling,
+                                        temporary Filling, Extraction
                                     </p>
-                                    <div class="flex flex-row justify-between items-center w-full px-1 mb-5">
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="18"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">18</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="17"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">17</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="16"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">16</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="15"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">15</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="14"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">14</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="13"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">13</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="12"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">12</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="11"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">11</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="21"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">21</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="22"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">22</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="23"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">23</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="24"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">24</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="25"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">25</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="26"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">26</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="27"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">27</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="28"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">28</label>
-                                        </div>
+                                    <div class="flex flex-row justify-between items-center w-full px-1 mb-5"
+                                        id="bottom-teeth-row1">
+                                        <!-- Lower teeth 18-11 dynamically inserted here -->
                                     </div>
-                                    <div class="flex flex-row justify-between items-center w-full px-1 mb-3">
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="48"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">48</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="47"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">47</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="46"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">46</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="45"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">45</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="44"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">44</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="43"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">43</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="42"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">42</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="41"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">41</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="31"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">31</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="32"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">32</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="33"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">33</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="34"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">34</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="35"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">35</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="36"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">36</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="37"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">37</label>
-                                        </div>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" readonly data-tooth-id="38"
-                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                            <label for="name"
-                                                class="flex text-sm font-medium text-gray-900 dark:text-white">38</label>
-                                        </div>
+                                    <div class="flex flex-row justify-between items-center w-full px-1"
+                                        id="bottom-teeth-row2">
+                                        <!-- Lower teeth 48-41 + 31-38 dynamically inserted here -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </section>
                 <div class="flex justify-between w-full">
                     <button type="button" onclick="back2()"
@@ -1952,11 +1675,31 @@
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
+    <script>
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
+
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "../php/logout.php";
+            }, inactivityTime);
+        }
+
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
+        });
+
+        resetTimer();
+    </script>
 
     <script>
         function toggleInput(checkbox, inputId) {
             document.getElementById(inputId).disabled = !checkbox.checked;
         }
+
         function submit() {
 
         }
@@ -1973,7 +1716,7 @@
                 document.getElementById(id).disabled = !checkbox.checked;
             });
         }
-        form.onsubmit = function (e) {
+        form.onsubmit = function(e) {
             e.preventDefault(); // <-- stops submission
         }
     </script>
@@ -2011,6 +1754,77 @@
         sexInput.addEventListener('change', togglePregnantSection);
     </script>
 
+    <!-- age group  -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dobField = document.getElementById('dob');
+            const ageInput = document.getElementById('age');
+            const monthInput = document.getElementById('agemonth');
+            const monthContainer = document.getElementById('monthContainer');
+
+            // Hide month container initially
+            monthContainer.style.display = 'none';
+            monthInput.value = '';
+
+            // Function to calculate and display age/month from DOB
+            function updateFromDOB() {
+                const dob = new Date(dobField.value);
+                const today = new Date();
+
+                if (!dob || dob > today) {
+                    ageInput.value = '';
+                    monthInput.value = '';
+                    monthContainer.style.display = 'none';
+                    return;
+                }
+
+                let years = today.getFullYear() - dob.getFullYear();
+                let months = today.getMonth() - dob.getMonth();
+                const days = today.getDate() - dob.getDate();
+
+                // Adjust month/year differences
+                if (months < 0 || (months === 0 && days < 0)) {
+                    years--;
+                    months += 12;
+                }
+
+                if (years < 0) years = 0;
+                if (months < 0) months = 0;
+
+                ageInput.value = years;
+
+                // Show or hide month container depending on age
+                handleMonthVisibility(years, months);
+            }
+
+            // Function to show/hide the month field
+            function handleMonthVisibility(years, months = 0) {
+                if (years < 5) {
+                    const totalMonths = (years * 12) + months;
+                    if (totalMonths >= 0 && totalMonths <= 59) {
+                        monthContainer.style.display = 'block';
+                        monthInput.value = totalMonths;
+                    } else {
+                        monthContainer.style.display = 'none';
+                        monthInput.value = '';
+                    }
+                } else {
+                    monthContainer.style.display = 'none';
+                    monthInput.value = '';
+                }
+            }
+
+            // 📅 When user changes DOB → auto-fill age & month
+            dobField.addEventListener('change', updateFromDOB);
+
+            // ✍️ When user manually changes age → show/hide month field dynamically
+            ageInput.addEventListener('input', function() {
+                const years = parseInt(this.value) || 0;
+                handleMonthVisibility(years);
+            });
+        });
+    </script>
+
     <!-- Next&Back Button Function  -->
     <script>
         function next() {
@@ -2018,36 +1832,42 @@
             document.getElementById("patienttreatmentvital").style.display = "flex";
             document.getElementById("oralhealth").style.display = "none";
         }
+
         function back() {
             document.getElementById("patienttreatment").style.display = "flex";
             document.getElementById("patienttreatmentvital").style.display = "none";
             document.getElementById("oralhealth").style.display = "none";
             document.getElementById("oralhealthA&B").style.display = "none";
         }
+
         function next1() {
             document.getElementById("patienttreatment").style.display = "none";
             document.getElementById("patienttreatmentvital").style.display = "none";
             document.getElementById("oralhealth").style.display = "flex";
             document.getElementById("oralhealthA&B").style.display = "none";
         }
+
         function back1() {
             document.getElementById("patienttreatment").style.display = "none";
             document.getElementById("patienttreatmentvital").style.display = "flex";
             document.getElementById("oralhealth").style.display = "none";
             document.getElementById("oralhealthA&B").style.display = "none";
         }
+
         function next2() {
             document.getElementById("patienttreatment").style.display = "none";
             document.getElementById("patienttreatmentvital").style.display = "none";
             document.getElementById("oralhealth").style.display = "none";
             document.getElementById("oralhealthA&B").style.display = "flex";
         }
+
         function back2() {
             document.getElementById("patienttreatment").style.display = "none";
             document.getElementById("patienttreatmentvital").style.display = "none";
             document.getElementById("oralhealth").style.display = "flex";
             document.getElementById("oralhealthA&B").style.display = "none";
         }
+
         function next3() {
             document.getElementById("patienttreatment").style.display = "none";
             document.getElementById("patienttreatmentvital").style.display = "none";
@@ -2055,6 +1875,7 @@
             document.getElementById("oralhealthA&B").style.display = "none";
             document.getElementById("recofservoriented").style.display = "flex";
         }
+
         function back3() {
             document.getElementById("patienttreatment").style.display = "none";
             document.getElementById("patienttreatmentvital").style.display = "none";
@@ -2062,30 +1883,105 @@
             document.getElementById("oralhealthA&B").style.display = "flex";
             document.getElementById("recofservoriented").style.display = "none";
         }
+
         function submit() {
             alert("Patient Treatment Record Added Successfully!");
             location.href = "../treatmentrecords.html";
         }
     </script>
 
-
     <!-- fetch patient -->
     <script>
-        const searchInput = document.getElementById("default-search");
-        const suggestionsBox = document.getElementById("suggestions");
+        document.addEventListener('DOMContentLoaded', function() {
+            // ==============================
+            // AGE & MONTH CALCULATOR SECTION
+            // ==============================
+            const dobField = document.getElementById('dob');
+            const ageInput = document.getElementById('age');
+            const monthInput = document.getElementById('agemonth');
+            const monthContainer = document.getElementById('monthContainer');
 
-        // Search suggetions
-        searchInput.addEventListener("input", function () {
-            let query = this.value.trim();
-            if (query.length < 2) {
-                suggestionsBox.innerHTML = "";
-                suggestionsBox.classList.add("hidden");
-                return;
+            monthContainer.style.display = 'none';
+            monthInput.value = '';
+
+            function updateFromDOB() {
+                const dob = new Date(dobField.value);
+                const today = new Date();
+
+                if (!dob || dob > today) {
+                    ageInput.value = '';
+                    monthInput.value = '';
+                    monthContainer.style.display = 'none';
+                    return;
+                }
+
+                let years = today.getFullYear() - dob.getFullYear();
+                let months = today.getMonth() - dob.getMonth();
+                const days = today.getDate() - dob.getDate();
+
+                if (months < 0 || (months === 0 && days < 0)) {
+                    years--;
+                    months += 12;
+                }
+
+                if (years < 0) years = 0;
+                if (months < 0) months = 0;
+
+                ageInput.value = years;
+                handleMonthVisibility(years, months);
             }
 
-            fetch("../../php/treatment/patient_api.php?q=" + encodeURIComponent(query))
-                .then(res => res.json())
-                .then(data => {
+            function handleMonthVisibility(years = 0, months = 0) {
+                const monthContainer = document.getElementById('monthContainer');
+                const monthInput = document.getElementById('agemonth');
+
+                // Safety check
+                if (!monthContainer || !monthInput) return;
+
+                // 🧠 Logic:
+                // - Show months if the patient is younger than 5 years
+                // - OR if age is 0 and months > 0 (e.g., 5 months old)
+                // - Hide otherwise
+                if (years < 5 || (years === 0 && months > 0)) {
+                    const totalMonths = (years * 12) + months;
+
+                    // Clamp between 0–59 months (5 years max)
+                    const validMonths = Math.max(0, Math.min(totalMonths, 59));
+
+                    monthContainer.style.display = 'block';
+                    monthInput.value = validMonths;
+                } else {
+                    monthContainer.style.display = 'none';
+                    monthInput.value = '';
+                }
+            }
+
+
+            dobField.addEventListener('change', updateFromDOB);
+            ageInput.addEventListener('input', function() {
+                const years = parseInt(this.value) || 0;
+                handleMonthVisibility(years);
+            });
+
+            // =================================
+            // PATIENT FETCH / SAVE SECTION
+            // =================================
+            const searchInput = document.getElementById("default-search");
+            const suggestionsBox = document.getElementById("suggestions");
+
+            // 🔍 Live search
+            searchInput.addEventListener("input", async function() {
+                const query = this.value.trim();
+                if (query.length < 2) {
+                    suggestionsBox.innerHTML = "";
+                    suggestionsBox.classList.add("hidden");
+                    return;
+                }
+
+                try {
+                    const res = await fetch(`../../php/treatment/patient_api.php?q=${encodeURIComponent(query)}`);
+                    const data = await res.json();
+
                     suggestionsBox.innerHTML = "";
                     if (!Array.isArray(data) || data.length === 0) {
                         suggestionsBox.classList.add("hidden");
@@ -2093,239 +1989,267 @@
                     }
 
                     data.forEach(p => {
-                        let item = document.createElement("div");
-                        item.className = "p-2 hover:bg-gray-100 cursor-pointer text-sm";
-                        item.innerHTML = `<strong>${p.surname}, ${p.firstname} ${p.middlename ?? ""}</strong>
-                            <br><span class="text-xs text-gray-600">Address: ${p.address ?? "-"}</span>
-                            <br><span class="text-xs text-gray-600">Guardian: ${p.guardian ?? "-"}</span>`;
-                        item.addEventListener("click", () => {
-                            fillPatientForm(p.patient_id);
-                            suggestionsBox.innerHTML = "";
-                            suggestionsBox.classList.add("hidden");
-                            searchInput.value = `${p.surname}, ${p.firstname}`;
-                        });
+                        const item = document.createElement("div");
+                        item.className = "p-2 text-sm";
+
+                        // Already treated?
+                        if (p.if_treatment == 1) {
+                            item.classList.add("text-red-600", "italic");
+                            item.textContent = `${p.surname}, ${p.firstname} has already been treated`;
+                        } else {
+                            item.classList.add("hover:bg-gray-100", "cursor-pointer");
+                            item.innerHTML = `
+                                <strong>${p.surname}, ${p.firstname} ${p.middlename ?? ""}</strong>
+                                <br><span class="text-xs text-gray-600">Address: ${p.address ?? "-"}</span>
+                                <br><span class="text-xs text-gray-600">Guardian: ${p.guardian ?? "-"}</span>
+                            `;
+                            item.addEventListener("click", () => {
+                                fillPatientForm(p.patient_id);
+                                suggestionsBox.innerHTML = "";
+                                suggestionsBox.classList.add("hidden");
+                                searchInput.value = `${p.surname}, ${p.firstname}`;
+                            });
+                        }
+
                         suggestionsBox.appendChild(item);
                     });
 
-                    suggestionsBox.classList.remove("hidden");
-                })
-                .catch(err => {
-                    console.error("Suggestion fetch failed", err);
-                });
-        });
-
-        // Form elements by id
-        function applyObjectToForm(obj) {
-            if (!obj) return;
-            for (const key in obj) {
-                if (!obj.hasOwnProperty(key)) continue;
-                const el = document.getElementById(key);
-                if (!el) continue;
-                // If it's a checkbox-like field in DB stored as 0/1, map to checkbox
-                if (el.type === "checkbox") {
-                    el.checked = (obj[key] == 1 || obj[key] === true || obj[key] === "1");
-                    // enable/disable detail inputs if they exist and are linked by id
-                } else {
-                    // input, textarea, date, etc.
-                    el.value = obj[key] !== null && obj[key] !== undefined ? obj[key] : "";
-                }
-            }
-        }
-
-        // Fill the full form for a patient
-        // Fill the full form for a patient
-        function fillPatientForm(patientId) {
-            fetch("../../php/treatment/patient_api.php?id=" + patientId)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.success) {
-                        console.warn("No data for patient", data);
-                        return;
+                    // If no data
+                    if (!Array.isArray(data) || data.length === 0) {
+                        const item = document.createElement("div");
+                        item.className = "p-2 text-sm italic text-gray-500";
+                        item.textContent = "⚠️ No patient found";
+                        suggestionsBox.appendChild(item);
                     }
+
+                    suggestionsBox.classList.remove("hidden");
+
+
+                    suggestionsBox.classList.remove("hidden");
+                } catch (err) {
+                    console.error("Suggestion fetch failed", err);
+                }
+            });
+
+            // Helper: apply object values to form inputs
+            function applyObjectToForm(obj) {
+                if (!obj) return;
+                Object.entries(obj).forEach(([key, value]) => {
+                    const el = document.getElementById(key);
+                    if (!el) return;
+                    if (el.type === "checkbox") {
+                        el.checked = value == 1 || value === true || value === "1";
+                    } else {
+                        el.value = value ?? "";
+                    }
+                });
+            }
+
+            // Fill patient form
+            async function fillPatientForm(patientId) {
+                try {
+                    const res = await fetch(`../../php/treatment/patient_api.php?id=${patientId}`);
+                    const data = await res.json();
+
+                    if (!data.success) return console.warn("No data for patient", data);
+
                     const p = data.patient || {};
                     const i = data.info || {};
                     const m = data.medical_history || {};
                     const d = data.dietary_habits || {};
                     const v = data.vital_signs || {};
 
-                    // store patient_id into hidden input
+                    // Basic info
+                    ["surname", "firstname", "middlename", "pob", "address", "occupation", "guardian"].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = p[id] ?? "";
+                    });
+                    // ✅ Fix for mismatched DB keys
+                    if (p.place_of_birth && document.getElementById('pob')) {
+                        document.getElementById('pob').value = p.place_of_birth;
+                    }
+                    if (p.months_old && document.getElementById('agemonth')) {
+                        document.getElementById('agemonth').value = p.months_old;
+                    }
+
+
+                    if (document.getElementById("dob")) document.getElementById("dob").value = p.date_of_birth ?? "";
+                    if (document.getElementById("age")) document.getElementById("age").value = p.age ?? "";
+                    if (document.getElementById("agemonth")) document.getElementById("agemonth").value = p.months_old ?? "";
+                    if (document.getElementById("sex")) document.getElementById("sex").value = p.sex ?? "";
                     if (document.getElementById("patient_id")) document.getElementById("patient_id").value = p.patient_id ?? "";
 
-                    // patient info 
-                    if (document.getElementById("surname")) document.getElementById("surname").value = p.surname ?? "";
-                    if (document.getElementById("firstname")) document.getElementById("firstname").value = p.firstname ?? "";
-                    if (document.getElementById("middlename")) document.getElementById("middlename").value = p.middlename ?? "";
-                    if (document.getElementById("dob")) document.getElementById("dob").value = p.date_of_birth ?? "";
-                    if (document.getElementById("pob")) document.getElementById("pob").value = p.place_of_birth ?? "";
-                    if (document.getElementById("age")) document.getElementById("age").value = p.age ?? "";
-                    if (document.getElementById("sex")) document.getElementById("sex").value = p.sex ?? "";
-                    if (document.getElementById("address")) document.getElementById("address").value = p.address ?? "";
-                    if (document.getElementById("occupation")) document.getElementById("occupation").value = p.occupation ?? "";
-                    if (document.getElementById("guardian")) document.getElementById("guardian").value = p.guardian ?? "";
+                    // Trigger month visibility
+                    handleMonthVisibility(parseInt(p.age || 0), parseInt(p.months_old || 0));
 
-                    // vital signs 
-                    if (document.getElementById("blood_pressure")) document.getElementById("blood_pressure").value = v.blood_pressure ?? "";
-                    if (document.getElementById("pulse_rate")) document.getElementById("pulse_rate").value = v.pulse_rate ?? "";
-                    if (document.getElementById("temperature")) document.getElementById("temperature").value = v.temperature ?? "";
-                    if (document.getElementById("weight")) document.getElementById("weight").value = v.weight ?? "";
+                    // Vital signs and other info
+                    applyObjectToForm(v);
+                    applyObjectToForm(m);
+                    applyObjectToForm(d);
 
-                    // -------------------------------
-                    // Pregnant field: auto-toggle based on saved value
-                    // -------------------------------
+                    // Memberships
+                    const flags = {
+                        nhts: i.nhts_pr,
+                        fourps: i.four_ps,
+                        ip: i.indigenous_people,
+                        pwd: i.pwd,
+                        philhealth: i.philhealth_flag,
+                        sss: i.sss_flag,
+                        gsis: i.gsis_flag
+                    };
+                    Object.entries(flags).forEach(([id, val]) => {
+                        const el = document.getElementById(id);
+                        if (el) el.checked = val == 1;
+                    });
+                    ["philhealth_number", "sss_number", "gsis_number"].forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) el.value = i[id] ?? "";
+                    });
+
+                    // Pregnant section logic
                     const pregnantSection = document.getElementById('pregnant-section');
                     const pregnantRadios = pregnantSection.querySelectorAll('input[name="pregnant"]');
                     if (p.sex === 'Female' && p.age >= 10 && p.age <= 49) {
                         pregnantSection.classList.remove('hidden');
                         document.getElementById('form-container').classList.replace('grid-cols-2', 'grid-cols-3');
-                        pregnantRadios.forEach(radio => {
-                            radio.disabled = false;
-                            radio.required = true;
-                            if (p.pregnant && p.pregnant === radio.value) {
-                                radio.checked = true;
-                            } else if (!p.pregnant && radio.value === "No") {
-                                radio.checked = true;
-                            }
+                        pregnantRadios.forEach(r => {
+                            r.disabled = false;
+                            r.required = true;
+                            r.checked = (p.pregnant ?? "No").toLowerCase() === r.value.toLowerCase();
                         });
                     } else {
                         pregnantSection.classList.add('hidden');
                         document.getElementById('form-container').classList.replace('grid-cols-3', 'grid-cols-2');
-                        pregnantRadios.forEach(radio => {
-                            radio.disabled = true;
-                            radio.required = false;
-                            radio.checked = radio.value === "No";
+                        pregnantRadios.forEach(r => {
+                            r.disabled = true;
+                            r.required = false;
+                            r.checked = r.value === "No";
                         });
                     }
 
-                    // Memberships 
-                    if (document.getElementById("nhts")) document.getElementById("nhts").checked = (i.nhts_pr == 1);
-                    if (document.getElementById("fourps")) document.getElementById("fourps").checked = (i.four_ps == 1);
-                    if (document.getElementById("ip")) document.getElementById("ip").checked = (i.indigenous_people == 1);
-                    if (document.getElementById("pwd")) document.getElementById("pwd").checked = (i.pwd == 1);
-                    if (document.getElementById("philhealth")) document.getElementById("philhealth").checked = (i.philhealth_flag == 1);
-                    if (document.getElementById("philhealth_number")) document.getElementById("philhealth_number").value = i.philhealth_number ?? "";
-                    if (document.getElementById("sss")) document.getElementById("sss").checked = (i.sss_flag == 1);
-                    if (document.getElementById("sss_number")) document.getElementById("sss_number").value = i.sss_number ?? "";
-                    if (document.getElementById("gsis")) document.getElementById("gsis").checked = (i.gsis_flag == 1);
-                    if (document.getElementById("gsis_number")) document.getElementById("gsis_number").value = i.gsis_number ?? "";
-
-                    // Vital signs, Medical, Dietary...
-                    applyObjectToForm(m);
-                    applyObjectToForm(d);
-
-                    // ...rest of your existing logic for enabling/disabling details
-                })
-                .catch(err => {
+                } catch (err) {
                     console.error("Fetch patient failed", err);
+                }
+            }
+
+            // Save patient
+            async function savePatient() {
+                const pidEl = document.getElementById("patient_id");
+                const pid = pidEl ? pidEl.value : null;
+                if (!pid) return alert("No patient selected");
+
+                // Pregnant value
+                let pregnantValue = "No";
+                document.querySelectorAll('input[name="pregnant"]').forEach(r => {
+                    if (r.checked) pregnantValue = r.value;
                 });
-        }
 
+                // 🧠 Helper for field values
+                const val = id => {
+                    const el = document.getElementById(id);
+                    if (!el) return "";
+                    if (el.type === "checkbox") return el.checked ? 1 : 0;
+                    return el.value.trim();
+                };
 
-        // Save / Update patient
-        // Save / Update patient
-        function savePatient() {
-            const pidEl = document.getElementById("patient_id");
-            const pid = pidEl ? pidEl.value : null;
-            if (!pid) { alert("No patient selected"); return; }
+                // ✅ Collect all form data
+                const payload = {
+                    // --- Patient Info ---
+                    patient_id: pid,
+                    surname: val("surname"),
+                    firstname: val("firstname"),
+                    middlename: val("middlename"),
+                    date_of_birth: val("dob"),
+                    place_of_birth: val("pob"),
+                    age: val("age"),
+                    months_old: val("agemonth"),
+                    sex: val("sex"),
+                    address: val("address"),
+                    occupation: val("occupation"),
+                    guardian: val("guardian"),
+                    pregnant: pregnantValue,
+                    if_treatment: 1,
 
-            // Get pregnant value
-            let pregnantValue = "No"; // default
-            const pregnantRadios = document.querySelectorAll('input[name="pregnant"]');
-            pregnantRadios.forEach(radio => {
-                if (radio.checked) pregnantValue = radio.value;
-            });
+                    // --- Membership / Other Info ---
+                    nhts_pr: val("nhts"),
+                    four_ps: val("fourps"),
+                    indigenous_people: val("ip"),
+                    pwd: val("pwd"),
+                    philhealth_flag: val("philhealth"),
+                    philhealth_number: val("philhealth_number"),
+                    sss_flag: val("sss"),
+                    sss_number: val("sss_number"),
+                    gsis_flag: val("gsis"),
+                    gsis_number: val("gsis_number"),
 
-            // Build JSON payload using existing element IDs 
-            const payload = {
-                patient_id: pid,
+                    // --- Medical History ---
+                    allergies_flag: val("allergies_flag"),
+                    allergies_details: val("allergies_details"),
+                    hypertension_cva: val("hypertension_cva"),
+                    diabetes_mellitus: val("diabetes_mellitus"),
+                    blood_disorders: val("blood_disorders"),
+                    heart_disease: val("heart_disease"),
+                    thyroid_disorders: val("thyroid_disorders"),
+                    hepatitis_flag: val("hepatitis_flag"),
+                    hepatitis_details: val("hepatitis_details"),
+                    malignancy_flag: val("malignancy_flag"),
+                    malignancy_details: val("malignancy_details"),
+                    prev_hospitalization_flag: val("prev_hospitalization_flag"),
+                    last_admission_date: val("last_admission_date"),
+                    admission_cause: val("admission_cause"),
+                    surgery_details: val("surgery_details"),
+                    blood_transfusion_flag: val("blood_transfusion_flag"),
+                    blood_transfusion_date: val("blood_transfusion_date"),
+                    tattoo: val("tattoo"),
+                    other_conditions_flag: val("other_conditions_flag"),
+                    other_conditions: val("other_conditions"),
 
-                // patient info
-                surname: document.getElementById("surname") ? document.getElementById("surname").value : "",
-                firstname: document.getElementById("firstname") ? document.getElementById("firstname").value : "",
-                middlename: document.getElementById("middlename") ? document.getElementById("middlename").value : "",
-                date_of_birth: document.getElementById("dob") ? document.getElementById("dob").value : "",
-                place_of_birth: document.getElementById("pob") ? document.getElementById("pob").value : "",
-                age: document.getElementById("age") ? document.getElementById("age").value : "",
-                sex: document.getElementById("sex") ? document.getElementById("sex").value : "",
-                address: document.getElementById("address") ? document.getElementById("address").value : "",
-                occupation: document.getElementById("occupation") ? document.getElementById("occupation").value : "",
-                pregnant: pregnantValue, // ✅ added here
+                    // --- Dietary Habits ---
+                    sugar_flag: val("sugar_flag"),
+                    sugar_details: val("sugar_details"),
+                    alcohol_flag: val("alcohol_flag"),
+                    alcohol_details: val("alcohol_details"),
+                    tobacco_flag: val("tobacco_flag"),
+                    tobacco_details: val("tobacco_details"),
+                    betel_nut_flag: val("betel_nut_flag"),
+                    betel_nut_details: val("betel_nut_details"),
 
-                // memberships
-                nhts_pr: document.getElementById("nhts") ? (document.getElementById("nhts").checked ? 1 : 0) : 0,
-                four_ps: document.getElementById("fourps") ? (document.getElementById("fourps").checked ? 1 : 0) : 0,
-                indigenous_people: document.getElementById("ip") ? (document.getElementById("ip").checked ? 1 : 0) : 0,
-                pwd: document.getElementById("pwd") ? (document.getElementById("pwd").checked ? 1 : 0) : 0,
-                philhealth_flag: document.getElementById("philhealth") ? (document.getElementById("philhealth").checked ? 1 : 0) : 0,
-                philhealth_number: document.getElementById("philhealth_number") ? document.getElementById("philhealth_number").value : "",
-                sss_flag: document.getElementById("sss") ? (document.getElementById("sss").checked ? 1 : 0) : 0,
-                sss_number: document.getElementById("sss_number") ? document.getElementById("sss_number").value : "",
-                gsis_flag: document.getElementById("gsis") ? (document.getElementById("gsis").checked ? 1 : 0) : 0,
-                gsis_number: document.getElementById("gsis_number") ? document.getElementById("gsis_number").value : "",
+                    // --- Vital Signs ---
+                    blood_pressure: val("blood_pressure"),
+                    pulse_rate: val("pulse_rate"),
+                    temperature: val("temperature"),
+                    weight: val("weight")
+                };
 
-                // Vital signs
-                blood_pressure: document.getElementById("blood_pressure") ? document.getElementById("blood_pressure").value : "",
-                temperature: document.getElementById("temperature") ? document.getElementById("temperature").value : "",
-                pulse_rate: document.getElementById("pulse_rate") ? document.getElementById("pulse_rate").value : "",
-                weight: document.getElementById("weight") ? document.getElementById("weight").value : "",
+                try {
+                    const res = await fetch("../../php/treatment/patient_api.php", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    const resp = await res.json();
 
-                // Medical history
-                allergies_flag: document.getElementById("allergies_flag") ? (document.getElementById("allergies_flag").checked ? 1 : 0) : 0,
-                allergies_details: document.getElementById("allergies_details") ? document.getElementById("allergies_details").value : "",
-                hypertension_cva: document.getElementById("hypertension_cva") ? (document.getElementById("hypertension_cva").checked ? 1 : 0) : 0,
-                diabetes_mellitus: document.getElementById("diabetes_mellitus") ? (document.getElementById("diabetes_mellitus").checked ? 1 : 0) : 0,
-                blood_disorders: document.getElementById("blood_disorders") ? (document.getElementById("blood_disorders").checked ? 1 : 0) : 0,
-                heart_disease: document.getElementById("heart_disease") ? (document.getElementById("heart_disease").checked ? 1 : 0) : 0,
-                thyroid_disorders: document.getElementById("thyroid_disorders") ? (document.getElementById("thyroid_disorders").checked ? 1 : 0) : 0,
-                hepatitis_flag: document.getElementById("hepatitis_flag") ? (document.getElementById("hepatitis_flag").checked ? 1 : 0) : 0,
-                hepatitis_details: document.getElementById("hepatitis_details") ? document.getElementById("hepatitis_details").value : "",
-                malignancy_flag: document.getElementById("malignancy_flag") ? (document.getElementById("malignancy_flag").checked ? 1 : 0) : 0,
-                malignancy_details: document.getElementById("malignancy_details") ? document.getElementById("malignancy_details").value : "",
-                prev_hospitalization_flag: document.getElementById("prev_hospitalization_flag") ? (document.getElementById("prev_hospitalization_flag").checked ? 1 : 0) : 0,
-                last_admission_date: document.getElementById("last_admission_date") ? document.getElementById("last_admission_date").value : "",
-                admission_cause: document.getElementById("admission_cause") ? document.getElementById("admission_cause").value : "",
-                surgery_details: document.getElementById("surgery_details") ? document.getElementById("surgery_details").value : "",
-                blood_transfusion_flag: document.getElementById("blood_transfusion_flag") ? (document.getElementById("blood_transfusion_flag").checked ? 1 : 0) : 0,
-                blood_transfusion_date: document.getElementById("blood_transfusion_date") ? document.getElementById("blood_transfusion_date").value : "",
-                tattoo: document.getElementById("tattoo") ? (document.getElementById("tattoo").checked ? 1 : 0) : 0,
-                other_conditions_flag: document.getElementById("other_conditions_flag") ? (document.getElementById("other_conditions_flag").checked ? 1 : 0) : 0,
-                other_conditions: document.getElementById("other_conditions") ? document.getElementById("other_conditions").value : "",
-
-                // Dietary
-                sugar_flag: document.getElementById("sugar_flag") ? (document.getElementById("sugar_flag").checked ? 1 : 0) : 0,
-                sugar_details: document.getElementById("sugar_details") ? document.getElementById("sugar_details").value : "",
-                alcohol_flag: document.getElementById("alcohol_flag") ? (document.getElementById("alcohol_flag").checked ? 1 : 0) : 0,
-                alcohol_details: document.getElementById("alcohol_details") ? document.getElementById("alcohol_details").value : "",
-                tobacco_flag: document.getElementById("tobacco_flag") ? (document.getElementById("tobacco_flag").checked ? 1 : 0) : 0,
-                tobacco_details: document.getElementById("tobacco_details") ? document.getElementById("tobacco_details").value : "",
-                betel_nut_flag: document.getElementById("betel_nut_flag") ? (document.getElementById("betel_nut_flag").checked ? 1 : 0) : 0,
-                betel_nut_details: document.getElementById("betel_nut_details") ? document.getElementById("betel_nut_details").value : ""
-            };
-
-            fetch("../../php/treatment/patient_api.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
-                .then(res => res.json())
-                .then(resp => {
                     if (resp.success) {
-                        // alert("✅ Saved");
+                        alert("✅ Saved successfully");
                         fillPatientForm(pid);
                     } else {
                         alert("❌ Save error: " + (resp.error || "unknown"));
                     }
-                })
-                .catch(err => {
+                } catch (err) {
                     console.error("Save failed", err);
                     alert("❌ Save failed (see console)");
-                });
-        }
+                }
+            }
 
-        // ✅ Wrapper for Next button
-        function saveAndNext1() {
-            savePatient();  // Save first
-            next1();        // Then navigate
-        }
+
+            // Save + next button
+            window.saveAndNext1 = function() {
+                savePatient();
+                next1(); // if your step navigation function exists
+            };
+        });
     </script>
 
     <!-- oralhealthcondition  -->
@@ -2373,7 +2297,9 @@
             try {
                 const res = await fetch("/dentalemr_system/php/treatment/oral_health_api.php", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify(payload)
                 });
 
@@ -2416,8 +2342,11 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
-            let selectedColor = '', selectedCondition = '', selectedCase = 'upper';
-            const historyStack = [], redoStack = [];
+            let selectedColor = '',
+                selectedCondition = '',
+                selectedCase = 'upper';
+            const historyStack = [],
+                redoStack = [];
 
             const blueSelect = document.getElementById('blueSelect');
             const redSelect = document.getElementById('redSelect');
@@ -2425,15 +2354,26 @@
             const lowerCaseChk = document.getElementById('lowerCaseChk');
             const treatmentSelect = document.getElementById('treatmentSelect');
 
-            // UI-only hard-coded fallback maps (used for quick UI labelling only).
-            // Server will resolve DB ids using codes we send (condition_code/treatment_code).
-            const fallbackConditionMap = { "✓": "✓", "D": "D", "d": "d", "F": "F", "f": "f", "M": "M", "m": "m", "DX": "DX", "dx": "dx", "Un": "Un", "un": "un", "S": "S", "s": "s", "JC": "JC", "jc": "jc", "P": "P", "p": "p" };
-            const fallbackTreatmentMap = { "FV": "FV", "FG": "FG", "PFS": "PFS", "PF": "PF", "TF": "TF", "X": "X", "O": "O" };
-
-            blueSelect?.addEventListener('change', () => { selectedCondition = blueSelect.value; selectedColor = 'blue'; if (redSelect) redSelect.value = ''; });
-            redSelect?.addEventListener('change', () => { selectedCondition = redSelect.value; selectedColor = 'red'; if (blueSelect) blueSelect.value = ''; });
-            upperCaseChk?.addEventListener('change', () => { selectedCase = 'upper'; if (upperCaseChk) upperCaseChk.checked = true; if (lowerCaseChk) lowerCaseChk.checked = false; });
-            lowerCaseChk?.addEventListener('change', () => { selectedCase = 'lower'; if (lowerCaseChk) lowerCaseChk.checked = true; if (upperCaseChk) upperCaseChk.checked = false; });
+            blueSelect?.addEventListener('change', () => {
+                selectedCondition = blueSelect.value;
+                selectedColor = 'blue';
+                if (redSelect) redSelect.value = '';
+            });
+            redSelect?.addEventListener('change', () => {
+                selectedCondition = redSelect.value;
+                selectedColor = 'red';
+                if (blueSelect) blueSelect.value = '';
+            });
+            upperCaseChk?.addEventListener('change', () => {
+                selectedCase = 'upper';
+                upperCaseChk.checked = true;
+                lowerCaseChk.checked = false;
+            });
+            lowerCaseChk?.addEventListener('change', () => {
+                selectedCase = 'lower';
+                lowerCaseChk.checked = true;
+                upperCaseChk.checked = false;
+            });
 
             function formatCondition(cond, textCase) {
                 if (!cond) return '';
@@ -2462,7 +2402,6 @@
                 }
 
                 if (isTreatment) {
-                    // treatment boxes must show text (no color background per your request)
                     el.dataset.treatment = cond || '';
                     el.textContent = cond || '';
                     el.style.backgroundColor = '#fff';
@@ -2476,7 +2415,6 @@
                     el.dataset.case = textCase || 'upper';
                     el.textContent = formatCondition(cond, textCase);
                     if (cond && cond.toLowerCase() === '✓') {
-                        // sound/sealed => no background color
                         el.style.backgroundColor = '#fff';
                         el.style.color = '#000';
                     } else {
@@ -2486,11 +2424,13 @@
                 }
             }
 
-            // UNDO / REDO / CLEAR
+            // Undo / Redo / ClearAll
             document.getElementById('undoBtn')?.addEventListener('click', () => {
                 if (!historyStack.length) return;
                 const last = historyStack.pop();
-                redoStack.push({ ...last });
+                redoStack.push({
+                    ...last
+                });
                 const el = document.querySelector(`[data-key="${last.key}"]`);
                 const wasTreatment = last.isTreatment || (el && (el.classList.contains('treatment-box') || el.classList.contains('treatment1-box')));
                 applyChange(last.key, last.prevColor || '', wasTreatment ? last.prevTreatment || '' : last.prevCondition || '', last.prevCase || 'upper', false, !!wasTreatment);
@@ -2499,35 +2439,43 @@
             document.getElementById('redoBtn')?.addEventListener('click', () => {
                 if (!redoStack.length) return;
                 const last = redoStack.pop();
-                historyStack.push({ ...last });
+                historyStack.push({
+                    ...last
+                });
                 const wasTreatment = last.isTreatment;
                 applyChange(last.key, last.newColor || '', wasTreatment ? last.newTreatment || '' : last.newCondition || '', last.newCase || 'upper', false, !!wasTreatment);
             });
 
             document.getElementById('clearAll')?.addEventListener('click', () => {
                 document.querySelectorAll('.part, .treatment-box, .treatment1-box, .condition-box, .condition1-box').forEach(el => {
-                    el.dataset.color = ''; el.dataset.condition = ''; el.dataset.treatment = ''; el.dataset.case = 'upper';
+                    el.dataset.color = '';
+                    el.dataset.condition = '';
+                    el.dataset.treatment = '';
+                    el.dataset.case = 'upper';
                     el.textContent = '';
                     el.style.backgroundColor = '#fff';
                     el.style.color = '#000';
                 });
-                historyStack.length = 0; redoStack.length = 0;
+                historyStack.length = 0;
+                redoStack.length = 0;
             });
 
-            // Create tooth part
+            // Tooth & Part creation
             function createPart(toothId, partName) {
                 const part = document.createElement('div');
                 part.className = 'part part-' + partName;
                 const key = `${toothId}-${partName}`;
                 part.dataset.key = key;
                 part.addEventListener('click', () => {
-                    if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
+                    if (!selectedCondition) {
+                        alert('Select a condition from the Blue/Red selector');
+                        return;
+                    }
                     applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
                 });
                 return part;
             }
 
-            // create tooth container; tooth_id must be the DB tooth_id (or FDI fallback)
             function createTooth(id, label, position = 'bottom', tooth_id = null) {
                 const container = document.createElement('div');
                 container.className = 'tooth-container';
@@ -2539,12 +2487,10 @@
                 const tooth = document.createElement('div');
                 tooth.className = 'tooth';
                 tooth.id = id;
-                // store actual tooth_id (DB) if available; otherwise store FDI number as fallback
                 tooth.dataset.toothId = tooth_id ?? '';
 
                 teethParts.forEach(p => tooth.appendChild(createPart(id, p)));
 
-                // tooltip
                 const tooltip = document.createElement('div');
                 tooltip.className = 'tooltip';
                 tooltip.textContent = label;
@@ -2554,7 +2500,7 @@
                 return container;
             }
 
-            // Load teeth mapping from server (if available) so dataset.toothId is DB tooth_id
+            // Load teeth grid
             async function loadGrid() {
                 const permTop = document.getElementById('permanentGridtop');
                 const permBot = document.getElementById('permanentGridbot');
@@ -2592,237 +2538,287 @@
                 });
             }
 
-            // Create boxes for treatment/condition rows
-            function createBox(id, row, kind) {
+            // Create top/bottom boxes with FDI tooth mapping
+            function createBox(id, row, kind, toothId) {
                 const box = document.createElement('div');
                 const key = `R${row}-${id}`;
                 box.dataset.key = key;
+                box.dataset.toothid = toothId; // ✅ Attach tooth_id for saving
 
                 if (kind === 'treatment') {
                     box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
-                    // no background color required for treatment boxes - they should be plain
                     box.addEventListener('click', () => {
                         const selectedTreat = treatmentSelect?.value || '';
-                        if (!selectedTreat) { alert('Select a treatment from dropdown'); return; }
+                        if (!selectedTreat) {
+                            alert('Select a treatment from dropdown');
+                            return;
+                        }
                         applyChange(key, '', selectedTreat, 'upper', true, true);
                     });
                 } else {
                     box.className = (row === 3) ? 'condition1-box' : 'condition-box';
                     box.addEventListener('click', () => {
-                        if (!selectedCondition) { alert('Select a condition from the Blue/Red selector'); return; }
+                        if (!selectedCondition) {
+                            alert('Select a condition from the Blue/Red selector');
+                            return;
+                        }
                         applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
                     });
                 }
-
                 return box;
             }
 
             function loadBoxes() {
+                const fdiMap = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28]; // FDI for top/bottom 16
                 const row1 = document.getElementById('treatRow1');
-                for (let i = 0; i < 16; i++) row1.appendChild(createBox(i, 1, 'treatment'));
-
+                for (let i = 0; i < 16; i++) row1.appendChild(createBox(i, 1, 'treatment', fdiMap[i]));
                 const row2 = document.getElementById('treatRow2');
-                for (let i = 0; i < 16; i++) row2.appendChild(createBox(i, 2, 'condition'));
-
+                for (let i = 0; i < 16; i++) row2.appendChild(createBox(i, 2, 'condition', fdiMap[i]));
                 const row3 = document.getElementById('treatRow3');
-                for (let i = 0; i < 16; i++) row3.appendChild(createBox(i, 3, 'condition'));
-
+                for (let i = 0; i < 16; i++) row3.appendChild(createBox(i, 3, 'condition', fdiMap[i]));
                 const row4 = document.getElementById('treatRow4');
-                for (let i = 0; i < 16; i++) row4.appendChild(createBox(i, 4, 'treatment'));
+                for (let i = 0; i < 16; i++) row4.appendChild(createBox(i, 4, 'treatment', fdiMap[i]));
             }
 
-            // initialize UI
             loadGrid();
             loadBoxes();
 
-            // Save function — sends codes (condition_code / treatment_code). Server will resolve DB ids.
+            // Save oral condition
             async function saveOralCondition() {
                 const patient_id = document.querySelector("#patient_id").value;
                 const visit_id = document.querySelector("#visit_id").value || 0;
-
                 const items = [];
 
-                // Save condition parts (upper/lower areas)
+                function detectCaseType(condCode, datasetCase = '') {
+                    if (datasetCase === 'temporary' || datasetCase === 'lower') return 'temporary';
+                    if (datasetCase === 'permanent' || datasetCase === 'upper') return 'permanent';
+                    if (condCode && condCode !== '✓') {
+                        if (condCode === condCode.toLowerCase()) return 'temporary';
+                        if (condCode === condCode.toUpperCase()) return 'permanent';
+                    }
+                    return 'permanent';
+                }
+
+                // Parts (tooth conditions)
                 document.querySelectorAll(".part").forEach(part => {
                     const condCode = part.dataset.condition;
                     if (!condCode) return;
 
                     const toothDiv = part.closest(".tooth");
                     if (!toothDiv) return;
-
-                    const tooth_id =
-                        toothDiv.dataset.toothId ||
-                        toothDiv.dataset.toothid ||
-                        toothDiv.dataset.toothID;
+                    const tooth_id = toothDiv.dataset.toothId;
                     if (!tooth_id) return;
 
-                    // ✅ FIX: Get color and case type properly
-                    const color = part.dataset.color === "red"
-                        ? "red"
-                        : part.dataset.color === "blue"
-                            ? "blue"
-                            : "";
-
-                    const caseType =
-                        part.dataset.case === "lower"
-                            ? "temporary"
-                            : "permanent"; // default to permanent
+                    const color = part.dataset.color || '';
+                    const caseType = detectCaseType(condCode, part.dataset.case);
 
                     items.push({
                         type: "condition",
                         tooth_id,
                         condition_code: condCode,
                         box_key: part.dataset.key,
-                        color, // ✅ include color
-                        case_type: caseType // ✅ include case type
+                        color,
+                        case_type: caseType
                     });
                 });
 
-                // Save condition/treatment boxes if present
-                document.querySelectorAll(".condition1-box, .condition-box").forEach(box => {
+                // Condition/treatment boxes
+                document.querySelectorAll(".condition1-box, .condition-box, .treatment1-box, .treatment-box").forEach(box => {
                     const treatCode = box.dataset.treatment;
                     const condCode = box.dataset.condition;
-                    const toothDiv = box.closest(".tooth");
-                    if (!toothDiv) return;
-
-                    const tooth_id =
-                        toothDiv.dataset.toothId ||
-                        toothDiv.dataset.toothid ||
-                        toothDiv.dataset.toothID;
+                    const tooth_id = box.dataset.toothid; // ✅ direct from dataset
                     if (!tooth_id) return;
 
-                    const color = box.dataset.color === "red"
-                        ? "red"
-                        : box.dataset.color === "blue"
-                            ? "blue"
-                            : "";
-
-                    const caseType =
-                        box.dataset.case === "lower"
-                            ? "temporary"
-                            : "permanent";
+                    const color = box.dataset.color || '';
+                    const key = box.dataset.key || '';
+                    let caseType = 'permanent';
 
                     if (treatCode) {
+                        caseType = (treatCode.toUpperCase() === 'TF') ? 'temporary' : 'permanent';
                         items.push({
                             type: "treatment",
                             tooth_id,
                             treatment_code: treatCode,
-                            box_key: box.dataset.key,
+                            box_key: key,
                             color,
                             case_type: caseType
                         });
                     } else if (condCode) {
+                        caseType = detectCaseType(condCode, box.dataset.case);
                         items.push({
                             type: "condition",
                             tooth_id,
                             condition_code: condCode,
-                            box_key: box.dataset.key,
+                            box_key: key,
                             color,
                             case_type: caseType
                         });
                     }
                 });
 
-                // Send to PHP
                 const payload = {
                     action: "save",
                     patient_id,
                     visit_id,
                     oral_data: items
                 };
-
-                console.log("🟦 Sending payload:", payload); // 👈 use this to verify in browser console
+                console.log("🟦 Sending payload:", payload);
 
                 const response = await fetch("/dentalemr_system/php/treatment/oral_condition_api.php", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify(payload)
                 });
 
                 const result = await response.json();
                 console.log("🟥 Server response:", result);
 
-                if (result.success) {
-                    // alert("Oral condition saved successfully!");
-                } else {
-                    alert("Error saving: " + result.error);
-                }
+                if (!result.success) alert("Error saving: " + result.error);
             }
 
-            // expose save function globally (keeps existing form/button wiring)
             window.saveOralCondition = saveOralCondition;
         });
+
         function ohcABandNext() {
             saveOralCondition();
-            saveOralCondition1();
+            saveServicesChart();
             next3();
         }
     </script>
 
     <!-- services monitoring chart -->
     <script>
-        let selectedTreatmentCode = null;
+        document.addEventListener("DOMContentLoaded", () => {
+            const upperRow1 = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
+            const upperRow2 = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
+            const lowerRow1 = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+            const lowerRow2 = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
 
-        // Treatment dropdown selection
-        document.getElementById("selcttreatment").addEventListener("change", function () {
-            selectedTreatmentCode = this.value;
-        });
+            const debugMode = true; // Set to false to disable debug highlights
 
-        // Apply treatment on click, unmark on double-click
-        document.querySelectorAll("input[data-tooth-id]").forEach(input => {
+            const createTeethInputs = (arr, containerId) => {
+                const container = document.getElementById(containerId);
+                arr.forEach(fdi => {
+                    const div = document.createElement("div");
+                    div.className = "flex flex-col items-center gap-2";
+                    div.innerHTML = `
+                <input type="text" id="${fdi}" name="${fdi}" readonly data-tooth-id="${fdi}"
+                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm p-1 cursor-pointer dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                <label class="flex text-sm font-medium text-gray-900 dark:text-white">${fdi}</label>
+            `;
+                    container.appendChild(div);
 
-            // Single click: mark treatment
-            input.addEventListener("click", function () {
-                if (!selectedTreatmentCode) {
-                    alert("⚠️ Please select a treatment first!");
-                    return;
+                });
+            };
+
+            createTeethInputs(upperRow1, "top-teeth-row1");
+            createTeethInputs(upperRow2, "top-teeth-row2");
+            createTeethInputs(lowerRow1, "bottom-teeth-row1");
+            createTeethInputs(lowerRow2, "bottom-teeth-row2");
+
+            let selectedTreatment = null;
+            const treatmentSelect = document.getElementById("selcttreatment");
+            treatmentSelect.addEventListener("change", () => {
+                selectedTreatment = treatmentSelect.value || null;
+            });
+
+            const allInputs = document.querySelectorAll("input[data-tooth-id]");
+            allInputs.forEach(input => {
+                input.addEventListener("click", e => {
+                    e.stopPropagation();
+                    if (!selectedTreatment) {
+                        alert("⚠️ Please select a treatment first!");
+                        return;
+                    }
+                    input.value = selectedTreatment;
+                    input.setAttribute("data-treatment-id", selectedTreatment);
+                    input.style.backgroundColor = "#e5e7eb";
+                });
+
+                input.addEventListener("dblclick", () => {
+                    input.value = "";
+                    input.removeAttribute("data-treatment-id");
+                    input.style.backgroundColor = "white";
+                });
+
+                // Debug log for every tooth
+                if (debugMode) {
+                    console.log(`Tooth ID ${input.dataset.toothId} ready. Current value: '${input.value}'`);
                 }
-                this.value = selectedTreatmentCode;
-                this.dataset.treatmentId = selectedTreatmentCode;
-                this.style.backgroundColor = "#e5e7eb"; // highlight
-            });
-
-            // Double click: unmark
-            input.addEventListener("dblclick", function () {
-                this.value = "";
-                delete this.dataset.treatmentId;
-                this.style.backgroundColor = "white"; // remove highlight
             });
         });
 
-        // Save function
-        function saveOralCondition1() {
+        // Save function with debug logging
+        async function saveServicesChart() {
             const patientId = document.getElementById("patient_id")?.value;
             if (!patientId) {
-                alert("⚠️ Please select a patient!");
+                alert("⚠️ Please select a patient first.");
                 return;
             }
 
-            let treatments = [];
-            document.querySelectorAll("input[data-tooth-id]").forEach(input => {
-                treatments.push({
-                    tooth_id: input.getAttribute("data-tooth-id"),
-                    treatment_id: input.dataset.treatmentId || null // send null if unmarked
-                });
-            });
+            const inputs = Array.from(document.querySelectorAll("input[data-tooth-id]"));
+            const treatments = inputs.map(input => ({
+                tooth_id: input.getAttribute("data-tooth-id"),
+                treatment_id: input.getAttribute("data-treatment-id") || input.value.trim()
+            })).filter(item => item.treatment_id);
 
-            fetch("/dentalemr_system/php/treatment/services_monitoring.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ patient_id: patientId, treatments: treatments })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        // alert("✅ " + data.message);
-                    } else {
-                        alert("❌ " + data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert("❌ Request failed. Check console.");
+            if (treatments.length === 0) {
+                alert("⚠️ No treatments selected to save.");
+                return;
+            }
+
+            // --- Pre-check: Validate teeth exist in DB ---
+            const fdiList = treatments.map(t => t.tooth_id);
+            try {
+                const resCheck = await fetch("/dentalemr_system/php/treatment/check_teeth.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        fdi_list: fdiList
+                    })
                 });
+                const checkData = await resCheck.json();
+
+                if (!checkData.success) {
+                    alert("❌ " + checkData.message);
+                    return;
+                }
+
+                const missingFDI = checkData.missing || [];
+                if (missingFDI.length) {
+                    alert("⚠️ The following teeth are missing in database: " + missingFDI.join(", "));
+                    return;
+                }
+            } catch (err) {
+                console.error("Teeth check error:", err);
+                alert("❌ Could not verify teeth in database. Please try again.");
+                return;
+            }
+
+            // --- Continue with normal save ---
+            const payload = {
+                patient_id: patientId,
+                treatments
+            };
+
+            try {
+                const res = await fetch("/dentalemr_system/php/treatment/services_monitoring.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                alert(data.success ? (data.message || "Chart saved successfully.") : "❌ " + data.message);
+            } catch (err) {
+                console.error("Fetch error:", err);
+                alert("❌ Network or server error. Please try again.");
+            }
         }
     </script>
 
@@ -2850,7 +2846,9 @@
             try {
                 const res = await fetch("/dentalemr_system/php/treatment/treatment_record_api.php", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify(payload)
                 });
 

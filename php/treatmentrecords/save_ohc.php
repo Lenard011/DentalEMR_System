@@ -44,7 +44,7 @@ try {
         $values[$f] = $data[$f] ?? "";
     }
 
-    // ✅ Always INSERT new record
+    // Always INSERT new record
     $sql = "INSERT INTO oral_health_condition (
         patient_id, orally_fit_child, dental_caries, gingivitis, periodontal_disease,
         others, debris, calculus, abnormal_growth, cleft_palate,
@@ -64,7 +64,7 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute(array_merge(["patient_id" => $patient_id], $values));
 
-    echo json_encode(["success" => true, "message" => "✅ New Oral Health Condition record added."]);
+    echo json_encode(["success" => true, "message" => "New Oral Health Condition record added."]);
 } catch (Exception $e) {
     echo json_encode(["success" => false, "message" => "Server Error: " . $e->getMessage()]);
 }
