@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 if (!isset($_SESSION['logged_user'])) {
     echo "<script>
         alert('Please log in first.');
-        window.location.href = './login/login.html';
+        window.location.href = '/dentalemr_system/html/login/login.html';
     </script>";
     exit;
 }
@@ -20,7 +20,7 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) >
     session_destroy();
     echo "<script>
         alert('You have been logged out due to inactivity.');
-        window.location.href = './login/login.html';
+        window.location.href = '/dentalemr_system/html/login/login.html';
     </script>";
     exit;
 }
@@ -364,8 +364,6 @@ $user = $_SESSION['logged_user'];
             color: #000;
         }
     </style>
-
-
 
 </head>
 

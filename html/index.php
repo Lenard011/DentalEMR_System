@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 if (!isset($_SESSION['logged_user'])) {
     echo "<script>
         alert('Please log in first.');
-        window.location.href = './login/login.html';
+        window.location.href = '/dentalemr_system/html/login/login.html';
     </script>";
     exit;
 }
@@ -19,26 +19,39 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) >
     session_destroy();
     echo "<script>
         alert('You have been logged out due to inactivity.');
-        window.location.href = './login/login.html';
+        window.location.href = '/dentalemr_system/html/login/login.html';
     </script>";
     exit;
 }
 
 $_SESSION['last_activity'] = time();
 
-// ✅ Store user session info safely
+// Store user session info safely
 $loggedUser = $_SESSION['logged_user'];
 
 // ---------------- DATABASE CONNECTION ----------------
 $host = "localhost";
 $dbUser = "root";
 $dbPass = "";
-$dbName = "dentalemr_system"; // update this if needed
+$dbName = "dentalemr_system";
 
 $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
+// Fetch dentist name if user is a dentist
+if ($loggedUser['type'] === 'Dentist') {
+    $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
+    $stmt->bind_param("i", $loggedUser['id']);
+    $stmt->execute();
+    $stmt->bind_result($dentistName);
+    if ($stmt->fetch()) {
+        $loggedUser['name'] = $dentistName;
+    }
+    $stmt->close();
+}
+
 
 // ---------------- KPI CARDS ----------------
 $totalPatients = $conn->query("SELECT COUNT(*) AS count FROM patients")->fetch_assoc()['count'];
@@ -577,7 +590,7 @@ $conn->close();
 
         <main class="p-4 md:ml-64 h-auto pt-20">
             <div class="dashboard">
-                <h1>🦷 Dental EMR Interactive Dashboard</h1>
+                <h1>🦷 MHO Dental Clinic Dashboard</h1>
                 <h1 class="text-2xl font-bold mb-4">
                     Welcome,
                     <?php
@@ -586,6 +599,7 @@ $conn->close();
                             ? $loggedUser['name']
                             : ($loggedUser['email'] ?? 'User')
                     );
+
                     ?>!
                 </h1>
 

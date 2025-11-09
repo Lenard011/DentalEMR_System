@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        echo "<script>alert('📧 Email not found. Please check and try again.'); window.location.href='/dentalemr_system/html/login/login.html';</script>";
+        echo "<script>alert('Email not found. Please check and try again.'); window.location.href='/dentalemr_system/html/login/login.html';</script>";
         exit;
     }
 
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'email' => $user['email']
         ];
 
-        echo "<script>alert('Login successful! A veri code sent to your email.'); window.location.href='verify_mfa.php';</script>";
+        echo "<script>alert('Login successful! A verification code sent to your email.'); window.location.href='verify_mfa.php';</script>";
         exit;
     } catch (Exception $e) {
         error_log('Mail error: ' . $mail->ErrorInfo);
