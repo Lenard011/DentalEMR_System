@@ -79,6 +79,7 @@ $user = $_SESSION['logged_user'];
 
         .label-top {
             margin-bottom: 2px;
+            
         }
 
         .label-bottom {
@@ -99,6 +100,7 @@ $user = $_SESSION['logged_user'];
             user-select: none;
         }
 
+        /* left */
         .part-top-left {
             top: 0;
             left: 0;
@@ -106,8 +108,13 @@ $user = $_SESSION['logged_user'];
             height: 50%;
             border: 1px solid #555;
             border-top-left-radius: 100%;
+            transform: translate(50, 50);
+            transform: translateX(-50%) rotate(-45deg);
+            margin-top: 10px;
+            margin-left: 7px;
         }
 
+        /* top */
         .part-top-right {
             top: 0;
             right: 0;
@@ -115,8 +122,11 @@ $user = $_SESSION['logged_user'];
             height: 50%;
             border: 1px solid #555;
             border-top-right-radius: 100%;
+            transform: translateX(-50%) rotate(-45deg);
+            margin-top: -3px;
         }
 
+        /* bot */
         .part-bottom-left {
             bottom: 0;
             left: 0;
@@ -124,8 +134,12 @@ $user = $_SESSION['logged_user'];
             height: 50%;
             border: 1px solid #555;
             border-bottom-left-radius: 100%;
+            transform: translateX(-50%) rotate(-45deg);
+            margin-bottom: -3px;
+            margin-left: 20px;
         }
 
+        /* right */
         .part-bottom-right {
             bottom: 0;
             right: 0;
@@ -133,6 +147,9 @@ $user = $_SESSION['logged_user'];
             height: 50%;
             border: 1px solid #555;
             border-bottom-right-radius: 100%;
+            transform: translateX(-50%) rotate(-45deg);
+            margin-bottom: 10px;
+            margin-right: -13px;
         }
 
         .part-center {
@@ -144,7 +161,17 @@ $user = $_SESSION['logged_user'];
             border-radius: 50%;
             border: 1px solid #555;
             position: absolute;
+            margin-left: 1px;
         }
+
+        .tooth::before {
+            transform: rotate(-90deg);
+        }
+
+        .tooth::after {
+            transform: rotate(-45deg);
+        }
+
 
         .tooltip {
             visibility: hidden;
@@ -364,6 +391,8 @@ $user = $_SESSION['logged_user'];
             color: #000;
         }
     </style>
+
+
 
 </head>
 

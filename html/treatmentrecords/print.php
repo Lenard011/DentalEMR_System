@@ -43,7 +43,7 @@ $user = $_SESSION['logged_user'];
     <style>
         .grid1 {
             display: flex;
-            gap: 1px;
+            gap: 3px;
             justify-content: center;
             /* border: solid black 1px; */
             align-items: center;
@@ -51,7 +51,7 @@ $user = $_SESSION['logged_user'];
 
         .gridtop {
             display: flex;
-            gap: 1px;
+            gap: 3px;
             justify-content: center;
             align-items: center;
             margin-bottom: 4px;
@@ -72,17 +72,18 @@ $user = $_SESSION['logged_user'];
         }
 
         .tooth-label {
-            font-size: 8px;
+            font-size: 12px;
             font-weight: bold;
             text-align: center;
         }
 
         .label-top {
-            margin-bottom: 1px;
+            margin-bottom: 2px;
+
         }
 
         .label-bottom {
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
         .part {
@@ -93,58 +94,85 @@ $user = $_SESSION['logged_user'];
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 8px;
+            font-size: 10px;
             font-weight: bold;
             color: #fff;
             user-select: none;
         }
 
+        /* left */
         .part-top-left {
             top: 0;
             left: 0;
             width: 50%;
             height: 50%;
-            border: 0.1px solid #555;
+            border: 1px solid #555;
             border-top-left-radius: 100%;
+            transform: translate(50, 50);
+            transform: translateX(-50%) rotate(-45deg);
+            margin-top: 4.5px;
+            margin-left: 4px;
         }
 
+        /* top */
         .part-top-right {
             top: 0;
             right: 0;
             width: 50%;
             height: 50%;
-            border: 0.1px solid #555;
+            border: 1px solid #555;
             border-top-right-radius: 100%;
+            transform: translateX(-50%) rotate(-45deg);
+            margin-top: -2px;
+            margin-right: -0.5px;
         }
 
+        /* bot */
         .part-bottom-left {
             bottom: 0;
             left: 0;
             width: 50%;
             height: 50%;
-            border: 0.1px solid #555;
+            border: 1px solid #555;
             border-bottom-left-radius: 100%;
+            transform: translateX(-50%) rotate(-45deg);
+            margin-bottom: -1px;
+            margin-left: 10.5px;
         }
 
+        /* right */
         .part-bottom-right {
             bottom: 0;
             right: 0;
             width: 50%;
             height: 50%;
-            border: 0.1px solid #555;
+            border: 1px solid #555;
             border-bottom-right-radius: 100%;
+            transform: translateX(-50%) rotate(-45deg);
+            margin-bottom: 5.5px;
+            margin-right: -7.5px;
         }
 
         .part-center {
-            width: 8px;
-            height: 8px;
+            width: 9px;
+            height: 9px;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             border-radius: 50%;
-            border: 0.1px solid black;
+            border: 1px solid #555;
             position: absolute;
+            margin-left: 1px;
         }
+
+        .tooth::before {
+            transform: rotate(-90deg);
+        }
+
+        .tooth::after {
+            transform: rotate(-45deg);
+        }
+
 
         .tooltip {
             visibility: hidden;
@@ -175,11 +203,12 @@ $user = $_SESSION['logged_user'];
         .conditionbox,
         .conditionbox1 {
             display: flex;
-            grid-template-columns: repeat(16, 2.51rem);
-            margin: 2px auto;
-            justify-content: space-between;
+            grid-template-columns: repeat(16, 1rem);
+            margin: 2px ;
+            /* justify-content: space-between; */
+            gap:1px;
             align-items: center;
-            border: solid 1px black;
+            /* border: solid 1px black; */
         }
 
         /* individual boxes (clickable) */
@@ -193,7 +222,7 @@ $user = $_SESSION['logged_user'];
             text-align: center;
             align-items: center;
             justify-content: center;
-            border: 1px solid black;
+            border: 1px solid #ccc;
             font-size: 0.9rem;
             font-weight: bold;
             cursor: pointer;
@@ -798,37 +827,359 @@ $user = $_SESSION['logged_user'];
                     </div>
                 </div>
             </div>
-            <div id="shouldprint2" class="grid grid-cols-1 mt-5 items-center w-full">
-                <div class="flex flex-row justify-between w-full border">
+            <div id="shouldprint2" class="flex flex-col mt-5 py-10 justify-between w-full">
+                <h4 class="text-[15px] font-bold mt-1">A. Oral Health Condition</h4>
+                <div class="flex flex-row mt-2 gap-5  justify-between w-full">
+                    <!-- left -->
+                    <div class="grid grid-cols-2 gap-10 mr-5 w-full  px-1">
+                        <!-- YEAR 1 -->
+                        <div id="year1" class="flex flex-col">
+                            <p
+                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year I - Date</p>
+                            <div class="w-80">
+                                <p style="margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <div class="treatmentbox" id="treatRow1"></div>
+                                <div class="conditionbox" id="treatRow2"></div>
+                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                            </div>
 
-                    <d[[[iv class=" flex flex-col">
-                        <div class="w-80">
-                            <p style="margin-bottom: -5px; "
-                                class="text-[10px] w-20  font-normal text-gray-900 dark:text-white">Treatment
-                            </p>
-                            <div class="treatmentbox" id="treatRow1"></div>
-                            <div class="conditionbox" id="treatRow2"></div>
-                            <p style="margin-bottom: -10px; margin-top: -5px;"
-                                class="text-[10px] w-20  font-normal text-gray-900 dark:text-white">Condition
-                            </p>
+                            <div class="w-80">
+                                <div class="gridtop" id="permanentGridtop"></div>
+                                <div class="grid1" id="permanentGridbot"></div>
+                                <div class="gridtop" id="temporaryGridtop"></div>
+                                <div class="grid1" id="temporaryGridbot"></div>
+                            </div>
+
+                            <div class="w-80">
+                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                                <div class="conditionbox1" id="treatRow3"></div>
+                                <div class="treatmentbox1" id="treatRow4"></div>
+                                <p style="margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                            </div>
                         </div>
 
-                        <div class="w-80">
-                            <div class="gridtop" id="permanentGridtop"></div>
-                            <div class="grid1" id="permanentGridbot"></div>
-                            <div class="gridtop" id="temporaryGridtop"></div>
-                            <div class="grid1" id="temporaryGridbot"></div>
+                        <!-- YEAR 2 -->
+                        <div id="year2" class="flex flex-col">
+                            <p
+                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year II - Date</p>
+                            <div class="w-80">
+                                <p style="margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <div class="treatmentbox" id="treatRow1_y2"></div>
+                                <div class="conditionbox" id="treatRow2_y2"></div>
+                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                            </div>
+
+                            <div class="w-80">
+                                <div class="gridtop" id="permanentGridtop_y2"></div>
+                                <div class="grid1" id="permanentGridbot_y2"></div>
+                                <div class="gridtop" id="temporaryGridtop_y2"></div>
+                                <div class="grid1" id="temporaryGridbot_y2"></div>
+                            </div>
+
+                            <div class="w-80">
+                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                                <div class="conditionbox1" id="treatRow3_y2"></div>
+                                <div class="treatmentbox1" id="treatRow4_y2"></div>
+                                <p style="margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                            </div>
                         </div>
 
-                        <div class="w-80">
-                            <p style="margin-top: -10px; margin-bottom: -5px;"
-                                class="text-[10px] w-20  font-normal text-gray-900 dark:text-white">Condition
-                            </p>
-                            <div class="conditionbox1" id="treatRow3"></div>
-                            <div class="treatmentbox1" id="treatRow4"></div>
-                            <p style="margin-top: -5px;"
-                                class="text-[10px] w-20  font-normal text-gray-900 dark:text-white ">Treatment
-                            </p>
+                        <!-- YEAR 4 -->
+                        <div id="year4" class="flex flex-col">
+                            <p
+                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year IV - Date</p>
+                            <div class="w-80">
+                                <p style="margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <div class="treatmentbox" id="treatRow1_y3"></div>
+                                <div class="conditionbox" id="treatRow2_y3"></div>
+                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                            </div>
+
+                            <div class="w-80">
+                                <div class="gridtop" id="permanentGridtop_y3"></div>
+                                <div class="grid1" id="permanentGridbot_y3"></div>
+                                <div class="gridtop" id="temporaryGridtop_y3"></div>
+                                <div class="grid1" id="temporaryGridbot_y3"></div>
+                            </div>
+
+                            <div class="w-80">
+                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                                <div class="conditionbox1" id="treatRow3_y3"></div>
+                                <div class="treatmentbox1" id="treatRow4_y3"></div>
+                                <p style="margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                            </div>
+                        </div>
+                        <!-- YEAR 5 -->
+                        <div id="year5" class="flex flex-col">
+                            <p
+                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year V - Date</p>
+                            <div class="w-80">
+                                <p style="margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <div class="treatmentbox" id="treatRow1_y4"></div>
+                                <div class="conditionbox" id="treatRow2_y4"></div>
+                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                            </div>
+
+                            <div class="w-80">
+                                <div class="gridtop" id="permanentGridtop_y4"></div>
+                                <div class="grid1" id="permanentGridbot_y4"></div>
+                                <div class="gridtop" id="temporaryGridtop_y4"></div>
+                                <div class="grid1" id="temporaryGridbot_y4"></div>
+                            </div>
+
+                            <div class="w-80">
+                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                                <div class="conditionbox1" id="treatRow3_y4"></div>
+                                <div class="treatmentbox1" id="treatRow4_y4"></div>
+                                <p style="margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- right -->
+                    <div class="flex flex-col gap-15  justify-between ">
+                        <!-- YEAR 3 -->
+                        <div id="year3" class="flex flex-col">
+                            <p
+                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year III - Date</p>
+                            <div class="w-80">
+                                <p style="margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <div class="treatmentbox" id="treatRow1_y5"></div>
+                                <div class="conditionbox" id="treatRow2_y5"></div>
+                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                            </div>
+
+                            <div class="w-80">
+                                <div class="gridtop" id="permanentGridtop_y5"></div>
+                                <div class="grid1" id="permanentGridbot_y5"></div>
+                                <div class="gridtop" id="temporaryGridtop_y5"></div>
+                                <div class="grid1" id="temporaryGridbot_y5"></div>
+                            </div>
+
+                            <div class="w-80">
+                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
+                                <div class="conditionbox1" id="treatRow3_y5"></div>
+                                <div class="treatmentbox1" id="treatRow4_y5"></div>
+                                <p style="margin-top: -5px;"
+                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                            </div>
+                        </div>
+                        <!-- Legend Condition -->
+                        <div class="flex flex-row gap-1 px-1  w-110   overflow-auto [scrollbar-width:none] [-ms-overflow-style:none] 
+                                    [&::-webkit-scrollbar]:hidden">
+                            <!-- Condition -->
+                            <div
+                                class="controls relative w-full p-1 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1]">
+                                <div class="p-2">
+                                    <p class="text-[12px] font-medium  text-gray-900 dark:text-white">Legend: <span
+                                            class="font-normal">Condition</span>
+                                    </p>
+                                    <p class="text-[11px] font-normal mt-1 text-gray-900 dark:text-white">Capital
+                                        letters
+                                        shall
+                                        be use for recording <br>the condition of permanent dentition and <br> small
+                                        letters
+                                        for
+                                        the status of temporary <br>dentition.
+                                    </p>
+                                </div>
+                                <div class=" ">
+                                    <table class="w-full text-sm text-center border-1">
+                                        <thead class="text-sm align-text-top text-gray-700 border">
+                                            <tr>
+                                                <th scope="col" class="border-1 text-[12px]">
+                                                    Permanent <br> <input type="hidden" id="upperCaseChk"
+                                                        checked>
+                                                </th>
+                                                <th scope="col" class=" w-20 border-1 text-[12px]">
+                                                    Tooth Condition
+                                                </th>
+                                                <th scope="col" class="border-1 text-[12px]">
+                                                    Temporary <br> <input type="hidden" id="lowerCaseChk">
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="border-1">
+                                                <td class=" border-1">
+                                                    ✓
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    Sound/Sealed
+                                                </td>
+                                                <td class="border-1">
+                                                    ✓
+                                                </td>
+                                            </tr>
+                                            <tr class="border-1">
+                                                <td class="border-1 text-[12px]">
+                                                    D
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    Decayed
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    d
+                                                </td>
+                                            </tr>
+                                            <tr class="border-1">
+                                                <td class="border-1 text-[12px]">
+                                                    F
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    Filled
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    f
+                                                </td>
+                                            </tr>
+                                            <tr class="border-1">
+                                                <td class="border-1 text-[12px]">
+                                                    M
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    Missing
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    m
+                                                </td>
+                                            </tr>
+                                            <tr class="border-1">
+                                                <td class="border-1 text-[12px]">
+                                                    DX
+                                                </td>
+                                                <td class="p-1 border-1 text-[12px]">
+                                                    Indicated for Extraction
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    dx
+                                                </td>
+                                            </tr>
+                                            <tr class="border-1">
+                                                <td class="border-1 text-[12px]">
+                                                    Un
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    Unerupted
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    un
+                                                </td>
+                                            </tr>
+                                            <tr class="border-1">
+                                                <td class="border-1 text-[12px]">
+                                                    S
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    Supernumerary Tooth
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    s
+                                                </td>
+                                            </tr>
+                                            <tr class="border-1">
+                                                <td class="border-1 text-[12px]">
+                                                    JC
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    jacket Crown
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    jc
+                                                </td>
+                                            </tr>
+                                            <tr class="border-1 text-[12px]">
+                                                <td class="border-1">
+                                                    P
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    Pontic
+                                                </td>
+                                                <td class="border-1 text-[12px]">
+                                                    p
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="flex items-start w-full flex-row gap-1 mt-1 ml-2">
+                                    <label
+                                        class="text-[12px] font-bold w-17  text-gray-900 dark:text-white">Color
+                                        Code:</label>
+                                    <div type="text" id="blueSelect"
+                                        class="bg-blue-600 border px-2 py-1 justify-center  text-[12px] ">
+                                        <label
+                                            class="text-[12px] font-semibold w-12  text-white dark:text-white">Blue for f/F</label>
+                                    </div>
+                                    <div type="text" id="redSelect"
+                                        class="bg-red-600 border px-2 py-1 justify-center  text-[12px] ">
+                                        <label
+                                            class="text-[12px] font-semibold w-12  text-white dark:text-white">Red for d/D</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Treatment -->
+                            <div
+                                class="controls  p-1 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1]">
+                                <div class="w-38 flex flex-col justify-center items-center p-2">
+                                    <div class="flex flex-col gap-3">
+                                        <p class="text-[12px] font-medium  text-gray-900 dark:text-white">Legend:
+                                            <span class="font-normal">Treament</span>
+                                        </p>
+                                        <div class="flex flex-col gap-3">
+                                            <p class="text-[12px] font-normal  text-gray-900 dark:text-white">
+                                                Topical
+                                                Fluoride
+                                                Application:
+                                            </p>
+                                            <p class="text-[12px] font-normal ml-5 text-gray-900 dark:text-white">FV
+                                                -
+                                                Fluoride
+                                                Varnish
+                                            <p class="text-[12px] font-normal ml-5 text-gray-900 dark:text-white">FG
+                                                -
+                                                Fluoride
+                                                Gel
+                                            </p>
+                                        </div>
+                                        <p class="text-[12px] font-normal  text-gray-900 dark:text-white">PFS - Pit
+                                            and
+                                            Fissure Sealant
+                                        </p>
+                                        <p class="text-[12px] font-normal  text-gray-900 dark:text-white">PF -
+                                            Permanent
+                                            Filling (Composite, Am, ART)
+                                        </p>
+                                        <p class="text-[12px] font-normal  text-gray-900 dark:text-white">TF -
+                                            Temporary
+                                            Filling
+                                        </p>
+                                        <p class="text-[12px] font-normal  text-gray-900 dark:text-white">X -
+                                            Extraction
+                                        </p>
+                                        <p class="text-[12px] font-normal  text-gray-900 dark:text-white">O - Others
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1851,75 +2202,97 @@ $user = $_SESSION['logged_user'];
             const printWindow = window.open('', '_blank');
             const headContent = document.querySelector('head').innerHTML;
 
-            // Build printable content
+            // Clone sections and apply inline background colors
             const contentHTML = sections
-                .map((section, i) => `
-                    <div class="print-page" id="page${i + 1}">
-                        ${section.outerHTML}
-                    </div>
-                    `)
+                .map((section, i) => {
+                    const clone = section.cloneNode(true);
+
+                    const blueDiv = clone.querySelector('#blueSelect');
+                    if (blueDiv) {
+                        blueDiv.style.backgroundColor = '#2563eb'; // Tailwind blue-600
+                        blueDiv.style.color = '#ffffff';
+                        blueDiv.style.border = 'black';
+                        blueDiv.style.webkitPrintColorAdjust = 'exact';
+                        blueDiv.style.printColorAdjust = 'exact';
+                    }
+
+                    const redDiv = clone.querySelector('#redSelect');
+                    if (redDiv) {
+                        redDiv.style.backgroundColor = '#dc2626'; // Tailwind red-600
+                        redDiv.style.color = '#ffffff';
+                        redDiv.style.border = 'black';
+                        redDiv.style.webkitPrintColorAdjust = 'exact';
+                        redDiv.style.printColorAdjust = 'exact';
+                    }
+
+                    return `<div class="print-page" id="page${i + 1}">${clone.outerHTML}</div>`;
+                })
                 .join('');
 
             printWindow.document.write(`
-                    <html>
-                    <head>
-                        ${headContent}
-                        <style>
-                        @page {
-                            size: A4 landscape;
-                            margin: 0;
-                        }
+        <html>
+        <head>
+            ${headContent}
+            <style>
+                @page {
+                    size: A4 landscape;
+                    margin: 0;
+                }
 
-                        html, body {
-                            margin: 0;
-                            padding: 0;
-                            background: white;
-                            width: 100%;
-                        }
+                html, body {
+                    margin: 0;
+                    padding: 0;
+                    background: white;
+                    width: 100%;
+                }
 
-                        body {
-                            display: block;
-                        }
+                body {
+                    display: block;
+                }
 
-                        .print-page {
-                            width: 297mm;
-                            height: 210mm;
-                            margin: 0;
-                            padding: 0;
-                            box-sizing: border-box;
-                            page-break-after: always;
-                            display: flex;
-                            justify-content: center;
-                            align-items: flex-start;
-                        }
+                .print-page {
+                    width: 297mm;
+                    height: 210mm;
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    page-break-after: always;
+                    display: flex;
+                    justify-content: center;
+                    align-items: flex-start;
+                }
 
-                        /* Each content block should scale down slightly to fit cleanly */
-                        .print-page > * {
-                            width: 95%;
-                            height: auto;
-                            max-height: 210mm;
-                            zoom: 0.9;
-                            transform-origin: top center;
-                        }
+                /* Each content block should scale down slightly to fit cleanly */
+                .print-page > * {
+                    width: 95%;
+                    height: auto;
+                    max-height: 210mm;
+                    zoom: 0.9;
+                    transform-origin: top center;
+                }
 
-                        @media print {
-                            html, body {
-                            width: 297mm;
-                            height: auto;
-                            overflow: visible;
-                            }
-                        }
-                        </style>
-                    </head>
-                    <body>
-                        ${contentHTML}
-                    </body>
-                    </html>
-                `);
+                @media print {
+                    html, body {
+                        width: 297mm;
+                        height: auto;
+                        overflow: visible;
+                    }
+
+                    #blueSelect, #redSelect {
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                }
+            </style>
+        </head>
+        <body>
+            ${contentHTML}
+        </body>
+        </html>
+    `);
 
             printWindow.document.close();
 
-            // Wait for content to load before printing
             printWindow.onload = () => {
                 setTimeout(() => {
                     printWindow.focus();
@@ -1930,9 +2303,11 @@ $user = $_SESSION['logged_user'];
         }
     </script>
 
+
     <!-- teeth Structure -->
     <script>
         const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
+
         // Create tooth part
         function createPart(toothId, partName) {
             const part = document.createElement('div');
@@ -1949,7 +2324,7 @@ $user = $_SESSION['logged_user'];
             return part;
         }
 
-        // create tooth container; tooth_id must be the DB tooth_id (or FDI fallback)
+        // Create tooth container
         function createTooth(id, label, position = 'bottom', tooth_id = null) {
             const container = document.createElement('div');
             container.className = 'tooth-container';
@@ -1961,12 +2336,10 @@ $user = $_SESSION['logged_user'];
             const tooth = document.createElement('div');
             tooth.className = 'tooth';
             tooth.id = id;
-            // store actual tooth_id (DB) if available; otherwise store FDI number as fallback
             tooth.dataset.toothId = tooth_id ?? '';
 
             teethParts.forEach(p => tooth.appendChild(createPart(id, p)));
 
-            // tooltip
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
             tooltip.textContent = label;
@@ -1976,19 +2349,19 @@ $user = $_SESSION['logged_user'];
             return container;
         }
 
-        // Load teeth mapping from server (if available) so dataset.toothId is DB tooth_id
-        async function loadGrid() {
-            const permTop = document.getElementById('permanentGridtop');
-            const permBot = document.getElementById('permanentGridbot');
-            const tempTop = document.getElementById('temporaryGridtop');
-            const tempBot = document.getElementById('temporaryGridbot');
+        // Load teeth mapping for a specific year section
+        async function loadGridForYear(suffix = '') {
+            const permTop = document.getElementById(`permanentGridtop${suffix}`);
+            const permBot = document.getElementById(`permanentGridbot${suffix}`);
+            const tempTop = document.getElementById(`temporaryGridtop${suffix}`);
+            const tempBot = document.getElementById(`temporaryGridbot${suffix}`);
 
             let teethData = [];
             try {
                 const r = await fetch('/dentalemr_system/php/treatment/get_teeth.php');
                 if (r.ok) teethData = await r.json();
             } catch (e) {
-                console.warn('Could not load teeth mapping, will fallback to FDI numbers', e);
+                console.warn('Could not load teeth mapping, fallback to FDI numbers', e);
             }
 
             const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
@@ -1998,23 +2371,23 @@ $user = $_SESSION['logged_user'];
 
             permT.forEach(n => {
                 const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                permTop.appendChild(createTooth(`P-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
+                permTop.appendChild(createTooth(`P-${n}${suffix}`, n, 'top', tooth ? tooth.tooth_id : n));
             });
             permB.forEach(n => {
                 const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                permBot.appendChild(createTooth(`P-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+                permBot.appendChild(createTooth(`P-${n}${suffix}`, n, 'bottom', tooth ? tooth.tooth_id : n));
             });
             tempT.forEach(n => {
                 const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                tempTop.appendChild(createTooth(`T-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
+                tempTop.appendChild(createTooth(`T-${n}${suffix}`, n, 'top', tooth ? tooth.tooth_id : n));
             });
             tempB.forEach(n => {
                 const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                tempBot.appendChild(createTooth(`T-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+                tempBot.appendChild(createTooth(`T-${n}${suffix}`, n, 'bottom', tooth ? tooth.tooth_id : n));
             });
         }
 
-        // Create boxes for treatment/condition rows
+        // Create treatment/condition boxes for a specific row
         function createBox(id, row, kind) {
             const box = document.createElement('div');
             const key = `R${row}-${id}`;
@@ -2022,7 +2395,6 @@ $user = $_SESSION['logged_user'];
 
             if (kind === 'treatment') {
                 box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
-                // no background color required for treatment boxes - they should be plain
                 box.addEventListener('click', () => {
                     const selectedTreat = treatmentSelect?.value || '';
                     if (!selectedTreat) {
@@ -2045,24 +2417,34 @@ $user = $_SESSION['logged_user'];
             return box;
         }
 
-        function loadBoxes() {
-            const row1 = document.getElementById('treatRow1');
+        // Load boxes for a year section
+        function loadBoxesForYear(suffix = '') {
+            const row1 = document.getElementById(`treatRow1${suffix}`);
             for (let i = 0; i < 16; i++) row1.appendChild(createBox(i, 1, 'treatment'));
 
-            const row2 = document.getElementById('treatRow2');
+            const row2 = document.getElementById(`treatRow2${suffix}`);
             for (let i = 0; i < 16; i++) row2.appendChild(createBox(i, 2, 'condition'));
 
-            const row3 = document.getElementById('treatRow3');
+            const row3 = document.getElementById(`treatRow3${suffix}`);
             for (let i = 0; i < 16; i++) row3.appendChild(createBox(i, 3, 'condition'));
 
-            const row4 = document.getElementById('treatRow4');
+            const row4 = document.getElementById(`treatRow4${suffix}`);
             for (let i = 0; i < 16; i++) row4.appendChild(createBox(i, 4, 'treatment'));
         }
 
-        // initialize UI
-        loadGrid();
-        loadBoxes();
+        // Initialize all 5 years
+        async function initAllYears() {
+            const years = ['', '_y2', '_y3', '_y4', '_y5']; // '' corresponds to year1
+            for (const suffix of years) {
+                await loadGridForYear(suffix);
+                loadBoxesForYear(suffix);
+            }
+        }
+
+        // Run initialization
+        initAllYears();
     </script>
+
 
 </body>
 
