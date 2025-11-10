@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <div class="p-4 space-y-4 md:space-y-6 sm:p-4">
                     <div class="flex  items-center  justify-between">
                         <a href="#" class="rounded-full  items-center justify-center flex">
-                            <img src="../../img/1761912137392.png" class="rounded-full w-18 h-18" alt="">
+                            <img src="/dentalemr_system/img/DOH Logo.png" class="rounded-full w-18 h-18" alt="">
                         </a>
                         <div class="items-center text-center flex flex-col w-60 ">
                             <h1 class="text-lg font-bold leading-tight tracking-tight text-gray-900  dark:text-white">

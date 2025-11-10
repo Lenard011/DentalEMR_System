@@ -346,8 +346,7 @@ $user = $_SESSION['logged_user'];
         </header>
         <main class="p-1.5 md:ml-64 h-auto pt-1">
             <section class="relative bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg mb-2">
-                <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading ...
-                </p>
+                <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading ...</p>
                 <!-- Patient Info -->
                 <div
                     class="relative mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
@@ -720,7 +719,6 @@ $user = $_SESSION['logged_user'];
                         style="font-size:14.6px;">
                     </ul>
                 </div>
-
                 <!-- Edit Patient Modal -->
                 <div id="editPatientModal" tabindex="-1" aria-hidden="true"
                     class="fixed inset-0 hidden justify-center items-center z-50 bg-gray-600/50">
@@ -913,7 +911,6 @@ $user = $_SESSION['logged_user'];
                         </form>
                     </div>
                 </div>
-
                 <!-- Medical History Modal -->
                 <div id="medicalModal" tabindex="-1" aria-hidden="true"
                     class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
@@ -1046,13 +1043,13 @@ $user = $_SESSION['logged_user'];
                                 </div>
                                 <div class="flex w-125 items-center  mb-1">
                                     <input type="checkbox" name="blood_transfusion_flag" value="1"
-                                        onchange="toggleInput(this, 'blood_transfusion_date')"
+                                        onchange="toggleInput(this, 'blood_transfusion')"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                     <div class="grid grid-cols-2 items-center gap-1">
                                         <label for="default-checkbox"
                                             class="ms-2 not-last-of-type:w-40 text-sm font-medium text-gray-900 dark:text-gray-300">Blood
                                             transfusion (Month & Year)</label>
-                                        <input type="text" id="blood_transfusion_date" name="blood_transfusion_date"
+                                        <input type="date" id="blood_transfusion" name="blood_transfusion"
                                             disabled
                                             class="block py-1 h-4.5 px-0 w-59.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                             placeholder=" " />

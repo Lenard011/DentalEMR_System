@@ -31,6 +31,82 @@ $_SESSION['last_activity'] = time();
 // Get logged-in user details
 $user = $_SESSION['logged_user'];
 ?>
+<?php
+// Database connection (same as before)
+$servername = "localhost";
+$username = "root"; // change if needed
+$password = "";     // change if needed
+$dbname = "dentalemr_system";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$patient_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+// Fetch patient
+$sql = "SELECT * FROM patients WHERE patient_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $patient_id);
+$stmt->execute();
+$patient = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+// Fetch other patient info
+$sql2 = "SELECT * FROM patient_other_info WHERE patient_id = ?";
+$stmt2 = $conn->prepare($sql2);
+$stmt2->bind_param("i", $patient_id);
+$stmt2->execute();
+$other_info = $stmt2->get_result()->fetch_assoc();
+$stmt2->close();
+
+// Vital Signs
+$sql_vital = "SELECT * FROM vital_signs WHERE patient_id = ? ORDER BY recorded_at DESC LIMIT 1";
+$stmt_vital = $conn->prepare($sql_vital);
+$stmt_vital->bind_param("i", $patient_id);
+$stmt_vital->execute();
+$vital = $stmt_vital->get_result()->fetch_assoc();
+$stmt_vital->close();
+
+// Medical History
+$sql_history = "SELECT * FROM medical_history WHERE patient_id = ?";
+$stmt_history = $conn->prepare($sql_history);
+$stmt_history->bind_param("i", $patient_id);
+$stmt_history->execute();
+$history = $stmt_history->get_result()->fetch_assoc();
+$stmt_history->close();
+
+// Dietary Habits
+$sql_diet = "SELECT * FROM dietary_habits WHERE patient_id = ?";
+$stmt_diet = $conn->prepare($sql_diet);
+$stmt_diet->bind_param("i", $patient_id);
+$stmt_diet->execute();
+$diet = $stmt_diet->get_result()->fetch_assoc();
+$stmt_diet->close();
+
+// ✅ Oral Health Condition (latest 5 records)
+$sql_oral = "SELECT * FROM oral_health_condition WHERE patient_id = ? ORDER BY created_at ASC LIMIT 5";
+$stmt_oral = $conn->prepare($sql_oral);
+$stmt_oral->bind_param("i", $patient_id);
+$stmt_oral->execute();
+$result_oral = $stmt_oral->get_result();
+
+// Store all records in array
+$oralHealthRecords = [];
+while ($row = $result_oral->fetch_assoc()) {
+    $oralHealthRecords[] = $row;
+}
+$stmt_oral->close();
+
+$conn->close();
+
+// Ensure we always have 5 indexes (to avoid undefined errors)
+for ($i = count($oralHealthRecords); $i < 5; $i++) {
+    $oralHealthRecords[$i] = [];
+}
+?>
+
 <!doctype html>
 <html>
 
@@ -43,7 +119,7 @@ $user = $_SESSION['logged_user'];
     <style>
         .grid1 {
             display: flex;
-            gap: 3px;
+            gap: 1.5px;
             justify-content: center;
             /* border: solid black 1px; */
             align-items: center;
@@ -51,11 +127,10 @@ $user = $_SESSION['logged_user'];
 
         .gridtop {
             display: flex;
-            gap: 3px;
+            gap: 1.5px;
             justify-content: center;
             align-items: center;
-            margin-bottom: 4px;
-            /* border: solid black 1px; */
+            margin-bottom: 1px;
         }
 
         .tooth-container {
@@ -72,18 +147,18 @@ $user = $_SESSION['logged_user'];
         }
 
         .tooth-label {
-            font-size: 12px;
+            font-size: 8px;
             font-weight: bold;
             text-align: center;
         }
 
         .label-top {
-            margin-bottom: 2px;
+            margin-bottom: -1px;
 
         }
 
         .label-bottom {
-            margin-top: 2px;
+            margin-top: -1px;
         }
 
         .part {
@@ -123,8 +198,8 @@ $user = $_SESSION['logged_user'];
             border: 1px solid #555;
             border-top-right-radius: 100%;
             transform: translateX(-50%) rotate(-45deg);
-            margin-top: -2px;
-            margin-right: -0.5px;
+            margin-top: -1.5px;
+            margin-right: -0.9px;
         }
 
         /* bot */
@@ -137,7 +212,7 @@ $user = $_SESSION['logged_user'];
             border-bottom-left-radius: 100%;
             transform: translateX(-50%) rotate(-45deg);
             margin-bottom: -1px;
-            margin-left: 10.5px;
+            margin-left: 11px;
         }
 
         /* right */
@@ -154,15 +229,15 @@ $user = $_SESSION['logged_user'];
         }
 
         .part-center {
-            width: 9px;
-            height: 9px;
+            width: 8px;
+            height: 8px;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             border-radius: 50%;
             border: 1px solid #555;
             position: absolute;
-            margin-left: 1px;
+            margin-left: 1.5px;
         }
 
         .tooth::before {
@@ -204,9 +279,9 @@ $user = $_SESSION['logged_user'];
         .conditionbox1 {
             display: flex;
             grid-template-columns: repeat(16, 1rem);
-            margin: 2px ;
+            margin: 1.2px;
             /* justify-content: space-between; */
-            gap:1px;
+            gap: 2.5px;
             align-items: center;
             /* border: solid 1px black; */
         }
@@ -216,14 +291,14 @@ $user = $_SESSION['logged_user'];
         .treatment1-box,
         .condition-box,
         .condition1-box {
-            width: 1rem;
-            height: 1rem;
+            width: 1.2rem;
+            height: 1.2rem;
             display: flex;
             text-align: center;
             align-items: center;
             justify-content: center;
-            border: 1px solid #ccc;
-            font-size: 0.9rem;
+            border: 1px solid black;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             user-select: none;
@@ -316,7 +391,7 @@ $user = $_SESSION['logged_user'];
             </div>
         </nav>
         <main class="p-4  h-auto pt-13">
-            <div class="flex items-center justify-between  w-full ">
+            <div class="flex items-center justify-between   w-full sticky top-13 bg-gray-50  z-50">
                 <!-- Back Btn-->
                 <div class="relative group inline-block ">
                     <a href="" id="viewinfoLink" class="cursor-pointer">
@@ -353,39 +428,39 @@ $user = $_SESSION['logged_user'];
                     <!-- Medical History -->
                     <div class="flex flex-col w-full mt-2">
                         <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                            <input type="text" value="<?= ($history['prev_hospitalization_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             <p class="text-[12px]">History of Previous Hospitalization</p>
                         </div>
                         <div class="flex flex-row w-[95%] items-end ml-6">
                             <p class="w-[640px] text-[12px]">Medical (Last Admission & Cause)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                            <input type="text" value="<?= htmlspecialchars($history['last_admission_date'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                            <input type="text" value="<?= htmlspecialchars($history['admission_cause'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                         </div>
                         <div class="flex flex-row w-[95%] items-end ml-6">
                             <p class="w-[200px] text-[12px]">Surgical (Post-Operative)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                            <input type="text" value="<?= htmlspecialchars($history['surgery_details'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                         </div>
                         <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                            <input type="text" value="<?= ($history['blood_transfusion_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             <p class="w-[370px] text-[12px]">Blood transfusion (Month & Year)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                            <input type="text" value="<?= htmlspecialchars($history['blood_transfusion'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                         </div>
                         <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                            <input type="text" value="<?= ($history['tattoo'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             <p class="w-[260px] text-[12px]">Tattoo</p>
                         </div>
                         <div class="flex flex-row w-fullitems-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                            <input type="text" value="<?= ($history['other_conditions_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             <p class="w-[190px] text-[12px]">Others (Please specify)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                            <input type="text" value="<?= htmlspecialchars($history['other_conditions'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                         </div>
                     </div>
@@ -393,31 +468,31 @@ $user = $_SESSION['logged_user'];
                     <div class="flex flex-col  mt-2">
                         <h4 class="text-[15px] font-bold mt-1">Dietary Habits / Social History</h4>
                         <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                            <input type="text" value="<?= ($diet['sugar_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             <p class="w-[100%] text-[12px]">Sugar Sweetened Beverages/Food (Amount, frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[60px] h-5 
+                            <input type="text" value="<?= htmlspecialchars($diet['sugar_details'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-[120px] h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                         </div>
                         <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                            <input type="text" value="<?= ($diet['alcohol_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             <p class="w-[90%] text-[12px]">Use of Alcohol (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[250px] h-5 
+                            <input type="text" value="<?= htmlspecialchars($diet['alcohol_details'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-[400px] h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                         </div>
                         <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                            <input type="text" value="<?= ($diet['tobacco_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             <p class="w-[90%] text-[12px]">Use of Tobacco (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[240px] h-5 
+                            <input type="text" value="<?= htmlspecialchars($diet['tobacco_details'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[370px] h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                         </div>
                         <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                            <input type="text" value="<?= ($diet['betel_nut_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             <p class="w-[90%] text-[12px]">Betel Nut Chewing (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[140px] h-5 
+                            <input type="text" value="<?= htmlspecialchars($diet['betel_nut_details'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[320px] h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                         </div>
                     </div>
@@ -435,185 +510,95 @@ $user = $_SESSION['logged_user'];
                     <!-- Oral Healt Condition -->
                     <div class="flex flex-col mt-2">
                         <h4 class="text-[15px] font-bold mt-2 text-center">Oral Health Condition</h4>
-                        <h4 class="text-[12px] ml-1">A. Check (✓) id present (✗) id absent</h4>
+                        <h4 class="text-[12px] ml-1">A. Check (✓) if present (✗) if absent</h4>
                         <div class="flex flex-col w-full">
-                            <div class="flex flex-row w-full items-center justify-between border ">
-                                <p class="px-1 text-[11px] w-[80%]  ">Date of Oral Examination</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+
+                            <!-- Date of Oral Examination -->
+                            <div class="flex flex-row w-full items-center justify-between border">
+                                <p class="px-1 text-[11px] w-[80%]">Date of Oral Examination</p>
+                                <?php for ($i = 0; $i < 5; $i++): ?>
+                                    <input type="text" class="h-5 w-[30%] border-0 border-l-1 text-[12px] text-center"
+                                        value="<?php echo !empty($oralHealthRecords[$i]['created_at']) ? date('m/d/Y', strtotime($oralHealthRecords[$i]['created_at'])) : ''; ?>">
+                                <?php endfor; ?>
                             </div>
+
+                            <!-- Orally Fit Child (OFC) -->
                             <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Orally Fit Child (OFC)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                                <p class="px-1 text-[11px] w-[80%]">Orally Fit Child (OFC)</p>
+                                <?php for ($i = 0; $i < 5; $i++): ?>
+                                    <input type="text" class="h-5 w-[30%] border-0 border-l-1 text-[12px] text-center"
+                                        value="<?php echo !empty($oralHealthRecords[$i]) ? (!empty($oralHealthRecords[$i]['orally_fit_child']) ? '✓' : '✗') : ''; ?>">
+                                <?php endfor; ?>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Dental Caries</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Gingivitis</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Periodontal Disease</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Debris</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Calculus</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Abnormal Growth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">Cleft Lip/ Palate</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <div class="flex flex-col px-1 w-[80%] ">
-                                    <p class="text-[11px]">Others</p>
-                                    <p class="text-[10px]">(sernumerary/mesiodens,</p>
-                                    <p class="text-[10px]">malocclusions, etc.)</p>
+
+                            <!-- Other Fields -->
+                            <?php
+                            $fields = [
+                                'Dental Caries' => 'dental_caries',
+                                'Gingivitis' => 'gingivitis',
+                                'Periodontal Disease' => 'periodontal_disease',
+                                'Debris' => 'debris',
+                                'Calculus' => 'calculus',
+                                'Abnormal Growth' => 'abnormal_growth',
+                                'Cleft Lip/ Palate' => 'cleft_palate',
+                                'Others' => 'others',
+                            ];
+                            ?>
+                            <?php foreach ($fields as $label => $field): ?>
+                                <div class="flex flex-row w-full items-center justify-between border border-t-0">
+                                    <p class="px-1 text-[11px] w-[80%] <?php echo $field === 'others' ? 'flex flex-col' : ''; ?>">
+                                        <?php if ($field === 'others'): ?>
+                                            <span class="text-[11px]">Others</span>
+                                            <span class="text-[10px]">(sernumerary/mesiodens,</span>
+                                            <span class="text-[10px]">malocclusions, etc.)</span>
+                                        <?php else: ?>
+                                            <?php echo $label; ?>
+                                        <?php endif; ?>
+                                    </p>
+
+                                    <?php for ($i = 0; $i < 5; $i++): ?>
+                                        <input type="text"
+                                            class="<?php echo $field === 'others' ? 'h-[47px]' : 'h-5'; ?> text-[12px] text-center w-[30%] border-0 border-l-1"
+                                            value="<?php echo !empty($oralHealthRecords[$i][$field]) ? $oralHealthRecords[$i][$field] : ''; ?>">
+                                    <?php endfor; ?>
                                 </div>
-                                <input type="text" class=" h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                            </div>
+                            <?php endforeach; ?>
+
                         </div>
+
                         <!-- Set B -->
                         <h4 class="text-[12px] ml-1 mt-2">B. Indicate Number</h4>
                         <div class="flex flex-col w-full">
-                            <div class="flex flex-row w-full items-center justify-between border ">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Perm. Teeth Present</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Perm. Sound Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Decayed Teeth (D)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Missing Teeth (M)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Filled Teeth (F)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Total DMF Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Temp. Teeth Present</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Temp. Sound teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">No. of Decayed Teeth (d)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">No. of Filled Teeth (f)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">Total df Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
+
+                            <?php
+                            // Fields for permanent and temporary teeth
+                            $numberFields = [
+                                'No. of Perm. Teeth Present' => 'perm_teeth_present',
+                                'No. of Perm. Sound Teeth' => 'perm_sound_teeth',
+                                'No. of Decayed Teeth (D)' => 'perm_decayed_teeth_d',
+                                'No. of Missing Teeth (M)' => 'perm_missing_teeth_m',
+                                'No. of Filled Teeth (F)' => 'perm_filled_teeth_f',
+                                'Total DMF Teeth' => 'perm_total_dmf',
+                                'No. of Temp. Teeth Present' => 'temp_teeth_present',
+                                'No. of Temp. Sound teeth' => 'temp_sound_teeth',
+                                'No. of Decayed Teeth (d)' => 'temp_decayed_teeth_d',
+                                'No. of Filled Teeth (f)' => 'temp_filled_teeth_f',
+                                'Total df Teeth' => 'temp_total_df',
+                            ];
+                            ?>
+
+                            <?php foreach ($numberFields as $label => $field): ?>
+                                <div class="flex flex-row w-full items-center justify-between border <?php echo $label !== 'No. of Perm. Teeth Present' ? 'border-t-0' : ''; ?>">
+                                    <p class="px-1 text-[11px] w-[80%]"><?php echo $label; ?></p>
+                                    <?php for ($i = 0; $i < 5; $i++): ?>
+                                        <input type="text" class="h-5 w-[30%] text-[12px] text-center border-0 border-l-1"
+                                            value="<?php echo !empty($oralHealthRecords[$i][$field]) ? $oralHealthRecords[$i][$field] : ''; ?>">
+                                    <?php endfor; ?>
+                                </div>
+                            <?php endforeach; ?>
+
                         </div>
+
                     </div>
                 </div>
                 <!-- right -->
@@ -624,7 +609,7 @@ $user = $_SESSION['logged_user'];
                             <div class="flex flex-row w-full justify-end mb-3">
                                 <div class="flex flex-row items-end w-15">
                                     <p class="w-[65%] text-[10px] font-medium">File No.</p>
-                                    <input type="text" placeholder="1" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-[35%] h-5 
+                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-[35%] h-5 
                                         !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 </div>
                             </div>
@@ -653,11 +638,11 @@ $user = $_SESSION['logged_user'];
                                     <p class="w-[120px] text-[12px]">Name</p>
                                     <div class="flex flex-col">
                                         <div class="flex flex-row">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                            <input type="text" value="<?= htmlspecialchars($patient['surname'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                                 !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                            <input type="text" value="<?= htmlspecialchars($patient['firstname'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                                 !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                            <input type="text" value="<?= htmlspecialchars($patient['middlename'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                                 !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                         </div>
                                     </div>
@@ -670,39 +655,39 @@ $user = $_SESSION['logged_user'];
                             </div>
                             <div class="flex flex-row w-full items-end ">
                                 <p class="w-[124px] text-[12px]">Date of Birth</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($patient['date_of_birth'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                             <div class="flex flex-row w-full items-end ">
                                 <p class="w-[124px] text-[12px]">Place of Birth</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($patient['place_of_birth'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                             <div class="flex flex-row w-full items-end ">
                                 <div class="flex flex-row w-full items-end mr-1">
                                     <p class="w-[126px] text-[12px] mr-2">Address</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                    <input type="text" value="<?= htmlspecialchars($patient['address'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 </div>
                                 <div class="flex flex-row w-20 gap-1 items-end ">
                                     <p class=" text-[12px]">Age</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-10 h-5 
+                                    <input type="text" value="<?= htmlspecialchars($patient['age'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-10 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 </div>
                                 <div class="flex flex-row w-20 gap-1 items-end ">
                                     <p class=" text-[12px]">Sex</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-10 h-5 
+                                    <input type="text" value="<?= htmlspecialchars($patient['sex'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-10 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 </div>
                             </div>
                             <div class="flex flex-row w-full items-end ">
                                 <p class="w-[124px] text-[12px]">Occupation</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($patient['occupation'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                             <div class="flex flex-row w-full gap-2 items-end ">
                                 <p class="w-24 text-[12px]">Parent/Guardian</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($patient['guardian'] ?? '') ?>" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                         </div>
@@ -711,44 +696,44 @@ $user = $_SESSION['logged_user'];
                         <div class="flex flex-col mt-2">
                             <h4 class="text-[15px] font-bold mt-1">Other Patient Information (Membership)</h4>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($other_info['nhts_pr'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">National household Targeting System - Poverty Reduction (NHTS-PR)</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($other_info['four_ps'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">Pantawid Pamilyang Pilipino Program (4Ps)</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($other_info['indigenous_people'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">Indigenous People (IP)</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($other_info['pwd'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">Person With Disabilities (PWDs)</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($other_info['philhealth_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="w-[300px] text-[12px]">PhiliHealth (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($other_info['philhealth_number'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($other_info['sss_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="w-[300px] text-[12px]">SSS (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($other_info['sss_number'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($other_info['gsis_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="w-[300px] text-[12px]">GSIS (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($other_info['gsis_number'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                         </div>
@@ -758,18 +743,18 @@ $user = $_SESSION['logged_user'];
                             <div class="flex flex- w-full justify-between">
                                 <div class="flex flex-row w-full items-end ">
                                     <p class="w-[95px] text-[12px]">Blood Presseure:</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-23 h-5 
+                                    <input type="text" value="<?= htmlspecialchars($vital['blood_pressure'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-23 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 </div>
                                 <div class="flex flex-row  items-end">
                                     <p class="w-[70px] text-[12px]">Pulse Rate:</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-30 h-5 
+                                    <input type="text" value="<?= htmlspecialchars($vital['pulse_rate'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-30 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 </div>
                             </div>
                             <div class="flex flex-row w-full items-end ">
                                 <p class="w-[75px] text-[12px]">Temperature:</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-28 h-5 
+                                <input type="text" value="<?= htmlspecialchars($vital['temperature'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-28 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                         </div>
@@ -778,49 +763,49 @@ $user = $_SESSION['logged_user'];
                         <div class="flex flex-col mt-2">
                             <h4 class="text-[15px] font-bold mt-1">Medical History</h4>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($history['allergies_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="w-[220px] text-[12px]">Allergies (Please specify)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($history['allergies_details'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($history['hypertension_cva'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">Hypertension / CVA</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($history['diabetes_mellitus'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">Diabetes Mellitus</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($history['blood_disorders'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">Blood Siaorders</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($history['heart_disease'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">Cardiovascular / Heart Diseases</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($history['thyroid_disorders'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="text-[12px]">Thyroid Disorders</p>
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($history['hepatitis_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="w-[300px] text-[12px]">Hepatitis (Please specify type)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($history['hepatitis_details'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                             <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
+                                <input type="text" value="<?= ($history['malignancy_flag'] ?? 0) == 1 ? '✓' : '' ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                                 <p class="w-[260px] text-[12px]">Malignancy (Please specify)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
+                                <input type="text" value="<?= htmlspecialchars($history['malignancy_details'] ?? '') ?>" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
                                     !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
                             </div>
                         </div>
@@ -835,13 +820,13 @@ $user = $_SESSION['logged_user'];
                         <!-- YEAR 1 -->
                         <div id="year1" class="flex flex-col">
                             <p
-                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year I - Date</p>
+                                class="text-[12px] -ml-1 w-full font-semibold text-gray-900 dark:text-white">Year I - Date</p>
                             <div class="w-80">
-                                <p style="margin-bottom: -5px;"
-                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <p
+                                    class="text-[10px] mb-[-1.5px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                                 <div class="treatmentbox" id="treatRow1"></div>
                                 <div class="conditionbox" id="treatRow2"></div>
-                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                <p style="margin-bottom: -10px; margin-top: -3.5px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                             </div>
 
@@ -853,11 +838,11 @@ $user = $_SESSION['logged_user'];
                             </div>
 
                             <div class="w-80">
-                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                <p style="margin-top: -10px; margin-bottom: -3.3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                                 <div class="conditionbox1" id="treatRow3"></div>
                                 <div class="treatmentbox1" id="treatRow4"></div>
-                                <p style="margin-top: -5px;"
+                                <p style="margin-top: -3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                             </div>
                         </div>
@@ -865,13 +850,13 @@ $user = $_SESSION['logged_user'];
                         <!-- YEAR 2 -->
                         <div id="year2" class="flex flex-col">
                             <p
-                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year II - Date</p>
+                                class="text-[12px] -ml-1 w-full font-semibold text-gray-900 dark:text-white">Year II - Date</p>
                             <div class="w-80">
-                                <p style="margin-bottom: -5px;"
-                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <p
+                                    class="text-[10px] mb-[-1.5px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                                 <div class="treatmentbox" id="treatRow1_y2"></div>
                                 <div class="conditionbox" id="treatRow2_y2"></div>
-                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                <p style="margin-bottom: -10px; margin-top: -3.5px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                             </div>
 
@@ -883,11 +868,11 @@ $user = $_SESSION['logged_user'];
                             </div>
 
                             <div class="w-80">
-                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                <p style="margin-top: -10px; margin-bottom: -3.3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                                 <div class="conditionbox1" id="treatRow3_y2"></div>
                                 <div class="treatmentbox1" id="treatRow4_y2"></div>
-                                <p style="margin-top: -5px;"
+                                <p style="margin-top: -3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                             </div>
                         </div>
@@ -895,13 +880,13 @@ $user = $_SESSION['logged_user'];
                         <!-- YEAR 4 -->
                         <div id="year4" class="flex flex-col">
                             <p
-                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year IV - Date</p>
+                                class="text-[12px] -ml-1 w-full font-semibold text-gray-900 dark:text-white">Year IV - Date</p>
                             <div class="w-80">
-                                <p style="margin-bottom: -5px;"
-                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <p
+                                    class="text-[10px] mb-[-1.5px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                                 <div class="treatmentbox" id="treatRow1_y3"></div>
                                 <div class="conditionbox" id="treatRow2_y3"></div>
-                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                <p style="margin-bottom: -10px; margin-top: -3.5px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                             </div>
 
@@ -913,24 +898,24 @@ $user = $_SESSION['logged_user'];
                             </div>
 
                             <div class="w-80">
-                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                <p style="margin-top: -10px; margin-bottom: -3.3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                                 <div class="conditionbox1" id="treatRow3_y3"></div>
                                 <div class="treatmentbox1" id="treatRow4_y3"></div>
-                                <p style="margin-top: -5px;"
+                                <p style="margin-top: -3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                             </div>
                         </div>
                         <!-- YEAR 5 -->
                         <div id="year5" class="flex flex-col">
                             <p
-                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year V - Date</p>
+                                class="text-[12px] -ml-1 w-full font-semibold text-gray-900 dark:text-white">Year V - Date</p>
                             <div class="w-80">
-                                <p style="margin-bottom: -5px;"
-                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <p
+                                    class="text-[10px] mb-[-1.5px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                                 <div class="treatmentbox" id="treatRow1_y4"></div>
                                 <div class="conditionbox" id="treatRow2_y4"></div>
-                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                <p style="margin-bottom: -10px; margin-top: -3.5px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                             </div>
 
@@ -942,11 +927,11 @@ $user = $_SESSION['logged_user'];
                             </div>
 
                             <div class="w-80">
-                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                <p style="margin-top: -10px; margin-bottom: -3.3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                                 <div class="conditionbox1" id="treatRow3_y4"></div>
                                 <div class="treatmentbox1" id="treatRow4_y4"></div>
-                                <p style="margin-top: -5px;"
+                                <p style="margin-top: -3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                             </div>
                         </div>
@@ -956,13 +941,13 @@ $user = $_SESSION['logged_user'];
                         <!-- YEAR 3 -->
                         <div id="year3" class="flex flex-col">
                             <p
-                                class="text-[12px] -ml-1 w-20 font-semibold text-gray-900 dark:text-white">Year III - Date</p>
+                                class="text-[12px] -ml-1 w-full font-semibold text-gray-900 dark:text-white">Year III - Date</p>
                             <div class="w-80">
-                                <p style="margin-bottom: -5px;"
-                                    class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
+                                <p
+                                    class="text-[10px] mb-[-1.5px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                                 <div class="treatmentbox" id="treatRow1_y5"></div>
                                 <div class="conditionbox" id="treatRow2_y5"></div>
-                                <p style="margin-bottom: -10px; margin-top: -5px;"
+                                <p style="margin-bottom: -10px; margin-top: -3.5px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                             </div>
 
@@ -974,11 +959,11 @@ $user = $_SESSION['logged_user'];
                             </div>
 
                             <div class="w-80">
-                                <p style="margin-top: -10px; margin-bottom: -5px;"
+                                <p style="margin-top: -10px; margin-bottom: -3.3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Condition</p>
                                 <div class="conditionbox1" id="treatRow3_y5"></div>
                                 <div class="treatmentbox1" id="treatRow4_y5"></div>
-                                <p style="margin-top: -5px;"
+                                <p style="margin-top: -3px;"
                                     class="text-[10px] w-20 font-normal text-gray-900 dark:text-white">Treatment</p>
                             </div>
                         </div>
@@ -1185,967 +1170,770 @@ $user = $_SESSION['logged_user'];
                 </div>
 
             </div>
-            <div id="shouldprint3" class="grid grid-cols-2 items-center w-full">
-                <!-- left -->
-                <div class="flex flex-col w-full pr-20 ">
-                    <!-- Medical History -->
-                    <div class="flex flex-col w-full mt-2">
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="text-[12px]">History of Previous Hospitalization</p>
+            <div id="shouldprint3" class="flex flex-col items-start py-10 pt-30 w-full">
+                <h4 class="text-[15px] font-bold mt-1 mb-1">B. Services Monitoring chart</h4>
+                <!-- 12 slots -->
+                <div class="flex flex-row items-start">
+                    <div class="flex w-full flex-col">
+                        <div class="flex flex-row">
+                            <p class="text-[12px] font-medium ml-2">Date</p>
+                            <p class="text-[12px] font-medium ml-30">Fluoride Varnish/Fluoride Gel, Pit and Fissure Sealant, Permanent Filling, Temporary Filling, Extraction</p>
                         </div>
-                        <div class="flex flex-row w-[95%] items-end ml-6">
-                            <p class="w-[640px] text-[12px]">Medical (Last Admission & Cause)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-[95%] items-end ml-6">
-                            <p class="w-[200px] text-[12px]">Surgical (Post-Operative)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[370px] text-[12px]">Blood transfusion (Month & Year)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[260px] text-[12px]">Tattoo</p>
-                        </div>
-                        <div class="flex flex-row w-fullitems-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[190px] text-[12px]">Others (Please specify)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                    </div>
-                    <!-- Dieatray Habits -->
-                    <div class="flex flex-col  mt-2">
-                        <h4 class="text-[15px] font-bold mt-1">Dietary Habits / Social History</h4>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[100%] text-[12px]">Sugar Sweetened Beverages/Food (Amount, frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[60px] h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[90%] text-[12px]">Use of Alcohol (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[250px] h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[90%] text-[12px]">Use of Tobacco (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[240px] h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[90%] text-[12px]">Betel Nut Chewing (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[140px] h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                    </div>
-                    <!-- Conforme -->
-                    <div class="flex flex-col mt-2">
-                        <div class="flex flex-row items-end w-full">
-                            <h4 class="text-[10px] font-bold italic mt-1 mr-8">Conforme:</h4>
-                            <div class="flex flex-row w-90 items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[70%] h-5 
-                                    !border-0 !border-b !border-gray-9  00 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                        </div>
-                        <p class="ml-24 text-[12px]">Patient's / Guardian's Name and Signature</p>
-                    </div>
-                    <!-- Oral Healt Condition -->
-                    <div class="flex flex-col mt-2">
-                        <h4 class="text-[15px] font-bold mt-2 text-center">Oral Health Condition</h4>
-                        <h4 class="text-[12px] ml-1">A. Check (✓) id present (✗) id absent</h4>
-                        <div class="flex flex-col w-full">
-                            <div class="flex flex-row w-full items-center justify-between border ">
-                                <p class="px-1 text-[11px] w-[80%]  ">Date of Oral Examination</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Orally Fit Child (OFC)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Dental Caries</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Gingivitis</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Periodontal Disease</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Debris</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Calculus</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Abnormal Growth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">Cleft Lip/ Palate</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <div class="flex flex-col px-1 w-[80%] ">
-                                    <p class="text-[11px]">Others</p>
-                                    <p class="text-[10px]">(sernumerary/mesiodens,</p>
-                                    <p class="text-[10px]">malocclusions, etc.)</p>
+                        <div class="flex flex-col mb-5 gap-5 w-full">
+                            <div id="55-65" class="flex flex-row w-full">
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border">
+                                    <input type="text" class="h-5 w-full border border-t-0">
+                                    <input type="text" class="h-5 w-full border border-t-0">
+                                    <input type="text" class="h-5 w-full border border-t-0">
+                                    <input type="text" class="h-5 w-full border border-t-0">
                                 </div>
-                                <input type="text" class=" h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">55</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">54</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">53</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">52</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">51</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">61</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">62</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">63</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">64</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">65</p>
+                                </div>
+                            </div>
+                            <div id="85-75" class="flex flex-row w-full">
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border">
+                                    <input type="text" class="h-5 w-full border border-t-0">
+                                    <input type="text" class="h-5 w-full border border-t-0">
+                                    <input type="text" class="h-5 w-full border border-t-0">
+                                    <input type="text" class="h-5 w-full border border-t-0">
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">85</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">84</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">83</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">82</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">81</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">71</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">72</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">73</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">74</p>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <input type="text" class="h-5 w-full border border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                    <p class="text-[12px]">75</p>
+                                </div>
                             </div>
                         </div>
-                        <!-- Set B -->
-                        <h4 class="text-[12px] ml-1 mt-2">B. Indicate Number</h4>
-                        <div class="flex flex-col w-full">
-                            <div class="flex flex-row w-full items-center justify-between border ">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Perm. Teeth Present</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                    </div>
+                    <!-- Treatment -->
+                    <div class="w-[45%] flex flex-col px-8">
+                        <div class="flex flex-col gap-3">
+                            <p class="text-[13px] font-bold text-gray-900 dark:text-white">Legend:
+                            </p>
+                            <div class="flex flex-col gap-3 ml-2">
+                                <p class="text-[13px] font-normal  text-gray-900 dark:text-white">
+                                    Topical
+                                    Fluoride
+                                    Application:
+                                </p>
+                                <p class="text-[13px] font-normal ml-5 text-gray-900 dark:text-white">FV
+                                    -
+                                    Fluoride
+                                    Varnish
+                                <p class="text-[13px] font-normal ml-5 text-gray-900 dark:text-white">FG
+                                    -
+                                    Fluoride
+                                    Gel
+                                </p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Perm. Sound Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Decayed Teeth (D)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Missing Teeth (M)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Filled Teeth (F)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Total DMF Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Temp. Teeth Present</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Temp. Sound teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">No. of Decayed Teeth (d)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">No. of Filled Teeth (f)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">Total df Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col gap-3 ml-2">
+                                <p class="text-[13px] font-normal  text-gray-900 dark:text-white">PFS - Pit
+                                    and
+                                    Fissure Sealant
+                                </p>
+                                <p class="text-[13px] font-normal  text-gray-900 dark:text-white">PF -
+                                    Permanent
+                                    Filling (Composite, Am, ART)
+                                </p>
+                                <p class="text-[13px] font-normal  text-gray-900 dark:text-white">TF -
+                                    Temporary
+                                    Filling
+                                </p>
+                                <p class="text-[13px] font-normal  text-gray-900 dark:text-white">X -
+                                    Extraction
+                                </p>
+                                <p class="text-[13px] font-normal  text-gray-900 dark:text-white">O - Others
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- right -->
-                <div class="flex flex-col w-full  pl-10">
-                    <!-- Header Section -->
-                    <div class="flex flex-row w-fulljustify-between gap-10">
-                        <div class="flex flex-col items-center w-full">
-                            <div class="flex flex-row w-full justify-end mb-3">
-                                <div class="flex flex-row items-end w-15">
-                                    <p class="w-[65%] text-[10px] font-medium">File No.</p>
-                                    <input type="text" placeholder="3" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-[35%] h-5 
-                                        !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                            </div>
-                            <div class="flex items-start justify-between w-full">
-                                <img src="../../img/DOH Logo.png" alt="DOH Logo" class="h-15 rounded-full mr-5">
-                                <div class="flex flex-col items-center text-center mt-1">
-                                    <h1 class="text-[13px] font-bold ">Republic of the Philippines</h1>
-                                    <h2 class="text-[13px] font-bold -mt-1">Department of Health</h2>
-                                    <h2 class="text-[13px] font-bold -mt-1">Regional Office III</h2>
-                                    <input type="text" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[70%] h-3 
-                                        !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                    <h3 class="text-[8px]">(Municipality/City/Province)</h3>
-                                </div>
-                                <img src="../../img/DOHDentalLogo-removebg-preview.png" alt="Dental Logo" class="w-30 -mr-6 -ml-6 h-15">
-                            </div>
-                            <h4 class="text-[15px] font-bold mt-1">Individual Patient Treatment Record</h4>
-
-                        </div>
-                        <div class="border h-10 w-35 mt-4"></div>
+                <!-- 18 slots -->
+                <div class="flex flex-col">
+                    <div class="flex flex-row">
+                        <p class="text-[12px] font-medium ml-2">Date</p>
+                        <p class="text-[12px] font-medium ml-30">Fluoride Varnish/Fluoride Gel, Pit and Fissure Sealant, Permanent Filling, Temporary Filling, Extraction</p>
                     </div>
-                    <div class="w-[88%]">
-                        <!-- Patient Info -->
-                        <div class="flex flex-col mt-2">
-                            <div class="flex flex-col">
-                                <div class="flex flex-row  w-full items-end justify-between">
-                                    <p class="w-[120px] text-[12px]">Name</p>
-                                    <div class="flex flex-col">
-                                        <div class="flex flex-row">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                                !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                                !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                                !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex flex-row ml-[97px] justify-between mt-[-1px]">
-                                    <p class="w-full text-center text-[10px] font-medium">Surname</p>
-                                    <p class="w-full text-center text-[10px] font-medium">First Name</p>
-                                    <p class="w-full text-center text-[10px] font-medium">Middle Initial</p>
-                                </div>
+                    <div class="flex flex-col  gap-5">
+                        <div id="18-28" class="flex flex-row w-full">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border">
+                                <input type="text" class="h-5 w-full border border-t-0">
+                                <input type="text" class="h-5 w-full border border-t-0">
+                                <input type="text" class="h-5 w-full border border-t-0">
+                                <input type="text" class="h-5 w-full border border-t-0">
                             </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <p class="w-[124px] text-[12px]">Date of Birth</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
                             </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <p class="w-[124px] text-[12px]">Place of Birth</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">18</p>
                             </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <div class="flex flex-row w-full items-end mr-1">
-                                    <p class="w-[126px] text-[12px] mr-2">Address</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                                <div class="flex flex-row w-20 gap-1 items-end ">
-                                    <p class=" text-[12px]">Age</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-10 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                                <div class="flex flex-row w-20 gap-1 items-end ">
-                                    <p class=" text-[12px]">Sex</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-10 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">17</p>
                             </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <p class="w-[124px] text-[12px]">Occupation</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">16</p>
                             </div>
-                            <div class="flex flex-row w-full gap-2 items-end ">
-                                <p class="w-24 text-[12px]">Parent/Guardian</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">15</p>
                             </div>
-                        </div>
-
-                        <!-- Other Patient Information -->
-                        <div class="flex flex-col mt-2">
-                            <h4 class="text-[15px] font-bold mt-1">Other Patient Information (Membership)</h4>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">National household Targeting System - Poverty Reduction (NHTS-PR)</p>
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">14</p>
                             </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Pantawid Pamilyang Pilipino Program (4Ps)</p>
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">13</p>
                             </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Indigenous People (IP)</p>
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">12</p>
                             </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Person With Disabilities (PWDs)</p>
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">11</p>
                             </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[300px] text-[12px]">PhiliHealth (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">21</p>
                             </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[300px] text-[12px]">SSS (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">22</p>
                             </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[300px] text-[12px]">GSIS (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">23</p>
                             </div>
-                        </div>
-                        <!-- Vital Signs -->
-                        <div class="flex flex-col mt-2">
-                            <h4 class="text-[15px] font-bold mt-1">Vital Signs</h4>
-                            <div class="flex flex- w-full justify-between">
-                                <div class="flex flex-row w-full items-end ">
-                                    <p class="w-[95px] text-[12px]">Blood Presseure:</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-23 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                                <div class="flex flex-row  items-end">
-                                    <p class="w-[70px] text-[12px]">Pulse Rate:</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-30 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">24</p>
                             </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <p class="w-[75px] text-[12px]">Temperature:</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-28 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">25</p>
                             </div>
-                        </div>
-
-                        <!-- Medical History -->
-                        <div class="flex flex-col mt-2">
-                            <h4 class="text-[15px] font-bold mt-1">Medical History</h4>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[220px] text-[12px]">Allergies (Please specify)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">26</p>
                             </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Hypertension / CVA</p>
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">27</p>
                             </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Diabetes Mellitus</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Blood Siaorders</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Cardiovascular / Heart Diseases</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Thyroid Disorders</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[300px] text-[12px]">Hepatitis (Please specify type)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[260px] text-[12px]">Malignancy (Please specify)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">28</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div id="shouldprint4" class="grid grid-cols-2 items-center w-full">
-                <!-- left -->
-                <div class="flex flex-col w-full pr-20 ">
-                    <!-- Medical History -->
-                    <div class="flex flex-col w-full mt-2">
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="text-[12px]">History of Previous Hospitalization</p>
-                        </div>
-                        <div class="flex flex-row w-[95%] items-end ml-6">
-                            <p class="w-[640px] text-[12px]">Medical (Last Admission & Cause)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-[95%] items-end ml-6">
-                            <p class="w-[200px] text-[12px]">Surgical (Post-Operative)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[370px] text-[12px]">Blood transfusion (Month & Year)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[260px] text-[12px]">Tattoo</p>
-                        </div>
-                        <div class="flex flex-row w-fullitems-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[190px] text-[12px]">Others (Please specify)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                    </div>
-                    <!-- Dieatray Habits -->
-                    <div class="flex flex-col  mt-2">
-                        <h4 class="text-[15px] font-bold mt-1">Dietary Habits / Social History</h4>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[100%] text-[12px]">Sugar Sweetened Beverages/Food (Amount, frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[60px] h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[90%] text-[12px]">Use of Alcohol (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[250px] h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[90%] text-[12px]">Use of Tobacco (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[240px] h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                        <div class="flex flex-row w-full items-end gap-1">
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            <p class="w-[90%] text-[12px]">Betel Nut Chewing (Amount, Frequency & Duration)</p>
-                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[140px] h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                        </div>
-                    </div>
-                    <!-- Conforme -->
-                    <div class="flex flex-col mt-2">
-                        <div class="flex flex-row items-end w-full">
-                            <h4 class="text-[10px] font-bold italic mt-1 mr-8">Conforme:</h4>
-                            <div class="flex flex-row w-90 items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[70%] h-5 
-                                    !border-0 !border-b !border-gray-9  00 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                        <div id="48-38" class="flex flex-row w-full">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border">
+                                <input type="text" class="h-5 w-full border border-t-0">
+                                <input type="text" class="h-5 w-full border border-t-0">
+                                <input type="text" class="h-5 w-full border border-t-0">
+                                <input type="text" class="h-5 w-full border border-t-0">
                             </div>
-                        </div>
-                        <p class="ml-24 text-[12px]">Patient's / Guardian's Name and Signature</p>
-                    </div>
-                    <!-- Oral Healt Condition -->
-                    <div class="flex flex-col mt-2">
-                        <h4 class="text-[15px] font-bold mt-2 text-center">Oral Health Condition</h4>
-                        <h4 class="text-[12px] ml-1">A. Check (✓) id present (✗) id absent</h4>
-                        <div class="flex flex-col w-full">
-                            <div class="flex flex-row w-full items-center justify-between border ">
-                                <p class="px-1 text-[11px] w-[80%]  ">Date of Oral Examination</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Orally Fit Child (OFC)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">48</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Dental Caries</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">47</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Gingivitis</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">46</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Periodontal Disease</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">45</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Debris</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">44</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Calculus</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">43</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Abnormal Growth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">42</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">Cleft Lip/ Palate</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">41</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <div class="flex flex-col px-1 w-[80%] ">
-                                    <p class="text-[11px]">Others</p>
-                                    <p class="text-[10px]">(sernumerary/mesiodens,</p>
-                                    <p class="text-[10px]">malocclusions, etc.)</p>
-                                </div>
-                                <input type="text" class=" h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-[47px] w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">31</p>
                             </div>
-                        </div>
-                        <!-- Set B -->
-                        <h4 class="text-[12px] ml-1 mt-2">B. Indicate Number</h4>
-                        <div class="flex flex-col w-full">
-                            <div class="flex flex-row w-full items-center justify-between border ">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Perm. Teeth Present</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">32</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Perm. Sound Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">33</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Decayed Teeth (D)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">34</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Missing Teeth (M)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">35</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Filled Teeth (F)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">36</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">Total DMF Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">37</p>
                             </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Temp. Teeth Present</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%]  ">No. of Temp. Sound teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">No. of Decayed Teeth (d)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">No. of Filled Teeth (f)</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                            <div class="flex flex-row w-full items-center justify-between border border-t-0">
-                                <p class="px-1 text-[11px] w-[80%] ">Total df Teeth</p>
-                                <input type="text" class=" h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                                <input type="text" class="h-5 w-[30%] border-0 border-l-1">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- right -->
-                <div class="flex flex-col w-full  pl-10">
-                    <!-- Header Section -->
-                    <div class="flex flex-row w-fulljustify-between gap-10">
-                        <div class="flex flex-col items-center w-full">
-                            <div class="flex flex-row w-full justify-end mb-3">
-                                <div class="flex flex-row items-end w-15">
-                                    <p class="w-[65%] text-[10px] font-medium">File No.</p>
-                                    <input type="text" placeholder="4" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-[35%] h-5 
-                                        !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                            </div>
-                            <div class="flex items-start justify-between w-full">
-                                <img src="../../img/DOH Logo.png" alt="DOH Logo" class="h-15 rounded-full mr-5">
-                                <div class="flex flex-col items-center text-center mt-1">
-                                    <h1 class="text-[13px] font-bold ">Republic of the Philippines</h1>
-                                    <h2 class="text-[13px] font-bold -mt-1">Department of Health</h2>
-                                    <h2 class="text-[13px] font-bold -mt-1">Regional Office III</h2>
-                                    <input type="text" readonly class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-[70%] h-3 
-                                        !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                    <h3 class="text-[8px]">(Municipality/City/Province)</h3>
-                                </div>
-                                <img src="../../img/DOHDentalLogo-removebg-preview.png" alt="Dental Logo" class="w-30 -mr-6 -ml-6 h-15">
-                            </div>
-                            <h4 class="text-[15px] font-bold mt-1">Individual Patient Treatment Record</h4>
-
-                        </div>
-                        <div class="border h-10 w-35 mt-4"></div>
-                    </div>
-                    <div class="w-[88%]">
-                        <!-- Patient Info -->
-                        <div class="flex flex-col mt-2">
-                            <div class="flex flex-col">
-                                <div class="flex flex-row  w-full items-end justify-between">
-                                    <p class="w-[120px] text-[12px]">Name</p>
-                                    <div class="flex flex-col">
-                                        <div class="flex flex-row">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                                !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                                !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                            <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                                !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex flex-row ml-[97px] justify-between mt-[-1px]">
-                                    <p class="w-full text-center text-[10px] font-medium">Surname</p>
-                                    <p class="w-full text-center text-[10px] font-medium">First Name</p>
-                                    <p class="w-full text-center text-[10px] font-medium">Middle Initial</p>
-                                </div>
-                            </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <p class="w-[124px] text-[12px]">Date of Birth</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <p class="w-[124px] text-[12px]">Place of Birth</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <div class="flex flex-row w-full items-end mr-1">
-                                    <p class="w-[126px] text-[12px] mr-2">Address</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                                <div class="flex flex-row w-20 gap-1 items-end ">
-                                    <p class=" text-[12px]">Age</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-10 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                                <div class="flex flex-row w-20 gap-1 items-end ">
-                                    <p class=" text-[12px]">Sex</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-10 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                            </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <p class="w-[124px] text-[12px]">Occupation</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                            <div class="flex flex-row w-full gap-2 items-end ">
-                                <p class="w-24 text-[12px]">Parent/Guardian</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                        </div>
-
-                        <!-- Other Patient Information -->
-                        <div class="flex flex-col mt-2">
-                            <h4 class="text-[15px] font-bold mt-1">Other Patient Information (Membership)</h4>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">National household Targeting System - Poverty Reduction (NHTS-PR)</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Pantawid Pamilyang Pilipino Program (4Ps)</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Indigenous People (IP)</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Person With Disabilities (PWDs)</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[300px] text-[12px]">PhiliHealth (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[300px] text-[12px]">SSS (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[300px] text-[12px]">GSIS (Indicate Number)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                        </div>
-                        <!-- Vital Signs -->
-                        <div class="flex flex-col mt-2">
-                            <h4 class="text-[15px] font-bold mt-1">Vital Signs</h4>
-                            <div class="flex flex- w-full justify-between">
-                                <div class="flex flex-row w-full items-end ">
-                                    <p class="w-[95px] text-[12px]">Blood Presseure:</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-23 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                                <div class="flex flex-row  items-end">
-                                    <p class="w-[70px] text-[12px]">Pulse Rate:</p>
-                                    <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-30 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                </div>
-                            </div>
-                            <div class="flex flex-row w-full items-end ">
-                                <p class="w-[75px] text-[12px]">Temperature:</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-28 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                        </div>
-
-                        <!-- Medical History -->
-                        <div class="flex flex-col mt-2">
-                            <h4 class="text-[15px] font-bold mt-1">Medical History</h4>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[220px] text-[12px]">Allergies (Please specify)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Hypertension / CVA</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Diabetes Mellitus</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Blood Siaorders</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Cardiovascular / Heart Diseases</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="text-[12px]">Thyroid Disorders</p>
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[300px] text-[12px]">Hepatitis (Please specify type)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                            </div>
-                            <div class="flex flex-row w-full items-end gap-1">
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none !w-5 h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
-                                <p class="w-[260px] text-[12px]">Malignancy (Please specify)</p>
-                                <input type="text" class="block text-xs text-center text-gray-900 bg-transparent appearance-none w-full h-5 
-                                    !border-0 !border-b !border-gray-900 focus:!outline-none focus:!ring-0 focus:!border-b-2 focus:!border-gray-700">
+                            <div class="flex flex-col items-center">
+                                <input type="text" class="h-5 w-full border border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+                                <p class="text-[12px]">38</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
+            <div id="shouldprint4" class="flex flex-col items-start w-full pt-30 py-10">
+                <h4 class="text-[15px] font-bold text-center w-full mb-1">Individual Patient Treatment</h4>
+                <div class="flex flex-col mb-1">
+                    <h4 class="text-[15px] font-bold mt-1">Record of Services Rendered</h4>
+                    <div class="flex flex-col ml-2">
+                        <h4 class="text-[14px] font-normal flex flex-row items-center"><img src="/dentalemr_system/img/Screenshot__503_-removebg-preview.png" alt="" class="h-4">For Oral Prophylaxis, Fluoride Varnish/Gel - Check (✓) id rendered</h4>
+                        <h4 class="text-[14px] font-normal flex flex-row items-center"><img src="/dentalemr_system/img/Screenshot__503_-removebg-preview.png" alt="" class="h-4">For Permanent & Temporary Filling, Pit and Fissure Sealant And Extraction - Indicate Number</h4>
+                    </div>
+                </div>
+                <div class="flex flex-row w-full">
+                    <div class="flex flex-col text-center items-center w-40">
+                        <p class="text-[12px] border font-medium h-14 px-2  items-center flex justify-center w-full">Date</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0">25/12//2025</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                    </div>
+                    <div class="flex flex-col text-center items-center w-100">
+                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Oral Prophylaxis</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                    </div>
+                    <div class="flex flex-col text-center items-center w-70">
+                        <p class="text-[12px]  border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Fluoride <br>Varnish/<br>Fluoride Gel</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                    </div>
+                    <div class="flex flex-col text-center items-center w-70">
+                        <p class="text-[12px]  border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Pit and Fissure <br>Sealant</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                    </div>
+                    <div class="flex flex-col text-center items-center w-70">
+                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Temporary <br>Filling</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                    </div>
+                    <div class="flex flex-col text-center items-center w-70">
+                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Extraction</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                    </div>
+                    <div class="flex flex-col text-center items-center w-50">
+                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Consultation</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                    </div>
+                    <div class="flex flex-col text-center items-center w-100">
+                        <p class="text-[12px] text-center border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Remarks / Others (Specify)</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                    </div>
+                    <div class="flex flex-col text-center items-center w-70">
+                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Dentist's Signature</p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -2302,30 +2090,24 @@ $user = $_SESSION['logged_user'];
             };
         }
     </script>
-
-
     <!-- teeth Structure -->
     <script>
         const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
 
-        // Create tooth part
-        function createPart(toothId, partName) {
+        // --- Tooth & Box Creation ---
+        function createPart(toothId, partName, yearSuffix = '') {
             const part = document.createElement('div');
             part.className = 'part part-' + partName;
-            const key = `${toothId}-${partName}`;
+            const key = `${toothId}-${partName}${yearSuffix}`;
             part.dataset.key = key;
             part.addEventListener('click', () => {
-                if (!selectedCondition) {
-                    alert('Select a condition from the Blue/Red selector');
-                    return;
-                }
+                if (!selectedCondition) return alert('Select a condition from the Blue/Red selector');
                 applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
             });
             return part;
         }
 
-        // Create tooth container
-        function createTooth(id, label, position = 'bottom', tooth_id = null) {
+        function createTooth(id, label, position = 'bottom', tooth_id = null, yearSuffix = '') {
             const container = document.createElement('div');
             container.className = 'tooth-container';
 
@@ -2335,10 +2117,10 @@ $user = $_SESSION['logged_user'];
 
             const tooth = document.createElement('div');
             tooth.className = 'tooth';
-            tooth.id = id;
+            tooth.id = id + yearSuffix;
             tooth.dataset.toothId = tooth_id ?? '';
 
-            teethParts.forEach(p => tooth.appendChild(createPart(id, p)));
+            teethParts.forEach(p => tooth.appendChild(createPart(id, p, yearSuffix)));
 
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
@@ -2349,19 +2131,43 @@ $user = $_SESSION['logged_user'];
             return container;
         }
 
-        // Load teeth mapping for a specific year section
+        function createBox(id, row, kind, yearSuffix = '') {
+            const box = document.createElement('div');
+            const key = `R${row}-${id}${yearSuffix}`;
+            box.dataset.key = key;
+
+            if (kind === 'treatment') {
+                box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
+                box.addEventListener('click', () => {
+                    const selectedTreat = treatmentSelect?.value || '';
+                    if (!selectedTreat) return alert('Select a treatment from dropdown');
+                    applyChange(key, '', selectedTreat, 'upper', true, true);
+                });
+            } else {
+                box.className = (row === 3) ? 'condition1-box' : 'condition-box';
+                box.addEventListener('click', () => {
+                    if (!selectedCondition) return alert('Select a condition from the Blue/Red selector');
+                    applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
+                });
+            }
+
+            return box;
+        }
+
+        // --- Load Grids and Boxes ---
         async function loadGridForYear(suffix = '') {
             const permTop = document.getElementById(`permanentGridtop${suffix}`);
             const permBot = document.getElementById(`permanentGridbot${suffix}`);
             const tempTop = document.getElementById(`temporaryGridtop${suffix}`);
             const tempBot = document.getElementById(`temporaryGridbot${suffix}`);
+            if (!permTop || !permBot || !tempTop || !tempBot) return;
 
             let teethData = [];
             try {
                 const r = await fetch('/dentalemr_system/php/treatment/get_teeth.php');
                 if (r.ok) teethData = await r.json();
             } catch (e) {
-                console.warn('Could not load teeth mapping, fallback to FDI numbers', e);
+                console.warn('Could not load teeth mapping', e);
             }
 
             const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
@@ -2370,80 +2176,168 @@ $user = $_SESSION['logged_user'];
             const tempB = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
 
             permT.forEach(n => {
-                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                permTop.appendChild(createTooth(`P-${n}${suffix}`, n, 'top', tooth ? tooth.tooth_id : n));
+                const t = teethData.find(t => parseInt(t.fdi_number) === n);
+                permTop.appendChild(createTooth(`P-${n}`, n, 'top', t ? t.tooth_id : n, suffix));
             });
             permB.forEach(n => {
-                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                permBot.appendChild(createTooth(`P-${n}${suffix}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+                const t = teethData.find(t => parseInt(t.fdi_number) === n);
+                permBot.appendChild(createTooth(`P-${n}`, n, 'bottom', t ? t.tooth_id : n, suffix));
             });
             tempT.forEach(n => {
-                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                tempTop.appendChild(createTooth(`T-${n}${suffix}`, n, 'top', tooth ? tooth.tooth_id : n));
+                const t = teethData.find(t => parseInt(t.fdi_number) === n);
+                tempTop.appendChild(createTooth(`T-${n}`, n, 'top', t ? t.tooth_id : n, suffix));
             });
             tempB.forEach(n => {
-                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
-                tempBot.appendChild(createTooth(`T-${n}${suffix}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+                const t = teethData.find(t => parseInt(t.fdi_number) === n);
+                tempBot.appendChild(createTooth(`T-${n}`, n, 'bottom', t ? t.tooth_id : n, suffix));
             });
         }
 
-        // Create treatment/condition boxes for a specific row
-        function createBox(id, row, kind) {
-            const box = document.createElement('div');
-            const key = `R${row}-${id}`;
-            box.dataset.key = key;
-
-            if (kind === 'treatment') {
-                box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
-                box.addEventListener('click', () => {
-                    const selectedTreat = treatmentSelect?.value || '';
-                    if (!selectedTreat) {
-                        alert('Select a treatment from dropdown');
-                        return;
-                    }
-                    applyChange(key, '', selectedTreat, 'upper', true, true);
-                });
-            } else {
-                box.className = (row === 3) ? 'condition1-box' : 'condition-box';
-                box.addEventListener('click', () => {
-                    if (!selectedCondition) {
-                        alert('Select a condition from the Blue/Red selector');
-                        return;
-                    }
-                    applyChange(key, selectedColor, selectedCondition, selectedCase, true, false);
-                });
-            }
-
-            return box;
-        }
-
-        // Load boxes for a year section
         function loadBoxesForYear(suffix = '') {
-            const row1 = document.getElementById(`treatRow1${suffix}`);
-            for (let i = 0; i < 16; i++) row1.appendChild(createBox(i, 1, 'treatment'));
+            const rows = [1, 2, 3, 4].map(i => document.getElementById(`treatRow${i}${suffix}`));
+            if (rows.some(r => !r)) return;
 
-            const row2 = document.getElementById(`treatRow2${suffix}`);
-            for (let i = 0; i < 16; i++) row2.appendChild(createBox(i, 2, 'condition'));
-
-            const row3 = document.getElementById(`treatRow3${suffix}`);
-            for (let i = 0; i < 16; i++) row3.appendChild(createBox(i, 3, 'condition'));
-
-            const row4 = document.getElementById(`treatRow4${suffix}`);
-            for (let i = 0; i < 16; i++) row4.appendChild(createBox(i, 4, 'treatment'));
-        }
-
-        // Initialize all 5 years
-        async function initAllYears() {
-            const years = ['', '_y2', '_y3', '_y4', '_y5']; // '' corresponds to year1
-            for (const suffix of years) {
-                await loadGridForYear(suffix);
-                loadBoxesForYear(suffix);
+            for (let i = 0; i < 16; i++) {
+                rows[0].appendChild(createBox(i, 1, 'treatment', suffix));
+                rows[1].appendChild(createBox(i, 2, 'condition', suffix));
+                rows[2].appendChild(createBox(i, 3, 'condition', suffix));
+                rows[3].appendChild(createBox(i, 4, 'treatment', suffix));
             }
         }
 
-        // Run initialization
-        initAllYears();
+        async function initAllYears() {
+            const years = ['', '_y2', '_y5', '_y3', '_y4']; // order matches your year mapping
+            for (const s of years) {
+                await loadGridForYear(s);
+                loadBoxesForYear(s);
+            }
+        }
+
+        // --- Clear Teeth and Boxes ---
+        function clearAllTeeth() {
+            document.querySelectorAll(".part,[data-key^='R']").forEach(el => {
+                el.style.backgroundColor = '';
+                el.style.color = '';
+                el.style.border = '';
+                el.textContent = '';
+            });
+        }
+
+        // --- Load Patient Visit Data ---
+        async function loadVisitData(patientId) {
+            try {
+                clearAllTeeth();
+
+                const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_oralA.php?patient_id=${patientId}`);
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || "Failed to load data");
+
+                // Map visit indices to year suffix
+                const yearMapping = [{
+                        suffix: '',
+                        visitIndex: 0,
+                        roman: 'I'
+                    },
+                    {
+                        suffix: '_y2',
+                        visitIndex: 1,
+                        roman: 'II'
+                    },
+                    {
+                        suffix: '_y5',
+                        visitIndex: 2,
+                        roman: 'III'
+                    },
+                    {
+                        suffix: '_y3',
+                        visitIndex: 3,
+                        roman: 'IV'
+                    },
+                    {
+                        suffix: '_y4',
+                        visitIndex: 4,
+                        roman: 'V'
+                    },
+                ];
+
+                yearMapping.forEach((year, i) => {
+                    const visit = data.visits[year.visitIndex];
+                    const yearEl = document.querySelector(`#year${i+1} > p`);
+                    if (yearEl) {
+                        yearEl.textContent = visit ? `Year ${year.roman} - ${new Date(visit.visit_date).toLocaleDateString()}` : `Year ${year.roman} - Date`;
+                    }
+                    if (!visit) return;
+
+                    // Populate conditions
+                    visit.conditions.forEach(c => {
+                        const el = document.querySelector(`[data-key='${c.box_key}${year.suffix}']`);
+                        if (!el) return;
+                        const fallbackColor = c.condition_code?.toLowerCase() === 'm' ? '#ef4444' : '#3b82f6';
+                        const fillColor = c.color?.trim() || fallbackColor;
+
+                        el.textContent = c.condition_code || '';
+                        Object.assign(el.style, {
+                            backgroundColor: fillColor,
+                            color: '#fff',
+                            fontWeight: 'bold',
+                            fontSize: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '1px solid rgba(0,0,0,0.1)'
+                        });
+                    });
+
+                    // Populate treatments
+                    visit.treatments.forEach(t => {
+                        const el = document.querySelector(`[data-key='${t.box_key}${year.suffix}']`);
+                        if (!el) return;
+                        el.textContent = t.treatment_code?.toUpperCase() || '';
+                        Object.assign(el.style, {
+                            backgroundColor: '#fff',
+                            border: '1px solid #00000080',
+                            color: '#000',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        });
+                    });
+                });
+
+            } catch (err) {
+                console.error("Failed to load visit data:", err);
+                alert("Failed to load visit data: " + err.message);
+            }
+        }
+
+        // --- Highlight Year Buttons ---
+        function highlightActiveButton(yearNumber) {
+            document.querySelectorAll("#yearButtons button").forEach((btn, index) => {
+                Object.assign(btn.style, {
+                    backgroundColor: index + 1 === yearNumber ? '#1d4ed8' : '#fff',
+                    color: index + 1 === yearNumber ? '#fff' : '#000',
+                    fontWeight: index + 1 === yearNumber ? 'bold' : 'normal'
+                });
+            });
+        }
+
+        // --- Initialize Everything ---
+        initAllYears().then(() => {
+            const params = new URLSearchParams(window.location.search);
+            const patientId = params.get("id");
+            if (!patientId) return alert("Missing patient ID");
+
+            loadVisitData(patientId);
+
+            // Attach year switching functions
+            for (let i = 1; i <= 5; i++) {
+                window['year' + i] = () => highlightActiveButton(i);
+            }
+        });
     </script>
+
 
 
 </body>

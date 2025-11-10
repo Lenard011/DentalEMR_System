@@ -287,7 +287,6 @@ $user = $_SESSION['logged_user'];
         <main class="p-4 md:ml-64 h-auto pt-20">
             <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 ">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-                    <!-- Start coding here -->
                     <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow">
                         <div>
                             <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Patient Treatment
