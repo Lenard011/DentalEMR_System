@@ -79,7 +79,7 @@ $user = $_SESSION['logged_user'];
 
         .label-top {
             margin-bottom: 2px;
-            
+
         }
 
         .label-bottom {
@@ -451,8 +451,26 @@ $user = $_SESSION['logged_user'];
                     <div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
                         id="dropdown">
                         <div class="py-3 px-4">
-                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">Neil Sims</span>
-                            <span class="block text-sm text-gray-900 truncate dark:text-white">name@flowbite.com</span>
+                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">
+                                <?php
+                                echo htmlspecialchars(
+                                    !empty($loggedUser['name'])
+                                        ? $loggedUser['name']
+                                        : ($loggedUser['email'] ?? 'User')
+                                );
+
+                                ?>
+                            </span>
+                            <span class="block text-sm text-gray-900 truncate dark:text-white">
+                                <?php
+                                echo htmlspecialchars(
+                                    !empty($loggedUser['email'])
+                                        ? $loggedUser['email']
+                                        : ($loggedUser['name'] ?? 'User')
+                                );
+
+                                ?>
+                            </span>
                         </div>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
@@ -461,8 +479,8 @@ $user = $_SESSION['logged_user'];
                                     profile</a>
                             </li>
                             <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Accounts</a>
+                                <a href="/dentalemr_system/html/manageusers/manageuser.php"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
@@ -550,8 +568,8 @@ $user = $_SESSION['logged_user'];
                         </button>
                         <ul id="dropdown-pages" class="visible py-2 space-y-2">
                             <li>
-                                <a href="#" style="color: blue;"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
+                                <a href="#"
+                                    class="pl-11 flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">Treatment
                                     Records</a>
                             </li>
                             <li>

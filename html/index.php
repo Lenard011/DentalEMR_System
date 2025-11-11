@@ -56,7 +56,7 @@ if ($loggedUser['type'] === 'Dentist') {
 // ---------------- KPI CARDS ----------------
 $totalPatients = $conn->query("SELECT COUNT(*) AS count FROM patients")->fetch_assoc()['count'];
 $today = date('Y-m-d');
-$activeVisits = $conn->query("SELECT COUNT(*) AS count FROM visits WHERE visit_date = '$today'")->fetch_assoc()['count'];
+$activeVisits = $conn->query("SELECT COUNT(*) AS count FROM  patients WHERE DATE(created_at) = '$today'")->fetch_assoc()['count'];
 $totalTreatments = $conn->query("SELECT COUNT(*) AS count FROM services_monitoring_chart")->fetch_assoc()['count'];
 $patientsWithConditions = $conn->query("
     SELECT COUNT(DISTINCT patient_id) AS count 
@@ -399,8 +399,26 @@ $conn->close();
                     <div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
                         id="dropdown">
                         <div class="py-3 px-4">
-                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">Neil Sims</span>
-                            <span class="block text-sm text-gray-900 truncate dark:text-white">name@flowbite.com</span>
+                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">
+                                <?php
+                                echo htmlspecialchars(
+                                    !empty($loggedUser['name'])
+                                        ? $loggedUser['name']
+                                        : ($loggedUser['email'] ?? 'User')
+                                );
+
+                                ?>
+                            </span>
+                            <span class="block text-sm text-gray-900 truncate dark:text-white">
+                                <?php
+                                echo htmlspecialchars(
+                                    !empty($loggedUser['email'])
+                                        ? $loggedUser['email']
+                                        : ($loggedUser['name'] ?? 'User')
+                                );
+
+                                ?>
+                            </span>
                         </div>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
@@ -409,7 +427,7 @@ $conn->close();
                                     profile</a>
                             </li>
                             <li>
-                                <a href="./manageusers/manageuser.html"
+                                <a href="/dentalemr_system/html/manageusers/manageuser.php"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
                             </li>
                         </ul>

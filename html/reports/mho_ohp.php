@@ -31,6 +31,81 @@ $_SESSION['last_activity'] = time();
 // Get logged-in user details
 $user = $_SESSION['logged_user'];
 ?>
+<?php
+// === DATABASE CONNECTION ===
+$host = "localhost";
+$user = "root";
+$pass = "";
+$db = "dentalemr_system";
+
+$conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// === BARANGAYS (fixed order) ===
+$barangays = [
+    'Balansay',
+    'Fatima',
+    'Payompon',
+    'Pob 1',
+    'Pob 2',
+    'Pob 3',
+    'Pob 4',
+    'Pob 5',
+    'Pob 6',
+    'Pob 7',
+    'Pob 8',
+    'San Luis',
+    'Talabaan',
+    'Tangkalan',
+    'Tayamaan'
+];
+
+// === Helper Function ===
+function countPatients($conn, $barangay, $sex, $condition = "1=1")
+{
+    $query = "
+        SELECT COUNT(*) AS total 
+        FROM patients 
+        WHERE LOWER(TRIM(address)) = LOWER('" . $conn->real_escape_string($barangay) . "')
+        AND LOWER(TRIM(sex)) = LOWER('" . $conn->real_escape_string($sex) . "')
+        AND $condition
+    ";
+    $result = $conn->query($query);
+    $row = $result ? $result->fetch_assoc() : ['total' => 0];
+    return (int)$row['total'] > 0 ? (int)$row['total'] : '';
+}
+
+// === Conditions for each indicator ===
+$conditions = [
+    "Orally fit children 12 to 59 months old - upon examination" => "age BETWEEN 1 AND 4",
+    "Orally fit children 12 to 59 months old - after rehabilitation" => "age BETWEEN 1 AND 4 AND if_treatment = 1",
+    "5 years old and above examined" => "age >= 5",
+    "5 years old and above with cases of DMFT" => "age >= 5 AND patient_id IN (SELECT patient_id FROM oral_health_condition WHERE perm_total_dmf > 0)",
+    "Infant (0–11 months old)" => "months_old BETWEEN 0 AND 11",
+    "Pre-schooler (12–59 months old)" => "age BETWEEN 1 AND 4",
+    "Schoolers (5–9 years old)" => "age BETWEEN 5 AND 9",
+    "Adolescents (10–14 years old)" => "age BETWEEN 10 AND 14",
+    "Adolescents (15–19 years old)" => "age BETWEEN 15 AND 19",
+    "Adult (20–59 years old)" => "age BETWEEN 20 AND 59",
+    "Senior (60+ years old)" => "age >= 60",
+    "Pregnant (10–14 years old)" => "pregnant = 'yes' AND age BETWEEN 10 AND 14",
+    "Pregnant (15–19 years old)" => "pregnant = 'yes' AND age BETWEEN 15 AND 19",
+    "Pregnant (20–49 years old)" => "pregnant = 'yes' AND age BETWEEN 20 AND 49"
+];
+
+// === Collect data ===
+$data = [];
+foreach ($conditions as $key => $cond) {
+    foreach ($barangays as $b) {
+        $data[$key][$b]['M'] = countPatients($conn, $b, 'Male', $cond);
+        $data[$key][$b]['F'] = countPatients($conn, $b, 'Female', $cond);
+    }
+}
+
+$conn->close();
+?>
 <!doctype html>
 <html>
 
@@ -97,8 +172,26 @@ $user = $_SESSION['logged_user'];
                     <div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
                         id="dropdown">
                         <div class="py-3 px-4">
-                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">Neil Sims</span>
-                            <span class="block text-sm text-gray-900 truncate dark:text-white">name@flowbite.com</span>
+                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">
+                                <?php
+                                echo htmlspecialchars(
+                                    !empty($loggedUser['name'])
+                                        ? $loggedUser['name']
+                                        : ($loggedUser['email'] ?? 'User')
+                                );
+
+                                ?>
+                            </span>
+                            <span class="block text-sm text-gray-900 truncate dark:text-white">
+                                <?php
+                                echo htmlspecialchars(
+                                    !empty($loggedUser['email'])
+                                        ? $loggedUser['email']
+                                        : ($loggedUser['name'] ?? 'User')
+                                );
+
+                                ?>
+                            </span>
                         </div>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
@@ -107,8 +200,8 @@ $user = $_SESSION['logged_user'];
                                     profile</a>
                             </li>
                             <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Accounts</a>
+                                <a href="/dentalemr_system/html/manageusers/manageuser.php"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
@@ -225,9 +318,9 @@ $user = $_SESSION['logged_user'];
                         </a>
                     </li>
                     <li>
-                        <a href="#" style="color: blue;"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-blue-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                        <a href="#" class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">
+                            <svg aria-hidden="true"
+                                class="w-6 h-6 text-blue-600 transition duration-75 dark:text-blue-400  dark:group-hover:text-blue"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                 viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -285,7 +378,7 @@ $user = $_SESSION['logged_user'];
                 </ul>
             </div>
         </aside>
-        
+
         <!-- Individual Patient Treatment Record Inforamtion -->
         <main class="p-3 md:ml-64 h-auto pt-15">
             <div class="text-center">
@@ -299,45 +392,43 @@ $user = $_SESSION['logged_user'];
             <section class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
                 <div class="w-full flex flex-row p-1 justify-end">
                     <div class="flex flex-row justify-between">
+                        <!-- (Buttons unchanged) -->
                         <div class="flex items-center space-x-3 w-full md:w-auto">
                             <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
-                                class="w-full md:w-auto cursor-pointer flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                class="w-full md:w-auto cursor-pointer flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                                 type="button">
                                 <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
-                                    class="h-4 w-4 mr-2 text-gray-400" viewbox="0 0 20 20" fill="currentColor">
+                                    class="h-4 w-4 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd"
                                         d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
                                         clip-rule="evenodd" />
                                 </svg>
                                 Filter
-                                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
+                                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
                                     xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                     <path clip-rule="evenodd" fill-rule="evenodd"
                                         d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                                 </svg>
                             </button>
-                            <div id="filterDropdown"
-                                class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose
-                                    address
-                                </h6>
+                            <div id="filterDropdown" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
+                                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose address</h6>
                                 <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                                    <li class="flex items-center">
-                                        <input id="apple" type="checkbox" value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                        <label for="apple"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Balansay</label>
-                                    </li>
+                                    <?php foreach ($barangays as $b): ?>
+                                        <li class="flex items-center">
+                                            <input id="<?= strtolower(str_replace(' ', '_', $b)) ?>" type="checkbox" value="<?= $b ?>"
+                                                class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 dark:bg-gray-600 dark:border-gray-500">
+                                            <label for="<?= strtolower(str_replace(' ', '_', $b)) ?>"
+                                                class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"><?= $b ?></label>
+                                        </li>
+                                    <?php endforeach; ?>
                                 </ul>
                             </div>
                         </div>
                         <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button type="button" class="flex items-center justify-center cursor-pointer text-white bg-blue-700
-                                    hover:bg-blue-800 font-medium rounded-lg gap-1 text-sm px-4 py-2 dark:bg-blue-600
-                                    dark:hover:bg-blue-700">
-                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                    viewBox="0 0 24 24">
+                            <button type="button"
+                                class="flex items-center justify-center cursor-pointer text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg gap-1 text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                    width="24" height="24" fill="none" viewBox="0 0 24 24">
                                     <path stroke="white" stroke-linejoin="round" stroke-width="2"
                                         d="M16.444 18H19a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h2.556M17 11V5a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v6h10ZM7 15h10v4a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-4Z" />
                                 </svg>
@@ -350,8 +441,7 @@ $user = $_SESSION['logged_user'];
                 <form action="#">
                     <div class="grid gap-2 mb-4 mt-5">
                         <div class="overflow-x-auto">
-                            <table
-                                class="text-xs text-gray-600 dark:text-gray-300 border border-gray-300 border-collapse w-full min-w-[2000px] text-center">
+                            <table class="text-xs text-gray-600 dark:text-gray-300 border border-gray-300 border-collapse w-full min-w-[2000px] text-center">
                                 <thead class="text-xs text-center align-top  text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                                     <tr>
                                         <th rowspan="2" class="border border-gray-300 px-2 py-1 text-center align-bottom">No.</th>
@@ -409,699 +499,120 @@ $user = $_SESSION['logged_user'];
                                         <th class="border border-gray-300 px-2 py-1">F</th>
                                         <th class="border border-gray-300 px-2 py-1">M</th>
                                         <th class="border border-gray-300 px-2 py-1">F</th>
+                                        <th class="border border-gray-300 px-2 py-1"></th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">1</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">Orally fit children 12 to 59 months old
-                                        </td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                    <?php
+                                    $rowNum = 1;
 
-                                    <tr>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">upon examination</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                    // Helper function to render M/F cells and calculate subtotal/total
+                                    function renderRow($indicatorKey, $barangays)
+                                    {
+                                        $subtotalM = $subtotalF = 0;
+                                        foreach ($barangays as $b) {
+                                            $m = isset($indicatorKey[$b]['M']) && is_numeric($indicatorKey[$b]['M']) ? (int)$indicatorKey[$b]['M'] : 0;
+                                            $f = isset($indicatorKey[$b]['F']) && is_numeric($indicatorKey[$b]['F']) ? (int)$indicatorKey[$b]['F'] : 0;
+                                            $subtotalM += $m;
+                                            $subtotalF += $f;
+                                            echo "<td class='border border-gray-300 font-bold'>$m</td><td class='border border-gray-300 font-bold'>$f</td>";
+                                        }
+                                        $totalAll = $subtotalM + $subtotalF;
+                                        echo "<td class='border border-gray-300 font-bold'>{$subtotalM}</td>";
+                                        echo "<td class='border border-gray-300 font-bold'>{$subtotalF}</td>";
+                                        echo "<td class='border border-gray-300 font-bold'>{$totalAll}</td>";
+                                    }
 
-                                    <tr>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">after rehabilitation</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-                                    <!-- Row 1 -->
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">2</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">5 years old and above examined</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-                                    <!-- Row 2 -->
-                                    <tr>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">5 years old and above with cases of DMFT
-                                        </td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                    // List of indicators and sub-rows
+                                    $rows = [
+                                        ["label" => "Orally fit children 12 to 59 months old", "sub" => [
+                                            "upon examination" => "Orally fit children 12 to 59 months old - upon examination",
+                                            "after rehabilitation" => "Orally fit children 12 to 59 months old - after rehabilitation"
+                                        ]],
+                                        ["label" => "5 years old and above examined", "sub" => [
+                                            "5 years old and above examined" => "5 years old and above examined",
+                                            "5 years old and above with cases of DMFT" => "5 years old and above with cases of DMFT"
+                                        ]],
+                                        ["label" => "Infant (0–11 months old)", "sub" => [
+                                            "Infant (0–11 months old)" => "Infant (0–11 months old)"
+                                        ]],
+                                        ["label" => "Pre-schooler (12–59 months old)", "sub" => [
+                                            "Pre-schooler (12–59 months old)" => "Pre-schooler (12–59 months old)"
+                                        ]],
+                                        ["label" => "Schoolers (5–9 years old)", "sub" => [
+                                            "Schoolers (5–9 years old)" => "Schoolers (5–9 years old)"
+                                        ]],
+                                        ["label" => "Adolescents", "sub" => [
+                                            "10–14 years old" => "Adolescents (10–14 years old)",
+                                            "15–19 years old" => "Adolescents (15–19 years old)"
+                                        ]],
+                                        ["label" => "Adult (20–59 years old)", "sub" => [
+                                            "Adult (20–59 years old)" => "Adult (20–59 years old)"
+                                        ]],
+                                        ["label" => "Senior (60+ years old)", "sub" => [
+                                            "Senior (60+ years old)" => "Senior (60+ years old)"
+                                        ]],
+                                        ["label" => "Pregnant women", "sub" => [
+                                            "10–14 years old" => "Pregnant (10–14 years old)",
+                                            "15–19 years old" => "Pregnant (15–19 years old)",
+                                            "20–49 years old" => "Pregnant (20–49 years old)"
+                                        ]]
+                                    ];
 
-                                    <!-- Row 3 -->
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">3</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">Infant (0–11 months old)</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                    // Total number of columns for M/F per barangay + subtotal/total (2 + 2 + 1 = 3 extra)
+                                    $totalCols = count($barangays) * 2 + 3;
 
-                                    <!-- Row 4 -->
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">4</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">Pre-schooler (12–59 months old)</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                    // Render table rows
+                                    foreach ($rows as $row) {
+                                        // Top-level row (empty but with borders across every column)
+                                        echo "<tr>";
+                                        echo "<td class='border border-gray-300 px-2 py-1 font-bold'>{$rowNum}</td>";
+                                        echo "<td class='border border-gray-300 px-2 py-1 text-left font-bold'>{$row['label']}</td>";
 
-                                    <!-- Row 5 -->
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">5</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">Schoolers (5–9 years old)</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                        // Render empty bordered cells for M/F columns + subtotal/total
+                                        for ($i = 0; $i < count($barangays); $i++) {
+                                            echo "<td class='border border-gray-300'></td><td class='border border-gray-300'></td>";
+                                        }
+                                        echo "<td class='border border-gray-300'></td><td class='border border-gray-300'></td><td class='border border-gray-300'></td>";
+                                        echo "</tr>";
 
-                                    <!-- Row 6 -->
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">6</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">Adolescents</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">10–14 years old</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">15–19 years old</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                        // Render sub-rows with actual values
+                                        foreach ($row['sub'] as $subLabel => $indicatorKey) {
+                                            echo "<tr>
+                                            <td></td>
+                                            <td class='border border-gray-300 px-2 py-1 text-left font-bold'>$subLabel</td>";
+                                            renderRow($data[$indicatorKey], $barangays);
+                                            echo "</tr>";
+                                        }
 
-                                    <!-- Row 7 -->
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">7</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">Adult (20–59 years old)</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                        $rowNum++;
+                                    }
 
-                                    <!-- Row 8 -->
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">8</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">Senior (60+ years old)</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-
-                                    <!-- Row 9 -->
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1 font-bold">9</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">Pregnant women</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">10–14 years old</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">15–19 years old</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">20–49 years old</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
-
-                                    <!-- Row 10 = TOTAL -->
-                                    <tr class="font-bold bg-gray-100">
-                                        <td class="border border-gray-300 px-2 py-1"></td>
-                                        <td class="border border-gray-300 px-2 py-1 text-left font-bold">TOTAL</td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                        <td class="border border-gray-300"></td>
-                                    </tr>
+                                    // === GRAND TOTAL ROW ===
+                                    echo "<tr class='font-bold bg-gray-100'><td></td>
+                                        <td class='border border-gray-300 px-2 py-1 text-left font-bold'>TOTAL</td>";
+                                    $totalM = $totalF = 0;
+                                    foreach ($barangays as $b) {
+                                        $sumM = $sumF = 0;
+                                        foreach ($data as $indicator) {
+                                            $sumM += isset($indicator[$b]['M']) && is_numeric($indicator[$b]['M']) ? (int)$indicator[$b]['M'] : 0;
+                                            $sumF += isset($indicator[$b]['F']) && is_numeric($indicator[$b]['F']) ? (int)$indicator[$b]['F'] : 0;
+                                        }
+                                        $totalM += $sumM;
+                                        $totalF += $sumF;
+                                        echo "<td class='border border-gray-300 font-bold'>{$sumM}</td>";
+                                        echo "<td class='border border-gray-300 font-bold'>{$sumF}</td>";
+                                    }
+                                    $totalAll = $totalM + $totalF;
+                                    echo "<td class='border border-gray-300 font-bold'>{$totalM}</td>";
+                                    echo "<td class='border border-gray-300 font-bold'>{$totalF}</td>";
+                                    echo "<td class='border border-gray-300 font-bold'>{$totalAll}</td></tr>";
+                                    ?>
                                 </tbody>
+
+
+
                             </table>
                         </div>
 
@@ -1133,7 +644,7 @@ $user = $_SESSION['logged_user'];
 
         resetTimer();
     </script>
-    
+
 </body>
 
 </html>

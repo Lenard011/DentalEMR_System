@@ -66,8 +66,7 @@ $user = $_SESSION['logged_user'];
             <span class="sr-only">Toggle sidebar</span>
           </button>
           <a href="https://flowbite.com" class="flex items-center justify-between mr-4">
-            <img
-              src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
+            <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
               class="mr-3 h-8" alt="Flowbite Logo" />
             <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
               Clinic</span>
@@ -91,15 +90,33 @@ $user = $_SESSION['logged_user'];
             id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown">
             <span class="sr-only">Open user menu</span>
             <img class="w-8 h-8 rounded-full"
-              src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png" alt="user photo" />
+              src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png"
+              alt="user photo" />
           </button>
           <!-- Dropdown menu -->
-          <div
-            class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
+          <div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
             id="dropdown">
             <div class="py-3 px-4">
-              <span class="block text-sm font-semibold text-gray-900 dark:text-white">Neil Sims</span>
-              <span class="block text-sm text-gray-900 truncate dark:text-white">name@flowbite.com</span>
+              <span class="block text-sm font-semibold text-gray-900 dark:text-white">
+                <?php
+                echo htmlspecialchars(
+                  !empty($loggedUser['name'])
+                    ? $loggedUser['name']
+                    : ($loggedUser['email'] ?? 'User')
+                );
+
+                ?>
+              </span>
+              <span class="block text-sm text-gray-900 truncate dark:text-white">
+                <?php
+                echo htmlspecialchars(
+                  !empty($loggedUser['email'])
+                    ? $loggedUser['email']
+                    : ($loggedUser['name'] ?? 'User')
+                );
+
+                ?>
+              </span>
             </div>
             <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
               <li>
@@ -108,8 +125,8 @@ $user = $_SESSION['logged_user'];
                   profile</a>
               </li>
               <li>
-                <a href="#"
-                  class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Accounts</a>
+                <a href="/dentalemr_system/html/manageusers/manageuser.php"
+                  class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
               </li>
             </ul>
             <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
@@ -161,9 +178,9 @@ $user = $_SESSION['logged_user'];
         <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
           <li>
             <a href="#"
-              class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
-              <svg aria-hidden="true" style="color: blue;"
-                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+              class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">
+              <svg aria-hidden="true"
+                class="w-6 h-6 text-blue-600 transition duration-75 dark:text-blue-400  dark:group-hover:text-blue"
                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
@@ -171,7 +188,7 @@ $user = $_SESSION['logged_user'];
                   d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" />
               </svg>
 
-              <span class="ml-3" style="color: blue;">Add Patient</span>
+              <span class="ml-3">Add Patient</span>
             </a>
           </li>
           <li>

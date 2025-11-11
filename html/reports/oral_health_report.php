@@ -49,7 +49,6 @@ try {
         <div class="grid gap-2 mb-4 mt-5">
             <div class="overflow-x-auto">
                 <table class="min-w-[1600px] w-full text-xs text-gray-600 dark:text-gray-300 border border-gray-300 border-collapse">
-
                     <!-- === COLUMN WIDTHS === -->
                     <colgroup>
                         <col style="width: 50px;">
