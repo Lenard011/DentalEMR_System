@@ -20,62 +20,59 @@ try {
     exit;
 }
 
+// Function to get columns of a table
+function getColumns($conn, $table)
+{
+    $cols = [];
+    $res = $conn->query("SHOW COLUMNS FROM `$table`");
+    while ($row = $res->fetch_assoc()) {
+        $cols[] = $row['Field'];
+    }
+    return $cols;
+}
+
+// Function to archive a table without modifying created_at/updated_at
+function archiveTable($conn, $table, $archive_table, $conditionCol, $conditionVal)
+{
+    $mainCols = getColumns($conn, $table);
+    $archCols = getColumns($conn, $archive_table);
+
+    // Preserve only common columns
+    $common = array_intersect($mainCols, $archCols);
+    if (empty($common)) return;
+
+    $columns = implode(",", $common);
+
+    // Add archived_at column if exists in archive
+    $archColsExtra = in_array('archived_at', $archCols) ? ', NOW() as archived_at' : '';
+
+    $sql = "INSERT INTO `$archive_table` ($columns" . (in_array('archived_at', $archCols) ? ',archived_at' : '') . ")
+            SELECT $columns $archColsExtra FROM `$table` WHERE `$conditionCol` = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $conditionVal);
+    $stmt->execute();
+}
+
 /* =====================================================
-   ARCHIVE REQUEST
+   ARCHIVE PATIENT AND RELATED RECORDS
 ===================================================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
     $patient_id = intval($_POST['archive_id']);
     $conn->begin_transaction();
 
     try {
-        // Fetch patient
-        $stmt = $conn->prepare("SELECT * FROM patients WHERE patient_id = ?");
+        // Archive main patient record
+        archiveTable($conn, "patients", "archived_patients", "patient_id", $patient_id);
+
+        // Get all visit IDs
+        $visit_ids = [];
+        $stmt = $conn->prepare("SELECT visit_id FROM visits WHERE patient_id = ?");
         $stmt->bind_param("i", $patient_id);
         $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows === 0) {
-            throw new Exception("Patient not found.");
-        }
-        $patient = $result->fetch_assoc();
-        $original_json = json_encode($patient, JSON_UNESCAPED_UNICODE);
+        $res = $stmt->get_result();
+        while ($r = $res->fetch_assoc()) $visit_ids[] = $r['visit_id'];
 
-        // Archive patient
-        $insert_sql = "
-            INSERT INTO archived_patients
-            (patient_id, firstname, middlename, surname, date_of_birth, place_of_birth,
-             age, sex, address, pregnant, occupation, guardian, original_data, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-        ";
-        $insert_stmt = $conn->prepare($insert_sql);
-        $insert_stmt->bind_param(
-            "isssssississs",
-            $patient['patient_id'],
-            $patient['firstname'],
-            $patient['middlename'],
-            $patient['surname'],
-            $patient['date_of_birth'],
-            $patient['place_of_birth'],
-            $patient['age'],
-            $patient['sex'],
-            $patient['address'],
-            $patient['pregnant'],
-            $patient['occupation'],
-            $patient['guardian'],
-            $original_json
-        );
-        $insert_stmt->execute();
-
-        // Get all visit IDs for this patient
-        $visit_ids = [];
-        $res = $conn->prepare("SELECT visit_id FROM visits WHERE patient_id = ?");
-        $res->bind_param("i", $patient_id);
-        $res->execute();
-        $r = $res->get_result();
-        while ($row = $r->fetch_assoc()) {
-            $visit_ids[] = $row['visit_id'];
-        }
-
-        // Archive related tables that have patient_id
+        // Related tables with patient_id
         $relatedTables = [
             'visits',
             'oral_health_condition',
@@ -83,68 +80,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
             'services_monitoring_chart',
             'dietary_habits',
             'medical_history',
-            'vital_signs'
+            'vital_signs',
+            'patient_other_info'
         ];
-
         foreach ($relatedTables as $table) {
-            $archive_table = "archived_" . $table;
-            $cols_source = [];
-            $cols_archive = [];
-
-            $res1 = $conn->query("SHOW COLUMNS FROM `$table`");
-            while ($r = $res1->fetch_assoc()) $cols_source[] = $r['Field'];
-
-            $res2 = $conn->query("SHOW COLUMNS FROM `$archive_table`");
-            while ($r = $res2->fetch_assoc()) $cols_archive[] = $r['Field'];
-
-            $common_cols = array_intersect($cols_source, $cols_archive);
-            if (empty($common_cols)) continue;
-
-            $col_list = "`" . implode("`, `", $common_cols) . "`";
-
-            if (!in_array('patient_id', $cols_source)) continue;
-
-            $copy_sql = "INSERT INTO `$archive_table` ($col_list)
-                         SELECT $col_list FROM `$table` WHERE patient_id = ?";
-            $copy_stmt = $conn->prepare($copy_sql);
-            $copy_stmt->bind_param("i", $patient_id);
-            $copy_stmt->execute();
+            archiveTable($conn, $table, "archived_$table", "patient_id", $patient_id);
         }
 
-        // Archive visit-based tables (tooth treatment & condition)
+        // Visit-based tables
         if (!empty($visit_ids)) {
-            $visit_ids_list = implode(",", $visit_ids);
+            foreach (['visittoothcondition', 'visittoothtreatment'] as $table) {
+                $ids_placeholders = implode(",", $visit_ids);
+                $mainCols = getColumns($conn, $table);
+                $archCols = getColumns($conn, "archived_$table");
+                $common = array_intersect($mainCols, $archCols);
+                if (empty($common)) continue;
 
-            $visit_based_tables = [
-                'visittoothcondition',
-                'visittoothtreatment'
-            ];
-
-            foreach ($visit_based_tables as $table) {
-                $archive_table = "archived_" . $table;
-                $cols_source = [];
-                $cols_archive = [];
-
-                $res1 = $conn->query("SHOW COLUMNS FROM `$table`");
-                while ($r = $res1->fetch_assoc()) $cols_source[] = $r['Field'];
-
-                $res2 = $conn->query("SHOW COLUMNS FROM `$archive_table`");
-                while ($r = $res2->fetch_assoc()) $cols_archive[] = $r['Field'];
-
-                $common_cols = array_intersect($cols_source, $cols_archive);
-                if (empty($common_cols)) continue;
-
-                $col_list = "`" . implode("`, `", $common_cols) . "`";
-
-                // copy all rows linked to patient's visits
-                $copy_sql = "INSERT INTO `$archive_table` ($col_list)
-                             SELECT $col_list FROM `$table`
-                             WHERE visit_id IN ($visit_ids_list)";
-                $conn->query($copy_sql);
+                $columns = implode(",", $common);
+                $archColsExtra = in_array('archived_at', $archCols) ? ', NOW() as archived_at' : '';
+                $conn->query("INSERT INTO `archived_$table` ($columns" . (in_array('archived_at', $archCols) ? ',archived_at' : '') . ")
+                              SELECT $columns $archColsExtra FROM `$table` WHERE visit_id IN ($ids_placeholders)");
             }
         }
 
-        // Delete original records
+        // Delete original records (keeping created_at/updated_at unchanged in archive)
         $deleteOrder = [
             'visittoothtreatment',
             'visittoothcondition',
@@ -154,10 +113,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
             'services_monitoring_chart',
             'dietary_habits',
             'medical_history',
+            'patient_other_info',
             'vital_signs',
             'patients'
         ];
-
         foreach ($deleteOrder as $table) {
             $res = $conn->query("SHOW COLUMNS FROM `$table`");
             $has_pid = false;
@@ -172,8 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
                 $stmt->bind_param("i", $patient_id);
                 $stmt->execute();
             } elseif ($has_vid && !empty($visit_ids)) {
-                $visit_ids_list = implode(",", $visit_ids);
-                $conn->query("DELETE FROM `$table` WHERE visit_id IN ($visit_ids_list)");
+                $ids_list = implode(",", $visit_ids);
+                $conn->query("DELETE FROM `$table` WHERE visit_id IN ($ids_list)");
             }
         }
 
@@ -195,23 +154,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id'])) {
 try {
     $sql = "
         SELECT 
-    p.patient_id,
-    CONCAT_WS(' ', p.firstname, p.middlename, p.surname) AS fullname,
-    p.sex,
-    p.age,
-    p.address,
-    MAX(v.visit_date) AS last_visit
-    FROM patients p
-    INNER JOIN visits v ON p.patient_id = v.patient_id
-    GROUP BY p.patient_id
-    ORDER BY p.patient_id ASC
-
+            p.patient_id,
+            CONCAT_WS(' ', p.firstname, p.middlename, p.surname) AS fullname,
+            p.sex,
+            p.age,
+            p.address,
+            MAX(v.visit_date) AS last_visit
+        FROM patients p
+        INNER JOIN visits v ON p.patient_id = v.patient_id
+        GROUP BY p.patient_id
+        ORDER BY p.patient_id ASC
     ";
     $result = $conn->query($sql);
     $patients = [];
-    while ($row = $result->fetch_assoc()) {
-        $patients[] = $row;
-    }
+    while ($row = $result->fetch_assoc()) $patients[] = $row;
     echo json_encode($patients);
 } catch (Exception $e) {
     http_response_code(500);

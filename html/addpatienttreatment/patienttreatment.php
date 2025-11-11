@@ -1684,7 +1684,7 @@ $user = $_SESSION['logged_user'];
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "../php/logout.php";
+                window.location.href = "/dentalemr_system/php/login/logout.php";
             }, inactivityTime);
         }
 
@@ -2250,9 +2250,7 @@ $user = $_SESSION['logged_user'];
                 next1(); // if your step navigation function exists
             };
         });
-    </script>
-
-    <!-- oralhealthcondition  -->
+    </script><!-- oralhealthcondition  -->
     <script>
         function toggleCheck(input) {
             if (input.value === "") input.value = "✓";
@@ -2337,7 +2335,6 @@ $user = $_SESSION['logged_user'];
             document.getElementById("temp_total_df").value = d + f;
         }
     </script>
-
     <!-- Tooth Function and Api for Backend -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -2866,7 +2863,7 @@ $user = $_SESSION['logged_user'];
 
                 if (data.success) {
                     alert("✅ Treatment record saved successfully!");
-                    window.location.href = "/dentalemr_system/html/treatmentrecords/treatmentrecords.html";
+                    window.location.href = "/dentalemr_system/html/treatmentrecords/treatmentrecords.php";
                 } else {
                     alert("❌ Failed to save: " + (data.message || "Unknown error"));
                 }

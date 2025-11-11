@@ -311,7 +311,7 @@ $user = $_SESSION['logged_user'];
                             Record
                         </p>
                         <!-- Print Btn -->
-                        <button type="button"
+                        <a href="" id="printdLink"
                             class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 mt-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
                             <svg class="w-5 h-4 text-primary-800 dark:text-white" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
@@ -321,7 +321,7 @@ $user = $_SESSION['logged_user'];
                                     clip-rule="evenodd" />
                             </svg>
                             Print
-                        </button>
+                        </a>
                     </div>
                     <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
                         id="mobile-menu-2">
@@ -530,7 +530,7 @@ $user = $_SESSION['logged_user'];
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "../php/logout.php";
+                window.location.href = "/dentalemr_system/php/login/logout.php";
             }, inactivityTime);
         }
 
@@ -570,6 +570,17 @@ $user = $_SESSION['logged_user'];
 
         function backmain() {
             location.href = ("treatmentrecords.php");
+        }
+
+        const printdLink = document.getElementById("printdLink");
+        if (printdLink && patientId) {
+            printdLink.href = `print.php?id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            printdLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
         }
     </script>
 

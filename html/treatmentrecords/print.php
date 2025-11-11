@@ -85,7 +85,7 @@ $stmt_diet->execute();
 $diet = $stmt_diet->get_result()->fetch_assoc();
 $stmt_diet->close();
 
-// ✅ Oral Health Condition (latest 5 records)
+// Oral Health Condition (latest 5 records)
 $sql_oral = "SELECT * FROM oral_health_condition WHERE patient_id = ? ORDER BY created_at ASC LIMIT 5";
 $stmt_oral = $conn->prepare($sql_oral);
 $stmt_oral->bind_param("i", $patient_id);
@@ -105,6 +105,99 @@ $conn->close();
 for ($i = count($oralHealthRecords); $i < 5; $i++) {
     $oralHealthRecords[$i] = [];
 }
+?>
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "dentalemr_system";
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$patient_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+$treatmentData = [];
+$preventiveData = [];
+$dates = []; // <-- Add this
+
+if ($patient_id > 0) {
+
+    // ------------------------------
+    // 🦷 FETCH TREATMENT & TOOTH DATA
+    // ------------------------------
+    $sql = "
+        SELECT 
+            smc.treatment_code,
+            smc.created_at,
+            t.fdi_number
+        FROM services_monitoring_chart smc
+        JOIN teeth t ON smc.tooth_id = t.tooth_id
+        WHERE smc.patient_id = ?
+        ORDER BY smc.created_at ASC
+    ";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        die("Prepare failed: " . $conn->error);
+    }
+    $stmt->bind_param("i", $patient_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    while ($row = $result->fetch_assoc()) {
+        $dateKey = date('Y-m-d', strtotime($row['created_at']));
+        $fdi = $row['fdi_number'];
+
+        if (!isset($treatmentData[$dateKey])) {
+            $treatmentData[$dateKey] = [];
+        }
+
+        $treatmentData[$dateKey][$fdi] = $row['treatment_code'];
+
+        // Collect unique dates for your table
+        if (!in_array($dateKey, $dates)) {
+            $dates[] = $dateKey;
+        }
+    }
+    $stmt->close();
+
+    // ------------------------------
+    // 🧾 FETCH PREVENTIVE TREATMENTS
+    // ------------------------------
+    $sql_preventive = "
+        SELECT 
+            oral_prophylaxis,
+            fluoride,
+            sealant,
+            permanent_filling,
+            temporary_filling,
+            extraction,
+            consultation,
+            remarks,
+            created_at,
+            updated_at
+        FROM patient_treatment_record
+        WHERE patient_id = ?
+        ORDER BY created_at ASC
+        LIMIT 20
+    ";
+    $stmt2 = $conn->prepare($sql_preventive);
+    if (!$stmt2) {
+        die("Prepare failed: " . $conn->error);
+    }
+    $stmt2->bind_param("i", $patient_id);
+    $stmt2->execute();
+    $result2 = $stmt2->get_result();
+
+    while ($row2 = $result2->fetch_assoc()) {
+        $preventiveData[] = $row2;
+    }
+    $stmt2->close();
+}
+
+$conn->close();
 ?>
 
 <!doctype html>
@@ -169,10 +262,11 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 7px;
             font-weight: bold;
             color: #fff;
             user-select: none;
+            text-align: center;
         }
 
         /* left */
@@ -187,6 +281,9 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
             transform: translateX(-50%) rotate(-45deg);
             margin-top: 4.5px;
             margin-left: 4px;
+            font-size: 7px;
+            align-items: center;
+            text-align: center;
         }
 
         /* top */
@@ -200,6 +297,9 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
             transform: translateX(-50%) rotate(-45deg);
             margin-top: -1.5px;
             margin-right: -0.9px;
+            font-size: 7px;
+            align-items: center;
+            text-align: center;
         }
 
         /* bot */
@@ -213,6 +313,9 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
             transform: translateX(-50%) rotate(-45deg);
             margin-bottom: -1px;
             margin-left: 11px;
+            font-size: 7px;
+            align-items: center;
+            text-align: center;
         }
 
         /* right */
@@ -226,6 +329,9 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
             transform: translateX(-50%) rotate(-45deg);
             margin-bottom: 5.5px;
             margin-right: -7.5px;
+            font-size: 7px;
+            align-items: center;
+            text-align: center;
         }
 
         .part-center {
@@ -238,6 +344,9 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
             border: 1px solid #555;
             position: absolute;
             margin-left: 1.5px;
+            font-size: 7px;
+            align-items: center;
+            text-align: center;
         }
 
         .tooth::before {
@@ -1181,196 +1290,91 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
                         </div>
                         <div class="flex flex-col mb-5 gap-5 w-full">
                             <div id="55-65" class="flex flex-row w-full">
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border">
-                                    <input type="text" class="h-5 w-full border border-t-0">
-                                    <input type="text" class="h-5 w-full border border-t-0">
-                                    <input type="text" class="h-5 w-full border border-t-0">
-                                    <input type="text" class="h-5 w-full border border-t-0">
+                                <!-- Column 1: DATES -->
+                                <div class="flex flex-col w-full items-center">
+                                    <?php for ($i = 0; $i < 5; $i++): ?>
+                                        <input
+                                            type="text"
+                                            class="h-5 w-full border text-center text-[12px] px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                            value="<?php echo isset($dates[$i]) ? date('m/d/Y', strtotime($dates[$i])) : ''; ?>">
+                                    <?php endfor; ?>
                                 </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+
+                                <!-- Column 2: EMPTY -->
+                                <div class="flex flex-col w-full items-center">
+                                    <?php for ($i = 0; $i < 5; $i++): ?>
+                                        <input
+                                            type="text"
+                                            class="h-5 w-full border border-l-0 text-center text-[12px] px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                            value="">
+                                    <?php endfor; ?>
                                 </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">55</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">54</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">53</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">52</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">51</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">61</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">62</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">63</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">64</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">65</p>
-                                </div>
+
+                                <!-- Columns 3–12: Teeth 55–65 -->
+                                <?php
+                                $teeth_numbers = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
+                                foreach ($teeth_numbers as $num):
+                                ?>
+                                    <div class="flex flex-col w-full items-center">
+                                        <?php for ($i = 0; $i < 5; $i++):
+                                            $date = $dates[$i] ?? null;
+                                            $value = '';
+                                            if ($date && isset($treatmentData[$date][$num])) {
+                                                $value = htmlspecialchars($treatmentData[$date][$num]);
+                                            }
+                                        ?>
+                                            <input
+                                                type="text"
+                                                class="h-5 w-full border border-l-0 text-center text-[12px] px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                                value="<?php echo $value; ?>">
+                                        <?php endfor; ?>
+                                        <p class="text-[12px]"><?php echo $num; ?></p>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
+
                             <div id="85-75" class="flex flex-row w-full">
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border">
-                                    <input type="text" class="h-5 w-full border border-t-0">
-                                    <input type="text" class="h-5 w-full border border-t-0">
-                                    <input type="text" class="h-5 w-full border border-t-0">
-                                    <input type="text" class="h-5 w-full border border-t-0">
+                                <!-- Column 1: DATES -->
+                                <div class="flex flex-col w-full items-center">
+                                    <?php for ($i = 0; $i < 5; $i++): ?>
+                                        <input
+                                            type="text"
+                                            class="h-5 w-full border text-center text-[12px] px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                            value="<?php echo isset($dates[$i]) ? date('m/d/Y', strtotime($dates[$i])) : ''; ?>">
+                                    <?php endfor; ?>
                                 </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+
+                                <!-- Column 2: EMPTY -->
+                                <div class="flex flex-col w-full items-center">
+                                    <?php for ($i = 0; $i < 5; $i++): ?>
+                                        <input
+                                            type="text"
+                                            class="h-5 w-full border border-l-0 text-center text-[12px] px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                            value="">
+                                    <?php endfor; ?>
                                 </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">85</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">84</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">83</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">82</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">81</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">71</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">72</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">73</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">74</p>
-                                </div>
-                                <div class="flex flex-col items-center">
-                                    <input type="text" class="h-5 w-full border border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                    <p class="text-[12px]">75</p>
-                                </div>
+
+                                <!-- Columns 3–12: Teeth 55–65 -->
+                                <?php
+                                $teeth_numbers = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
+                                foreach ($teeth_numbers as $num):
+                                ?>
+                                    <div class="flex flex-col w-full items-center">
+                                        <?php for ($i = 0; $i < 5; $i++):
+                                            $date = $dates[$i] ?? null;
+                                            $value = '';
+                                            if ($date && isset($treatmentData[$date][$num])) {
+                                                $value = htmlspecialchars($treatmentData[$date][$num]);
+                                            }
+                                        ?>
+                                            <input
+                                                type="text"
+                                                class="h-5 w-full border border-l-0 text-center text-[12px] px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                                value="<?php echo $value; ?>">
+                                        <?php endfor; ?>
+                                        <p class="text-[12px]"><?php echo $num; ?></p>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
                         </div>
                     </div>
@@ -1425,292 +1429,90 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
                     </div>
                     <div class="flex flex-col  gap-5">
                         <div id="18-28" class="flex flex-row w-full">
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border">
-                                <input type="text" class="h-5 w-full border border-t-0">
-                                <input type="text" class="h-5 w-full border border-t-0">
-                                <input type="text" class="h-5 w-full border border-t-0">
-                                <input type="text" class="h-5 w-full border border-t-0">
+                            <!-- Column 1: DATES -->
+                            <div class="flex flex-col w-full items-center">
+                                <?php for ($i = 0; $i < 5; $i++): ?>
+                                    <input
+                                        type="text"
+                                        class="h-5 w-full border text-center text-[12px] px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                        value="<?php echo isset($dates[$i]) ? date('m/d/Y', strtotime($dates[$i])) : ''; ?>">
+                                <?php endfor; ?>
                             </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+
+                            <!-- Column 2: EMPTY -->
+                            <div class="flex flex-col w-full items-center">
+                                <?php for ($i = 0; $i < 5; $i++): ?>
+                                    <input
+                                        type="text"
+                                        class="h-5 w-full border text-center text-[12px] px-1 border-l-0 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                        value="">
+                                <?php endfor; ?>
                             </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">18</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">17</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">16</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">15</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">14</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">13</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">12</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">11</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">21</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">22</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">23</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">24</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">25</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">26</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">27</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">28</p>
-                            </div>
+
+                            <!-- Columns 3–12: Teeth 55–65 -->
+                            <?php
+                            $teeth_numbers = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+                            foreach ($teeth_numbers as $num):
+                            ?>
+                                <div class="flex flex-col w-full items-center">
+                                    <?php for ($i = 0; $i < 5; $i++):
+                                        $date = $dates[$i] ?? null;
+                                        $value = '';
+                                        if ($date && isset($treatmentData[$date][$num])) {
+                                            $value = htmlspecialchars($treatmentData[$date][$num]);
+                                        }
+                                    ?>
+                                        <input
+                                            type="text"
+                                            class="h-5 w-full border text-center text-[12px] px-1 border-l-0 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                            value="<?php echo $value; ?>">
+                                    <?php endfor; ?>
+                                    <p class="text-[12px]"><?php echo $num; ?></p>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
                         <div id="48-38" class="flex flex-row w-full">
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border">
-                                <input type="text" class="h-5 w-full border border-t-0">
-                                <input type="text" class="h-5 w-full border border-t-0">
-                                <input type="text" class="h-5 w-full border border-t-0">
-                                <input type="text" class="h-5 w-full border border-t-0">
+                            <!-- Column 1: DATES -->
+                            <div class="flex flex-col w-full items-center">
+                                <?php for ($i = 0; $i < 5; $i++): ?>
+                                    <input
+                                        type="text" readonly
+                                        class="h-5 w-full border text-center text-[12px] px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                        value="<?php echo isset($dates[$i]) ? date('m/d/Y', strtotime($dates[$i])) : ''; ?>">
+                                <?php endfor; ?>
                             </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
+
+                            <!-- Column 2: EMPTY -->
+                            <div class="flex flex-col  w-full items-center">
+                                <?php for ($i = 0; $i < 5; $i++): ?>
+                                    <input
+                                        type="text"
+                                        class="h-5 w-full border border-l-0 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                        value="">
+                                <?php endfor; ?>
                             </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">48</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">47</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">46</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">45</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">44</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">43</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">42</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">41</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">31</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">32</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">33</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">34</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">35</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">36</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">37</p>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <input type="text" class="h-5 w-full border border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <input type="text" class="h-5 w-full border border-t-0 border-l-0">
-                                <p class="text-[12px]">38</p>
-                            </div>
+
+                            <!-- Columns 3–12: Teeth 55–65 -->
+                            <?php
+                            $teeth_numbers = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+                            foreach ($teeth_numbers as $num):
+                            ?>
+                                <div class="flex w-full flex-col items-center">
+                                    <?php for ($i = 0; $i < 5; $i++):
+                                        $date = $dates[$i] ?? null;
+                                        $value = '';
+                                        if ($date && isset($treatmentData[$date][$num])) {
+                                            $value = htmlspecialchars($treatmentData[$date][$num]);
+                                        }
+                                    ?>
+                                        <input
+                                            type="text"
+                                            class="h-5 w-full text-center text-[12px] border border-l-0 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                            value="<?php echo $value; ?>">
+                                    <?php endfor; ?>
+                                    <p class="text-[12px]"><?php echo $num; ?></p>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
@@ -1725,214 +1527,121 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
                     </div>
                 </div>
                 <div class="flex flex-row w-full">
+
+                    <!-- Column 1: Date -->
                     <div class="flex flex-col text-center items-center w-40">
-                        <p class="text-[12px] border font-medium h-14 px-2  items-center flex justify-center w-full">Date</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0">25/12//2025</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 items-center flex justify-center w-full">Date</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] border text-center font-normal px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php echo isset($preventiveData[$i]['created_at']) ? date('m/d/Y', strtotime($preventiveData[$i]['created_at'])) : ''; ?>">
+                        <?php endfor; ?>
                     </div>
+
+                    <!-- Column 2: Oral Prophylaxis -->
                     <div class="flex flex-col text-center items-center w-100">
-                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Oral Prophylaxis</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Oral Prophylaxis</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php
+                                        echo (isset($preventiveData[$i]['oral_prophylaxis']) && strtolower($preventiveData[$i]['oral_prophylaxis']) === 'yes')
+                                            ? '✓'
+                                            : '';
+                                        ?>">
+                        <?php endfor; ?>
                     </div>
+
+                    <!-- Column 3: Fluoride Varnish/Gel -->
                     <div class="flex flex-col text-center items-center w-70">
-                        <p class="text-[12px]  border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Fluoride <br>Varnish/<br>Fluoride Gel</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Fluoride<br>Varnish/<br>Fluoride Gel</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php
+                                        echo (isset($preventiveData[$i]['fluoride']) && strtolower($preventiveData[$i]['fluoride']) === 'yes')
+                                            ? '✓'
+                                            : '';
+                                        ?>">
+                        <?php endfor; ?>
                     </div>
+
+                    <!-- Column 4: Pit and Fissure Sealant -->
                     <div class="flex flex-col text-center items-center w-70">
-                        <p class="text-[12px]  border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Pit and Fissure <br>Sealant</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Pit and Fissure<br>Sealant</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php echo isset($preventiveData[$i]['sealant']) ? htmlspecialchars($preventiveData[$i]['sealant']) : ''; ?>">
+                        <?php endfor; ?>
                     </div>
+
+                    <!-- Column 5: Temporary Filling -->
                     <div class="flex flex-col text-center items-center w-70">
-                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Temporary <br>Filling</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Temporary<br>Filling</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php echo isset($preventiveData[$i]['temporary_filling']) ? htmlspecialchars($preventiveData[$i]['temporary_filling']) : ''; ?>">
+                        <?php endfor; ?>
                     </div>
+
+                    <!-- Column 6: Extraction -->
                     <div class="flex flex-col text-center items-center w-70">
-                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Extraction</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Extraction</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php echo isset($preventiveData[$i]['extraction']) ? htmlspecialchars($preventiveData[$i]['extraction']) : ''; ?>">
+                        <?php endfor; ?>
                     </div>
+
+                    <!-- Column 7: Consultation -->
                     <div class="flex flex-col text-center items-center w-50">
-                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Consultation</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Consultation</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php
+                                        echo (isset($preventiveData[$i]['consultation']) && strtolower($preventiveData[$i]['consultation']) === 'yes')
+                                            ? '✓'
+                                            : '';
+                                        ?>">
+                        <?php endfor; ?>
                     </div>
+
+                    <!-- Column 8: Remarks -->
                     <div class="flex flex-col text-center items-center w-100">
-                        <p class="text-[12px] text-center border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Remarks / Others (Specify)</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Remarks / Others (Specify)</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php echo isset($preventiveData[$i]['remarks']) ? htmlspecialchars($preventiveData[$i]['remarks']) : ''; ?>">
+                        <?php endfor; ?>
                     </div>
+
+                    <!-- Column 9: Dentist’s Signature -->
                     <div class="flex flex-col text-center items-center w-70">
-                        <p class="text-[12px] border font-medium h-14 px-2 border-l-0 items-center flex justify-center w-full">Dentist's Signature</p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
-                        <p class="h-5 w-full text-[12px] font-normal text-center border border-t-0 border-l-0"></p>
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Dentist's Signature</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="">
+                        <?php endfor; ?>
                     </div>
+
                 </div>
+
+
             </div>
         </main>
     </div>
@@ -1991,31 +1700,24 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
             const headContent = document.querySelector('head').innerHTML;
 
             // Clone sections and apply inline background colors
-            const contentHTML = sections
-                .map((section, i) => {
-                    const clone = section.cloneNode(true);
+            const contentHTML = sections.map((section, i) => {
+                const clone = section.cloneNode(true);
 
-                    const blueDiv = clone.querySelector('#blueSelect');
-                    if (blueDiv) {
-                        blueDiv.style.backgroundColor = '#2563eb'; // Tailwind blue-600
-                        blueDiv.style.color = '#ffffff';
-                        blueDiv.style.border = 'black';
-                        blueDiv.style.webkitPrintColorAdjust = 'exact';
-                        blueDiv.style.printColorAdjust = 'exact';
-                    }
+                // Inline computed styles (for correct color & border printing)
+                clone.querySelectorAll('*').forEach(el => {
+                    const style = window.getComputedStyle(el);
+                    const bg = style.backgroundColor;
+                    const color = style.color;
+                    const border = style.border;
+                    if (bg && bg !== 'rgba(0, 0, 0, 0)') el.style.backgroundColor = bg;
+                    el.style.color = color;
+                    el.style.border = border;
+                    el.style.webkitPrintColorAdjust = 'exact';
+                    el.style.printColorAdjust = 'exact';
+                });
 
-                    const redDiv = clone.querySelector('#redSelect');
-                    if (redDiv) {
-                        redDiv.style.backgroundColor = '#dc2626'; // Tailwind red-600
-                        redDiv.style.color = '#ffffff';
-                        redDiv.style.border = 'black';
-                        redDiv.style.webkitPrintColorAdjust = 'exact';
-                        redDiv.style.printColorAdjust = 'exact';
-                    }
-
-                    return `<div class="print-page" id="page${i + 1}">${clone.outerHTML}</div>`;
-                })
-                .join('');
+                return `<div class="print-page">${clone.outerHTML}</div>`;
+            }).join('');
 
             printWindow.document.write(`
         <html>
@@ -2058,6 +1760,53 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
                     zoom: 0.9;
                     transform-origin: top center;
                 }
+                    /* Force print all colors and lines exactly as on screen */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+
+            /* Ensure borders and grids appear sharp */
+            table, th, td, div, .tooth, .part, .conditionbox, .treatmentbox,
+            .conditionbox1, .treatmentbox1 {
+                border-collapse: collapse !important;
+                border-color: #000 !important;
+            }
+
+            /* Preserve grid layout for Oral Health Condition */
+            #shouldprint2 {
+                zoom: 0.9; /* Fit within page width */
+                transform-origin: top center;
+            }
+
+            /* Fix for small text in boxes */
+            .treatmentbox div, .treatmentbox1 div {
+                font-size: 10px !important;
+                font-weight: bold !important;
+                text-align: center !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                color: black !important;
+            }
+                .conditionbox div, .conditionbox1 div {
+                font-size: 10px !important;
+                font-weight: bold !important;
+                text-align: center !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                color:white !important;
+            }
+            .gridtop div, .grid1 div{
+                font-size: 8px !important;
+                font-weight: medium !important;
+                text-align: center !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
 
                 @media print {
                     html, body {
@@ -2337,9 +2086,6 @@ for ($i = count($oralHealthRecords); $i < 5; $i++) {
             }
         });
     </script>
-
-
-
 </body>
 
 </html>

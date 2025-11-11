@@ -1897,6 +1897,7 @@ $user = $_SESSION['logged_user'];
                 alert("Please select a patient first.");
             });
         }
+        
         const printdLink = document.getElementById("printdLink");
         if (printdLink && patientId) {
             printdLink.href = `print.php?id=${encodeURIComponent(patientId)}`;

@@ -425,7 +425,7 @@ $user = $_SESSION['logged_user'];
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "../php/logout.php";
+                window.location.href = "/dentalemr_system/php/login/logout.php";
             }, inactivityTime);
         }
 
@@ -589,7 +589,6 @@ $user = $_SESSION['logged_user'];
             });
         });
     </script>
-
 
     <!-- Archive  -->
     <script>
