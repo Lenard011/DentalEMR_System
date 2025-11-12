@@ -54,10 +54,29 @@ if ($loggedUser['type'] === 'Dentist') {
 
 
 // ---------------- KPI CARDS ----------------
-$totalPatients = $conn->query("SELECT COUNT(*) AS count FROM patients")->fetch_assoc()['count'];
+function get_count($conn, $sql)
+{
+    $res = $conn->query($sql);
+    if ($res && ($row = $res->fetch_assoc())) {
+        return (int)$row['count'];
+    }
+    // fallback on error
+    return 0;
+}
+
+$totalPatients = get_count($conn, "SELECT COUNT(*) AS count FROM patients");
+$totalChildren = get_count($conn, "SELECT COUNT(*) AS count FROM patients WHERE age BETWEEN 0 AND 12");
+$totalYouth    = get_count($conn, "SELECT COUNT(*) AS count FROM patients WHERE age BETWEEN 13 AND 24");
+$totalAdults   = get_count($conn, "SELECT COUNT(*) AS count FROM patients WHERE age >= 25");
+
 $today = date('Y-m-d');
 $activeVisits = $conn->query("SELECT COUNT(*) AS count FROM  patients WHERE DATE(created_at) = '$today'")->fetch_assoc()['count'];
-$totalTreatments = $conn->query("SELECT COUNT(*) AS count FROM services_monitoring_chart")->fetch_assoc()['count'];
+
+$totalTreatments = $conn->query("
+    SELECT COUNT(DISTINCT patient_id) AS count 
+    FROM services_monitoring_chart 
+")->fetch_assoc()['count'];
+
 $patientsWithConditions = $conn->query("
     SELECT COUNT(DISTINCT patient_id) AS count 
     FROM oral_health_condition 
@@ -226,6 +245,75 @@ $conn->close();
             transition: transform .3s, box-shadow .3s;
             opacity: 0;
             animation: fadeUp .8s ease forwards;
+        }
+
+        /* Container for all KPI cards */
+        #kpi-cards-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 20px;
+        }
+
+        /* Patient cards section */
+        .patient-cards-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            flex: 1 1 auto;
+            /* allow to grow/shrink in the row */
+            min-width: 250px;
+            position: relative;
+            /* for filter button positioning */
+        }
+
+        /* Filter button floating inside patient cards section */
+        .filter-btn {
+            position: absolute;
+            top: -0.75rem;
+            right: -0.75rem;
+            z-index: 50;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.4rem 0.8rem;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            font-size: 0.875rem;
+        }
+
+        /* Dropdown menu */
+        #filterDropdown {
+            position: absolute;
+            top: 2.5rem;
+            /* below button */
+            right: 0;
+            z-index: 50;
+            display: none;
+            width: 12rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 0;
+        }
+
+        #filterDropdown.show {
+            display: block;
+        }
+
+        /* Patient cards themselves */
+        .patient-cards-section .card {
+            flex: 1 1 250px;
+            min-width: 250px;
+        }
+
+        /* Other KPI cards (always visible) */
+        #kpi-cards-grid>.card {
+            flex: 1 1 250px;
+            min-width: 250px;
         }
 
         .card:hover {
@@ -624,12 +712,50 @@ $conn->close();
                 <p class="text-gray-600 mb-6">
                     You are logged in as <strong><?php echo htmlspecialchars($loggedUser['type']); ?></strong>.
                 </p>
-                <!-- KPI Cards -->
-                <div class="cards">
-                    <div class="card">
-                        <h3>Total Patients</h3>
-                        <h2><?php echo $totalPatients; ?></h2>
+                <div id="kpi-cards-grid">
+
+                    <!-- Patient Cards Section -->
+                    <div class="patient-cards-section">
+                        <!-- Filter button -->
+                        <button id="filterDropdownButton" class="filter-btn">
+                            Filter
+                            <svg class="w-4 h-4 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path clip-rule="evenodd" fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown -->
+                        <div id="filterDropdown">
+                            <ul class="space-y-1 text-sm">
+                                <li><button data-group="total" class="filter-option">Total Patients</button></li>
+                                <li><button data-group="children" class="filter-option">Children</button></li>
+                                <li><button data-group="youth" class="filter-option">Youth</button></li>
+                                <li><button data-group="adults" class="filter-option">Adults</button></li>
+                                <li><button data-group="all" class="filter-option">Show All</button></li>
+                            </ul>
+                        </div>
+
+                        <!-- Patient Cards (only show Total Patients by default) -->
+                        <div class="card" data-group="total">
+                            <h3>Total Patients</h3>
+                            <h2><?php echo $totalPatients; ?></h2>
+                        </div>
+                        <div class="card" data-group="children" style="display:none;">
+                            <h3>Total Children</h3>
+                            <h2><?php echo $totalChildren; ?></h2>
+                        </div>
+                        <div class="card" data-group="youth" style="display:none;">
+                            <h3>Total Youth</h3>
+                            <h2><?php echo $totalYouth; ?></h2>
+                        </div>
+                        <div class="card" data-group="adults" style="display:none;">
+                            <h3>Total Adults</h3>
+                            <h2><?php echo $totalAdults; ?></h2>
+                        </div>
                     </div>
+
+                    <!-- Other KPI Cards (always visible) -->
                     <div class="card">
                         <h3>Active Visits Today</h3>
                         <h2><?php echo $activeVisits; ?></h2>
@@ -642,6 +768,7 @@ $conn->close();
                         <h3>Patients with Conditions</h3>
                         <h2><?php echo $patientsWithConditions; ?></h2>
                     </div>
+
                 </div>
 
                 <!-- Charts Section -->
@@ -714,6 +841,37 @@ $conn->close();
 
         resetTimer();
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const filterButton = document.getElementById("filterDropdownButton");
+            const filterDropdown = document.getElementById("filterDropdown");
+            const options = document.querySelectorAll(".filter-option");
+            const patientCards = document.querySelectorAll(".patient-cards-section .card");
+
+            filterButton.addEventListener("click", () => {
+                filterDropdown.classList.toggle("show");
+            });
+
+            options.forEach(option => {
+                option.addEventListener("click", () => {
+                    const group = option.getAttribute("data-group");
+                    patientCards.forEach(card => {
+                        card.style.display = (group === "all" || card.getAttribute("data-group") === group) ? "block" : "none";
+                    });
+                    filterDropdown.classList.remove("show");
+                });
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
+                    filterDropdown.classList.remove("show");
+                }
+            });
+        });
+    </script>
+
+
 </body>
 
 </html>
