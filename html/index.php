@@ -2,8 +2,23 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
-// Check if the user is logged in
-if (!isset($_SESSION['logged_user'])) {
+// REQUIRE userId parameter for each page
+// Example usage: dashboard.php?uid=5
+if (!isset($_GET['uid'])) {
+    echo "<script>
+        alert('Invaluid session. Please log in again.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
+
+$userId = intval($_GET['uid']);
+
+// CHECK IF THIS USER IS REALLY LOGGED IN
+if (
+    !isset($_SESSION['active_sessions']) ||
+    !isset($_SESSION['active_sessions'][$userId])
+) {
     echo "<script>
         alert('Please log in first.');
         window.location.href = '/dentalemr_system/html/login/login.html';
@@ -11,23 +26,36 @@ if (!isset($_SESSION['logged_user'])) {
     exit;
 }
 
-// Auto logout after 10 minutes of inactivity
-$inactiveLimit = 600; // seconds (10 minutes)
+// PER-USER INACTIVITY TIMEOUT
+$inactiveLimit = 600; // 10 minutes
 
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
-    session_unset();
-    session_destroy();
-    echo "<script>
-        alert('You have been logged out due to inactivity.');
-        window.location.href = '/dentalemr_system/html/login/login.html';
-    </script>";
-    exit;
+if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
+    $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
+
+    if ((time() - $lastActivity) > $inactiveLimit) {
+
+        // Log out ONLY this user (not everyone)
+        unset($_SESSION['active_sessions'][$userId]);
+
+        // If no one else is logged in, end session entirely
+        if (empty($_SESSION['active_sessions'])) {
+            session_unset();
+            session_destroy();
+        }
+
+        echo "<script>
+            alert('You have been logged out due to inactivity.');
+            window.location.href = '/dentalemr_system/html/login/login.html';
+        </script>";
+        exit;
+    }
 }
 
-$_SESSION['last_activity'] = time();
+// Update last activity timestamp
+$_SESSION['active_sessions'][$userId]['last_activity'] = time();
 
-// Store user session info safely
-$loggedUser = $_SESSION['logged_user'];
+// GET USER DATA FOR PAGE USE
+$loggedUser = $_SESSION['active_sessions'][$userId];
 
 // ---------------- DATABASE CONNECTION ----------------
 $host = "localhost";
@@ -494,7 +522,6 @@ $conn->close();
                                         ? $loggedUser['name']
                                         : ($loggedUser['email'] ?? 'User')
                                 );
-
                                 ?>
                             </span>
                             <span class="block text-sm text-gray-900 truncate dark:text-white">
@@ -504,7 +531,6 @@ $conn->close();
                                         ? $loggedUser['email']
                                         : ($loggedUser['name'] ?? 'User')
                                 );
-
                                 ?>
                             </span>
                         </div>
@@ -515,13 +541,13 @@ $conn->close();
                                     profile</a>
                             </li>
                             <li>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php"
+                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="/dentalemr_system/php/login/logout.php"
+                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -569,7 +595,7 @@ $conn->close();
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="addpatient.php"
+                        <a href="addpatient.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -604,12 +630,12 @@ $conn->close();
                         </button>
                         <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="./treatmentrecords/treatmentrecords.php"
+                                <a href="./treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="./addpatienttreatment/patienttreatment.php"
+                                <a href="./addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -618,7 +644,7 @@ $conn->close();
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./reports/targetclientlist.php"
+                        <a href="./reports/targetclientlist.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -633,7 +659,7 @@ $conn->close();
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/mho_ohp.php"
+                        <a href="./reports/mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -646,7 +672,7 @@ $conn->close();
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/oralhygienefindings.php"
+                        <a href="./reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -661,7 +687,7 @@ $conn->close();
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./archived.php"
+                        <a href="./archived.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -708,10 +734,6 @@ $conn->close();
 
                     ?>!
                 </h1>
-
-                <p class="text-gray-600 mb-6">
-                    You are logged in as <strong><?php echo htmlspecialchars($loggedUser['type']); ?></strong>.
-                </p>
                 <div id="kpi-cards-grid">
 
                     <!-- Patient Cards Section -->

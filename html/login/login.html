@@ -145,7 +145,7 @@
                             <img src="../../img/DOHDentalLogo-removebg-preview.png" class="w-30 h-20" alt="">
                         </a>
                     </div>
-                    <form class="space-y-4 md:space-y-6" action="/dentalemr_system/php/login/login.php" method="POST">
+                    <form class="space-y-4 md:space-y-6" action="/dentalemr_system/php/login/staff_login.php" method="POST">
                         <input type="hidden" name="userType" value="Staff" />
                         <div>
                             <label for="staffusername"
@@ -222,30 +222,42 @@
         });
     </script>
     <script>
-        document.querySelector("form").addEventListener("submit", async (e) => {
-            e.preventDefault();
+        document.addEventListener("DOMContentLoaded", () => {
+            const loginForm = document.querySelector("form");
 
-            const form = e.target;
-            const formData = new FormData(form);
+            loginForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
 
-            const response = await fetch("/dentalemr_system/php/login/login.php", {
-                method: "POST",
-                body: formData
+                const formData = new FormData(loginForm);
+
+                // Determine endpoint based on user type
+                const userType = formData.get("user_type") || formData.get("userType");
+                // const endpoint = "/dentalemr_system/php/login/login.php";
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    // Show message
+                    alert(result.message);
+
+                    if (result.status === "success") {
+                        // Redirect to verify_mfa.php after a short delay
+                        setTimeout(() => {
+                            window.location.href = "/dentalemr_system/php/login/verify_mfa.php";
+                        }, 500);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("An error occurred while logging in. Please try again.");
+                }
             });
-
-            const result = await response.json();
-
-            alert(result.message);
-
-            if (result.status === "success") {
-                // Small delay to show alert before redirect
-                setTimeout(() => {
-                    window.location.href = "/dentalemr_system/php/login/verify_mfa.php";
-                }, 1000);
-            }
         });
     </script>
-
 
 </body>
 

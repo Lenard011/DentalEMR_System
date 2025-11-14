@@ -87,10 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->send();
 
         $_SESSION['pending_user'] = [
-            'id' => $user['id'],
-            'type' => $userType,
+            'id'    => $user['id'],
+            'type'  => $userType,
             'email' => $user['email']
         ];
+
+        // Dentists do NOT use multi-login, so no multi-users array here
 
         echo "<script>alert('Login successful! A verification code sent to your email.'); window.location.href='verify_mfa.php';</script>";
         exit;

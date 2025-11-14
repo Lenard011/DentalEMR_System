@@ -2,8 +2,23 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
-// Check if the user is logged in
-if (!isset($_SESSION['logged_user'])) {
+// REQUIRE userId parameter for each page
+// Example usage: dashboard.php?uid=5
+if (!isset($_GET['uid'])) {
+    echo "<script>
+        alert('Invaluid session. Please log in again.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
+
+$userId = intval($_GET['uid']);
+
+// CHECK IF THIS USER IS REALLY LOGGED IN
+if (
+    !isset($_SESSION['active_sessions']) ||
+    !isset($_SESSION['active_sessions'][$userId])
+) {
     echo "<script>
         alert('Please log in first.');
         window.location.href = '/dentalemr_system/html/login/login.html';
@@ -11,25 +26,60 @@ if (!isset($_SESSION['logged_user'])) {
     exit;
 }
 
-// Auto logout after 10 minutes of inactivity
-$inactiveLimit = 600; // seconds (10 minutes)
+// PER-USER INACTIVITY TIMEOUT
+$inactiveLimit = 600; // 10 minutes
 
-if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $inactiveLimit) {
-    // Destroy session and redirect
-    session_unset();
-    session_destroy();
-    echo "<script>
-        alert('You have been logged out due to inactivity.');
-        window.location.href = '/dentalemr_system/html/login/login.html';
-    </script>";
-    exit;
+if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
+    $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
+
+    if ((time() - $lastActivity) > $inactiveLimit) {
+
+        // Log out ONLY this user (not everyone)
+        unset($_SESSION['active_sessions'][$userId]);
+
+        // If no one else is logged in, end session entirely
+        if (empty($_SESSION['active_sessions'])) {
+            session_unset();
+            session_destroy();
+        }
+
+        echo "<script>
+            alert('You have been logged out due to inactivity.');
+            window.location.href = '/dentalemr_system/html/login/login.html';
+        </script>";
+        exit;
+    }
 }
 
-// Update activity timestamp
-$_SESSION['last_activity'] = time();
+// Update last activity timestamp
+$_SESSION['active_sessions'][$userId]['last_activity'] = time();
 
-// Get logged-in user details
-$user = $_SESSION['logged_user'];
+// GET USER DATA FOR PAGE USE
+$loggedUser = $_SESSION['active_sessions'][$userId];
+
+// Store user session info safely
+$host = "localhost";
+$dbUser = "root";
+$dbPass = "";
+$dbName = "dentalemr_system";
+
+$conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Fetch dentist name if user is a dentist
+if ($loggedUser['type'] === 'Dentist') {
+    $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
+    $stmt->bind_param("i", $loggedUser['id']);
+    $stmt->execute();
+    $stmt->bind_result($dentistName);
+    if ($stmt->fetch()) {
+        $loggedUser['name'] = $dentistName;
+    }
+    $stmt->close();
+}
+
 ?>
 <!doctype html>
 <html>
@@ -105,7 +155,6 @@ $user = $_SESSION['logged_user'];
                                         ? $loggedUser['name']
                                         : ($loggedUser['email'] ?? 'User')
                                 );
-
                                 ?>
                             </span>
                             <span class="block text-sm text-gray-900 truncate dark:text-white">
@@ -115,7 +164,6 @@ $user = $_SESSION['logged_user'];
                                         ? $loggedUser['email']
                                         : ($loggedUser['name'] ?? 'User')
                                 );
-
                                 ?>
                             </span>
                         </div>
@@ -126,13 +174,13 @@ $user = $_SESSION['logged_user'];
                                     profile</a>
                             </li>
                             <li>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php"
+                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="/dentalemr_system/php/login/logout.php"
+                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
                                     out</a>
                             </li>
@@ -166,7 +214,7 @@ $user = $_SESSION['logged_user'];
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.php"
+                        <a href="../index.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -180,7 +228,7 @@ $user = $_SESSION['logged_user'];
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.php"
+                        <a href="../addpatient.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -215,12 +263,12 @@ $user = $_SESSION['logged_user'];
                         </button>
                         <ul id="dropdown-pages" class="visible py-2 space-y-2">
                             <li>
-                                <a href="#" 
+                                <a href="#"
                                     class="pl-11 flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="../addpatienttreatment/patienttreatment.php"
+                                <a href="../addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -229,7 +277,7 @@ $user = $_SESSION['logged_user'];
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.php"
+                        <a href="../reports/targetclientlist.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -244,7 +292,7 @@ $user = $_SESSION['logged_user'];
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.php"
+                        <a href="../reports/mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -257,7 +305,7 @@ $user = $_SESSION['logged_user'];
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.php"
+                        <a href="../reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -272,7 +320,7 @@ $user = $_SESSION['logged_user'];
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../archived.php"
+                        <a href="../archived.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -548,7 +596,7 @@ $user = $_SESSION['logged_user'];
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php";
+                window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
             }, inactivityTime);
         }
 
@@ -565,7 +613,7 @@ $user = $_SESSION['logged_user'];
 
         const patientInfoLink = document.getElementById("patientInfoLink");
         if (patientInfoLink && patientId) {
-            patientInfoLink.href = `view_info.php?id=${encodeURIComponent(patientId)}`;
+            patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
             patientInfoLink.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -576,7 +624,7 @@ $user = $_SESSION['logged_user'];
         //  Set the Oral Health Condition link dynamically
         const oralHealthLink = document.getElementById("oralHealthLink");
         if (oralHealthLink && patientId) {
-            oralHealthLink.href = `view_oral.php?id=${encodeURIComponent(patientId)}`;
+            oralHealthLink.href = `view_oral.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
             // Optional fallback: disable link if no patient selected
             oralHealthLink.addEventListener("click", (e) => {
@@ -592,7 +640,7 @@ $user = $_SESSION['logged_user'];
 
         const printdLink = document.getElementById("printdLink");
         if (printdLink && patientId) {
-            printdLink.href = `print.php?id=${encodeURIComponent(patientId)}`;
+            printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
             // Optional fallback: disable link if no patient selected
             printdLink.addEventListener("click", (e) => {
