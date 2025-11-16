@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 // Example usage: dashboard.php?uid=5
 if (!isset($_GET['uid'])) {
     echo "<script>
-        alert('Invaluid session. Please log in again.');
+        alert('Invalid session. Please log in again.');
         window.location.href = '/dentalemr_system/html/login/login.html';
     </script>";
     exit;
@@ -175,6 +175,16 @@ if ($loggedUser['type'] === 'Dentist') {
                             <li>
                                 <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
+                            </li>
+                        </ul>
+                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">History logs</a>
+                            </li>
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
@@ -348,60 +358,7 @@ if ($loggedUser['type'] === 'Dentist') {
             </div>
         </aside>
         <main class="p-4 md:ml-64 h-auto pt-20">
-            <nav class="flex border" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    <li class="inline-flex items-center">
-                        <h1
-                            class="text-xl font-bold leading-none tracking-tight text-gray-900 md:text-2xl lg:text-2xl dark:text-white">
-                            Manage Users</h1>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-900 mx-1" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <a href="historylogs.php?uid=<?php echo $userId; ?>"
-                                class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
-                                <h3
-                                    class="text-lg font-semibold leading-none tracking-tight text-gray-900 md:text-lg lg:text-lg dark:text-white">
-                                    History Logs</h3>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-900 mx-1" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <a href="activitylogs.php?uid=<?php echo $userId; ?>"
-                                class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
-                                <h3
-                                    class="text-lg font-semibold leading-none tracking-tight text-gray-900 md:text-lg lg:text-lg dark:text-white">
-                                    Activity Logs</h3>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <svg class="rtl:rotate-180 w-3 h-3 text-blue-700 mx-1" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <a href="#"
-                                class="ms-1 text-sm font-medium text-blue-700  md:ms-2 dark:text-gray-400 dark:hover:text-white">
-                                <h3
-                                    class="text-lg font-semibold leading-none tracking-tight text-blue-700 hover:text-blue-600 md:text-lg lg:text-lg dark:text-white">
-                                    Staff</h3>
-                            </a>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
+            <h1 class="text-xl text-center w-full font-bold ">Manage Users</h1>
             <section id="dentist" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
                     <!-- Start coding here -->

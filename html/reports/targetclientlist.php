@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 // Example usage: dashboard.php?uid=5
 if (!isset($_GET['uid'])) {
     echo "<script>
-        alert('Invaluid session. Please log in again.');
+        alert('Invalid session. Please log in again.');
         window.location.href = '/dentalemr_system/html/login/login.html';
     </script>";
     exit;
@@ -290,6 +290,16 @@ $end = min(($offset + $limit), $total_records);
                             <li>
                                 <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
+                            </li>
+                        </ul>
+                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">History logs</a>
+                            </li>
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">

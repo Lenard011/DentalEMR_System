@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 // Example usage: dashboard.php?uid=5
 if (!isset($_GET['uid'])) {
     echo "<script>
-        alert('Invaluid session. Please log in again.');
+        alert('Invalid session. Please log in again.');
         window.location.href = '/dentalemr_system/html/login/login.html';
     </script>";
     exit;
@@ -175,6 +175,16 @@ if ($loggedUser['type'] === 'Dentist') {
                             <li>
                                 <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
+                            </li>
+                        </ul>
+                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">History logs</a>
+                            </li>
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
@@ -348,70 +358,14 @@ if ($loggedUser['type'] === 'Dentist') {
             </div>
         </aside>
         <main class="p-4 md:ml-64 h-auto pt-20">
-            <nav class="flex border" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
-                    <li class="inline-flex items-center">
-                        <h1
-                            class="text-xl font-bold leading-none tracking-tight text-gray-900 md:text-2xl lg:text-2xl dark:text-white">
-                            Manage Users</h1>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <svg class="rtl:rotate-180 w-3 h-3 text-blue-700 mx-1" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <a href="#"
-                                class="ms-1 text-sm font-medium text-blue-700  md:ms-2 dark:text-gray-400 dark:hover:text-white">
-                                <h3
-                                    class="text-lg font-semibold leading-none tracking-tight text-blue-700 hover:text-blue-600 md:text-lg lg:text-lg dark:text-white">
-                                    History Logs</h3>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-900 mx-1" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <a href="activitylogs.php?uid=<?php echo $userId; ?>"
-                                class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
-                                <h3
-                                    class="text-lg font-semibold leading-none tracking-tight text-gray-900 md:text-lg lg:text-lg dark:text-white">
-                                    Activity Logs</h3>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-900 mx-1" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <a href="manageuser.php?uid=<?php echo $userId; ?>"
-                                class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
-                                <h3
-                                    class="text-lg font-semibold leading-none tracking-tight text-gray-900 md:text-lg lg:text-lg dark:text-white">
-                                    Staff</h3>
-                            </a>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
-            <section id="history" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
+            <h1 class="text-xl text-center w-full font-bold ">History Logs</h1>
+            <section id="history" class="bg-gray-50 mt-5 dark:bg-gray-900">
                 <div class="mx-auto max-w-screen-2xl ">
                     <!-- Start coding here -->
                     <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg ">
-                        <div>
-                            <p class="text-2xl py-2 font-semibold px-5 mt-5 text-gray-900 dark:text-white">History Logs</p>
-                        </div>
                         <div
-                            class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 px-4 mb-4">
-                            <div class="w-full md:w-1/2">
+                            class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 px-4  mb-4">
+                            <div class="w-full md:w-1/2 mt-4">
                                 <form class="flex items-center">
                                     <label for="simple-search" class="sr-only">Search</label>
                                     <div class="relative w-full">
@@ -425,9 +379,16 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     clip-rule="evenodd" />
                                             </svg>
                                         </div>
-                                        <input type="text" id="simple-search"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-blue-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Search" required="">
+                                        <input
+                                            type="text"
+                                            id="simple-search"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
+                                            focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 
+                                            dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
+                                            dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                            placeholder="Search history logs..."
+                                            autocomplete="off" />
+
                                     </div>
                                 </form>
                             </div>
@@ -459,6 +420,10 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </tbody>
                             </table>
                         </div>
+                        <nav id="paginationNav"
+                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-3"
+                            aria-label="Table navigation">
+                        </nav>
                     </div>
                 </div>
             </section>
@@ -488,117 +453,195 @@ if ($loggedUser['type'] === 'Dentist') {
         resetTimer();
     </script>
     <script>
+        let historyPage = 1;
+        let historyLimit = 10;
+        let historySearch = "";
+
         document.addEventListener("DOMContentLoaded", function() {
+
             loadHistoryLogs();
 
-            // Search event
-            document.querySelector("#simple-search").addEventListener("keyup", function() {
-                loadHistoryLogs(this.value);
-            });
+            const searchInput = document.getElementById("simple-search");
+
+            searchInput.addEventListener(
+                "input",
+                debounce(function() {
+                    historySearch = searchInput.value.trim();
+                    loadHistoryLogs(1); // always go back to page 1 when typing
+                }, 300)
+            );
+
         });
 
-        function loadHistoryLogs(search = "") {
-            fetch("/dentalemr_system/php/manageusers/fetch_history.php?search=" + search)
+
+        // Debounce (same as patients)
+        function debounce(fn, delay = 300) {
+            let t;
+            return (...args) => {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), delay);
+            };
+        }
+
+        function loadHistoryLogs(page = 1) {
+            historyPage = page;
+
+            fetch(`/dentalemr_system/php/manageusers/fetch_history.php?page=${page}&limit=${historyLimit}&search=${encodeURIComponent(historySearch)}`)
                 .then(response => response.json())
                 .then(data => {
                     const tbody = document.getElementById("historyBody");
                     tbody.innerHTML = "";
 
-                    if (data.length === 0) {
+                    if (!data.history || data.history.length === 0) {
                         tbody.innerHTML = `
-                    <tr>
-                        <td colspan="9" class="text-center py-4 text-gray-500">No history logs found</td>
-                    </tr>
-                `;
+                        <tr>
+                            <td colspan="10" class="text-center py-4 text-gray-900">No history logs found</td>
+                        </tr>`;
+                        document.getElementById("paginationNav").innerHTML = "";
                         return;
                     }
 
-                    data.forEach(row => {
+                    data.history.forEach(row => {
                         tbody.innerHTML += `
-                            <tr class="border-b border-gray-200 text-xs dark:border-gray-700">
-                                <td class="px-4 py-1 text-center">${row.history_id}</td>
-                                <td class="px-4 py-1 text-center">${row.table_name}</td>
-                                <td class="px-4 py-1 text-center">${row.record_id}</td>
-                                <td class="px-4 py-1 text-center">${row.action}</td>
-                                <td class="px-4 py-1 text-center">${row.changed_by_type} ${row.changed_by_id ?? ""}</td>
-                                <td class="px-4 py-1 text-center"><pre class="text-xs">${formatJSON(row.old_values)}</pre></td>
-                                <td class="px-4 py-1 text-center"><pre class="text-xs">${formatJSON(row.new_values)}</pre></td>
-                                <td class="px-4 py-1 text-center">${row.description || ""}</td>
-                                <td class="px-4 py-1 text-center">${row.created_at}</td>
+                        <tr class="border-b border-gray-200 text-xs text-gray-700 dark:border-gray-700">
+                            <td class="px-4 py-1 text-center">${row.history_id}</td>
+                            <td class="px-4 py-1 text-center">${row.table_name}</td>
+                            <td class="px-4 py-1 text-center">${row.record_id}</td>
+                            <td class="px-4 py-1 text-center">${row.action}</td>
+                            <td class="px-4 py-1 text-center">${row.changed_by_type} ${row.changed_by_id ?? ""}</td>
+                            <td class="px-4 py-1 text-center"><pre class="text-xs">${formatJSON(row.old_values)}</pre></td>
+                            <td class="px-4 py-1 text-center"><pre class="text-xs">${formatJSON(row.new_values)}</pre></td>
+                            <td class="px-4 py-1 text-center">${row.description || ""}</td>
+                            <td class="px-4 py-1 text-center">${row.created_at}</td>
 
-                                <!-- Delete column -->
-                                <td class="px-4 py-1 text-center">
-                                    <button onclick="deleteHistory(${row.history_id})"
-                                        class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-sm cursor-pointer text-sm"
-                                        title="Delete Entry">
-                                        Delete
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-
+                            <td class="px-4 py-1 text-center">
+                                <button onclick="deleteHistory(${row.history_id})"
+                                    class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-sm cursor-pointer text-sm">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    `;
                     });
+
+                    renderHistoryPagination(data.total, data.limit, data.page);
                 });
         }
 
+        // PAGINATION (identical style to patients)
+        function renderHistoryPagination(total, limit, page) {
+            const nav = document.getElementById("paginationNav");
+            const totalPages = Math.ceil(total / limit);
+
+            if (totalPages <= 1) {
+                nav.innerHTML = "";
+                return;
+            }
+
+            let pagesHTML = "";
+
+            // Prev
+            if (page > 1) {
+                pagesHTML += `
+                <li>
+                    <a href="#" onclick="loadHistoryLogs(${page - 1}); return false;"
+                    class="flex items-center justify-center py-2 px-2 text-gray-500 bg-white border 
+                    border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400">
+                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                </li>`;
+            }
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === page) {
+                    pagesHTML += `
+                    <li>
+                        <span class="flex items-center justify-center text-sm py-2 px-3 text-blue-600 
+                        bg-blue-50 border border-blue-300 dark:bg-gray-700 dark:text-white">
+                            ${i}
+                        </span>
+                    </li>`;
+                } else {
+                    pagesHTML += `
+                    <li>
+                        <a href="#" onclick="loadHistoryLogs(${i}); return false;" 
+                        class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white 
+                        border border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400">
+                            ${i}
+                        </a>
+                    </li>`;
+                }
+            }
+
+            // Next
+            if (page < totalPages) {
+                pagesHTML += `
+                <li>
+                    <a href="#" onclick="loadHistoryLogs(${page + 1}); return false;"
+                    class="flex items-center justify-center py-2 px-2 text-gray-500 bg-white border 
+                    border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400">
+                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                </li>`;
+            }
+
+            nav.innerHTML = `
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+                Showing <span class="font-semibold">${(page - 1) * limit + 1}</span> -
+                <span class="font-semibold">${Math.min(page * limit, total)}</span>
+                of <span class="font-semibold">${total}</span>
+            </span>
+            <ul class="inline-flex -space-x-1px">${pagesHTML}</ul>
+        `;
+        }
+
+        // JSON formatting (your original logic)
         function formatJSON(jsonString) {
             if (!jsonString) return "";
-
             try {
                 const obj = JSON.parse(jsonString);
 
-                // Fields that identify the large patient JSON
                 const patientKeys = [
-                    "surname", "firstname", "middlename", "pob", "address",
-                    "dob", "age", "agemonth", "sex", "occupation", "guardian",
-                    "four_ps", "blood_pressure", "temperature", "pulse_rate",
-                    "weight", "blood_disorders", "sugar_flag", "sugar_details",
-                    "patient"
+                    "surname", "firstname", "middlename", "pob", "address", "dob",
+                    "age", "agemonth", "sex", "occupation", "guardian", "four_ps",
+                    "blood_pressure", "temperature", "pulse_rate", "weight",
+                    "blood_disorders", "sugar_flag", "sugar_details", "patient"
                 ];
 
-                // Count how many patientKeys exist in this JSON
-                let matches = 0;
-                patientKeys.forEach(k => {
-                    if (obj.hasOwnProperty(k)) matches++;
-                });
+                let matches = patientKeys.filter(k => obj.hasOwnProperty(k)).length;
 
-                // If this JSON has 5+ patient fields → it's a patient data JSON
                 if (matches >= 5) {
-                    const allowedKeys = ["surname", "firstname", "dob", "age", "sex"];
-
+                    const allowed = ["surname", "firstname", "dob", "age", "sex"];
                     const filtered = {};
-                    allowedKeys.forEach(key => {
-                        if (obj[key] !== undefined) {
-                            filtered[key] = obj[key];
-                        }
+                    allowed.forEach(k => {
+                        if (obj[k] !== undefined) filtered[k] = obj[k];
                     });
-
                     return JSON.stringify(filtered, null, 2);
                 }
 
-                // Otherwise: show normal JSON
                 return JSON.stringify(obj, null, 2);
-
-            } catch (e) {
+            } catch {
                 return jsonString;
             }
         }
 
-
         function deleteHistory(id) {
             if (!confirm("Are you sure you want to delete this history log?")) return;
 
-            fetch("/dentalemr_system/php/manageusers/delete_history.php?id=" + id, {
-                    method: "GET"
-                })
-                .then(response => response.text())
-                .then(result => {
-                    alert(result);
-                    loadHistoryLogs(); // refresh table
-                })
-                .catch(error => console.error("Delete error:", error));
+            fetch(`/dentalemr_system/php/manageusers/delete_history.php?id=${id}`)
+                .then(r => r.text())
+                .then(msg => {
+                    alert(msg);
+                    loadHistoryLogs(historyPage); // stay on same page
+                });
         }
     </script>
+
 </body>
 
 </html>
