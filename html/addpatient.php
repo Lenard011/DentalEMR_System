@@ -81,6 +81,7 @@ if ($loggedUser['type'] === 'Dentist') {
 }
 
 ?>
+
 <!doctype html>
 <html>
 
@@ -499,7 +500,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
             </section>
             <!-- Add patient Modal -->
-            <form id="patientForm" method="POST" action="../../DentalEMR_System/php/register_patient/addpatient.php">
+            <form id="patientForm" method="POST">
                 <!-- FirstModal -->
                 <div id="addpatientModal" tabindex="-1" aria-hidden="true"
                     class="hidden realative overflow-y-hidden overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-auto md:inset-y-13  max-h-150 md:h-150 ">
@@ -1109,14 +1110,18 @@ if ($loggedUser['type'] === 'Dentist') {
                         </div>
                     </div>
                 </div>
-                <!-- Popup container (hidden by default) -->
-                <div id="validationPopup" style="display:none;">
-                    <div class="popup-content">
-                        <p id="validationMessage"></p>
-                        <button type="button" onclick="closeValidationPopup()">OK</button>
-                    </div>
-                </div>
             </form>
+            <!-- popup -->
+            <div id="popupContainer" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%;
+                background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); justify-content: center; align-items: center; z-index:9999;">
+                <div style="background:#fff; padding:20px 30px; border-radius:12px; text-align:center;
+                box-shadow:0 5px 15px rgba(0,0,0,0.3); font-family: Arial, sans-serif;">
+                    <p id="popupTitle" style="font-weight:bold; margin-bottom:10px;"></p>
+                    <p id="popupMessage" style="margin-bottom:15px;"></p>
+                    <button id="popupOkBtn" style="padding:8px 16px; border:none; border-radius:6px; cursor:pointer; color:#fff;">OK</button>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -1197,68 +1202,6 @@ if ($loggedUser['type'] === 'Dentist') {
         sexInput.addEventListener('change', togglePregnantSection);
     </script>
 
-    <!-- Alert Message -->
-    <script>
-        // Show popup
-        function showValidationPopup(message) {
-            document.getElementById("validationMessage").innerHTML = message;
-            document.getElementById("validationPopup").style.display = "flex";
-        }
-
-        // Close popup
-        function closeValidationPopup() {
-            document.getElementById("validationPopup").style.display = "none";
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            const form = document.getElementById("patientForm");
-
-            form.addEventListener("submit", function(e) {
-                let missing = [];
-
-                // --- Always required fields (text, number, date, select) ---
-                form.querySelectorAll("[data-required]").forEach(input => {
-                    if (!input.value.trim()) {
-                        missing.push(input.getAttribute("data-label"));
-                    }
-                });
-
-                // --- Conditional fields (only required if checkbox is checked) ---
-                const conditionalMap = {
-                    "allergies_flag": ["allergies_details", "Allergies"],
-                    "hepatitis_flag": ["hepatitis_details", "Hepatitis"],
-                    "malignancy_flag": ["malignancy_details", "Malignancy"],
-                    "prev_hospitalization_flag	": ["last_admission_date", "Medical Last Admission"],
-                    "blood_transfusion_flag": ["blood_transfusion", "Blood Transfusion"],
-                    "other_conditions_flag": ["other_conditions", "Other Conditions"],
-                    "sugar_flag": ["sugar_details", "Sugar"],
-                    "alcohol_flag": ["alcohol_details", "Use of Alcohol"],
-                    "tobacco_flag": ["tobacco_details", "Use of tobacco"],
-                    "betel_nut_flag": ["betel_nut_details", "Betel Nut Chewing"],
-                    "philhealth_flag": ["philhealth_number", "Philhealth Number"],
-                    "sss_flag": ["sss_number", "SSS Number"],
-                    "gsis_flag": ["gsis_number", "GSIS Number"]
-                };
-
-                Object.entries(conditionalMap).forEach(([flagName, [detailsName, label]]) => {
-                    const checkbox = form.querySelector("[name='" + flagName + "']");
-                    const detailsField = form.querySelector("[name='" + detailsName + "']");
-                    if (checkbox && checkbox.checked && detailsField && !detailsField.value.trim()) {
-                        missing.push(label);
-                    }
-                });
-
-                // --- Show unified custom popup ---
-                if (missing.length > 0) {
-                    e.preventDefault();
-                    showValidationPopup(
-                        "⚠ Please fill in the following required fields:<br><br>" + missing.join(", ")
-                    );
-                }
-            });
-        });
-    </script>
-
     <!-- Table  -->
     <script>
         const API_PATH = "../php/register_patient/getPatients.php";
@@ -1267,7 +1210,7 @@ if ($loggedUser['type'] === 'Dentist') {
         let limit = 10;
         let selectedAddresses = [];
 
-        // ✅ FIXED debounce utility
+        // FIXED debounce utility
         function debounce(fn, delay = 300) {
             let t;
             return (...args) => {
@@ -1486,6 +1429,104 @@ if ($loggedUser['type'] === 'Dentist') {
             });
         });
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.getElementById("patientForm");
+            const popupContainer = document.getElementById("popupContainer");
+            const popupTitle = document.getElementById("popupTitle");
+            const popupMessage = document.getElementById("popupMessage");
+            const popupOkBtn = document.getElementById("popupOkBtn");
+
+            let reloadOnClose = false; // Track if we should reload
+
+            function showPopup(title, message, color = "red", reload = false) {
+                popupTitle.style.color = color;
+                popupTitle.textContent = title;
+                popupMessage.innerHTML = message;
+                popupOkBtn.style.background = color;
+                popupContainer.style.display = "flex";
+                reloadOnClose = reload; // Set flag to reload when OK clicked
+            }
+
+            popupOkBtn.addEventListener("click", function() {
+                popupContainer.style.display = "none";
+                if (reloadOnClose) {
+                    window.location.reload();
+                }
+            });
+
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                let missing = [];
+
+                // Always required fields
+                form.querySelectorAll("[data-required]").forEach(input => {
+                    if (!input.value.trim()) {
+                        missing.push(input.getAttribute("data-label"));
+                    }
+                });
+
+                // Conditional required fields
+                const conditionalMap = {
+                    "allergies_flag": ["allergies_details", "Allergies"],
+                    "hepatitis_flag": ["hepatitis_details", "Hepatitis"],
+                    "malignancy_flag": ["malignancy_details", "Malignancy"],
+                    "prev_hospitalization_flag": ["last_admission_date", "Medical Last Admission"],
+                    "blood_transfusion_flag": ["blood_transfusion", "Blood Transfusion"],
+                    "other_conditions_flag": ["other_conditions", "Other Conditions"],
+                    "sugar_flag": ["sugar_details", "Sugar"],
+                    "alcohol_flag": ["alcohol_details", "Use of Alcohol"],
+                    "tobacco_flag": ["tobacco_details", "Use of tobacco"],
+                    "betel_nut_flag": ["betel_nut_details", "Betel Nut Chewing"],
+                    "philhealth_flag": ["philhealth_number", "Philhealth Number"],
+                    "sss_flag": ["sss_number", "SSS Number"],
+                    "gsis_flag": ["gsis_number", "GSIS Number"]
+                };
+
+                Object.entries(conditionalMap).forEach(([flagName, [detailsName, label]]) => {
+                    const checkbox = form.querySelector("[name='" + flagName + "']");
+                    const detailsField = form.querySelector("[name='" + detailsName + "']");
+                    if (checkbox && checkbox.checked && detailsField && !detailsField.value.trim()) {
+                        missing.push(label);
+                    }
+                });
+
+                if (missing.length > 0) {
+                    showPopup(
+                        "⚠ Submission Error",
+                        "Please fill in the following required fields:<br><br>" + missing.join("<br>"),
+                        "red"
+                    );
+                    return;
+                }
+
+                let formData = new FormData(form);
+                formData.append("patient", "1"); // Ensure PHP sees it
+
+                fetch("/dentalemr_system/php/register_patient/addpatient.php", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        const color = data.status === "success" ? "blue" : "red";
+                        showPopup(
+                            data.title || "Message",
+                            data.message || "No message",
+                            color,
+                            data.status === "success" // reload only on success
+                        );
+                        if (data.status === "success") form.reset(); // optional: reset form
+                    })
+                    .catch(err => {
+                        console.error("AJAX error:", err);
+                        showPopup("Error", "Error while saving patient. Check console.", "red");
+                    });
+            });
+        });
+    </script>
+
 
 </body>
 

@@ -194,11 +194,18 @@ $conn->close();
         });
         google.charts.setOnLoadCallback(drawCharts);
 
+
         function drawCharts() {
             // Pie Chart
             var pieData = google.visualization.arrayToDataTable(<?php echo json_encode($pieData); ?>);
             var pieOptions = {
-                title: 'Oral Health Issues',
+                legend: {
+                    position: 'right'
+                },
+                chartArea: {
+                    width: '85%',
+                    height: '80%'
+                },
                 is3D: true,
                 pieSliceText: 'percentage',
                 animation: {
@@ -209,12 +216,16 @@ $conn->close();
             };
             new google.visualization.PieChart(document.getElementById('piechart')).draw(pieData, pieOptions);
 
+
             // Bar Chart
             var barData = google.visualization.arrayToDataTable(<?php echo json_encode($barData); ?>);
             var barOptions = {
-                title: 'Most Common Treatments',
                 legend: {
                     position: 'none'
+                },
+                chartArea: {
+                    width: '85%',
+                    height: '75%'
                 },
                 animation: {
                     startup: true,
@@ -225,14 +236,18 @@ $conn->close();
             };
             new google.visualization.ColumnChart(document.getElementById('barchart')).draw(barData, barOptions);
 
+
             // Line Chart
             var lineData = google.visualization.arrayToDataTable(<?php echo json_encode($lineData); ?>);
             var lineOptions = {
-                title: 'Monthly Patient Visits Trend',
-                curveType: 'function',
                 legend: {
                     position: 'bottom'
                 },
+                chartArea: {
+                    width: '85%',
+                    height: '70%'
+                },
+                curveType: 'function',
                 animation: {
                     startup: true,
                     duration: 1000,
@@ -243,6 +258,31 @@ $conn->close();
             new google.visualization.LineChart(document.getElementById('linechart')).draw(lineData, lineOptions);
         }
     </script>
+
+
+    <style>
+        .charts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            /* padding: 20px; */
+        }
+
+        .chart-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+    </style>
 
     <style>
         .dashboard {
@@ -380,14 +420,16 @@ $conn->close();
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
+            /* border: solid 1px black; */
         }
 
         .chart-box {
             background: white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transition: transform .3s;
+            /* border: solid 1px black; */
         }
 
         .chart-box:hover {
@@ -749,18 +791,18 @@ $conn->close();
 
                         <!-- Dropdown -->
                         <div id="filterDropdown">
-                            <ul class="space-y-1 text-sm">
-                                <li><button data-group="total" class="filter-option">Total Patients</button></li>
-                                <li><button data-group="children" class="filter-option">Children</button></li>
-                                <li><button data-group="youth" class="filter-option">Youth</button></li>
-                                <li><button data-group="adults" class="filter-option">Adults</button></li>
-                                <li><button data-group="all" class="filter-option">Show All</button></li>
+                            <ul class=" text-sm">
+                                <li><button data-group="total" class="filter-option flex w-full  font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Total Patients</button></li>
+                                <li><button data-group="children" class="filter-option flex w-full  font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Children</button></li>
+                                <li><button data-group="youth" class="filter-option flex w-full  font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Youth</button></li>
+                                <li><button data-group="adults" class="filter-option flex w-full  font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Adults</button></li>
+                                <li><button data-group="all" class="filter-option flex w-full  font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Show All</button></li>
                             </ul>
                         </div>
 
                         <!-- Patient Cards (only show Total Patients by default) -->
                         <div class="card" data-group="total">
-                            <h3>Total Patients</h3>
+                            <h3 class="font-medium">Total Patients</h3>
                             <h2><?php echo $totalPatients; ?></h2>
                         </div>
                         <div class="card" data-group="children" style="display:none;">
@@ -768,26 +810,26 @@ $conn->close();
                             <h2><?php echo $totalChildren; ?></h2>
                         </div>
                         <div class="card" data-group="youth" style="display:none;">
-                            <h3>Total Youth</h3>
+                            <h3 class="font-medium">Total Youth</h3>
                             <h2><?php echo $totalYouth; ?></h2>
                         </div>
                         <div class="card" data-group="adults" style="display:none;">
-                            <h3>Total Adults</h3>
+                            <h3 class="font-medium">Total Adults</h3>
                             <h2><?php echo $totalAdults; ?></h2>
                         </div>
                     </div>
 
                     <!-- Other KPI Cards (always visible) -->
                     <div class="card">
-                        <h3>Active Visits Today</h3>
+                        <h3 class="font-medium">Active Visits Today</h3>
                         <h2><?php echo $activeVisits; ?></h2>
                     </div>
                     <div class="card">
-                        <h3>Total Treatments Done</h3>
+                        <h3 class="font-medium">Total Treatments Done</h3>
                         <h2><?php echo $totalTreatments; ?></h2>
                     </div>
                     <div class="card">
-                        <h3>Patients with Conditions</h3>
+                        <h3 class="font-medium">Patients with Conditions</h3>
                         <h2><?php echo $patientsWithConditions; ?></h2>
                     </div>
 
@@ -796,13 +838,20 @@ $conn->close();
                 <!-- Charts Section -->
                 <div class="charts">
                     <div class="chart-box">
-                        <div id="piechart" style="height: 300px;"></div>
+                        <div class="chart-title">Oral Health Issues</div>
+                        <div id="piechart" style="height: 320px;"></div>
                     </div>
+
+
                     <div class="chart-box">
-                        <div id="barchart" style="height: 300px;"></div>
+                        <div class="chart-title">Most Common Treatments</div>
+                        <div id="barchart" style="height: 320px;"></div>
                     </div>
+
+
                     <div class="chart-box" style="grid-column: 1 / -1;">
-                        <div id="linechart" style="height: 350px;"></div>
+                        <div class="chart-title">Monthly Patient Visits Trend</div>
+                        <div id="linechart" style="height: 380px;"></div>
                     </div>
                 </div>
 

@@ -4,19 +4,10 @@ header('Content-Type: application/json');
 error_reporting(E_ERROR | E_PARSE);
 include "../conn.php";
 
-/*
-|--------------------------------------------------------------------------
-| SAFE & IMPROVED SESSION VALIDATION
-|--------------------------------------------------------------------------
-| We STOP using ?uid= because it is unsafe and can be modified manually.
-| Instead we validate the logged-in user directly from active_sessions.
-|--------------------------------------------------------------------------
-*/
-
-if (
-  !isset($_SESSION['active_sessions']) ||
-  empty($_SESSION['active_sessions'])
-) {
+// ------------------------
+// REQUIRE uid & session
+// ------------------------
+if (!isset($_GET['uid']) || !isset($_SESSION['active_sessions'][$_GET['uid']])) {
   echo json_encode([
     "status" => "error",
     "title" => "Invalid Session",
@@ -25,26 +16,12 @@ if (
   exit;
 }
 
-// Retrieve the ONLY logged-in user for this tab
-// (In multi-login systems, the frontend should always store which user is active.)
-$loggedUser = end($_SESSION['active_sessions']);
-$userId = intval($loggedUser['id']);
+$userId = intval($_GET['uid']);
+$loggedUser = $_SESSION['active_sessions'][$userId];
 
-// Fail-safe: Ensure valid structure
-if (!$userId || empty($loggedUser['type'])) {
-  echo json_encode([
-    "status" => "error",
-    "title" => "Invalid Session",
-    "message" => "Please log in first."
-  ]);
-  exit;
-}
-
-/*
-|--------------------------------------------------------------------------
-| HISTORY LOG FUNCTION
-|--------------------------------------------------------------------------
-*/
+// ------------------------
+// HISTORY LOG FUNCTION
+// ------------------------
 function addHistoryLog($conn, $tableName, $recordId, $action, $changedByType, $changedById, $oldValues = null, $newValues = null, $description = null)
 {
   $sql = "INSERT INTO history_logs 
@@ -73,29 +50,20 @@ function addHistoryLog($conn, $tableName, $recordId, $action, $changedByType, $c
   return $stmt->execute();
 }
 
-/*
-|--------------------------------------------------------------------------
-| DEFAULT RESPONSE STRUCTURE
-|--------------------------------------------------------------------------
-*/
+// ------------------------
+// DEFAULT RESPONSE
+// ------------------------
 $response = [
   'status'  => 'error',
   'title'   => '',
   'message' => ''
 ];
 
-/*
-|--------------------------------------------------------------------------
-| MAIN POST HANDLER
-|--------------------------------------------------------------------------
-*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-  /*
-    |--------------------------------------------------------------------------
-    | PATIENT INFO VALIDATION
-    |--------------------------------------------------------------------------
-    */
+  // ---------------------------------------
+  // PATIENT INFO
+  // ---------------------------------------
   $surname      = trim($_POST["surname"]      ?? '');
   $firstname    = trim($_POST["firstname"]    ?? '');
   $middlename   = trim($_POST["middlename"]   ?? '');
@@ -111,41 +79,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // AGE VALIDATION
   if ($age < 0 || $months_old < 0 || $months_old > 59) {
-    $response['title'] = "Invalid Age Input";
-    $response['message'] = "Age must be ≥ 0 and months must be between 0–59.";
+    $response['title']   = "Invalid Age Input";
+    $response['message'] = "Age must be ≥ 0 and months must be 0–59.";
     echo json_encode($response);
     exit;
   }
 
-  /*
-    |--------------------------------------------------------------------------
-    | DUPLICATE CHECK
-    |--------------------------------------------------------------------------
-    */
+  // DUPLICATE CHECK
   $check = $conn->prepare("SELECT patient_id FROM patients WHERE surname=? AND firstname=? AND date_of_birth=? LIMIT 1");
   $check->bind_param("sss", $surname, $firstname, $date_of_birth);
   $check->execute();
   $check->store_result();
 
   if ($check->num_rows > 0) {
-    $response['title'] = "Duplicate Entry";
+    $response['title']   = "Duplicate Entry";
     $response['message'] = "This patient already exists.";
     echo json_encode($response);
     exit;
   }
   $check->close();
 
-  /*
-    |--------------------------------------------------------------------------
-    | INSERT INTO patients
-    |--------------------------------------------------------------------------
-    */
+  // ---------------------------------------
+  // INSERT INTO patients
+  // ---------------------------------------
   $stmt = $conn->prepare("
-        INSERT INTO patients (
-            surname, firstname, middlename, date_of_birth, place_of_birth,
-            age, months_old, sex, address, occupation, pregnant, guardian
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
+      INSERT INTO patients (
+          surname, firstname, middlename, date_of_birth, place_of_birth,
+          age, months_old, sex, address, occupation, pregnant, guardian
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ");
 
   $stmt->bind_param(
     "sssssiisssss",
@@ -172,6 +134,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   $patient_id = $stmt->insert_id;
   $stmt->close();
+
+  // HISTORY LOG — PATIENTS
+  addHistoryLog(
+    $conn,
+    "patients",
+    $patient_id,
+    "INSERT",
+    $loggedUser['type'],
+    $loggedUser['id'],
+    null,
+    [
+      "surname" => $surname,
+      "firstname" => $firstname,
+      "middlename" => $middlename,
+      "date_of_birth" => $date_of_birth,
+      "place_of_birth" => $placeofbirth,
+      "age" => $age,
+      "months_old" => $months_old,
+      "sex" => $sex,
+      "address" => $address,
+      "occupation" => $occupation,
+      "pregnant" => $pregnant,
+      "guardian" => $guardian
+    ],
+    "New patient registration"
+  );
 
 
   // ---------------------------------------
@@ -218,7 +206,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $stmt->execute();
   $stmt->close();
 
-
+  // HISTORY LOG — other info
+  addHistoryLog(
+    $conn,
+    "patient_other_info",
+    $patient_id,
+    "INSERT",
+    $loggedUser['type'],
+    $loggedUser['id'],
+    null,
+    $_POST,
+    "Added patient other info"
+  );
 
 
   // ---------------------------------------
@@ -237,6 +236,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $stmt->execute();
   $stmt->close();
 
+  addHistoryLog(
+    $conn,
+    "vital_signs",
+    $patient_id,
+    "INSERT",
+    $loggedUser['type'],
+    $loggedUser['id'],
+    null,
+    $_POST,
+    "Added vital signs"
+  );
 
 
   // ---------------------------------------
@@ -311,6 +321,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $stmt->execute();
   $stmt->close();
 
+  addHistoryLog(
+    $conn,
+    "medical_history",
+    $patient_id,
+    "INSERT",
+    $loggedUser['type'],
+    $loggedUser['id'],
+    null,
+    $_POST,
+    "Added medical history"
+  );
+
 
   // ---------------------------------------
   // DIETARY HABITS
@@ -344,35 +366,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $stmt->execute();
   $stmt->close();
 
-  // ---------------------------------------
-  // UNIFIED HISTORY LOG (single row)
-  // ---------------------------------------
-
-  $tablesAffected = [
-    "patients",
-    "patient_other_info",
-    "vital_signs",
-    "medical_history",
-    "dietary_habits"
-  ];
-
   addHistoryLog(
     $conn,
-    implode(", ", $tablesAffected),  // "patients, patient_other_info, vital_signs, medical_history, dietary_habits"
-    $patient_id,                     // main ID reference
+    "dietary_habits",
+    $patient_id,
     "INSERT",
     $loggedUser['type'],
     $loggedUser['id'],
     null,
-    $_POST,                          // full form submission
-    "Complete patient registration record added"
+    $_POST,
+    "Added dietary habits"
   );
 
-  /*
-    |--------------------------------------------------------------------------
-    | SUCCESS RESPONSE
-    |--------------------------------------------------------------------------
-    */
+
+  // ---------------------------------------
+  // SUCCESS
+  // ---------------------------------------
   $response['status']  = 'success';
   $response['title']   = "Success!";
   $response['message'] = "Patient registration added successfully!";

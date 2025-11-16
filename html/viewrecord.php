@@ -90,6 +90,7 @@ if ($loggedUser['type'] === 'Dentist') {
   <title>Patient Information</title>
   <!-- <link href="../css/style.css" rel="stylesheet"> -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
 </head>
 
 <body>
@@ -727,7 +728,7 @@ if ($loggedUser['type'] === 'Dentist') {
               </button>
             </div>
 
-            <form id="editPatientForm" action="../php/register_patient/update_patient.php" method="POST">
+            <form id="editPatientForm" action="../php/register_patient/update_patient.php?uid=<?php echo $loggedUser['id']; ?>" method="POST">
               <input type="hidden" id="editPatientId" name="patient_id">
 
               <div class="grid grid-cols-2 gap-4">
@@ -1473,6 +1474,20 @@ if ($loggedUser['type'] === 'Dentist') {
 
   <!-- membership, medical and dietary  -->
   <script>
+    /* -----------------------------------------------------------
+   Inject logged-in UID from PHP (required for history logging)
+------------------------------------------------------------*/
+    const loggedInUid = <?= json_encode($_GET['uid'] ?? 0) ?>;
+
+    /* -----------------------------------------------------------
+       Wrapper: ALWAYS attach ?uid= to any fetch request
+    ------------------------------------------------------------*/
+    function apiFetch(url, options = {}) {
+      const connector = url.includes("?") ? "&" : "?";
+      const finalUrl = `${url}${connector}uid=${loggedInUid}`;
+      return fetch(finalUrl, options);
+    }
+
     function toggleInput(checkbox, inputId) {
       const input = document.getElementById(inputId);
       if (!input) return;
@@ -1548,7 +1563,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load membership ---------- */
     async function loadMemberships(patientId) {
       try {
-        const res = await fetch(`../php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}`);
         const json = await res.json();
         const membershipList = document.getElementById("membershipList");
         membershipList.innerHTML = "";
@@ -1603,7 +1618,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load medical ---------- */
     async function loadMedicalHistory(patientId) {
       try {
-        const res = await fetch(`../php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}`);
         const json = await res.json();
         const medicalList = document.getElementById("medicalHistoryList");
         medicalList.innerHTML = "";
@@ -1689,7 +1704,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load dietary ---------- */
     async function loadDietaryHistory(patientId) {
       try {
-        const res = await fetch(`../php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}`);
         const json = await res.json();
         const dietaryList = document.getElementById("dietaryHistoryList");
         dietaryList.innerHTML = "";
@@ -1777,7 +1792,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_membership");
 
         try {
-          const r = await fetch("../php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });
@@ -1817,7 +1832,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_medical");
 
         try {
-          const r = await fetch("../php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });
@@ -1854,7 +1869,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_dietary");
 
         try {
-          const r = await fetch("../php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });

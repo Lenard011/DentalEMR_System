@@ -372,21 +372,6 @@ if ($loggedUser['type'] === 'Dentist') {
                     </li>
                     <li>
                         <div class="flex items-center">
-                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-900 mx-1" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 9 4-4-4-4" />
-                            </svg>
-                            <a href="activitylogs.php?uid=<?php echo $userId; ?>"
-                                class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
-                                <h3
-                                    class="text-lg font-semibold leading-none tracking-tight text-gray-900 md:text-lg lg:text-lg dark:text-white">
-                                    Activity Logs</h3>
-                            </a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
                             <svg class="rtl:rotate-180 w-3 h-3 text-blue-700 mx-1" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -396,18 +381,33 @@ if ($loggedUser['type'] === 'Dentist') {
                                 class="ms-1 text-sm font-medium text-blue-700  md:ms-2 dark:text-gray-400 dark:hover:text-white">
                                 <h3
                                     class="text-lg font-semibold leading-none tracking-tight text-blue-700 hover:text-blue-600 md:text-lg lg:text-lg dark:text-white">
+                                    Activity Logs</h3>
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="rtl:rotate-180 w-3 h-3 text-gray-900 mx-1" aria-hidden="true"
+                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="m1 9 4-4-4-4" />
+                            </svg>
+                            <a href="manageuser.php?uid=<?php echo $userId; ?>"
+                                class="ms-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">
+                                <h3
+                                    class="text-lg font-semibold leading-none tracking-tight text-gray-900 md:text-lg lg:text-lg dark:text-white">
                                     Staff</h3>
                             </a>
                         </div>
                     </li>
                 </ol>
             </nav>
-            <section id="dentist" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
+            <section id="activity" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
                     <!-- Start coding here -->
                     <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg ">
                         <div>
-                            <p class="text-2xl py-2 font-semibold px-5 mt-5 text-gray-900 dark:text-white">Staff list</p>
+                            <p class="text-2xl py-2 font-semibold px-5 mt-5 text-gray-900 dark:text-white">Activity Logs</p>
                         </div>
                         <div
                             class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -448,19 +448,21 @@ if ($loggedUser['type'] === 'Dentist') {
                         </div>
                         <!-- Table -->
                         <div class="overflow-x-auto">
-                            <table id="patientsTable" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <table id="activityTable" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                 <thead
                                     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                     <tr>
-                                        <th class="px-4 py-3 text-center">Name</th>
-                                        <th class="px-4 py-3 text-center">Usename</th>
-                                        <th class="px-4 py-3 text-center">Email</th>
-                                        <th class="px-4 py-3 text-center">Created At</th>
-                                        <th class="px-4 py-3 text-center">Updated At</th>
-                                        <th class="px-4 py-3 text-center">Actions</th>
+                                        <th class="px-4 py-3 text-center">Activity ID</th>
+                                        <th class="px-4 py-3 text-center">User</th>
+                                        <th class="px-4 py-3 text-center">Action</th>
+                                        <th class="px-4 py-3 text-center">taget</th>
+                                        <th class="px-4 py-3 text-center">Details</th>
+                                        <th class="px-4 py-3 text-center">IP Address</th>
+                                        <th class="px-4 py-3 text-center">User Agent</th>
+                                        <th class="px-4 py-3 text-center">Date</th>
                                     </tr>
                                 </thead>
-                                <tbody id="staffBody">
+                                <tbody id="activityBody">
                                     <tr class="border-b dark:border-gray-700 border-gray-200">
                                         <td
                                             class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -472,80 +474,6 @@ if ($loggedUser['type'] === 'Dentist') {
                     </div>
                 </div>
             </section>
-            <!-- Add patient Modal -->
-            <div id="addDentistModal" tabindex="-1" aria-hidden="true"
-                class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
-                <div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
-                    <!-- Modal content -->
-                    <div class="relative p-4 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
-                        <!-- Modal header -->
-                        <div
-                            class="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                Add Staff
-                            </h3>
-                            <button type="button"
-                                class="text-gray-400 bg-transparent cursor-pointer hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                data-modal-toggle="addDentistModal">
-                                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                <span class="sr-only">Close modal</span>
-                            </button>
-                        </div>
-                        <!-- Modal body -->
-                        <form action="/dentalemr_system/php/manageusers/add_staff.php" method="POST">
-                            <input type="hidden" name="userType" value="Staff">
-                            <div class="grid gap-4 mb-4 sm:grid-cols-2">
-                                <div class="sm:col-span-2">
-                                    <label for="staffname"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
-                                    <input type="text" name="fullname" id="staffname" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label for="staffusername"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
-                                    <input type="text" name="username" id="staffusername" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label for="staffemail"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-                                    <input type="email" name="email" id="staffemail" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label for="staffpassword"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-                                    <input type="password" name="password" id="staffpassword" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label for="staffconfirm"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm
-                                        Password</label>
-                                    <input type="password" name="confirm_password" id="staffconfirm" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                </div>
-                            </div>
-                            <button type="submit"
-                                class="text-white inline-flex items-center cursor-pointer bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                <svg class="mr-1 -ml-1 w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                Add Account
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
         </main>
     </div>
 
@@ -571,90 +499,6 @@ if ($loggedUser['type'] === 'Dentist') {
 
         resetTimer();
     </script>
-    <script>
-        let staffData = []; // store data for filtering
-
-        function loadStaffList() {
-            fetch("/dentalemr_system/php/manageusers/get_staff.php")
-                .then(response => response.json())
-                .then(data => {
-                    staffData = data;
-                    renderStaffTable(data);
-                })
-                .catch(() => {
-                    document.getElementById("staffBody").innerHTML = `
-                    <tr>
-                        <td colspan="6" class="p-4 text-center text-red-600">
-                            Error loading staff list.
-                        </td>
-                    </tr>
-                `;
-                });
-        }
-
-        function renderStaffTable(data) {
-            const tbody = document.getElementById("staffBody");
-            tbody.innerHTML = "";
-
-            if (data.length === 0) {
-                tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="p-4 text-center text-gray-500 dark:text-gray-300">
-                        No staff accounts found.
-                    </td>
-                </tr>
-            `;
-                return;
-            }
-
-            // Use DocumentFragment for better performance
-            const fragment = document.createDocumentFragment();
-
-            data.forEach(row => {
-                const tr = document.createElement("tr");
-                tr.className = "border-b border-gray-200 dark:border-gray-700";
-
-                tr.innerHTML = `
-                <td class="px-4 py-3 text-center text-gray-900 dark:text-white">${row.name}</td>
-                <td class="px-4 py-3 text-center">${row.username}</td>
-                <td class="px-4 py-3 text-center">${row.email}</td>
-                <td class="px-4 py-3 text-center">${row.created_at}</td>
-                <td class="px-4 py-3 text-center">${row.updated_at}</td>
-                <td class="px-4 py-3 text-center">
-                    <a href="/dentalemr_system/php/manageusers/delete_staff.php?id=${row.id}"
-                        onclick="return confirm('Are you sure you want to delete this staff account?')"
-                        class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-sm cursor-pointer text-sm">
-                        Delete
-                    </a>
-                </td>
-            `;
-
-                fragment.appendChild(tr);
-            });
-
-            tbody.appendChild(fragment);
-        }
-
-        // Live search
-        document.addEventListener("DOMContentLoaded", () => {
-            loadStaffList();
-
-            const searchInput = document.getElementById("simple-search");
-
-            searchInput.addEventListener("input", () => {
-                const term = searchInput.value.toLowerCase();
-
-                const filtered = staffData.filter(row =>
-                    row.name.toLowerCase().includes(term) ||
-                    row.username.toLowerCase().includes(term) ||
-                    row.email.toLowerCase().includes(term)
-                );
-
-                renderStaffTable(filtered);
-            });
-        });
-    </script>
-
 
 </body>
 

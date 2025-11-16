@@ -1,6 +1,6 @@
 <?php
 session_start();
-
+include_once "/dentalemr_system/php/manageusers/log_history.php";
 if (!isset($_GET['id'])) {
     // If no user ID provided, do NOT destroy everyone
     header("Location: /dentalemr_system/html/login/login.html");

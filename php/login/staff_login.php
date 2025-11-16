@@ -2,7 +2,6 @@
 session_start();
 require_once '../conn.php';
 date_default_timezone_set('Asia/Manila');
-
 require_once '../../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;

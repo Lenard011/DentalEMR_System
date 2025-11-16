@@ -1,6 +1,6 @@
 <?php
 header("Content-Type: application/json");
-
+include_once "/dentalemr_system/php/manageusers/log_history.php";
 $conn = new mysqli("localhost", "root", "", "dentalemr_system");
 if ($conn->connect_error) {
     http_response_code(500);

@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once "../conn.php"; // adjust the path if needed
-
+include_once "/dentalemr_system/php/manageusers/log_history.php";
 if (!isset($_GET['id'])) {
     echo "<script>
             alert('Invalid request: No ID provided.');

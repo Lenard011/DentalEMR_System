@@ -2,7 +2,7 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 header("Content-Type: application/json");
-
+include_once "/dentalemr_system/php/manageusers/log_history.php";
 $host = "localhost";
 $user = "root";
 $pass = "";

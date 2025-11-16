@@ -1,7 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 mysqli_report(MYSQLI_REPORT_OFF);
-
 // Database connection
 $mysqli = new mysqli("localhost", "root", "", "dentalemr_system");
 if ($mysqli->connect_errno) {

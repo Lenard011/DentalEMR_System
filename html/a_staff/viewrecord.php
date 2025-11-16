@@ -90,6 +90,7 @@ if ($loggedUser['type'] === 'Dentist') {
   <title>Patient Information</title>
   <!-- <link href="../css/style.css" rel="stylesheet"> -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
 </head>
 
 <body>
@@ -197,8 +198,8 @@ if ($loggedUser['type'] === 'Dentist') {
           <label for="sidebar-search" class="sr-only">Search</label>
           <div class="relative">
             <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-              <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor"
-                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+              <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd"
                   d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z">
                 </path>
@@ -209,6 +210,20 @@ if ($loggedUser['type'] === 'Dentist') {
               placeholder="Search" />
           </div>
         </form>
+        <ul class="space-y-2">
+          <li>
+            <a href="index.php?uid=<?php echo $userId; ?>"
+              class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg aria-hidden="true"
+                class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+                <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+              </svg>
+              <span class="ml-3">Dashboard</span>
+            </a>
+          </li>
+        </ul>
         <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
           <li>
             <a href="#"
@@ -224,6 +239,38 @@ if ($loggedUser['type'] === 'Dentist') {
 
               <span class="ml-3">Add Patient</span>
             </a>
+          </li>
+          <li>
+            <button type="button"
+              class="flex items-center cursor-pointer p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+              aria-controls="dropdown-pages" data-collapse-toggle="dropdown-pages">
+              <svg aria-hidden="true"
+                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                  d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              <span class="flex-1 ml-3 text-left whitespace-nowrap">Patient Treatment</span>
+              <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <ul id="dropdown-pages" class="hidden py-2 space-y-2">
+              <li>
+                <a href="./treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
+                  class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
+                  Records</a>
+              </li>
+              <li>
+                <a href="./addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
+                  class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
+                  Patient Treatment</a>
+              </li>
+            </ul>
           </li>
         </ul>
         <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
@@ -245,16 +292,64 @@ if ($loggedUser['type'] === 'Dentist') {
           <li>
             <a href="./reports/mho_ohp.php?uid=<?php echo $userId; ?>"
               class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-              <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+              <svg
+                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                 viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                  stroke-width="2"
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M11 9h6m-6 3h6m-6 3h6M6.996 9h.01m-.01 3h.01m-.01 3h.01M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
               </svg>
               <span class="ml-3">MHO - OHP</span>
             </a>
           </li>
+          <li>
+            <a href="./reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
+              class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                  d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5" />
+              </svg>
+
+              <span class="ml-3">Oral Hygiene Findings</span>
+            </a>
+          </li>
+        </ul>
+        <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
+          <li>
+            <a href="./archived.php?uid=<?php echo $userId; ?>"
+              class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                viewBox="0 0 24 24">
+                <path fill-rule="evenodd"
+                  d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
+                  clip-rule="evenodd" />
+                <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
+              </svg>
+
+
+              <span class="ml-3">Archived</span>
+            </a>
+          </li>
+          <li>
+            <a href="#"
+              class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+              <svg
+                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v15a1 1 0 0 0 1 1h15M8 16l2.5-5.5 3 3L17.273 7 20 9.667" />
+              </svg>
+
+              <span class="ml-3">Analytics</span>
+            </a>
+          </li>
+
         </ul>
       </div>
     </aside>
@@ -633,7 +728,7 @@ if ($loggedUser['type'] === 'Dentist') {
               </button>
             </div>
 
-            <form id="editPatientForm" action="../php/register_patient/update_patient.php" method="POST">
+            <form id="editPatientForm" action="../php/register_patient/update_patient.php?uid=<?php echo $loggedUser['id']; ?>" method="POST">
               <input type="hidden" id="editPatientId" name="patient_id">
 
               <div class="grid grid-cols-2 gap-4">
@@ -1175,7 +1270,7 @@ if ($loggedUser['type'] === 'Dentist') {
       clearTimeout(logoutTimer);
       logoutTimer = setTimeout(() => {
         alert("You've been logged out due to 10 minutes of inactivity.");
-        window.location.href = "/dentalemr_system/php/login/logout.php";
+        window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
       }, inactivityTime);
     }
 
@@ -1234,7 +1329,7 @@ if ($loggedUser['type'] === 'Dentist') {
       async function loadPatient() {
         if (!patientId) return;
         try {
-          const res = await fetch(`/dentalemr_system/php/register_patient/get_patient.php?id=${encodeURIComponent(patientId)}`);
+          const res = await fetch(`../php/register_patient/get_patient.php?id=${encodeURIComponent(patientId)}`);
           const data = await res.json();
           if (!data.success) throw new Error(data.error || 'Failed to fetch patient data.');
           currentPatient = data.patient;
@@ -1379,6 +1474,20 @@ if ($loggedUser['type'] === 'Dentist') {
 
   <!-- membership, medical and dietary  -->
   <script>
+    /* -----------------------------------------------------------
+   Inject logged-in UID from PHP (required for history logging)
+------------------------------------------------------------*/
+    const loggedInUid = <?= json_encode($_GET['uid'] ?? 0) ?>;
+
+    /* -----------------------------------------------------------
+       Wrapper: ALWAYS attach ?uid= to any fetch request
+    ------------------------------------------------------------*/
+    function apiFetch(url, options = {}) {
+      const connector = url.includes("?") ? "&" : "?";
+      const finalUrl = `${url}${connector}uid=${loggedInUid}`;
+      return fetch(finalUrl, options);
+    }
+
     function toggleInput(checkbox, inputId) {
       const input = document.getElementById(inputId);
       if (!input) return;
@@ -1454,7 +1563,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load membership ---------- */
     async function loadMemberships(patientId) {
       try {
-        const res = await fetch(`/dentalemr_system/php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}`);
         const json = await res.json();
         const membershipList = document.getElementById("membershipList");
         membershipList.innerHTML = "";
@@ -1509,7 +1618,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load medical ---------- */
     async function loadMedicalHistory(patientId) {
       try {
-        const res = await fetch(`/dentalemr_system/php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}`);
         const json = await res.json();
         const medicalList = document.getElementById("medicalHistoryList");
         medicalList.innerHTML = "";
@@ -1595,7 +1704,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load dietary ---------- */
     async function loadDietaryHistory(patientId) {
       try {
-        const res = await fetch(`/dentalemr_system/php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}`);
         const json = await res.json();
         const dietaryList = document.getElementById("dietaryHistoryList");
         dietaryList.innerHTML = "";
@@ -1683,7 +1792,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_membership");
 
         try {
-          const r = await fetch("/dentalemr_system/php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });
@@ -1723,7 +1832,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_medical");
 
         try {
-          const r = await fetch("/dentalemr_system/php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });
@@ -1760,7 +1869,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_dietary");
 
         try {
-          const r = await fetch("/dentalemr_system/php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });
@@ -1830,7 +1939,7 @@ if ($loggedUser['type'] === 'Dentist') {
         data.append('weight', formData.get('weight'));
 
         try {
-          const res = await fetch('/dentalemr_system/php/register_patient/patient_info.php', {
+          const res = await fetch('../php/register_patient/patient_info.php', {
             method: 'POST',
             body: data
           });
@@ -1851,7 +1960,7 @@ if ($loggedUser['type'] === 'Dentist') {
 
       async function fetchVitals() {
         try {
-          const res = await fetch(`/dentalemr_system/php/register_patient/patient_info.php?action=get_vitals&patient_id=${patientInput.value}`);
+          const res = await fetch(`../php/register_patient/patient_info.php?action=get_vitals&patient_id=${patientInput.value}`);
           const data = await res.json();
           if (!data.success) return;
 

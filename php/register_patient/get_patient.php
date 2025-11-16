@@ -6,14 +6,14 @@ try {
     $conn = new mysqli("localhost", "root", "", "dentalemr_system");
     $conn->set_charset("utf8mb4");
 
-    // ✅ Get patient ID from GET query
+    // Get patient ID from GET query
     $patient_id = $_GET['id'] ?? null;
     if (!$patient_id || !is_numeric($patient_id)) {
         echo json_encode(["success" => false, "error" => "Missing or invalid patient ID"]);
         exit();
     }
 
-    // ✅ Fetch patient data from DB
+    // Fetch patient data from DB
     $stmt = $conn->prepare("
         SELECT 
             patient_id,
@@ -40,7 +40,7 @@ try {
     $result = $stmt->get_result();
 
     if ($row = $result->fetch_assoc()) {
-        // ✅ Generate display_age without changing DB
+        // Generate display_age without changing DB
         if ((int)$row['age'] === 0) {
             $row['display_age'] = $row['agemonth'] . " months old";
         } else {

@@ -3,7 +3,6 @@ session_start();
 require_once 'db_connect.php';
 date_default_timezone_set('Asia/Manila');
 require_once '../../vendor/autoload.php';
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 

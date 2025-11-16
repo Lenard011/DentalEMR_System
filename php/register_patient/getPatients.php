@@ -1,6 +1,5 @@
 <?php
 header("Content-Type: application/json; charset=utf-8");
-
 // Database connection
 $DB_HOST = "localhost";
 $DB_USER = "root";
@@ -27,7 +26,7 @@ $search = isset($_GET['search']) ? trim($_GET['search']) : "";
 $filterAddresses = isset($_GET['addresses']) ? trim($_GET['addresses']) : "";
 
 try {
-    $whereParts = ["if_treatment = 0"]; // ✅ always filter for if_treatment = 0
+    $whereParts = ["if_treatment = 0"]; // always filter for if_treatment = 0
     $params = [];
     $types = "";
 
@@ -39,7 +38,7 @@ try {
         $types .= "ssss";
     }
 
-    // 🏠 Address filter
+    // Address filter
     if ($filterAddresses !== "") {
         $addrArr = array_map("trim", explode(",", $filterAddresses));
         $addrArr = array_filter($addrArr, fn($a) => $a !== "");
@@ -54,7 +53,7 @@ try {
     // WHERE clause builder
     $whereSql = "WHERE " . implode(" AND ", $whereParts);
 
-    // 🧾 Main query
+    // Main query
     $sql = "SELECT patient_id, surname, firstname, middlename, sex, age, address
             FROM patients
             $whereSql
@@ -70,7 +69,7 @@ try {
     $patients = $res->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 
-    // 📊 Total count query
+    // Total count query
     $countSql = "SELECT COUNT(*) as total FROM patients $whereSql";
     $cstmt = $mysqli->prepare($countSql);
     if ($types !== "") {
@@ -87,14 +86,14 @@ try {
     $total = (int)$countRow['total'];
     $cstmt->close();
 
-    // 📍 Distinct address list for filters (still includes only those with if_treatment=0)
+    // Distinct address list for filters (still includes only those with if_treatment=0)
     $addrRes = $mysqli->query("SELECT DISTINCT address FROM patients WHERE if_treatment = 0 AND address IS NOT NULL AND address <> '' ORDER BY address ASC");
     $addresses = [];
     while ($row = $addrRes->fetch_assoc()) {
         $addresses[] = $row['address'];
     }
 
-    // ✅ Output response
+    // Output response
     echo json_encode([
         "patients"  => $patients,
         "total"     => $total,

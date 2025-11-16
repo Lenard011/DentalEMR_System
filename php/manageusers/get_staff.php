@@ -10,6 +10,5 @@ while ($row = mysqli_fetch_assoc($result)) {
     $staffList[] = $row;
 }
 
-header('Content-Type: application/json');
+header("Content-Type: application/json");
 echo json_encode($staffList);
-?>

@@ -1,6 +1,7 @@
 <?php
 // php/conns.php
 // Simple PDO connection. Adjust credentials.
+
 $DB_HOST = '127.0.0.1';
 $DB_NAME = 'dentalemr_system';
 $DB_USER = 'root';
