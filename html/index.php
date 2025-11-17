@@ -112,22 +112,90 @@ $patientsWithConditions = $conn->query("
 ")->fetch_assoc()['count'];
 
 // ---------------- PIE CHART ----------------
-$conditions = $conn->query("
-    SELECT
-        SUM(CASE WHEN dental_caries='✓' THEN 1 ELSE 0 END) AS dental_caries,
-        SUM(CASE WHEN gingivitis='✓' THEN 1 ELSE 0 END) AS gingivitis,
-        SUM(CASE WHEN periodontal_disease='✓' THEN 1 ELSE 0 END) AS periodontal_disease,
-        SUM(CASE WHEN others='✓' THEN 1 ELSE 0 END) AS others
-    FROM oral_health_condition
-")->fetch_assoc();
-
-$pieData = [
-    ['Condition', 'Cases'],
-    ['Dental Caries', (int)$conditions['dental_caries']],
-    ['Gingivitis', (int)$conditions['gingivitis']],
-    ['Periodontal Disease', (int)$conditions['periodontal_disease']],
-    ['Others', (int)$conditions['others']]
+// List of condition columns you want to count
+$conditionFields = [
+    'orally_fit_child',
+    'dental_caries',
+    'gingivitis',
+    'periodontal_disease',
+    'others',
+    'debris',
+    'calculus',
+    'abnormal_growth',
+    'cleft_palate'
 ];
+
+// Dynamically build SQL SUM() conditions
+$sqlParts = [];
+foreach ($conditionFields as $field) {
+    $sqlParts[] = "SUM(CASE WHEN $field IN ('✓','Yes','yes','YES') THEN 1 ELSE 0 END) AS $field";
+}
+
+$sql = "
+    SELECT 
+        YEAR(created_at) AS year,
+        MONTH(created_at) AS month,
+        DATE_FORMAT(created_at, '%M') AS month_name,
+        " . implode(", ", $sqlParts) . "
+    FROM oral_health_condition
+    GROUP BY YEAR(created_at), MONTH(created_at)
+    ORDER BY YEAR(created_at), MONTH(created_at)
+";
+
+
+
+// Run query and get ALL rows (fix)
+$res = $conn->query($sql);
+
+$result = [];
+while ($row = $res->fetch_assoc()) {
+    $result[] = $row;
+}
+
+// ---------------- PIE CHART (still works with latest year) ----------------
+$latest = $result[count($result) - 1] ?? null;
+
+$pieData = [['Condition', 'Cases']];
+
+$labelNames = [
+    'orally_fit_child'     => 'Orally Fit Child',
+    'dental_caries'        => 'Dental Caries',
+    'gingivitis'           => 'Gingivitis',
+    'periodontal_disease'  => 'Periodontal Disease',
+    'others'               => 'Others',
+    'debris'               => 'Debris',
+    'calculus'             => 'Calculus',
+    'abnormal_growth'      => 'Abnormal Growth',
+    'cleft_palate'         => 'Cleft Palate'
+];
+
+if ($latest) {
+    foreach ($conditionFields as $field) {
+        $count = (int)$latest[$field];
+        if ($count > 0) {
+            $pieData[] = [$labelNames[$field], $count];
+        }
+    }
+}
+
+// ---------------- STACKED BAR CHART (new) ----------------
+$stackData = [['Month']];
+foreach ($labelNames as $label) {
+    $stackData[0][] = $label;
+}
+
+foreach ($result as $row) {
+    $r = [
+        $row['month_name'] . " (" . $row['year'] . ")"  // Example: January (2024)
+    ];
+
+    foreach ($conditionFields as $field) {
+        $r[] = (int)$row[$field];
+    }
+
+    $stackData[] = $r;
+}
+
 
 // ---------------- BAR CHART ----------------
 $treatmentsResult = $conn->query("
@@ -142,6 +210,78 @@ $barData = [['Treatment', 'Count']];
 while ($row = $treatmentsResult->fetch_assoc()) {
     $barData[] = [$row['treatment'], (int)$row['count']];
 }
+
+// Male&Female 
+$sexQuery = $conn->query("
+    SELECT 
+        sex,
+        COUNT(*) AS total
+    FROM patients
+    GROUP BY sex
+");
+
+$donutData = [['Sex', 'Total']];
+
+while ($row = $sexQuery->fetch_assoc()) {
+    $sex = strtoupper(trim($row['sex'])); // normalize input
+
+    if ($sex === 'M' || $sex === 'MALE') {
+        $label = 'Male';
+    } elseif ($sex === 'F' || $sex === 'FEMALE') {
+        $label = 'Female';
+    } else {
+        $label = 'Unknown';
+    }
+
+    $donutData[] = [$label, (int)$row['total']];
+}
+$selectedYear = $_GET['year'] ?? '';
+
+if ($selectedYear == "") {
+    // All years
+    $barangayQuery = $conn->query("
+        SELECT 
+            address AS barangay,
+            COUNT(*) AS total
+        FROM patients
+        GROUP BY address
+        ORDER BY address ASC
+    ");
+} else {
+    // Filter specific year
+    $barangayQuery = $conn->query("
+        SELECT 
+            address AS barangay,
+            COUNT(*) AS total
+        FROM patients
+        WHERE YEAR(created_at) = '$selectedYear'
+        GROUP BY address
+        ORDER BY address ASC
+    ");
+}
+
+
+$barangayData = [['Barangay', 'Patients']];
+
+while ($row = $barangayQuery->fetch_assoc()) {
+    $barangayData[] = [
+        $row['barangay'],
+        (int)$row['total']
+    ];
+}
+
+// Load years (distinct)
+$yearsQuery = $conn->query("
+    SELECT DISTINCT YEAR(created_at) AS yr
+    FROM patients
+    ORDER BY yr DESC
+");
+
+$years = [];
+while ($y = $yearsQuery->fetch_assoc()) {
+    $years[] = $y['yr'];
+}
+
 
 // ---------------- LINE CHART ----------------
 $trendResult = $conn->query("
@@ -196,9 +336,12 @@ $conn->close();
 
 
         function drawCharts() {
-            // Pie Chart
-            var pieData = google.visualization.arrayToDataTable(<?php echo json_encode($pieData); ?>);
-            var pieOptions = {
+            // Donut Chart (Male and Female)
+            var donutData = google.visualization.arrayToDataTable(<?php echo json_encode($donutData); ?>);
+
+            var donutOptions = {
+                // title: 'Male and Female Patients',
+                pieHole: 0.45,
                 legend: {
                     position: 'right'
                 },
@@ -206,19 +349,127 @@ $conn->close();
                     width: '85%',
                     height: '80%'
                 },
-                is3D: true,
-                pieSliceText: 'percentage',
+                colors: ['#4f46e5', '#ef4444'],
                 animation: {
                     duration: 1000,
                     easing: 'out'
-                },
-                colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444']
+                }
             };
-            new google.visualization.PieChart(document.getElementById('piechart')).draw(pieData, pieOptions);
+
+            new google.visualization.PieChart(
+                document.getElementById('donutchart')
+            ).draw(donutData, donutOptions);
+
+            // Barangay Chart
+            var rawBarangay = <?php echo json_encode($barangayData); ?>;
+
+            // Convert PHP array into Google DataTable directly
+            var barangayPieData = google.visualization.arrayToDataTable(rawBarangay);
+
+            var barangayPieOptions = {
+                title: "Patients per Barangay",
+                is3D: true,
+                chartArea: {
+                    width: '90%',
+                    height: '85%'
+                },
+                animation: {
+                    startup: true,
+                    duration: 1000,
+                    easing: 'out'
+                },
+                // auto color palette
+                colors: [
+                    '#4f46e5', '#10b981', '#f59e0b', '#ef4444',
+                    '#6366f1', '#14b8a6', '#f472b6', '#8b5cf6',
+                    '#06b6d4', '#db2777', '#84cc16'
+                ]
+            };
+
+            new google.visualization.PieChart(
+                document.getElementById('combochart_barangay')
+            ).draw(barangayPieData, barangayPieOptions);
+
+            // Oral Examination Chart
+            let rawStack = <?php echo json_encode($stackData); ?>;
+            const selectedYear = document.getElementById("oralYearFilter")?.value || "";
+            let filteredStack = rawStack;
+
+            if (selectedYear !== "") {
+                filteredStack = rawStack.filter((row, index) => {
+                    if (index === 0) return true; // Keep header row unchanged
+                    return row[0].includes("(" + selectedYear + ")");
+                });
+            }
+
+            filteredStack = filteredStack.map((row, index) => {
+                if (index === 0) return row;
+                row[0] = String(row[0]);
+                return row;
+            });
+
+            const stackData = google.visualization.arrayToDataTable(filteredStack);
+
+            // Color palette
+            const condColors = [
+                '#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#14b8a6',
+                '#f472b6', '#8b5cf6', '#06b6d4', '#f87171', '#84cc16', '#ec4899'
+            ];
+
+            // Chart options
+            const stackOptions = {
+                title: "Total Cases of Oral Examination",
+                isStacked: true,
+                legend: {
+                    position: 'top',
+                    maxLines: 3
+                },
+                chartArea: {
+                    width: '80%',
+                    height: '70%'
+                },
+                hAxis: {
+                    title: "Month"
+                },
+                vAxis: {
+                    title: "Number of Cases"
+                },
+                colors: condColors.slice(0, stackData.getNumberOfColumns() - 1),
+                animation: {
+                    startup: true,
+                    duration: 1200,
+                    easing: 'out'
+                }
+            };
+
+            // Draw chart
+            new google.visualization.ColumnChart(
+                document.getElementById('oralChart')
+            ).draw(stackData, stackOptions);
 
 
-            // Bar Chart
-            var barData = google.visualization.arrayToDataTable(<?php echo json_encode($barData); ?>);
+            // most Common treatment Chart
+            var rawBar = <?php echo json_encode($barData); ?>;
+            // Add a style column for per-bar colors
+            var barData = new google.visualization.DataTable();
+            barData.addColumn('string', rawBar[0][0]); // Treatment
+            barData.addColumn('number', rawBar[0][1]); // Count
+            barData.addColumn({
+                type: 'string',
+                role: 'style'
+            }); // <--- NEW
+
+            // Color palette (auto rotates)
+            var colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#14b8a6', '#f472b6'];
+
+            for (var i = 1; i < rawBar.length; i++) {
+                barData.addRow([
+                    rawBar[i][0], // treatment name
+                    rawBar[i][1], // count
+                    'color: ' + colors[(i - 1) % colors.length] // assign color
+                ]);
+            }
+
             var barOptions = {
                 legend: {
                     position: 'none'
@@ -231,10 +482,13 @@ $conn->close();
                     startup: true,
                     duration: 1000,
                     easing: 'out'
-                },
-                colors: ['#4f46e5']
+                }
             };
-            new google.visualization.ColumnChart(document.getElementById('barchart')).draw(barData, barOptions);
+
+            new google.visualization.ColumnChart(
+                document.getElementById('barchart')
+            ).draw(barData, barOptions);
+
 
 
             // Line Chart
@@ -259,7 +513,6 @@ $conn->close();
         }
     </script>
 
-
     <style>
         .charts {
             display: grid;
@@ -278,6 +531,7 @@ $conn->close();
 
         .chart-title {
             font-size: 18px;
+            color: #475569;
             font-weight: bold;
             margin-bottom: 10px;
             text-align: left;
@@ -307,7 +561,7 @@ $conn->close();
         .card {
             background: white;
             border-radius: 15px;
-            padding: 25px;
+            padding: 10px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             transition: transform .3s, box-shadow .3s;
@@ -319,8 +573,10 @@ $conn->close();
         #kpi-cards-grid {
             display: flex;
             flex-wrap: wrap;
+            /* flex-direction: row; */
             gap: 1rem;
             margin-bottom: 20px;
+            /* border: solid 1px black; */
         }
 
         /* Patient cards section */
@@ -330,7 +586,7 @@ $conn->close();
             gap: 1rem;
             flex: 1 1 auto;
             /* allow to grow/shrink in the row */
-            min-width: 250px;
+            min-width: 200px;
             position: relative;
             /* for filter button positioning */
         }
@@ -374,14 +630,14 @@ $conn->close();
 
         /* Patient cards themselves */
         .patient-cards-section .card {
-            flex: 1 1 250px;
-            min-width: 250px;
+            flex: 1 1 200px;
+            min-width: 200px;
         }
 
         /* Other KPI cards (always visible) */
         #kpi-cards-grid>.card {
-            flex: 1 1 250px;
-            min-width: 250px;
+            flex: 1 1 200px;
+            min-width: 200px;
         }
 
         .card:hover {
@@ -433,6 +689,23 @@ $conn->close();
         }
 
         .chart-box:hover {
+            transform: scale(1.02);
+        }
+
+        .tables {
+            background: white;
+            border-radius: 15px;
+            margin-top: 20px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform .3s;
+        }
+
+        .tables:hover {
+            transform: scale(1.02);
+        }
+
+        .table-box:hover {
             transform: scale(1.02);
         }
 
@@ -786,8 +1059,8 @@ $conn->close();
 
                     ?>!
                 </h1>
-                <div id="kpi-cards-grid">
 
+                <div id="kpi-cards-grid">
                     <!-- Patient Cards Section -->
                     <div class="patient-cards-section">
                         <!-- Filter button -->
@@ -813,43 +1086,73 @@ $conn->close();
                         <!-- Patient Cards (only show Total Patients by default) -->
                         <div class="card" data-group="total">
                             <h3 class="font-medium">Total Patients</h3>
-                            <h2><?php echo $totalPatients; ?></h2>
+                            <h2 class="count-up" data-value="<?php echo $totalPatients; ?>">0</h2>
                         </div>
                         <div class="card" data-group="children" style="display:none;">
                             <h3>Total Children</h3>
-                            <h2><?php echo $totalChildren; ?></h2>
+                            <h2 class="count-up" data-value="<?php echo $totalChildren; ?>">0</h2>
                         </div>
                         <div class="card" data-group="youth" style="display:none;">
                             <h3 class="font-medium">Total Youth</h3>
-                            <h2><?php echo $totalYouth; ?></h2>
+                            <h2 class="count-up" data-value="<?php echo $totalYouth; ?>">0</h2>
                         </div>
                         <div class="card" data-group="adults" style="display:none;">
                             <h3 class="font-medium">Total Adults</h3>
-                            <h2><?php echo $totalAdults; ?></h2>
+                            <h2 class="count-up" data-value="<?php echo $totalAdults; ?>">0</h2>
                         </div>
                     </div>
 
                     <!-- Other KPI Cards (always visible) -->
                     <div class="card">
                         <h3 class="font-medium">Active Visits Today</h3>
-                        <h2><?php echo $activeVisits; ?></h2>
+                        <h2 class="count-up" data-value="<?php echo $activeVisits; ?>">0</h2>
                     </div>
                     <div class="card">
                         <h3 class="font-medium">Total Treatments Done</h3>
-                        <h2><?php echo $totalTreatments; ?></h2>
+                        <h2 class="count-up" data-value="<?php echo $totalTreatments; ?>">0</h2>
                     </div>
                     <div class="card">
                         <h3 class="font-medium">Patients with Conditions</h3>
-                        <h2><?php echo $patientsWithConditions; ?></h2>
+                        <h2 class="count-up" data-value="<?php echo $patientsWithConditions; ?>">0</h2>
                     </div>
-
                 </div>
 
                 <!-- Charts Section -->
                 <div class="charts">
                     <div class="chart-box">
-                        <div class="chart-title">Oral Health Issues</div>
-                        <div id="piechart" style="height: 320px;"></div>
+                        <div class="chart-title">Male and Female Patients</div>
+                        <div id="donutchart" style="height: 320px;"></div>
+                    </div>
+
+                    <div class="chart-box">
+                        <div class="chart-title">Patients per Barangay</div>
+                        <div style="margin-bottom: 10px; text-align:center;">
+                            <label style="font-weight: medium; font-size:14px ;">Flter Year: </label>
+                            <select id="yearFilter" style="font-weight: medium; font-size:14px ; cursor: pointer;" onchange="changeYear()">
+                                <option value="">All</option>
+                                <?php foreach ($years as $yr): ?>
+                                    <option value="<?= $yr ?>" <?= ($yr == $selectedYear) ? 'selected' : '' ?>>
+                                        <?= $yr ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div id="combochart_barangay" style="height: 320px;"></div>
+                    </div>
+
+                    <div class="chart-box">
+                        <div class="chart-title">Oral Health Condition</div>
+                        <div style="text-align:center; margin-bottom:10px;">
+                            <label style="font-weight: medium; font-size:14px ;"><b>Filter Year:</b></label>
+                            <select id="oralYearFilter" style="font-weight: medium; font-size:14px ; cursor: pointer;" onchange="drawCharts()">
+                                <option value="">All</option>
+                                <?php foreach ($years as $y): ?>
+                                    <option value="<?= $y ?>"><?= $y ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div id="oralChart" style="height: 320px;"></div>
                     </div>
 
 
@@ -866,35 +1169,38 @@ $conn->close();
                 </div>
 
                 <!-- Tables -->
-                <h3>Recent Visits</h3>
-                <table>
-                    <tr>
-                        <th>Date</th>
-                        <th>Patient Name</th>
-                    </tr>
-                    <?php while ($v = $recentVisits->fetch_assoc()): ?>
+                <div class="tables">
+                    <h3 class="font-bold">Recent Visits</h3>
+                    <table>
                         <tr>
-                            <td><?php echo $v['visit_date']; ?></td>
-                            <td><?php echo $v['firstname'] . " " . $v['surname']; ?></td>
+                            <th>Date</th>
+                            <th>Patient Name</th>
                         </tr>
-                    <?php endwhile; ?>
-                </table>
-
-                <h3>Recent Treatments</h3>
-                <table>
-                    <tr>
-                        <th>Date</th>
-                        <th>Patient Name</th>
-                        <th>Treatment</th>
-                    </tr>
-                    <?php while ($t = $recentTreatments->fetch_assoc()): ?>
+                        <?php while ($v = $recentVisits->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo $v['visit_date']; ?></td>
+                                <td><?php echo $v['firstname'] . " " . $v['surname']; ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </table>
+                </div>
+                <div class="tables">
+                    <h3 class="font-bold">Recent Treatments</h3>
+                    <table>
                         <tr>
-                            <td><?php echo $t['created_at']; ?></td>
-                            <td><?php echo $t['firstname'] . " " . $t['surname']; ?></td>
-                            <td><?php echo $t['description']; ?></td>
+                            <th>Date</th>
+                            <th>Patient Name</th>
+                            <th>Treatment</th>
                         </tr>
-                    <?php endwhile; ?>
-                </table>
+                        <?php while ($t = $recentTreatments->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo $t['created_at']; ?></td>
+                                <td><?php echo $t['firstname'] . " " . $t['surname']; ?></td>
+                                <td><?php echo $t['description']; ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
@@ -948,6 +1254,49 @@ $conn->close();
                 if (!filterButton.contains(e.target) && !filterDropdown.contains(e.target)) {
                     filterDropdown.classList.remove("show");
                 }
+            });
+        });
+    </script>
+
+    <script>
+        function changeYear() {
+            let year = document.getElementById("yearFilter").value;
+
+            const params = new URLSearchParams(window.location.search);
+
+            // Keep uid
+            const uid = params.get("uid");
+
+            // Update/Set Year
+            params.set("year", year);
+
+            // Reload with preserved uid and new year
+            window.location.href = "http://localhost/dentalemr_system/html/index.php?" + params.toString();
+        }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const counters = document.querySelectorAll(".count-up");
+
+            counters.forEach(counter => {
+                const finalValue = parseInt(counter.getAttribute("data-value")) || 0;
+                let current = 0;
+                const duration = 1000; // 1 second
+                const steps = 60;
+                const increment = finalValue / steps;
+
+                function updateCounter() {
+                    current += increment;
+                    if (current < finalValue) {
+                        counter.innerText = Math.floor(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.innerText = finalValue;
+                    }
+                }
+
+                updateCounter();
             });
         });
     </script>
