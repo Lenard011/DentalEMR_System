@@ -222,11 +222,11 @@ if ($loggedUser['type'] === 'Staff') {
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
-                                    out</a>
-                            </li>
+                            <a href="#"
+                                onclick="confirmLogout(<?php echo $loggedUser['id']; ?>)"
+                                class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                Sign out
+                            </a>
                         </ul>
                     </div>
                 </div>
@@ -1433,7 +1433,14 @@ if ($loggedUser['type'] === 'Staff') {
             });
         });
     </script>
-
+    
+    <script>
+        function confirmLogout(userId) {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/dentalemr_system/php/login/logout.php?uid=' + userId;
+            }
+        }
+    </script>
 
 </body>
 

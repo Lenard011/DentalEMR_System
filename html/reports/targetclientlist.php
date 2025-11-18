@@ -501,8 +501,7 @@ $end = min(($offset + $limit), $total_records);
                                     value="<?php echo htmlspecialchars($search); ?>"
                                     class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     placeholder="Search patient" />
-                                <button type="submit"
-                                    class="text-white absolute end-1.5 bottom-1.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs px-2 py-1 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
+                                
                             </div>
                         </form>
                     </div>
@@ -774,7 +773,7 @@ $end = min(($offset + $limit), $total_records);
 
                                                 <!-- Date of Consultation (using patient's created_at as proxy) -->
                                                 <td class="border border-gray-300 px-1 py-2">
-                                                    <?php echo !empty($row['consultation_date']) ? date('m/d/y', strtotime($row['consultation_date'])) : ''; ?>
+                                                    <?php echo !empty($row['created_at']) ? date('m/d/y', strtotime($row['created_at'])) : ''; ?>
                                                 </td>
 
                                                 <!-- Family Serial No -->
@@ -858,7 +857,7 @@ $end = min(($offset + $limit), $total_records);
                             <ul class="inline-flex items-stretch -space-x-px">
                                 <!-- Previous Button -->
                                 <li>
-                                    <a href="<?= ($page > 1) ? '?page=' . ($page - 1) : '#' ?>"
+                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&<?= ($page > 1) ? 'page=' . ($page - 1) : '#' ?>"
                                         class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($page <= 1) ? 'pointer-events-none opacity-50' : '' ?>">
                                         <span class="sr-only">Previous</span>
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -875,7 +874,7 @@ $end = min(($offset + $limit), $total_records);
                                 $range = 3; // how many page links to show around current
                                 for ($i = max(1, $page - $range); $i <= min($total_pages, $page + $range); $i++): ?>
                                     <li>
-                                        <a href="?page=<?= $i ?>"
+                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&page=<?= $i ?>"
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight border 
                                 <?= ($i == $page)
                                         ? 'z-10 text-blue-600 bg-blue-50 border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
@@ -892,7 +891,7 @@ $end = min(($offset + $limit), $total_records);
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">...</span>
                                     </li>
                                     <li>
-                                        <a href="?page=<?= $total_pages ?>"
+                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&page=<?= $total_pages ?>"
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                                             <?= $total_pages ?>
                                         </a>
@@ -901,7 +900,7 @@ $end = min(($offset + $limit), $total_records);
 
                                 <!-- Next Button -->
                                 <li>
-                                    <a href="<?= ($page < $total_pages) ? '?page=' . ($page + 1) : '#' ?>"
+                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&<?= ($page < $total_pages) ? 'page=' . ($page + 1) : '#' ?>"
                                         class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($page >= $total_pages) ? 'pointer-events-none opacity-50' : '' ?>">
                                         <span class="sr-only">Next</span>
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -957,7 +956,7 @@ $end = min(($offset + $limit), $total_records);
 
     <script>
         function next() {
-            location.href = ("targetclientlist2.php");
+            location.href = ("targetclientlist2.php?uid=<?php echo $userId; ?>");
         }
     </script>
 </body>

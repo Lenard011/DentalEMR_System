@@ -84,6 +84,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $pdo->prepare("UPDATE mfa_codes SET used = 1 WHERE id = :id")
                     ->execute(['id' => $c['id']]);
 
+                // RECORD DAILY VERIFICATION
+                $today = date('Y-m-d');
+                $pdo->prepare("
+                    INSERT INTO daily_verifications (user_id, user_type, verification_date, last_verification_time) 
+                    VALUES (:uid, :utype, :vdate, NOW())
+                    ON DUPLICATE KEY UPDATE last_verification_time = NOW()
+                ")->execute([
+                    'uid' => $userId,
+                    'utype' => $userType,
+                    'vdate' => $today
+                ]);
+
                 // NEW MULTI-SESSION SYSTEM
                 if (!isset($_SESSION['active_sessions'])) {
                     $_SESSION['active_sessions'] = [];

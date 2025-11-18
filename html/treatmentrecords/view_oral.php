@@ -421,6 +421,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
             </nav>
         </header>
+
         <main class="p-1.5 md:ml-64 h-auto pt-1">
             <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg">
                 <div class="items-center justify-between flex flex-row mb-3">
@@ -601,7 +602,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                 <div class="w-14">
                                                     <div
                                                         class="rounded-full  mb-3 shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                        <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                        <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                             alt="" srcset="">
                                                     </div>
                                                 </div>
@@ -621,7 +622,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
@@ -644,7 +645,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
@@ -669,7 +670,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
@@ -692,7 +693,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
@@ -717,7 +718,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
@@ -744,7 +745,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                 <div class="w-14">
                                                     <div
                                                         class="rounded-full  mb-3 shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                        <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                        <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                             alt="" srcset="">
                                                     </div>
                                                 </div>
@@ -764,7 +765,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
@@ -787,7 +788,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
@@ -812,7 +813,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
@@ -835,7 +836,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                     <div class="w-12">
                                                         <div
                                                             class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="../img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>

@@ -637,7 +637,7 @@ if ($loggedUser['type'] === 'Dentist') {
 
     <script>
         function back() {
-            location.href = ("targetclientlist.php");
+            location.href = ("targetclientlist.php?uid=<?php echo $userId; ?>");
         }
     </script>
 </body>

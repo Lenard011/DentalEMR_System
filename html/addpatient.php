@@ -494,9 +494,9 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </tr>
                                 </thead>
                                 <tbody id="patientsBody">
-                                    <tr class="border-b dark:border-gray-700">
+                                    <tr class="border-b  text-gray-500  dark:border-gray-700">
                                         <td
-                                            class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            class="px-4 py-3 text-center  text-gray-500 whitespace-nowrap dark:text-white">
                                             Loading ...</td>
                                     </tr>
                                 </tbody>
@@ -1271,7 +1271,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 data.patients.forEach((p, index) => {
                     const displayId = (currentPage - 1) * limit + index + 1;
                     tbody.insertAdjacentHTML("beforeend", `
-                <tr class="border-b border-gray-200 dark:border-gray-700">
+                <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700">
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${displayId}</td>
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
                     <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.sex)}</td>

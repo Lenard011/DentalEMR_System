@@ -90,6 +90,36 @@ if ($loggedUser['type'] === 'Dentist') {
     <title>MHO Dental Clinic </title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Ensure proper scrolling context */
+        main {
+            position: relative;
+        }
+
+        /* Smooth scrolling for table */
+        .overflow-x-auto {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar for table */
+        .overflow-x-auto::-webkit-scrollbar {
+            height: 5px;
+            width: 5px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
 </head>
 
 <body>
@@ -358,76 +388,213 @@ if ($loggedUser['type'] === 'Dentist') {
             </div>
         </aside>
         <main class="p-4 md:ml-64 h-auto pt-20">
-            <h1 class="text-xl text-center w-full font-bold ">History Logs</h1>
-            <section id="history" class="bg-gray-50 mt-5 dark:bg-gray-900">
-                <div class="mx-auto max-w-screen-2xl ">
-                    <!-- Start coding here -->
-                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg ">
-                        <div
-                            class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 px-4  mb-4">
-                            <div class="w-full md:w-1/2 mt-4">
-                                <form class="flex items-center">
-                                    <label for="simple-search" class="sr-only">Search</label>
-                                    <div class="relative w-full">
-                                        <div
-                                            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                            <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400"
-                                                fill="currentColor" viewbox="0 0 20 20"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd"
-                                                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
+            <h1 class="text-xl text-center w-full font-bold">History Logs</h1>
+            <section id="history" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
+                <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
+                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg">
+                        <!-- Sticky Header -->
+                        <div class="sticky top-12 z-40 bg-white dark:bg-gray-800 sm:rounded-t-lg border-b border-gray-200 dark:border-gray-700">
+                            <div>
+                                <p class="text-2xl py-2 font-semibold px-5 mt-5 text-gray-900 dark:text-white">History Logs</p>
+                            </div>
+                            <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
+                                <div class="w-full md:w-1/2">
+                                    <form class="flex items-center" onsubmit="searchHistory(event)">
+                                        <label for="simple-search" class="sr-only">Search</label>
+                                        <div class="relative w-full">
+                                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-blue-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search history logs..." oninput="debouncedHistorySearch()">
                                         </div>
-                                        <input
-                                            type="text"
-                                            id="simple-search"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg 
-                                            focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 
-                                            dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 
-                                            dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Search history logs..."
-                                            autocomplete="off" />
+                                    </form>
+                                </div>
+                                <div class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
+                                    <button type="button" onclick="confirmBulkDeleteHistory()" id="bulkDeleteBtn" class="hidden flex items-center justify-center cursor-pointer text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-4 py-2 dark:bg-red-600 dark:hover:bg-red-700">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                        Delete Selected
+                                    </button>
 
-                                    </div>
-                                </form>
+                                    <button type="button" onclick="saveHistoryLogs()" class="flex items-center justify-center cursor-pointer text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-4 py-2 dark:bg-green-600 dark:hover:bg-green-700">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        Save Logs
+                                    </button>
+
+                                    <button type="button" onclick="refreshHistory()" class="flex items-center justify-center cursor-pointer text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                        <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path clip-rule="evenodd" fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" />
+                                        </svg>
+                                        Refresh
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Bulk Actions Info -->
+                            <div id="bulkActionsInfo" class="hidden px-4 py-2 bg-blue-50 dark:bg-blue-900 border-b">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-blue-700 dark:text-blue-300">
+                                        <span id="selectedCount">0</span> history logs selected
+                                    </span>
+                                    <button onclick="clearHistorySelection()" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                        Clear selection
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <!-- Table -->
-                        <div class="overflow-x-auto">
-                            <table id="patientsTable" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                <thead
-                                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+
+                        <!-- Table Container with Fixed Height -->
+                        <div class="overflow-auto">
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs w-full top-0 sticky  text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400  z-30">
                                     <tr>
+                                        <th class="px-4 py-3 text-center w-12">
+                                            <input type="checkbox" id="selectAll" onchange="toggleSelectAllHistory(this)" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                        </th>
+                                        <th class="px-4 py-3 text-center">No.</th>
                                         <th class="px-4 py-3 text-center">History ID</th>
                                         <th class="px-4 py-3 text-center">Table Name</th>
                                         <th class="px-4 py-3 text-center">Record ID</th>
-                                        <th class="px-4 py-3 text-center">Action</th>
-                                        <th class="px-4 py-3 text-center">Change By</th>
+                                        <th class="px-4 py-3 text-center">Changed By</th>
                                         <th class="px-4 py-3 text-center">Old Values</th>
                                         <th class="px-4 py-3 text-center">New Values</th>
                                         <th class="px-4 py-3 text-center">Description</th>
+                                        <th class="px-4 py-3 text-center">IP Address</th>
                                         <th class="px-4 py-3 text-center">Date</th>
-                                        <th class="px-4 py-3 text-center">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="historyBody">
                                     <tr class="border-b dark:border-gray-700 border-gray-200">
-                                        <td
-                                            class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            Loading ...</td>
+                                        <td colspan="11" class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            Loading history logs...
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <nav id="paginationNav"
-                            class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-3"
-                            aria-label="Table navigation">
+
+                        <!-- Regular Pagination -->
+                        <nav id="paginationNav" class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-3" aria-label="Table navigation">
                         </nav>
                     </div>
                 </div>
             </section>
         </main>
+
+        <!-- View Details Modal -->
+        <div id="detailsModal" class="fixed inset-0 bg-gray-600/50 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                <div class="mt-3">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <h3 class="text-xl font-medium text-gray-900 dark:text-white">History Log Details</h3>
+                        <button onclick="closeDetailsModal()" class="text-gray-400 cursor-pointer hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <div id="modalContent" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="fixed inset-0 bg-gray-600/50 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                <div class="mt-3">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <h3 class="text-xl font-medium text-gray-900 dark:text-white" id="deleteModalTitle">Delete History Log</h3>
+                        <button onclick="closeDeleteModal()" class="text-gray-400 cursor-pointer hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <p id="deleteModalMessage" class="text-gray-700 dark:text-gray-300">Are you sure you want to delete this history log?</p>
+                        <div class="flex justify-end space-x-3 mt-6">
+                            <button onclick="closeDeleteModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">
+                                Cancel
+                            </button>
+                            <button onclick="confirmDeleteHistory()" id="confirmDeleteBtn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg dark:bg-red-500 dark:hover:bg-red-600">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Format Modal -->
+        <div id="saveFormatModal" class="fixed inset-0 bg-gray-600/50 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-1/3 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                <div class="mt-3">
+                    <div class="flex justify-between items-center pb-3 border-b">
+                        <h3 class="text-xl font-medium text-gray-900 dark:text-white">Export History Logs</h3>
+                        <button onclick="closeSaveFormatModal()" class="text-gray-400 cursor-pointer hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-700 dark:text-gray-300 mb-4">Choose export format:</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="downloadHistoryLogs('csv')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 dark:border-gray-600 dark:hover:border-blue-400 dark:hover:bg-blue-900/20 transition-colors">
+                                <div class="text-center">
+                                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a3 3 0 00-3-3H5a3 3 0 00-3 3v2a1 1 0 001 1h12a1 1 0 001-1z M12 12v-2m0 0V8m0 2h2m-2 0H10" />
+                                    </svg>
+                                    <span class="font-medium text-gray-900 dark:text-white">CSV</span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Excel compatible</p>
+                                </div>
+                            </button>
+                            <button onclick="downloadHistoryLogs('json')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 dark:border-gray-600 dark:hover:border-green-400 dark:hover:bg-green-900/20 transition-colors">
+                                <div class="text-center">
+                                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                    </svg>
+                                    <span class="font-medium text-gray-900 dark:text-white">JSON</span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Structured data</p>
+                                </div>
+                            </button>
+                            <button onclick="downloadHistoryLogs('txt')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 dark:border-gray-600 dark:hover:border-purple-400 dark:hover:bg-purple-900/20 transition-colors">
+                                <div class="text-center">
+                                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span class="font-medium text-gray-900 dark:text-white">Text</span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Readable format</p>
+                                </div>
+                            </button>
+                            <button onclick="downloadHistoryLogs('pdf')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-red-500 hover:bg-red-50 dark:border-gray-600 dark:hover:border-red-400 dark:hover:bg-red-900/20 transition-colors">
+                                <div class="text-center">
+                                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="font-medium text-gray-900 dark:text-white">PDF</span>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Printable format</p>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="mt-6 text-center">
+                            <button onclick="closeSaveFormatModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
@@ -452,101 +619,199 @@ if ($loggedUser['type'] === 'Dentist') {
 
         resetTimer();
     </script>
+
     <script>
         let historyPage = 1;
         let historyLimit = 10;
         let historySearch = "";
+        let selectedHistoryIds = new Set();
+        let deleteMode = 'single';
+        let historyToDelete = null;
+        let searchTimeout;
 
         document.addEventListener("DOMContentLoaded", function() {
-
             loadHistoryLogs();
-
-            const searchInput = document.getElementById("simple-search");
-
-            searchInput.addEventListener(
-                "input",
-                debounce(function() {
-                    historySearch = searchInput.value.trim();
-                    loadHistoryLogs(1); // always go back to page 1 when typing
-                }, 300)
-            );
-
         });
 
-
-        // Debounce (same as patients)
-        function debounce(fn, delay = 300) {
-            let t;
-            return (...args) => {
-                clearTimeout(t);
-                t = setTimeout(() => fn.apply(this, args), delay);
-            };
+        function debouncedHistorySearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                historyPage = 1;
+                loadHistoryLogs();
+            }, 500);
         }
 
-        function loadHistoryLogs(page = 1) {
-            historyPage = page;
+        function searchHistory(event) {
+            event.preventDefault();
+            loadHistoryLogs();
+        }
 
-            fetch(`/dentalemr_system/php/manageusers/fetch_history.php?page=${page}&limit=${historyLimit}&search=${encodeURIComponent(historySearch)}`)
-                .then(response => response.json())
-                .then(data => {
-                    const tbody = document.getElementById("historyBody");
-                    tbody.innerHTML = "";
+        function refreshHistory() {
+            document.getElementById('simple-search').value = '';
+            historyPage = 1;
+            clearHistorySelection();
+            loadHistoryLogs();
+        }
 
-                    if (!data.history || data.history.length === 0) {
-                        tbody.innerHTML = `
-                        <tr>
-                            <td colspan="10" class="text-center py-4 text-gray-900">No history logs found</td>
-                        </tr>`;
-                        document.getElementById("paginationNav").innerHTML = "";
-                        return;
+        function changeHistoryPage(page) {
+            if (page >= 1) {
+                historyPage = page;
+                clearHistorySelection();
+                loadHistoryLogs();
+            }
+        }
+
+        function loadHistoryLogs() {
+            const searchTerm = document.getElementById('simple-search').value;
+            const tbody = document.getElementById('historyBody');
+
+            tbody.innerHTML = '<tr><td colspan="11" class="px-4 py-3 text-center">Loading history logs...</td></tr>';
+
+            const params = new URLSearchParams();
+            if (searchTerm) {
+                params.append('search', searchTerm);
+            }
+            params.append('page', historyPage);
+            params.append('limit', historyLimit);
+
+            fetch(`/dentalemr_system/php/manageusers/fetch_history.php?${params}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
                     }
-
-                    data.history.forEach(row => {
-                        tbody.innerHTML += `
-                        <tr class="border-b border-gray-200 text-xs text-gray-700 dark:border-gray-700">
-                            <td class="px-4 py-1 text-center">${row.history_id}</td>
-                            <td class="px-4 py-1 text-center">${row.table_name}</td>
-                            <td class="px-4 py-1 text-center">${row.record_id}</td>
-                            <td class="px-4 py-1 text-center">${row.action}</td>
-                            <td class="px-4 py-1 text-center">${row.changed_by_type} ${row.changed_by_id ?? ""}</td>
-                            <td class="px-4 py-1 text-center"><pre class="text-xs">${formatJSON(row.old_values)}</pre></td>
-                            <td class="px-4 py-1 text-center"><pre class="text-xs">${formatJSON(row.new_values)}</pre></td>
-                            <td class="px-4 py-1 text-center">${row.description || ""}</td>
-                            <td class="px-4 py-1 text-center">${row.created_at}</td>
-
-                            <td class="px-4 py-1 text-center">
-                                <button onclick="deleteHistory(${row.history_id})"
-                                    class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-sm cursor-pointer text-sm">
-                                    Delete
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                    });
-
-                    renderHistoryPagination(data.total, data.limit, data.page);
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.history) {
+                        displayHistoryLogs(data.history);
+                        updateHistoryPagination({
+                            total: data.total || data.history.length,
+                            limit: data.limit || historyLimit,
+                            page: data.page || historyPage
+                        });
+                    } else {
+                        tbody.innerHTML = `<tr><td colspan="11" class="px-4 py-3 text-center text-red-500">Error loading history logs</td></tr>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    tbody.innerHTML = `<tr><td colspan="11" class="px-4 py-3 text-center text-red-500">Failed to load history logs</td></tr>`;
                 });
         }
 
-        // PAGINATION (identical style to patients)
-        function renderHistoryPagination(total, limit, page) {
-            const nav = document.getElementById("paginationNav");
-            const totalPages = Math.ceil(total / limit);
+        function displayHistoryLogs(historyLogs) {
+            const tbody = document.getElementById('historyBody');
 
-            if (totalPages <= 1) {
-                nav.innerHTML = "";
+            if (!historyLogs || historyLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="px-4 py-3 text-center">No history logs found</td></tr>';
                 return;
             }
 
+            tbody.innerHTML = historyLogs.map((log, index) => {
+                const displayNumber = ((historyPage - 1) * historyLimit) + index + 1;
+
+                let formattedDate = 'N/A';
+                try {
+                    const date = new Date(log.created_at);
+                    if (!isNaN(date.getTime())) {
+                        formattedDate = date.toLocaleDateString('en-PH', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    }
+                } catch (e) {
+                    console.error('Date formatting error:', e);
+                }
+
+                return `
+                <tr class="border-b dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer" 
+                    onclick="showHistoryDetails(${JSON.stringify(log).replace(/"/g, '&quot;')})">
+                    <td class="px-4 py-3 text-center" onclick="event.stopPropagation()">
+                        <input type="checkbox" value="${log.history_id}" onchange="toggleHistorySelection(${log.history_id})" 
+                            class="history-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                    </td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        ${displayNumber}
+                    </td>
+                    <td class="px-4 py-3 text-center text-sm text-gray-500 dark:text-gray-400">
+                        ${log.history_id}
+                    </td>
+                    <td class="px-4 py-3 text-center">${log.table_name || 'N/A'}</td>
+                    <td class="px-4 py-3 text-center">${log.record_id || 'N/A'}</td>
+                    <td class="px-4 py-3 text-center">
+                        <div class="font-medium text-gray-900 dark:text-white">${log.changed_by_type || 'System'}</div>
+                        <div class="text-xs text-gray-500">ID: ${log.changed_by_id || 'N/A'}</div>
+                    </td>
+                    <td class="px-4 py-3 text-center max-w-xs truncate" title="${log.old_values || 'No old values'}">
+                        ${formatJSONPreview(log.old_values)}
+                    </td>
+                    <td class="px-4 py-3 text-center max-w-xs truncate" title="${log.new_values || 'No new values'}">
+                        ${formatJSONPreview(log.new_values)}
+                    </td>
+                    <td class="px-4 py-3 text-center max-w-xs truncate" title="${log.description || 'No description'}">
+                        ${log.description || 'N/A'}
+                    </td>
+                    <td class="px-4 py-3 text-center text-xs font-mono">${log.ip_address || 'N/A'}</td>
+                    <td class="px-4 py-3 text-center text-sm">${formattedDate}</td>
+                </tr>
+            `;
+            }).join('');
+
+            updateHistoryCheckboxStates();
+        }
+
+        function formatJSONPreview(jsonString) {
+            if (!jsonString) return "N/A";
+            try {
+                const obj = JSON.parse(jsonString);
+                const str = JSON.stringify(obj);
+                return str.length > 50 ? str.substring(0, 50) + '...' : str;
+            } catch {
+                return jsonString.length > 50 ? jsonString.substring(0, 50) + '...' : jsonString;
+            }
+        }
+
+        function updateHistoryCheckboxStates() {
+            const checkboxes = document.querySelectorAll('.history-checkbox');
+            checkboxes.forEach(checkbox => {
+                const historyId = parseInt(checkbox.value);
+                checkbox.checked = selectedHistoryIds.has(historyId);
+            });
+            updateHistoryBulkActions();
+        }
+
+        function updateHistoryPagination(data) {
+            const total = data.total || 0;
+            const limitVal = data.limit || historyLimit;
+            const page = data.page || historyPage;
+
+            renderHistoryPagination(total, limitVal, page);
+        }
+
+        function renderHistoryPagination(total, limitVal, page) {
+            const paginationNav = document.getElementById("paginationNav");
+            const totalPages = Math.max(1, Math.ceil(total / limitVal));
+            const start = (page - 1) * limitVal + 1;
+            const end = Math.min(page * limitVal, total);
+
+            const showingText = `
+            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
+                of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
+            </span>
+        `;
+
             let pagesHTML = "";
 
-            // Prev
+            // Previous button
             if (page > 1) {
                 pagesHTML += `
                 <li>
-                    <a href="#" onclick="loadHistoryLogs(${page - 1}); return false;"
-                    class="flex items-center justify-center py-2 px-2 text-gray-500 bg-white border 
-                    border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400">
+                    <a href="#" onclick="changeHistoryPage(${page - 1}); return false;" 
+                       class="flex items-center justify-center h-full py-1.5 px-2 ml-0 text-gray-500 bg-white rounded-l-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
                         </svg>
@@ -555,34 +820,78 @@ if ($loggedUser['type'] === 'Dentist') {
             }
 
             // Page numbers
-            for (let i = 1; i <= totalPages; i++) {
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            // First page and ellipsis
+            if (startPage > 1) {
+                pagesHTML += `
+                <li>
+                    <a href="#" onclick="changeHistoryPage(1); return false;" 
+                       class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                        1
+                    </a>
+                </li>`;
+                if (startPage > 2) {
+                    pagesHTML += `
+                    <li>
+                        <span class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
+                            ...
+                        </span>
+                    </li>`;
+                }
+            }
+
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
                 if (i === page) {
                     pagesHTML += `
                     <li>
-                        <span class="flex items-center justify-center text-sm py-2 px-3 text-blue-600 
-                        bg-blue-50 border border-blue-300 dark:bg-gray-700 dark:text-white">
+                        <span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">
                             ${i}
                         </span>
                     </li>`;
                 } else {
                     pagesHTML += `
                     <li>
-                        <a href="#" onclick="loadHistoryLogs(${i}); return false;" 
-                        class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white 
-                        border border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400">
+                        <a href="#" onclick="changeHistoryPage(${i}); return false;" 
+                           class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                             ${i}
                         </a>
                     </li>`;
                 }
             }
 
-            // Next
+            // Last page and ellipsis
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    pagesHTML += `
+                    <li>
+                        <span class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">
+                            ...
+                        </span>
+                    </li>`;
+                }
+                pagesHTML += `
+                <li>
+                    <a href="#" onclick="changeHistoryPage(${totalPages}); return false;" 
+                       class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                        ${totalPages}
+                    </a>
+                </li>`;
+            }
+
+            // Next button
             if (page < totalPages) {
                 pagesHTML += `
                 <li>
-                    <a href="#" onclick="loadHistoryLogs(${page + 1}); return false;"
-                    class="flex items-center justify-center py-2 px-2 text-gray-500 bg-white border 
-                    border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400">
+                    <a href="#" onclick="changeHistoryPage(${page + 1}); return false;" 
+                       class="flex items-center justify-center h-full py-1.5 px-2 leading-tight text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
                         </svg>
@@ -590,56 +899,282 @@ if ($loggedUser['type'] === 'Dentist') {
                 </li>`;
             }
 
-            nav.innerHTML = `
-            <span class="text-sm text-gray-500 dark:text-gray-400">
-                Showing <span class="font-semibold">${(page - 1) * limit + 1}</span> -
-                <span class="font-semibold">${Math.min(page * limit, total)}</span>
-                of <span class="font-semibold">${total}</span>
-            </span>
-            <ul class="inline-flex -space-x-1px">${pagesHTML}</ul>
-        `;
+            paginationNav.innerHTML = `${showingText} <ul class="inline-flex -space-x-px">${pagesHTML}</ul>`;
         }
 
-        // JSON formatting (your original logic)
+        // Selection Functions
+        function toggleSelectAllHistory(checkbox) {
+            const checkboxes = document.querySelectorAll('.history-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                const historyId = parseInt(cb.value);
+                if (checkbox.checked) {
+                    selectedHistoryIds.add(historyId);
+                } else {
+                    selectedHistoryIds.delete(historyId);
+                }
+            });
+            updateHistoryBulkActions();
+        }
+
+        function toggleHistorySelection(historyId) {
+            if (selectedHistoryIds.has(historyId)) {
+                selectedHistoryIds.delete(historyId);
+            } else {
+                selectedHistoryIds.add(historyId);
+            }
+            updateHistoryBulkActions();
+        }
+
+        function updateHistoryBulkActions() {
+            const selectedCount = selectedHistoryIds.size;
+            const bulkActionsInfo = document.getElementById('bulkActionsInfo');
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const selectAllCheckbox = document.getElementById('selectAll');
+
+            if (selectedCount > 0) {
+                bulkActionsInfo.classList.remove('hidden');
+                bulkDeleteBtn.classList.remove('hidden');
+                document.getElementById('selectedCount').textContent = selectedCount;
+            } else {
+                bulkActionsInfo.classList.add('hidden');
+                bulkDeleteBtn.classList.add('hidden');
+            }
+
+            // Update select all checkbox state
+            const totalCheckboxes = document.querySelectorAll('.history-checkbox').length;
+            selectAllCheckbox.checked = selectedCount > 0 && selectedCount === totalCheckboxes;
+            selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < totalCheckboxes;
+        }
+
+        function clearHistorySelection() {
+            selectedHistoryIds.clear();
+            const checkboxes = document.querySelectorAll('.history-checkbox');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateHistoryBulkActions();
+        }
+
+        // Delete Functions
+        function confirmBulkDeleteHistory() {
+            if (selectedHistoryIds.size === 0) return;
+
+            deleteMode = 'bulk';
+            document.getElementById('deleteModalTitle').textContent = 'Delete History Logs';
+            document.getElementById('deleteModalMessage').textContent = `Are you sure you want to delete ${selectedHistoryIds.size} selected history logs?\n\nThis action cannot be undone.`;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function confirmDeleteHistory() {
+            const historyIds = deleteMode === 'single' ? [historyToDelete] : Array.from(selectedHistoryIds);
+
+            fetch('/dentalemr_system/php/manageusers/delete_history.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        history_ids: historyIds
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(`Successfully deleted ${data.deleted_count} history log(s)`, 'success');
+                        closeDeleteModal();
+                        clearHistorySelection();
+                        loadHistoryLogs();
+                    } else {
+                        showNotification('Error deleting history logs: ' + (data.error || 'Unknown error'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('Network error: ' + error.message, 'error');
+                });
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            historyToDelete = null;
+        }
+
+        // Details Modal Functions
+        function showHistoryDetails(log) {
+            const modal = document.getElementById('detailsModal');
+            const content = document.getElementById('modalContent');
+
+            let formattedDate = 'N/A';
+            try {
+                const date = new Date(log.created_at);
+                if (!isNaN(date.getTime())) {
+                    formattedDate = date.toLocaleDateString('en-PH', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                }
+            } catch (e) {
+                console.error('Date formatting error:', e);
+            }
+
+            let detailsHtml = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><strong>History ID:</strong> ${log.history_id}</div>
+                <div><strong>Table Name:</strong> ${log.table_name || 'N/A'}</div>
+                <div><strong>Record ID:</strong> ${log.record_id || 'N/A'}</div>
+                <div><strong>Action:</strong> ${log.action || 'N/A'}</div>
+                <div><strong>Changed By Type:</strong> ${log.changed_by_type || 'N/A'}</div>
+                <div><strong>Changed By ID:</strong> ${log.changed_by_id || 'N/A'}</div>
+                <div><strong>IP Address:</strong> ${log.ip_address || 'N/A'}</div>
+                <div class="md:col-span-2"><strong>Date:</strong> ${formattedDate}</div>
+            </div>
+            <div class="mt-4">
+                <strong>Description:</strong> 
+                <div class="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded text-sm">${log.description || 'No description available'}</div>
+            </div>
+        `;
+
+            if (log.old_values) {
+                detailsHtml += `
+                <div class="mt-4">
+                    <strong>Old Values:</strong>
+                    <div class="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded text-xs overflow-auto max-h-32">
+                        <pre>${formatJSON(log.old_values)}</pre>
+                    </div>
+                </div>
+            `;
+            }
+
+            if (log.new_values) {
+                detailsHtml += `
+                <div class="mt-4">
+                    <strong>New Values:</strong>
+                    <div class="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded text-xs overflow-auto max-h-32">
+                        <pre>${formatJSON(log.new_values)}</pre>
+                    </div>
+                </div>
+            `;
+            }
+
+            content.innerHTML = detailsHtml;
+            modal.classList.remove('hidden');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
+
+        // Export Functions
+        function saveHistoryLogs() {
+            showNotification('Preparing download...', 'info');
+            showSaveFormatModal();
+        }
+
+        function showSaveFormatModal() {
+            const modal = document.getElementById('saveFormatModal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeSaveFormatModal() {
+            document.getElementById('saveFormatModal').classList.add('hidden');
+        }
+
+        function downloadHistoryLogs(format) {
+            closeSaveFormatModal();
+
+            const searchTerm = document.getElementById('simple-search').value;
+            const params = new URLSearchParams();
+
+            if (searchTerm) {
+                params.append('search', searchTerm);
+            }
+            params.append('export', 'true');
+            params.append('format', format);
+
+            const currentDate = new Date().toISOString().split('T')[0];
+            const filename = `history_logs_${currentDate}.${format}`;
+
+            showNotification('Preparing download...', 'info');
+
+            // Create a temporary link to trigger download
+            const link = document.createElement('a');
+            link.href = `/dentalemr_system/php/manageusers/export_history_logs.php?${params}`;
+            link.download = filename;
+            link.target = '_blank';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification(`History logs exported as ${format.toUpperCase()}`, 'success');
+        }
+
+        // Utility Functions
         function formatJSON(jsonString) {
-            if (!jsonString) return "";
+            if (!jsonString) return "N/A";
             try {
                 const obj = JSON.parse(jsonString);
-
-                const patientKeys = [
-                    "surname", "firstname", "middlename", "pob", "address", "dob",
-                    "age", "agemonth", "sex", "occupation", "guardian", "four_ps",
-                    "blood_pressure", "temperature", "pulse_rate", "weight",
-                    "blood_disorders", "sugar_flag", "sugar_details", "patient"
-                ];
-
-                let matches = patientKeys.filter(k => obj.hasOwnProperty(k)).length;
-
-                if (matches >= 5) {
-                    const allowed = ["surname", "firstname", "dob", "age", "sex"];
-                    const filtered = {};
-                    allowed.forEach(k => {
-                        if (obj[k] !== undefined) filtered[k] = obj[k];
-                    });
-                    return JSON.stringify(filtered, null, 2);
-                }
-
                 return JSON.stringify(obj, null, 2);
             } catch {
                 return jsonString;
             }
         }
 
-        function deleteHistory(id) {
-            if (!confirm("Are you sure you want to delete this history log?")) return;
+        function showNotification(message, type = 'info') {
+            const existingNotification = document.getElementById('global-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
 
-            fetch(`/dentalemr_system/php/manageusers/delete_history.php?id=${id}`)
-                .then(r => r.text())
-                .then(msg => {
-                    alert(msg);
-                    loadHistoryLogs(historyPage); // stay on same page
-                });
+            const notification = document.createElement('div');
+            notification.id = 'global-notification';
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white ${
+            type === 'success' ? 'bg-green-500' :
+            type === 'error' ? 'bg-red-500' :
+            type === 'warning' ? 'bg-yellow-500' :
+            'bg-blue-500'
+        }`;
+            notification.innerHTML = `
+            <div class="flex items-center">
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
         }
+
+        // Event Listeners
+        document.getElementById('detailsModal').addEventListener('click', function(e) {
+            if (e.target.id === 'detailsModal') {
+                closeDetailsModal();
+            }
+        });
+
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target.id === 'deleteModal') {
+                closeDeleteModal();
+            }
+        });
+
+        document.getElementById('saveFormatModal').addEventListener('click', function(e) {
+            if (e.target.id === 'saveFormatModal') {
+                closeSaveFormatModal();
+            }
+        });
     </script>
 
 </body>

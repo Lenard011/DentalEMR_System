@@ -1976,7 +1976,7 @@ if ($loggedUser['type'] === 'Dentist') {
 
         const printdLink = document.getElementById("printdLink");
         if (printdLink && patientId) {
-            printdLink.href = `print.php?id=${encodeURIComponent(patientId)}`;
+            printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
             // Optional fallback: disable link if no patient selected
             printdLink.addEventListener("click", (e) => {

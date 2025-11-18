@@ -456,7 +456,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         </div>
                         <!-- Table -->
                         <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                            <table class="w-full text-sm text-left text-gray-700 dark:text-gray-400">
                                 <thead
                                     class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                     <tr class="">
@@ -577,10 +577,10 @@ if ($loggedUser['type'] === 'Dentist') {
                     <th scope="row" class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
                         ${rowNumber}
                     </th>
-                    <td class="px-4 py-3 text-center">${patient.fullname || "—"}</td>
-                    <td class="px-4 py-3 text-center">${patient.sex || "—"}</td>
-                    <td class="px-4 py-3 text-center">${patient.age || "—"}</td>
-                    <td class="px-4 py-3 text-center">${patient.address || "—"}</td>
+                    <td class="px-4 py-3 font-medium text-gray-700  text-center">${patient.fullname || "—"}</td>
+                    <td class="px-4 py-3 font-medium text-gray-700 text-center">${patient.sex || "—"}</td>
+                    <td class="px-4 py-3 font-medium text-gray-700 text-center">${patient.age || "—"}</td>
+                    <td class="px-4 py-3 font-medium text-gray-700 text-center">${patient.address || "—"}</td>
                     <td class="py-3 flex justify-center gap-2">
                         <button type="button" onclick="window.location.href='view_info.php?uid=<?php echo $userId; ?>&id=${patient.patient_id}'"
                             class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-1.5">
