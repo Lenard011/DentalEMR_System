@@ -197,8 +197,8 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
             </div>
         </nav>
-        <!-- Sidebar -->
 
+        <!-- Sidebar -->
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -359,6 +359,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </ul>
             </div>
         </aside>
+
         <main class="p-4 md:ml-64 h-auto pt-20">
             <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 ">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
@@ -391,7 +392,6 @@ if ($loggedUser['type'] === 'Dentist') {
                             </div>
                             <div
                                 class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-
                                 <!-- Filter -->
                                 <div class="flex items-center space-x-3 w-full md:w-auto">
                                     <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"

@@ -19,10 +19,25 @@ function columnExists($db, $table, $column)
     return (bool)$stmt->fetchColumn();
 }
 
-function resolveConditionId($db, $val)
+function resolveConditionId($db, $val, $caseType = 'permanent')
 {
     if (!$val) return null;
+
+    // Determine if we're looking for permanent or temporary based on caseType
+    $isPermanent = ($caseType === 'permanent') ? 1 : 0;
+
     $columns = ['condition_code', 'code', 'short', 'abbreviation', 'symbol', 'name'];
+    foreach ($columns as $col) {
+        if (!columnExists($db, 'conditions', $col)) continue;
+
+        // Look for exact match with case sensitivity and correct is_permanent value
+        $q = $db->prepare("SELECT condition_id FROM conditions WHERE `$col` = ? AND is_permanent = ? LIMIT 1");
+        $q->execute([$val, $isPermanent]);
+        $r = $q->fetch(PDO::FETCH_ASSOC);
+        if ($r) return (int)$r['condition_id'];
+    }
+
+    // Fallback: if exact match not found, try without is_permanent filter
     foreach ($columns as $col) {
         if (!columnExists($db, 'conditions', $col)) continue;
         $q = $db->prepare("SELECT condition_id FROM conditions WHERE `$col` = ? LIMIT 1");
@@ -30,6 +45,7 @@ function resolveConditionId($db, $val)
         $r = $q->fetch(PDO::FETCH_ASSOC);
         if ($r) return (int)$r['condition_id'];
     }
+
     return null;
 }
 
@@ -105,13 +121,14 @@ try {
         } elseif ($caseType === 'lower' || $caseType === 'temporary') {
             $caseType = 'temporary';
         } else {
-            $caseType = '';
+            $caseType = 'permanent'; // Default to permanent
         }
 
         if ($type === 'condition') {
-            $cid = resolveConditionId($db, $item['condition_code'] ?? null);
+            // Pass caseType to resolveConditionId to ensure correct lookup
+            $cid = resolveConditionId($db, $item['condition_code'] ?? null, $caseType);
             if (!$cid) {
-                $warnings[] = "Invalid condition: " . json_encode($item);
+                $warnings[] = "Invalid condition: " . json_encode($item) . " for case type: " . $caseType;
                 continue;
             }
             $insCond->execute([$visit_id, $tooth, $cid, $box, $color, $caseType]);

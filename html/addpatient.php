@@ -246,6 +246,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
             </div>
         </nav>
+
         <!-- Sidebar -->
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
@@ -405,10 +406,10 @@ if ($loggedUser['type'] === 'Dentist') {
                 </ul>
             </div>
         </aside>
+
         <main class="p-4 md:ml-64 h-auto pt-20">
             <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-                    <!-- Start coding here -->
                     <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg ">
                         <div>
                             <p class="text-2xl font-semibold px-5 mt-5 text-gray-900 dark:text-white">Patient List</p>
@@ -547,7 +548,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                     <div>
                                         <label for="name"
                                             class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Name</label>
-                                        <div class="gap-1 sm:grid-cols-3  w-130 flex justify-between items-center">
+                                        <div class="gap-1 sm:grid-cols-3  w-full flex justify-between items-center">
                                             <input type="text" name="surname" data-required data-label="Surname"
                                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                                 placeholder="Surname">

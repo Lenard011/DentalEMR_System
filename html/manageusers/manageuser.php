@@ -2,9 +2,12 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
+// Enhanced security headers
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+
 // REQUIRE userId parameter for each page
-// Example usage: dashboard.php?uid=5
-if (!isset($_GET['uid'])) {
+if (!isset($_GET['uid']) || !is_numeric($_GET['uid'])) {
     echo "<script>
         alert('Invalid session. Please log in again.');
         window.location.href = '/dentalemr_system/html/login/login.html';
@@ -14,10 +17,11 @@ if (!isset($_GET['uid'])) {
 
 $userId = intval($_GET['uid']);
 
-// CHECK IF THIS USER IS REALLY LOGGED IN
+// Enhanced session validation
 if (
     !isset($_SESSION['active_sessions']) ||
-    !isset($_SESSION['active_sessions'][$userId])
+    !isset($_SESSION['active_sessions'][$userId]) ||
+    !is_array($_SESSION['active_sessions'][$userId])
 ) {
     echo "<script>
         alert('Please log in first.');
@@ -26,14 +30,18 @@ if (
     exit;
 }
 
-// PER-USER INACTIVITY TIMEOUT
+// PER-USER INACTIVITY TIMEOUT with validation
 $inactiveLimit = 600; // 10 minutes
 
 if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
     $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
 
-    if ((time() - $lastActivity) > $inactiveLimit) {
+    // Validate last_activity is numeric
+    if (!is_numeric($lastActivity)) {
+        $lastActivity = time();
+    }
 
+    if ((time() - $lastActivity) > $inactiveLimit) {
         // Log out ONLY this user (not everyone)
         unset($_SESSION['active_sessions'][$userId]);
 
@@ -54,10 +62,19 @@ if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
 // Update last activity timestamp
 $_SESSION['active_sessions'][$userId]['last_activity'] = time();
 
-// GET USER DATA FOR PAGE USE
-$loggedUser = $_SESSION['active_sessions'][$userId];
+// GET USER DATA FOR PAGE USE with validation
+$loggedUser = $_SESSION['active_sessions'][$userId] ?? [];
 
-// Store user session info safely
+// Validate required user data
+if (empty($loggedUser) || !isset($loggedUser['type'])) {
+    echo "<script>
+        alert('Invalid user session.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
+
+// Database connection with error handling
 $host = "localhost";
 $dbUser = "root";
 $dbPass = "";
@@ -65,30 +82,49 @@ $dbName = "dentalemr_system";
 
 $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
 if ($conn->connect_error) {
+    error_log("Database connection failed: " . $conn->connect_error);
     die("Connection failed: " . $conn->connect_error);
 }
 
 // Fetch dentist name if user is a dentist
-if ($loggedUser['type'] === 'Dentist') {
+if ($loggedUser['type'] === 'Dentist' && isset($loggedUser['id'])) {
     $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
-    $stmt->bind_param("i", $loggedUser['id']);
-    $stmt->execute();
-    $stmt->bind_result($dentistName);
-    if ($stmt->fetch()) {
-        $loggedUser['name'] = $dentistName;
+    if ($stmt) {
+        $stmt->bind_param("i", $loggedUser['id']);
+        $stmt->execute();
+        $stmt->bind_result($dentistName);
+        if ($stmt->fetch()) {
+            $loggedUser['name'] = $dentistName;
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
+
+// Sanitize user data for display
+$displayName = htmlspecialchars(
+    !empty($loggedUser['name'])
+        ? $loggedUser['name']
+        : ($loggedUser['email'] ?? 'User'),
+    ENT_QUOTES,
+    'UTF-8'
+);
+
+$displayEmail = htmlspecialchars(
+    !empty($loggedUser['email'])
+        ? $loggedUser['email']
+        : ($loggedUser['name'] ?? 'User'),
+    ENT_QUOTES,
+    'UTF-8'
+);
 
 ?>
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MHO Dental Clinic </title>
-    <!-- <link href="../css/style.css" rel="stylesheet"> -->
+    <title>MHO Dental Clinic - Manage Users</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
@@ -198,6 +234,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
             </div>
         </nav>
+        
         <!-- Sidebar -->
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
@@ -357,47 +394,33 @@ if ($loggedUser['type'] === 'Dentist') {
                 </ul>
             </div>
         </aside>
+
         <main class="p-4 md:ml-64 h-auto pt-20">
-            <h1 class="text-xl text-center w-full font-bold ">Manage Users</h1>
+            <h1 class="text-xl text-center w-full font-bold">Manage Users</h1>
             <section id="dentist" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-                    <!-- Start coding here -->
-                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg ">
+                    <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg">
                         <div>
                             <p class="text-2xl py-2 font-semibold px-5 mt-5 text-gray-900 dark:text-white">Staff list</p>
                         </div>
-                        <div
-                            class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
+                        <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
                             <div class="w-full md:w-1/2">
                                 <form class="flex items-center">
                                     <label for="simple-search" class="sr-only">Search</label>
                                     <div class="relative w-full">
-                                        <div
-                                            class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                            <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400"
-                                                fill="currentColor" viewbox="0 0 20 20"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path fill-rule="evenodd"
-                                                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                                    clip-rule="evenodd" />
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewbox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                                             </svg>
                                         </div>
-                                        <input type="text" id="simple-search"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-blue-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Search" required="">
+                                        <input type="text" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-blue-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search" required>
                                     </div>
                                 </form>
                             </div>
-                            <div
-                                class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-                                <button type="button" id="Adddentistbtn" data-modal-target="addDentistModal"
-                                    data-modal-toggle="addDentistModal" class=" flex items-center justify-center cursor-pointer text-white bg-blue-700
-                                    hover:bg-blue-800 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600
-                                    dark:hover:bg-blue-700">
-                                    <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20"
-                                        xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path clip-rule="evenodd" fill-rule="evenodd"
-                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+                            <div class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
+                                <button type="button" id="Adddentistbtn" data-modal-target="addDentistModal" data-modal-toggle="addDentistModal" class="flex items-center justify-center cursor-pointer text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">
+                                    <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20" aria-hidden="true">
+                                        <path clip-rule="evenodd" fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
                                     </svg>
                                     Add Staff
                                 </button>
@@ -406,11 +429,10 @@ if ($loggedUser['type'] === 'Dentist') {
                         <!-- Table -->
                         <div class="overflow-x-auto">
                             <table id="patientsTable" class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                <thead
-                                    class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                     <tr>
                                         <th class="px-4 py-3 text-center">Name</th>
-                                        <th class="px-4 py-3 text-center">Usename</th>
+                                        <th class="px-4 py-3 text-center">Username</th>
                                         <th class="px-4 py-3 text-center">Email</th>
                                         <th class="px-4 py-3 text-center">Created At</th>
                                         <th class="px-4 py-3 text-center">Updated At</th>
@@ -419,9 +441,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </thead>
                                 <tbody id="staffBody">
                                     <tr class="border-b dark:border-gray-700 border-gray-200">
-                                        <td
-                                            class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            Loading ...</td>
+                                        <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">Loading ...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -429,73 +449,48 @@ if ($loggedUser['type'] === 'Dentist') {
                     </div>
                 </div>
             </section>
-            <!-- Add patient Modal -->
-            <div id="addDentistModal" tabindex="-1" aria-hidden="true"
-                class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
+
+            <!-- Add Staff Modal -->
+            <div id="addDentistModal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
                 <div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
-                    <!-- Modal content -->
                     <div class="relative p-4 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
-                        <!-- Modal header -->
-                        <div
-                            class="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                Add Staff
-                            </h3>
-                            <button type="button"
-                                class="text-gray-400 bg-transparent cursor-pointer hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                data-modal-toggle="addDentistModal">
-                                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clip-rule="evenodd"></path>
+                        <div class="flex justify-between items-center pb-4 mb-4 rounded-t border-b sm:mb-5 dark:border-gray-600">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Add Staff</h3>
+                            <button type="button" class="text-gray-400 bg-transparent cursor-pointer hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="addDentistModal">
+                                <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                                 </svg>
                                 <span class="sr-only">Close modal</span>
                             </button>
                         </div>
-                        <!-- Modal body -->
-                        <form action="/dentalemr_system/php/manageusers/add_staff.php" method="POST">
+                        <form id="addStaffForm" action="/dentalemr_system/php/manageusers/add_staff.php?uid=<?php echo $userId; ?>" method="POST">
                             <input type="hidden" name="userType" value="Staff">
                             <div class="grid gap-4 mb-4 sm:grid-cols-2">
                                 <div class="sm:col-span-2">
-                                    <label for="staffname"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
-                                    <input type="text" name="fullname" id="staffname" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <label for="staffname" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
+                                    <input type="text" name="fullname" id="staffname" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 </div>
                                 <div>
-                                    <label for="staffusername"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
-                                    <input type="text" name="username" id="staffusername" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <label for="staffusername" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Username</label>
+                                    <input type="text" name="username" id="staffusername" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 </div>
                                 <div>
-                                    <label for="staffemail"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-                                    <input type="email" name="email" id="staffemail" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <label for="staffemail" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
+                                    <input type="email" name="email" id="staffemail" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 </div>
                                 <div>
-                                    <label for="staffpassword"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-                                    <input type="password" name="password" id="staffpassword" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <label for="staffpassword" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
+                                    <input type="password" name="password" id="staffpassword" required minlength="6" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 </div>
                                 <div>
-                                    <label for="staffconfirm"
-                                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm
-                                        Password</label>
-                                    <input type="password" name="confirm_password" id="staffconfirm" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <label for="staffconfirm" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm Password</label>
+                                    <input type="password" name="confirm_password" id="staffconfirm" required minlength="6" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 </div>
                             </div>
-                            <button type="submit"
-                                class="text-white inline-flex items-center cursor-pointer bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                <svg class="mr-1 -ml-1 w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                        clip-rule="evenodd"></path>
+                            <div id="formErrors" class="hidden mb-4 p-3 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400"></div>
+                            <button type="submit" class="text-white inline-flex items-center cursor-pointer bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                <svg class="mr-1 -ml-1 w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path>
                                 </svg>
                                 Add Account
                             </button>
@@ -506,10 +501,9 @@ if ($loggedUser['type'] === 'Dentist') {
         </main>
     </div>
 
-    <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="../js/tailwind.config.js"></script>
-    <!-- Client-side 10-minute inactivity logout -->
+
+    <!-- Enhanced Client-side inactivity logout -->
     <script>
         let inactivityTime = 600000; // 10 minutes in ms
         let logoutTimer;
@@ -517,8 +511,11 @@ if ($loggedUser['type'] === 'Dentist') {
         function resetTimer() {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
-                alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php";
+                if (confirm("You've been inactive for 10 minutes. Would you like to stay logged in?")) {
+                    resetTimer();
+                } else {
+                    window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
+                }
             }, inactivityTime);
         }
 
@@ -528,63 +525,76 @@ if ($loggedUser['type'] === 'Dentist') {
 
         resetTimer();
     </script>
+
+    <!-- Enhanced Staff Management Script -->
     <script>
-        let staffData = []; // store data for filtering
+        let staffData = [];
 
         function loadStaffList() {
             fetch("/dentalemr_system/php/manageusers/get_staff.php")
-                .then(response => response.json())
-                .then(data => {
-                    staffData = data;
-                    renderStaffTable(data);
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
                 })
-                .catch(() => {
+                .then(data => {
+                    staffData = Array.isArray(data) ? data : [];
+                    renderStaffTable(staffData);
+                })
+                .catch(error => {
+                    console.error('Error loading staff list:', error);
                     document.getElementById("staffBody").innerHTML = `
                     <tr>
                         <td colspan="6" class="p-4 text-center text-red-600">
-                            Error loading staff list.
+                            Error loading staff list. Please try again.
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
                 });
         }
 
         function renderStaffTable(data) {
             const tbody = document.getElementById("staffBody");
+            if (!tbody) return;
+
             tbody.innerHTML = "";
 
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `
                 <tr>
                     <td colspan="6" class="p-4 text-center text-gray-500 dark:text-gray-300">
                         No staff accounts found.
                     </td>
-                </tr>
-            `;
+                </tr>`;
                 return;
             }
 
-            // Use DocumentFragment for better performance
             const fragment = document.createDocumentFragment();
 
             data.forEach(row => {
                 const tr = document.createElement("tr");
-                tr.className = "border-b border-gray-200 dark:border-gray-700";
+                tr.className = "border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700";
+
+                // Sanitize data for display
+                const name = escapeHtml(row.name || 'N/A');
+                const username = escapeHtml(row.username || 'N/A');
+                const email = escapeHtml(row.email || 'N/A');
+                const created = escapeHtml(row.created_at || 'N/A');
+                const updated = escapeHtml(row.updated_at || 'N/A');
 
                 tr.innerHTML = `
-                <td class="px-4 py-3 text-center text-gray-900 dark:text-white">${row.name}</td>
-                <td class="px-4 py-3 text-center">${row.username}</td>
-                <td class="px-4 py-3 text-center">${row.email}</td>
-                <td class="px-4 py-3 text-center">${row.created_at}</td>
-                <td class="px-4 py-3 text-center">${row.updated_at}</td>
+                <td class="px-4 py-3 text-center text-gray-900 dark:text-white">${name}</td>
+                <td class="px-4 py-3 text-center">${username}</td>
+                <td class="px-4 py-3 text-center">${email}</td>
+                <td class="px-4 py-3 text-center">${created}</td>
+                <td class="px-4 py-3 text-center">${updated}</td>
                 <td class="px-4 py-3 text-center">
-                    <a href="/dentalemr_system/php/manageusers/delete_staff.php?id=${row.id}"
-                        onclick="return confirm('Are you sure you want to delete this staff account?')"
-                        class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-sm cursor-pointer text-sm">
+                    <a href="/dentalemr_system/php/manageusers/delete_staff.php?id=${row.id}&uid=<?php echo $userId; ?>"
+                        onclick="return confirm('Are you sure you want to delete ${name}? This action cannot be undone.')"
+                        class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-sm cursor-pointer text-sm transition-colors duration-200">
                         Delete
                     </a>
-                </td>
-            `;
+                </td>`;
 
                 fragment.appendChild(tr);
             });
@@ -592,27 +602,59 @@ if ($loggedUser['type'] === 'Dentist') {
             tbody.appendChild(fragment);
         }
 
-        // Live search
+        // Form validation
+        document.getElementById('addStaffForm')?.addEventListener('submit', function(e) {
+            const password = document.getElementById('staffpassword').value;
+            const confirmPassword = document.getElementById('staffconfirm').value;
+            const errorDiv = document.getElementById('formErrors');
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                errorDiv.textContent = 'Passwords do not match.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (password.length < 6) {
+                e.preventDefault();
+                errorDiv.textContent = 'Password must be at least 6 characters long.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            errorDiv.classList.add('hidden');
+        });
+
+        // Live search with debounce
+        let searchTimeout;
+        document.getElementById("simple-search")?.addEventListener("input", function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const term = e.target.value.toLowerCase().trim();
+                const filtered = staffData.filter(row =>
+                    (row.name?.toLowerCase().includes(term) ||
+                        row.username?.toLowerCase().includes(term) ||
+                        row.email?.toLowerCase().includes(term))
+                );
+                renderStaffTable(filtered);
+            }, 300);
+        });
+
+        // Utility function to escape HTML
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initialize on load
         document.addEventListener("DOMContentLoaded", () => {
             loadStaffList();
-
-            const searchInput = document.getElementById("simple-search");
-
-            searchInput.addEventListener("input", () => {
-                const term = searchInput.value.toLowerCase();
-
-                const filtered = staffData.filter(row =>
-                    row.name.toLowerCase().includes(term) ||
-                    row.username.toLowerCase().includes(term) ||
-                    row.email.toLowerCase().includes(term)
-                );
-
-                renderStaffTable(filtered);
-            });
         });
     </script>
-
-
 </body>
 
 </html>

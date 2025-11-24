@@ -811,12 +811,12 @@ if ($loggedUser['type'] === 'Dentist') {
         </header>
         <main class="p-1.5 md:ml-64 h-auto pt-1">
             <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg">
-                <div class="items-center justify-between flex flex-col sm:flex-row mb-3 gap-2">
-                    <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white text-center sm:text-left">
-                        Loading ...
+                <div class="items-center justify-between flex flex-row mb-3">
+                    <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading
+                        ...
                     </p>
                     <button type="button" id="addTooth" onclick="openOHCModalA();"
-                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
                         <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path clip-rule="evenodd" fill-rule="evenodd"
@@ -826,39 +826,39 @@ if ($loggedUser['type'] === 'Dentist') {
                     </button>
                 </div>
                 <div
-                    class="mx-auto flex flex-col justify-center items-center max-w-full px-1.5 py-2 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950 overflow-x-auto">
-                    <div class="items-center justify-between flex flex-row w-full min-w-max">
+                    class="mx-auto flex flex-col justify-center items-center max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                    <div class="items-center justify-between flex flex-row w-full">
                         <p class="text-base font-normal text-gray-950 dark:text-white ">A. Oral Health Condition</p>
                     </div>
-                    <div class="w-full overflow-x-auto">
-                        <div class="flex justify-center gap-2 p-1 mb-2 min-w-max" id="yearButtons">
+                    <div>
+                        <div class="flex justify-between gap-4 p-1 mb-2" id="yearButtons">
                             <button type="button" onclick="year1()" style="font-size: 12px;"
-                                class="text-white shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded min-w-16">
+                                class="text-white shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded">
                                 Year I
                             </button>
                             <button type="button" onclick="year2()" style="font-size: 12px;"
-                                class="text-black shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-white hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded min-w-16">
+                                class="text-black shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-white hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded">
                                 Year II
                             </button>
                             <button type="button" onclick="year3()" style="font-size: 12px;"
-                                class="text-black shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-white hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded min-w-16">
+                                class="text-black shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-white hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded">
                                 Year III
                             </button>
                             <button type="button" onclick="year4()" style="font-size: 12px;"
-                                class="text-black shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-white hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded min-w-16">
+                                class="text-black shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-white hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded">
                                 Year IV
                             </button>
                             <button type="button" onclick="year5()" style="font-size: 12px;"
-                                class="text-black shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-white hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded min-w-16">
+                                class="text-black shadow drop-shadow-sm justify-center cursor-pointer inline-flex items-center bg-white hover:bg-blue-800 hover:text-white focus:outline-none focus:ring-blue-300 font-normal px-3 py-1 rounded">
                                 Year V
                             </button>
                         </div>
                     </div>
-                    <div class="label">
-                        <p id="yeardate" class="text-sm font-medium text-gray-950 dark:text-white text-center">Year I - Date</p>
+                    <div class="label ">
+                        <p id="yeardate" class="text-sm font-medium text-gray-950 dark:text-white ">Year I - Date</p>
                     </div>
-                    <div class="flex flex-col w-full overflow-x-auto">
-                        <div class="min-w-max mx-auto">
+                    <div class=" flex flex-col">
+                        <div class="w-170">
                             <p style="margin-bottom: -5px; margin-top: -10px;"
                                 class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">Treatment
                             </p>
@@ -869,14 +869,14 @@ if ($loggedUser['type'] === 'Dentist') {
                             </p>
                         </div>
 
-                        <div class="min-w-max mx-auto">
+                        <div class="w-170">
                             <div class="gridtop" id="permanentGridtop"></div>
                             <div class="grid1" id="permanentGridbot"></div>
                             <div class="gridtop" id="temporaryGridtop"></div>
                             <div class="grid1" id="temporaryGridbot"></div>
                         </div>
 
-                        <div class="min-w-max mx-auto">
+                        <div class="w-170">
                             <p style="margin-top: -20px; margin-bottom: -5px;"
                                 class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">Condition
                             </p>
@@ -891,11 +891,11 @@ if ($loggedUser['type'] === 'Dentist') {
                 <div class="w-full">
                     <div class="flex justify-between mt-5">
                         <button type="button" onclick="back()"
-                            class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                             Back
                         </button>
                         <button type="button" onclick="next()"
-                            class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                             Next
                         </button>
                     </div>
@@ -904,34 +904,35 @@ if ($loggedUser['type'] === 'Dentist') {
         </main>
 
         <div id="ohcModalA" tabindex="-1" aria-hidden="true"
-            class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50 p-2 md:p-4 overflow-auto">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl max-h-[90vh] overflow-auto">
-                <div class="flex flex-row justify-between items-center mb-4 p-6 pb-0">
+            class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl p-6">
+                <div class="flex flex-row justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Oral Health Condition</h2>
                     <button type="button" id="cancelMedicalBtn"
-                        class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white text-xl"
+                        class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white"
                         onclick="closeOHCModalA()">
                         ✕
                     </button>
                 </div>
-                <form id="ohcForm" class="space-y-4 p-6">
+                <form id="ohcForm" class="space-y-4">
                     <input type="hidden" name="patient_id" id="patient_id" value="">
                     <section class="bg-white dark:bg-gray-900 p-2 rounded-lg mb-3 mt-3">
                         <!-- Set A -->
                         <div>
                             <input type="hidden" id="visit_id" value="0">
                             <div class="mb-3">
-                                <p class="text-14 font-semibold text-gray-900 dark:text-white">A. Oral Health Condition</p>
+                                <p class="text-14 font-semibold  text-gray-900 dark:text-white">A. Oral Health Condition
+                                </p>
                             </div>
-                            <div class="flex flex-col lg:flex-row w-full justify-between items-start gap-4">
+                            <div class="flex flex-row w-full justify-between items-center">
                                 <!-- Tooth Part -->
-                                <div class="flex flex-col gap-2 mb-4 w-full lg:w-auto overflow-auto">
+                                <div class="flex flex-col  gap-2 mb-4  w-170 ">
                                     <!-- A. -->
-                                    <div class="flex justify-center items-center flex-wrap gap-2">
+                                    <div class="w-170 flex justify-center items-center flex-row gap-5">
                                         <!-- Undo Button -->
                                         <button type="button" class="text-white justify-center cursor-pointer inline-flex items-center gap-1 
                                     bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                    font-medium rounded-lg text-sm p-2 
+                                    font-medium rounded-lg text-sm p-1 w-20 
                                     dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="undoBtn">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -943,7 +944,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                         <!-- Redo Button -->
                                         <button type="button" class="text-white justify-center cursor-pointer inline-flex items-center gap-1 
                                     bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                    font-medium rounded-lg text-sm p-2 
+                                    font-medium rounded-lg text-sm p-1 w-20 
                                     dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="redoBtn">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -955,7 +956,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                         <!-- Clear All Button -->
                                         <button type="button" class="text-white justify-center cursor-pointer inline-flex items-center gap-1
                                     bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                    font-medium rounded-lg text-sm p-2 
+                                    font-medium rounded-lg text-sm p-1 w-24 
                                     dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="clearAll">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -965,8 +966,8 @@ if ($loggedUser['type'] === 'Dentist') {
                                             Clear All
                                         </button>
                                     </div>
-                                    <div class="flex flex-col overflow-auto">
-                                        <div class="min-w-max">
+                                    <div class=" flex flex-col">
+                                        <div class="w-170">
                                             <p style="margin-bottom: -5px; margin-top: -10px;"
                                                 class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">
                                                 Treatment
@@ -979,14 +980,14 @@ if ($loggedUser['type'] === 'Dentist') {
                                             </p>
                                         </div>
 
-                                        <div class="min-w-max">
+                                        <div class="w-170">
                                             <div class="gridtop1" id="permanentGridtop1"></div>
                                             <div class="grid11" id="permanentGridbot1"></div>
                                             <div class="gridtop1" id="temporaryGridtop1"></div>
                                             <div class="grid11" id="temporaryGridbot1"></div>
                                         </div>
 
-                                        <div class="min-w-max">
+                                        <div class="w-170">
                                             <p style="margin-top: -20px; margin-bottom: -5px;"
                                                 class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">
                                                 Condition
@@ -1001,15 +1002,15 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </div>
                                 </div>
                                 <!-- Legend Condition -->
-                                <div class="flex flex-row md:flex-row gap-4 w-full overflow-auto">
+                                <div class="flex flex-row gap-1 px-1  w-full  overflow-auto ">
                                     <!-- Condition -->
                                     <div
-                                        class="controls relative w-full p-4 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1] min-w-64">
+                                        class="controls relative w-full p-1 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1]">
                                         <div>
-                                            <p class="text-sm font-medium text-gray-900 dark:text-white">Legend: <span
+                                            <p class="text-sm font-medium  text-gray-900 dark:text-white">Legend: <span
                                                     class="font-normal">Condition</span>
                                             </p>
-                                            <p class="text-sm font-normal text-gray-900 dark:text-white">Capital
+                                            <p class="text-sm font-normal  text-gray-900 dark:text-white">Capital
                                                 letters
                                                 shall
                                                 be use for recording the condition of permanent dentition and small
@@ -1018,15 +1019,15 @@ if ($loggedUser['type'] === 'Dentist') {
                                                 the status of temporary dentition.
                                             </p>
                                         </div>
-                                        <div class="overflow-auto">
-                                            <table class="w-full text-sm text-center border-1 min-w-full">
+                                        <div class=" ">
+                                            <table class="w-full text-sm text-center border-1">
                                                 <thead class="text-sm align-text-top text-gray-700 border">
                                                     <tr>
                                                         <th scope="col" class="border-1">
                                                             Permanent <br> <input type="checkbox" id="upperCaseChk"
                                                                 checked>
                                                         </th>
-                                                        <th scope="col" class="w-20 border-1">
+                                                        <th scope="col" class=" w-20 border-1">
                                                             Tooth Condition
                                                         </th>
                                                         <th scope="col" class="border-1">
@@ -1036,7 +1037,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                 </thead>
                                                 <tbody>
                                                     <tr class="border-1">
-                                                        <td class="border-1">
+                                                        <td class=" border-1">
                                                             ✓
                                                         </td>
                                                         <td class="border-1">
@@ -1137,50 +1138,48 @@ if ($loggedUser['type'] === 'Dentist') {
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div class="flex items-center w-full flex-col sm:flex-row gap-2 mt-2">
+                                        <div class="flex items-center w-full flex-row gap-1 ">
                                             <label
-                                                class="text-sm font-semibold text-gray-900 dark:text-white">Color
+                                                class="text-sm font-semibold w-12  text-gray-900 dark:text-white">Color
                                                 Code:</label>
-                                            <div class="flex flex-col sm:flex-row gap-2 w-full">
-                                                <select id="blueSelect"
-                                                    class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-sm text-sm p-2 w-full dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                                    <option selected value="">Blue</option>
-                                                    <option value="✓">Sound/Sealed✓</option>
-                                                    <option value="D">Blue D/d</option>
-                                                    <option value="F">Blue F/f</option>
-                                                    <option value="M">Blue M/m</option>
-                                                    <option value="DX">Blue DX/dx</option>
-                                                    <option value="Un">Blue Un/un</option>
-                                                    <option value="S">Blue S/s</option>
-                                                    <option value="JC">Blue JC/jc</option>
-                                                    <option value="P">Blue P/p</option>
-                                                </select>
-                                                <select id="redSelect"
-                                                    class="text-white justify-center cursor-pointer inline-flex items-center bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-red-200 font-medium rounded-sm text-sm p-2 w-full dark:bg-red-500 dark:hover:bg-red-700 dark:focus:ring-red-700">
-                                                    <option selected value="">Red</option>
-                                                    <option value="✓">Sound/Sealed✓</option>
-                                                    <option value="D">Red D/d</option>
-                                                    <option value="F">Red F/f</option>
-                                                    <option value="M">Red M/m</option>
-                                                    <option value="DX">Red DX/dx</option>
-                                                    <option value="Un">Red Un/un</option>
-                                                    <option value="S">Red S/s</option>
-                                                    <option value="JC">Red JC/jc</option>
-                                                    <option value="P">Red P/p</option>
-                                                </select>
-                                            </div>
+                                            <select id="blueSelect"
+                                                class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-sm text-sm p-1.5 w-full dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                                <option selected value="">Blue</option>
+                                                <option value="✓">Sound/Sealed✓</option>
+                                                <option value="D">Blue D/d</option>
+                                                <option value="F">Blue F/f</option>
+                                                <option value="M">Blue M/m</option>
+                                                <option value="DX">Blue DX/dx</option>
+                                                <option value="Un">Blue Un/un</option>
+                                                <option value="S">Blue S/s</option>
+                                                <option value="JC">Blue JC/jc</option>
+                                                <option value="P">Blue P/p</option>
+                                            </select>
+                                            <select id="redSelect"
+                                                class="text-white justify-center  cursor-pointer inline-flex items-center bg-red-600 hover:bg-red-700  focus:outline-none focus:ring-red-200 font-medium rounded-sm text-sm p-1.5 w-full dark:bg-red-500 dark:hover:bg-red-700 dark:focus:ring-red-700">
+                                                <option selected value="">Red</option>
+                                                <option value="✓">Sound/Sealed✓</option>
+                                                <option value="D">Red D/d</option>
+                                                <option value="F">Red F/f</option>
+                                                <option value="M">Red M/m</option>
+                                                <option value="DX">Red DX/dx</option>
+                                                <option value="Un">Red Un/un</option>
+                                                <option value="S">Red S/s</option>
+                                                <option value="JC">Red JC/jc</option>
+                                                <option value="P">Red P/p</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <!-- Treatment -->
                                     <div
-                                        class="controls p-4 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1] min-w-64">
-                                        <div class="flex flex-col justify-center items-center">
+                                        class="controls  p-1 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1]">
+                                        <div class="w-48 flex flex-col justify-center items-center p-2">
                                             <div class="flex flex-col gap-3">
-                                                <p class="text-sm font-medium text-gray-900 dark:text-white">Legend:
+                                                <p class="text-sm font-medium  text-gray-900 dark:text-white">Legend:
                                                     <span class="font-normal">Treament</span>
                                                 </p>
                                                 <div class="flex flex-col gap-3">
-                                                    <p class="text-sm font-normal text-gray-900 dark:text-white">
+                                                    <p class="text-sm font-normal  text-gray-900 dark:text-white">
                                                         Topical
                                                         Fluoride
                                                         Application:
@@ -1195,27 +1194,27 @@ if ($loggedUser['type'] === 'Dentist') {
                                                         Gel
                                                     </p>
                                                 </div>
-                                                <p class="text-sm font-normal text-gray-900 dark:text-white">PFS - Pit
+                                                <p class="text-sm font-normal  text-gray-900 dark:text-white">PFS - Pit
                                                     and
                                                     Fissure Sealant
                                                 </p>
-                                                <p class="text-sm font-normal text-gray-900 dark:text-white">PF -
+                                                <p class="text-sm font-normal  text-gray-900 dark:text-white">PF -
                                                     Permanent
                                                     Filling (Composite, Am, ART)
                                                 </p>
-                                                <p class="text-sm font-normal text-gray-900 dark:text-white">TF -
+                                                <p class="text-sm font-normal  text-gray-900 dark:text-white">TF -
                                                     Temporary
                                                     Filling
                                                 </p>
-                                                <p class="text-sm font-normal text-gray-900 dark:text-white">X -
+                                                <p class="text-sm font-normal  text-gray-900 dark:text-white">X -
                                                     Extraction
                                                 </p>
-                                                <p class="text-sm font-normal text-gray-900 dark:text-white">O - Others
+                                                <p class="text-sm font-normal  text-gray-900 dark:text-white">O - Others
                                                 </p>
                                             </div>
-                                            <div class="w-full flex flex-col justify-center items-center mt-4">
+                                            <div class="w-48 flex flex-col justify-center items-center p-2">
                                                 <select id="treatmentSelect"
-                                                    class="bg-gray-50 border border-gray-300 w-full text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                                    class="bg-gray-50 border border-gray-300 w-full text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                                     <option value="">-- Select Treatment --</option>
                                                     <option value="FV">FV - Fluoride Varnish</option>
                                                     <option value="FG">FG - Fluoride Gel</option>
@@ -1234,7 +1233,7 @@ if ($loggedUser['type'] === 'Dentist') {
                     </section>
                     <div class="flex justify-end gap-2">
                         <button type="button" onclick="saveOHCA()"
-                            class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-18 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                             Save
                         </button>
                     </div>
@@ -1336,25 +1335,24 @@ if ($loggedUser['type'] === 'Dentist') {
     </script>
 
     <!-- teeth Structure -->
-    <!-- SIMPLIFIED teeth Structure for DISPLAY ONLY -->
     <script>
         const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
 
-        // Simple tooth part creation
+        // Create tooth part for DISPLAY ONLY (no click events)
         function createPart(toothId, partName) {
             const part = document.createElement('div');
             part.className = 'part part-' + partName;
             const key = `${toothId}-${partName}`;
             part.dataset.key = key;
 
-            // Create span for text
+            // Create span element for text
             const textSpan = document.createElement('span');
             part.appendChild(textSpan);
 
             return part;
         }
 
-        // Simple tooth container
+        // create tooth container for DISPLAY ONLY
         function createTooth(id, label, position = 'bottom', tooth_id = null) {
             const container = document.createElement('div');
             container.className = 'tooth-container';
@@ -1368,18 +1366,20 @@ if ($loggedUser['type'] === 'Dentist') {
             tooth.id = id;
             tooth.dataset.toothId = tooth_id ?? '';
 
-            // Create all parts
+            // Create all tooth parts
             teethParts.forEach(p => {
-                tooth.appendChild(createPart(id, p));
+                const part = createPart(id, p);
+                tooth.appendChild(part);
             });
 
-            // Add tooltip
+            // tooltip
             const tooltip = document.createElement('div');
             tooltip.className = 'tooltip';
             tooltip.textContent = label;
             tooth.appendChild(tooltip);
 
-            // Add to container in correct order
+            // Correct order: for top position, label goes above tooth
+            // for bottom position, label goes below tooth
             if (position === 'top') {
                 container.appendChild(toothLabel);
                 container.appendChild(tooth);
@@ -1391,25 +1391,45 @@ if ($loggedUser['type'] === 'Dentist') {
             return container;
         }
 
-        // Load grid
-        function loadGrid() {
+        // Load teeth mapping from server
+        async function loadGrid() {
             const permTop = document.getElementById('permanentGridtop');
             const permBot = document.getElementById('permanentGridbot');
             const tempTop = document.getElementById('temporaryGridtop');
             const tempBot = document.getElementById('temporaryGridbot');
+
+            let teethData = [];
+            try {
+                const r = await fetch('/dentalemr_system/php/treatment/get_teeth.php');
+                if (r.ok) teethData = await r.json();
+            } catch (e) {
+                console.warn('Could not load teeth mapping, will fallback to FDI numbers', e);
+            }
 
             const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
             const permB = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
             const tempT = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
             const tempB = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
 
-            permT.forEach(n => permTop.appendChild(createTooth(`P-${n}`, n, 'top', n)));
-            permB.forEach(n => permBot.appendChild(createTooth(`P-${n}`, n, 'bottom', n)));
-            tempT.forEach(n => tempTop.appendChild(createTooth(`T-${n}`, n, 'top', n)));
-            tempB.forEach(n => tempBot.appendChild(createTooth(`T-${n}`, n, 'bottom', n)));
+            permT.forEach(n => {
+                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                permTop.appendChild(createTooth(`P-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
+            });
+            permB.forEach(n => {
+                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                permBot.appendChild(createTooth(`P-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+            });
+            tempT.forEach(n => {
+                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                tempTop.appendChild(createTooth(`T-${n}`, n, 'top', tooth ? tooth.tooth_id : n));
+            });
+            tempB.forEach(n => {
+                const tooth = teethData.find(t => parseInt(t.fdi_number) === n);
+                tempBot.appendChild(createTooth(`T-${n}`, n, 'bottom', tooth ? tooth.tooth_id : n));
+            });
         }
 
-        // Create boxes
+        // Create boxes for treatment/condition rows (DISPLAY ONLY)
         function createBox(id, row, kind) {
             const box = document.createElement('div');
             const key = `R${row}-${id}`;
@@ -1426,19 +1446,19 @@ if ($loggedUser['type'] === 'Dentist') {
 
         function loadBoxes() {
             const row1 = document.getElementById('treatRow1');
-            const row2 = document.getElementById('treatRow2');
-            const row3 = document.getElementById('treatRow3');
-            const row4 = document.getElementById('treatRow4');
+            for (let i = 0; i < 16; i++) row1.appendChild(createBox(i, 1, 'treatment'));
 
-            for (let i = 0; i < 16; i++) {
-                row1.appendChild(createBox(i, 1, 'treatment'));
-                row2.appendChild(createBox(i, 2, 'condition'));
-                row3.appendChild(createBox(i, 3, 'condition'));
-                row4.appendChild(createBox(i, 4, 'treatment'));
-            }
+            const row2 = document.getElementById('treatRow2');
+            for (let i = 0; i < 16; i++) row2.appendChild(createBox(i, 2, 'condition'));
+
+            const row3 = document.getElementById('treatRow3');
+            for (let i = 0; i < 16; i++) row3.appendChild(createBox(i, 3, 'condition'));
+
+            const row4 = document.getElementById('treatRow4');
+            for (let i = 0; i < 16; i++) row4.appendChild(createBox(i, 4, 'treatment'));
         }
 
-        // Initialize
+        // initialize UI
         loadGrid();
         loadBoxes();
     </script>
@@ -1506,7 +1526,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 const data = await res.json();
                 if (!data.success) throw new Error(data.error || "Failed to load data");
 
-                // Display patient name
+                // Display patient full name
                 if (data.patient) {
                     const {
                         firstname,
@@ -1518,10 +1538,11 @@ if ($loggedUser['type'] === 'Dentist') {
                         `${firstname} ${middleInitial} ${surname}`.trim();
                 }
 
-                // Find visit
+                // Find correct visit
                 const visit = data.visits.find(v => v.visit_number === visitNumber);
                 if (!visit) {
                     document.getElementById("yeardate").textContent = "No records found for this year.";
+                    console.warn("No visit data found for Year " + visitNumber);
                     return;
                 }
 
@@ -1529,17 +1550,18 @@ if ($loggedUser['type'] === 'Dentist') {
                 document.getElementById("yeardate").textContent =
                     `${visit.visit_label} — ${new Date(visit.visit_date).toLocaleDateString()}`;
 
-                // Apply conditions
+                // Apply conditions to tooth parts
                 visit.conditions.forEach(c => {
                     const el = document.querySelector(`[data-key='${c.box_key}']`);
                     if (!el) return;
 
-                    const color = c.color?.trim() || (c.condition_code?.toLowerCase() === "m" ? "#ef4444" : "#3b82f6");
+                    const dbColor = c.color?.trim() || "";
+                    const fallbackColor = c.condition_code?.toLowerCase() === "m" ? "#ef4444" : "#3b82f6";
+                    const fillColor = dbColor !== "" ? dbColor : fallbackColor;
 
-                    // Set background color
-                    el.style.backgroundColor = color;
+                    el.style.backgroundColor = fillColor;
 
-                    // Set text - look for span first
+                    // Set text in the span element
                     const textSpan = el.querySelector('span');
                     if (textSpan) {
                         textSpan.textContent = c.condition_code || "";
@@ -1548,20 +1570,33 @@ if ($loggedUser['type'] === 'Dentist') {
                         el.textContent = c.condition_code || "";
                         el.style.color = "#ffffff";
                     }
+
+                    el.style.fontWeight = "bold";
+                    el.style.fontSize = "10px";
+                    el.style.display = "flex";
+                    el.style.alignItems = "center";
+                    el.style.justifyContent = "center";
+                    el.style.border = "1px solid rgba(0,0,0,0.1)";
                 });
 
                 // Apply treatments
                 visit.treatments.forEach(t => {
-                    const el = document.querySelector(`[data-key='${t.box_key}']`);
-                    if (!el) return;
-
-                    el.textContent = t.treatment_code?.toUpperCase() || "";
-                    el.style.backgroundColor = "#ffffff";
-                    el.style.color = "#000000";
+                    const treatEl = document.querySelector(`[data-key='${t.box_key}']`);
+                    if (!treatEl) return;
+                    treatEl.textContent = t.treatment_code?.toUpperCase() || "";
+                    treatEl.style.backgroundColor = "#ffffff";
+                    treatEl.style.border = "1px solid #00000080";
+                    treatEl.style.color = "#000000";
+                    treatEl.style.fontSize = "10px";
+                    treatEl.style.fontWeight = "bold";
+                    treatEl.style.display = "flex";
+                    treatEl.style.alignItems = "center";
+                    treatEl.style.justifyContent = "center";
                 });
 
+                console.log(`Loaded Year ${visitNumber}`, visit);
             } catch (err) {
-                console.error("Error loading visit data:", err);
+                console.error("❌ Error loading visit data:", err);
                 alert("Failed to load visit data: " + err.message);
             }
         }
@@ -1572,12 +1607,9 @@ if ($loggedUser['type'] === 'Dentist') {
         function clearAllTeeth() {
             document.querySelectorAll(".part, [data-key^='R']").forEach(el => {
                 el.style.backgroundColor = "";
-                const textSpan = el.querySelector('span');
-                if (textSpan) {
-                    textSpan.textContent = "";
-                } else {
-                    el.textContent = "";
-                }
+                el.style.color = "";
+                el.style.border = "";
+                el.textContent = "";
             });
         }
     </script>
@@ -1660,7 +1692,6 @@ if ($loggedUser['type'] === 'Dentist') {
             }
 
             // ---------------- ENHANCED APPLY CHANGES ----------------
-            // ---------------- ENHANCED APPLY CHANGES ----------------
             function applyChange(key, color, cond, textCase, saveHistory = true, isTreatment = false) {
                 const el = modal.querySelector(`[data-key="${key}"]`);
                 if (!el) return;
@@ -1672,14 +1703,11 @@ if ($loggedUser['type'] === 'Dentist') {
                     // Store current state before changes
                     const historyItem = {
                         key: key,
-                        isTreatment: isTreatment,
                         prevColor: el.dataset.color || '',
                         prevCondition: el.dataset.condition || '',
-                        prevTreatment: el.dataset.treatment || '',
-                        prevTextContent: textSpan ? textSpan.textContent : el.textContent,
+                        prevTextContent: textSpan ? textSpan.textContent : '',
                         newColor: color,
-                        newCondition: isTreatment ? '' : cond,
-                        newTreatment: isTreatment ? cond : '',
+                        newCondition: cond,
                         newCase: textCase
                     };
 
@@ -1688,53 +1716,21 @@ if ($loggedUser['type'] === 'Dentist') {
                     updateButtonStates();
                 }
 
-                if (isTreatment) {
-                    // Handle treatment boxes - no span, direct text
-                    el.dataset.treatment = cond || '';
-                    el.textContent = cond || '';
-                    el.style.backgroundColor = '#fff';
-                    el.style.color = '#000';
-                    el.style.fontWeight = 'bold';
-                    el.style.fontSize = '0.9rem';
-                } else {
-                    // Handle condition boxes and tooth parts
-                    el.dataset.condition = cond || '';
-                    el.dataset.color = color || '';
-                    el.dataset.case = textCase || 'upper';
-
+                if (textSpan) {
                     const displayText = formatCondition(cond, textCase);
+                    textSpan.textContent = displayText;
+                }
 
-                    if (textSpan) {
-                        // For tooth parts - use span with rotation
-                        textSpan.textContent = displayText;
-                    } else {
-                        // For condition boxes - direct text
-                        el.textContent = displayText;
-                    }
+                el.dataset.condition = cond || '';
+                el.dataset.color = color || '';
+                el.dataset.case = textCase || 'upper';
 
-                    if (cond && cond.toLowerCase() === '✓') {
-                        el.style.backgroundColor = '#fff';
-                        if (textSpan) {
-                            textSpan.style.color = '#000';
-                        } else {
-                            el.style.color = '#000';
-                        }
-                    } else {
-                        el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
-                        if (textSpan) {
-                            textSpan.style.color = '#fff';
-                        } else {
-                            el.style.color = '#fff';
-                        }
-                    }
-
-                    if (textSpan) {
-                        textSpan.style.fontWeight = 'bold';
-                        textSpan.style.fontSize = '10px';
-                    } else {
-                        el.style.fontWeight = 'bold';
-                        el.style.fontSize = '0.9rem';
-                    }
+                if (cond && cond.toLowerCase() === '✓') {
+                    el.style.backgroundColor = '#fff';
+                    if (textSpan) textSpan.style.color = '#000';
+                } else {
+                    el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
+                    if (textSpan) textSpan.style.color = '#fff';
                 }
             }
 
@@ -1770,20 +1766,8 @@ if ($loggedUser['type'] === 'Dentist') {
                         el.dataset.case = last.prevCase || 'upper';
                         el.textContent = last.prevTextContent || '';
                     }
-
-                    // Restore styling
-                    if (last.isTreatment) {
-                        el.style.backgroundColor = '#fff';
-                        el.style.color = '#000';
-                    } else {
-                        if (last.prevCondition && last.prevCondition.toLowerCase() === '✓') {
-                            el.style.backgroundColor = '#fff';
-                            el.style.color = '#000';
-                        } else {
-                            el.style.backgroundColor = last.prevColor === 'blue' ? '#1e40af' : last.prevColor === 'red' ? '#b91c1c' : '#fff';
-                            el.style.color = last.prevColor ? '#fff' : '#000';
-                        }
-                    }
+                    el.style.backgroundColor = last.prevBackgroundColor || '#fff';
+                    el.style.color = last.prevColorStyle || '#000';
                 }
                 updateButtonStates();
             });
@@ -1811,7 +1795,6 @@ if ($loggedUser['type'] === 'Dentist') {
                     el.textContent = '';
                     el.style.backgroundColor = '#fff';
                     el.style.color = '#000';
-                    el.style.fontWeight = 'normal';
                 });
                 historyStack.length = 0;
                 redoStack.length = 0;
@@ -1902,24 +1885,8 @@ if ($loggedUser['type'] === 'Dentist') {
                 const key = `R${row}-${id}`;
                 box.dataset.key = key;
 
-                // Set basic styling for all boxes
-                box.style.display = 'flex';
-                box.style.alignItems = 'center';
-                box.style.justifyContent = 'center';
-                box.style.fontSize = '0.9rem';
-                box.style.fontWeight = 'bold';
-                box.style.cursor = 'pointer';
-                box.style.userSelect = 'none';
-                box.style.border = '1px solid #ccc';
-                box.style.borderRadius = '4px';
-                box.style.width = '2rem';
-                box.style.height = '2rem';
-
                 if (kind === 'treatment') {
                     box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
-                    box.style.backgroundColor = '#fff';
-                    box.style.color = '#000';
-
                     box.addEventListener('click', () => {
                         const selectedTreat = treatmentSelect?.value || '';
                         if (!selectedTreat) {
@@ -1930,9 +1897,6 @@ if ($loggedUser['type'] === 'Dentist') {
                     });
                 } else {
                     box.className = (row === 3) ? 'condition1-box' : 'condition-box';
-                    box.style.backgroundColor = '#fff';
-                    box.style.color = '#000';
-
                     box.addEventListener('click', () => {
                         if (!selectedCondition) {
                             showModalNotification('Please select a condition first', 'warning');
@@ -1971,9 +1935,9 @@ if ($loggedUser['type'] === 'Dentist') {
 
                 const notification = document.createElement('div');
                 notification.className = `modal-notification fixed top-4 right-4 p-3 rounded-lg text-white z-50 ${
-            type === 'warning' ? 'bg-yellow-500' : 
-            type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-        }`;
+                type === 'warning' ? 'bg-yellow-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
                 notification.textContent = message;
                 notification.style.fontSize = '14px';
 

@@ -399,9 +399,9 @@ if ($loggedUser['type'] === 'Dentist') {
                             Print
                         </a>
                     </div>
-                    <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
+                    <div class="justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
                         id="mobile-menu-2">
-                        <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                        <ul class="flex flex-row font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                             <li>
                                 <a href="#" id="patientInfoLink"
                                     class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
@@ -444,7 +444,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         <p class="text-base font-normal text-gray-950 dark:text-white ">Record of Services Rendered</p>
                     </div>
                     <!-- Table -->
-                    <div class="mx-auto max-w-screen-xl px-4 lg:px-12 mt-10 mb-10">
+                    <div class="mx-auto max-w-screen-xl w-full px-4 lg:px-12 mt-10 mb-10">
                         <!-- Start coding here -->
                         <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
@@ -482,8 +482,8 @@ if ($loggedUser['type'] === 'Dentist') {
             </section>
             <div id="recordModal" tabindex="-1" aria-hidden="true"
                 class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl p-6">
-                    <div class="flex flex-row justify-between items-center mb-4">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-2xl p-3">
+                    <div class="flex flex-row justify-between items-center ">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Oral Health Condition</h2>
                         <button type="button" id="cancelrecordBtn"
                             class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white"
@@ -491,9 +491,9 @@ if ($loggedUser['type'] === 'Dentist') {
                             ✕
                         </button>
                     </div>
-                    <form id="recordForm" class="space-y-4">
+                    <form id="recordForm">
                         <input type="hidden" name="patient_id" id="patient_id" value="">
-                        <section class="bg-white dark:bg-gray-900 p-2 rounded-lg mb-3 mt-3">
+                        <section class="bg-white dark:bg-gray-900 p-2 rounded-lg">
                             <div>
                                 <div class="mb-3">
                                     <p class="text-14 font-semibold text-gray-900 dark:text-white">
@@ -561,7 +561,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                             </div>
                                         </div>
 
-                                        <div class="w-full flex flex-row justify-between relative gap-5 mb-14">
+                                        <div class="w-full flex flex-row justify-between relative gap-5">
                                             <div class="w-129">
                                                 <label
                                                     class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Consultation</label>

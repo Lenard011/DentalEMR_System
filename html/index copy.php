@@ -298,12 +298,17 @@ while ($row = $trendResult->fetch_assoc()) {
 
 // ---------------- TABLES ----------------
 $recentVisits = $conn->query("
-    SELECT v.visit_date, p.firstname, p.surname
+    SELECT 
+        MAX(v.visit_date) AS latest_visit,
+        p.firstname,
+        p.surname
     FROM visits v
     JOIN patients p ON v.patient_id = p.patient_id
-    ORDER BY v.visit_date DESC
+    GROUP BY v.patient_id
+    ORDER BY latest_visit DESC
     LIMIT 5
 ");
+
 
 $recentTreatments = $conn->query("
     SELECT s.created_at, p.firstname, p.surname, t.description
@@ -367,7 +372,7 @@ $conn->close();
             var barangayPieData = google.visualization.arrayToDataTable(rawBarangay);
 
             var barangayPieOptions = {
-                // title: "Patients per Barangay",
+                title: "Patients per Barangay",
                 is3D: true,
                 chartArea: {
                     width: '90%',
@@ -804,10 +809,11 @@ $conn->close();
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
                             Clinic</span>
                     </a>
+
                 </div>
                 <!-- UserProfile -->
                 <div class="flex items-center lg:order-2">
-                    <button type="button" data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation"
+                    <button type="button" 
                         class="p-2 mr-1 text-gray-500 rounded-lg md:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
                         <span class="sr-only">Toggle search</span>
                         <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
@@ -870,11 +876,11 @@ $conn->close();
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
-                                    out</a>
-                            </li>
+                            <a href="#"
+                                onclick="confirmLogout(<?php echo $loggedUser['id']; ?>)"
+                                class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                Sign out
+                            </a>
                         </ul>
                     </div>
                 </div>
@@ -882,6 +888,7 @@ $conn->close();
         </nav>
 
         <!-- Sidebar -->
+
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -1045,7 +1052,7 @@ $conn->close();
 
         <main class="p-4 md:ml-64 h-auto pt-20">
             <div class="dashboard">
-                <h1>🦷 MHO Dental Clinic Dashboard</h1>
+                <h1>🦷 MHO Dental Clinic</h1>
                 <h1 class="text-2xl font-bold mb-4">
                     Welcome,
                     <?php
@@ -1162,7 +1169,7 @@ $conn->close();
 
                     <div class="chart-box" style="grid-column: 1 / -1;">
                         <div class="chart-title">Monthly Patient Visits Trend</div>
-                        <div id="linechart" style="height: 380px; " class="relative"></div>
+                        <div id="linechart" style="height: 380px;"></div>
                     </div>
                 </div>
 
@@ -1174,14 +1181,17 @@ $conn->close();
                             <th>Date</th>
                             <th>Patient Name</th>
                         </tr>
+
                         <?php while ($v = $recentVisits->fetch_assoc()): ?>
                             <tr>
-                                <td><?php echo $v['visit_date']; ?></td>
+                                <td><?php echo $v['latest_visit']; ?></td>
                                 <td><?php echo $v['firstname'] . " " . $v['surname']; ?></td>
                             </tr>
                         <?php endwhile; ?>
+
                     </table>
                 </div>
+
                 <div class="tables">
                     <h3 class="font-bold">Recent Treatments</h3>
                     <table>
@@ -1298,7 +1308,13 @@ $conn->close();
             });
         });
     </script>
-
+    <script>
+        function confirmLogout(userId) {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/dentalemr_system/php/login/logout.php?uid=' + userId;
+            }
+        }
+    </script>
 
 </body>
 

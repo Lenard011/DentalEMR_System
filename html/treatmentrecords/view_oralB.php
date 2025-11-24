@@ -399,9 +399,9 @@ if ($loggedUser['type'] === 'Dentist') {
                             Print
                         </a>
                     </div>
-                    <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
+                    <div class=" justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
                         id="mobile-menu-2">
-                        <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                        <ul class="flex flex-row font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                             <li>
                                 <a href="view_info.php" id="patientInfoLink"
                                     class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
@@ -444,7 +444,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         <p class="text-base font-normal text-gray-950 dark:text-white ">B. Services Monitoring Chart</p>
                     </div>
                     <!-- First table -->
-                    <div class="mx-auto max-w-screen-xl px-4 lg:px-12 mt-10">
+                    <div class=" w-full  px-4 lg:px-12 mt-10">
                         <!-- Start coding here -->
                         <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
@@ -475,7 +475,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         </div>
                     </div>
                     <!-- Second table -->
-                    <div class="mx-auto max-w-screen-xl px-4 lg:px-12 mt-10">
+                    <div class=" w-full px-4 lg:px-12 mt-10">
                         <!-- Start coding here -->
                         <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
@@ -506,7 +506,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         </div>
                     </div>
                     <!-- Third table -->
-                    <div class="mx-auto max-w-screen-xl px-4 lg:px-12 mt-10">
+                    <div class=" w-full  px-4  mt-10">
                         <!-- Start coding here -->
                         <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
@@ -543,7 +543,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         </div>
                     </div>
                     <!-- Fourth table -->
-                    <div class="mx-auto max-w-screen-xl px-4 lg:px-12 mt-10 mb-10">
+                    <div class="w-full px-4 mt-10 mb-10">
                         <!-- Start coding here -->
                         <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 

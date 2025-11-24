@@ -630,7 +630,7 @@ if ($loggedUser['type'] === 'Dentist') {
               </button>
             </div>
 
-            <form id="editPatientForm" action="/dentalemr_system//php/register_patient/update_patient.php?uid=<?php echo $loggedUser['id']; ?>" method="POST">
+            <form id="editPatientForm" action="../php/register_patient/update_patient.php?uid=<?php echo $loggedUser['id']; ?>" method="POST">
               <input type="hidden" id="editPatientId" name="patient_id">
 
               <div class="grid grid-cols-2 gap-4">
@@ -1231,7 +1231,7 @@ if ($loggedUser['type'] === 'Dentist') {
       async function loadPatient() {
         if (!patientId) return;
         try {
-          const res = await fetch(`/dentalemr_system//php/register_patient/get_patient.php?id=${encodeURIComponent(patientId)}`);
+          const res = await fetch(`../php/register_patient/get_patient.php?id=${encodeURIComponent(patientId)}`);
           const data = await res.json();
           if (!data.success) throw new Error(data.error || 'Failed to fetch patient data.');
           currentPatient = data.patient;
@@ -1465,7 +1465,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load membership ---------- */
     async function loadMemberships(patientId) {
       try {
-        const res = await apiFetch(`/dentalemr_system//php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}`);
         const json = await res.json();
         const membershipList = document.getElementById("membershipList");
         membershipList.innerHTML = "";
@@ -1520,7 +1520,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load medical ---------- */
     async function loadMedicalHistory(patientId) {
       try {
-        const res = await apiFetch(`/dentalemr_system//php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}`);
         const json = await res.json();
         const medicalList = document.getElementById("medicalHistoryList");
         medicalList.innerHTML = "";
@@ -1606,7 +1606,7 @@ if ($loggedUser['type'] === 'Dentist') {
     /* ---------- Load dietary ---------- */
     async function loadDietaryHistory(patientId) {
       try {
-        const res = await apiFetch(`/dentalemr_system//php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}`);
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}`);
         const json = await res.json();
         const dietaryList = document.getElementById("dietaryHistoryList");
         dietaryList.innerHTML = "";
@@ -1694,7 +1694,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_membership");
 
         try {
-          const r = await apiFetch("/dentalemr_system//php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });
@@ -1734,7 +1734,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_medical");
 
         try {
-          const r = await apiFetch("/dentalemr_system//php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });
@@ -1771,7 +1771,7 @@ if ($loggedUser['type'] === 'Dentist') {
         fd.set("action", "save_dietary");
 
         try {
-          const r = await apiFetch("/dentalemr_system//php/register_patient/patient_info.php", {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
             method: "POST",
             body: fd
           });
@@ -1790,7 +1790,6 @@ if ($loggedUser['type'] === 'Dentist') {
       });
     });
   </script>
-
   <!-- vital signs  -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -1840,7 +1839,7 @@ if ($loggedUser['type'] === 'Dentist') {
         data.append('weight', formData.get('weight'));
 
         try {
-          const res = await fetch('/dentalemr_system//php/register_patient/patient_info.php', {
+          const res = await fetch('../php/register_patient/patient_info.php', {
             method: 'POST',
             body: data
           });
@@ -1861,7 +1860,7 @@ if ($loggedUser['type'] === 'Dentist') {
 
       async function fetchVitals() {
         try {
-          const res = await fetch(`/dentalemr_system//php/register_patient/patient_info.php?action=get_vitals&patient_id=${patientInput.value}`);
+          const res = await fetch(`../php/register_patient/patient_info.php?action=get_vitals&patient_id=${patientInput.value}`);
           const data = await res.json();
           if (!data.success) return;
 

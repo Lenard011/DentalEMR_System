@@ -73,8 +73,18 @@ for ($i = 0; $i < count($usernames); $i++) {
         continue;
     }
 
-    // Check if user already verified today
-    $today = date('Y-m-d');
+    // Check if user already verified for current period (resets at 11:59 PM)
+    $currentTime = date('H:i:s');
+    $resetTime = '23:59:00'; // 11:59 PM
+
+    // If current time is before 11:59 PM, check for today's verification
+    // If current time is after 11:59 PM, consider it as next day
+    if ($currentTime < $resetTime) {
+        $checkDate = date('Y-m-d');
+    } else {
+        $checkDate = date('Y-m-d', strtotime('+1 day'));
+    }
+
     $checkStmt = mysqli_prepare($conn, "
         SELECT * FROM daily_verifications 
         WHERE user_id = ? 
@@ -82,13 +92,13 @@ for ($i = 0; $i < count($usernames); $i++) {
         AND verification_date = ?
         LIMIT 1
     ");
-    mysqli_stmt_bind_param($checkStmt, "iss", $user['id'], $userType, $today);
+    mysqli_stmt_bind_param($checkStmt, "iss", $user['id'], $userType, $checkDate);
     mysqli_stmt_execute($checkStmt);
     $result = mysqli_stmt_get_result($checkStmt);
     $alreadyVerified = mysqli_fetch_assoc($result);
 
     if ($alreadyVerified) {
-        // User already verified today - skip MFA and log them in directly
+        // User already verified for current period - skip MFA and log them in directly
         if (!isset($_SESSION['active_sessions'])) {
             $_SESSION['active_sessions'] = [];
         }
@@ -106,12 +116,12 @@ for ($i = 0; $i < count($usernames); $i++) {
             SET last_verification_time = NOW() 
             WHERE user_id = ? AND user_type = ? AND verification_date = ?
         ");
-        mysqli_stmt_bind_param($updateStmt, "iss", $user['id'], $userType, $today);
+        mysqli_stmt_bind_param($updateStmt, "iss", $user['id'], $userType, $checkDate);
         mysqli_stmt_execute($updateStmt);
 
         // Log the login
         if ($pdo) {
-            logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Daily verification bypass - already verified today", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
+            logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Daily verification bypass - already verified for current period", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
         }
 
         // Store session for multi-login support
@@ -142,7 +152,7 @@ for ($i = 0; $i < count($usernames); $i++) {
         continue;
     }
 
-    // User needs MFA verification (first login of the day)
+    // User needs MFA verification (first login of the period)
     // Clean expired MFA codes
     mysqli_query($conn, "DELETE FROM mfa_codes WHERE expires_at <= NOW() OR used = 1");
 
@@ -177,7 +187,7 @@ for ($i = 0; $i < count($usernames); $i++) {
             <p>Your verification code is:</p>
             <h2 style='letter-spacing:3px;color:#2563EB;'>{$mfaCode}</h2>
             <p>This code will expire in 5 minutes.</p>
-            <p><em>Note: You only need to verify once per day.</em></p>
+            <p><em>Note: You only need to verify once daily (resets at 11:59 PM).</em></p>
             <br><p>Best regards,<br>Dental EMR System</p>
         ";
         $mail->send();

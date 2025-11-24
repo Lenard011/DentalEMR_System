@@ -160,15 +160,10 @@ if ($loggedUser['type'] === 'Dentist') {
             height: 50%;
             border: 1px solid #555;
             border-top-left-radius: 100%;
+            transform: translate(50, 50);
             transform: translateX(-50%) rotate(-45deg);
             margin-top: 10px;
             margin-left: 7px;
-        }
-
-        .part-top-left::after {
-            content: attr(data-content);
-            transform: rotate(45deg);
-            display: block;
         }
 
         .part-top-right {
@@ -180,12 +175,6 @@ if ($loggedUser['type'] === 'Dentist') {
             border-top-right-radius: 100%;
             transform: translateX(-50%) rotate(-45deg);
             margin-top: -3px;
-        }
-
-        .part-top-right::after {
-            content: attr(data-content);
-            transform: rotate(45deg);
-            display: block;
         }
 
         .part-bottom-left {
@@ -200,12 +189,6 @@ if ($loggedUser['type'] === 'Dentist') {
             margin-left: 20px;
         }
 
-        .part-bottom-left::after {
-            content: attr(data-content);
-            transform: rotate(45deg);
-            display: block;
-        }
-
         .part-bottom-right {
             bottom: 0;
             right: 0;
@@ -218,12 +201,6 @@ if ($loggedUser['type'] === 'Dentist') {
             margin-right: -13px;
         }
 
-        .part-bottom-right::after {
-            content: attr(data-content);
-            transform: rotate(45deg);
-            display: block;
-        }
-
         .part-center {
             width: 18px;
             height: 18px;
@@ -233,15 +210,6 @@ if ($loggedUser['type'] === 'Dentist') {
             border-radius: 50%;
             border: 1px solid #555;
             position: absolute;
-            /* Center part doesn't need rotation, so use normal text display */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .part-center::after {
-            content: attr(data-content);
-            display: block;
         }
 
         .tooltip {
@@ -279,50 +247,11 @@ if ($loggedUser['type'] === 'Dentist') {
             justify-content: center;
         }
 
-        /* Condition boxes with vertical text */
-        .condition-box::after,
-        .condition1-box::after {
-            content: attr(data-content);
-            /* writing-mode: vertical-rl;
-            text-orientation: mixed; */
-            display: block;
-            /* transform: none; */
-        }
-
+        /* individual boxes (clickable) */
+        .treatment-box,
+        .treatment1-box,
         .condition-box,
         .condition1-box {
-            width: 2rem;
-            height: 2rem;
-            display: flex;
-            text-align: center;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            cursor: pointer;
-            user-select: none;
-            background: #fff;
-            color: #000;
-            /* Clear any existing text content */
-            text-indent: -9999px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .condition-box::after,
-        .condition1-box::after {
-            text-indent: 0;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        /* Treatment boxes keep horizontal text */
-        .treatment-box,
-        .treatment1-box {
             width: 2rem;
             height: 2rem;
             display: flex;
@@ -616,7 +545,7 @@ if ($loggedUser['type'] === 'Dentist') {
             <input type="hidden" id="visit_id" value="0">
             <!-- Individual Patient Treatment Record Inforamtion -->
             <main class="p-3 md:ml-64 h-auto pt-15" id="patienttreatment"
-                style="display: flex; flex-direction: column;">
+                style="display: none; flex-direction: column;">
                 <div class="text-center">
                     <p class="text-lg font-semibold  text-gray-900 dark:text-white">Individual Patient Treatment Record
                     </p>
@@ -1314,7 +1243,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
             </main>
             <!-- Oral Health Condition A -->
-            <main class="p-3 md:ml-64 h-auto pt-15" id="oralhealthA&B" style="display: none; flex-direction: column;">
+            <main class="p-3 md:ml-64 h-auto pt-15" id="oralhealthA&B" style="display: flex; flex-direction: column;">
                 <div class="text-center">
                     <p class="text-lg font-semibold text-gray-900 dark:text-white">Oral Health Condition</p>
                 </div>
@@ -1368,15 +1297,15 @@ if ($loggedUser['type'] === 'Dentist') {
                             </div>
                         </div>
 
-                        <div class="flex flex-col lg:flex-row w-full justify-between items-stretch gap-4 min-h-[500px]">
+                        <div class="flex flex-col relative lg:flex-row w-full justify-between items-start gap-4">
                             <!-- Tooth Part -->
-                            <div class="flex flex-col w-full gap-2">
+                            <div class="flex flex-col w-full gap-2 mb-4">
                                 <!-- Desktop Controls - Hidden on mobile -->
-                                <div class="hidden md:flex justify-center items-center flex-row gap-5 mb-2">
+                                <div class="hidden md:flex justify-center items-center flex-row gap-5">
                                     <button type="button" class="text-white justify-center cursor-pointer inline-flex items-center gap-1 
-                                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                            font-medium rounded-lg text-sm p-1 w-20 
-                                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="undoBtn">
+                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                            font-medium rounded-lg text-sm p-1 w-20 
+                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="undoBtn">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -1385,9 +1314,9 @@ if ($loggedUser['type'] === 'Dentist') {
                                         Undo
                                     </button>
                                     <button type="button" class="text-white justify-center cursor-pointer inline-flex items-center gap-1 
-                                        bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                        font-medium rounded-lg text-sm p-1 w-20 
-                                        dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="redoBtn">
+                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                            font-medium rounded-lg text-sm p-1 w-20 
+                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="redoBtn">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -1396,9 +1325,9 @@ if ($loggedUser['type'] === 'Dentist') {
                                         Redo
                                     </button>
                                     <button type="button" class="text-white justify-center cursor-pointer inline-flex items-center gap-1
-                                        bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                        font-medium rounded-lg text-sm p-1 w-24 
-                                        dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="clearAll">
+                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                            font-medium rounded-lg text-sm p-1 w-24 
+                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="clearAll">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -1409,7 +1338,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </div>
 
                                 <!-- Tooth Chart - Responsive -->
-                                <div class="flex flex-col w-full overflow-x-auto flex-grow">
+                                <div class="flex flex-col w-full overflow-x-auto">
                                     <p style="margin-bottom: -10px; margin-top: 10px;"
                                         class="text-sm ml-2 font-normal text-gray-900 dark:text-white">Treatment</p>
                                     <div class="w-full min-w-max">
@@ -1436,9 +1365,9 @@ if ($loggedUser['type'] === 'Dentist') {
                             </div>
 
                             <!-- Legend Condition & Treatment - Stacked on mobile -->
-                            <div class="flex flex-row lg:flex-row gap-4 w-full lg:w-full lg:min-w-80 overflow-auto">
+                            <div class="flex flex-row lg:flex-row gap-4  w-full lg:w-auto overflow-auto border">
                                 <!-- Condition Legend -->
-                                <div class="controls relative w-full p-3 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1]">
+                                <div class="controls relative w-full lg:w-80 p-3 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1]">
                                     <div>
                                         <p class="text-sm font-medium text-gray-900 dark:text-white">Legend: <span
                                                 class="font-normal">Condition</span>
@@ -1546,7 +1475,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </div>
 
                                 <!-- Treatment Legend -->
-                                <div class="controls p-3 flex w-full lg:min-w-full rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1]">
+                                <div class="controls p-3 flex w-full lg:w-80 rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1]">
                                     <div class="w-full flex flex-col justify-center items-center">
                                         <div class="flex flex-col gap-3">
                                             <p class="text-sm font-medium text-gray-900 dark:text-white">Legend: <span
@@ -1581,7 +1510,6 @@ if ($loggedUser['type'] === 'Dentist') {
                             </div>
                         </div>
                     </div>
-
                     <!-- Set B -->
                     <div class="w-full mt-6">
                         <div class="mb-3">
@@ -1649,18 +1577,18 @@ if ($loggedUser['type'] === 'Dentist') {
                             </div>
 
                             <!-- Bottom Teeth Section -->
-                            <div class="w-full flex flex-col gap-4">
+                            <div class="w-full flex flex-col">
                                 <p style="font-size: 14.2px;"
                                     class="font-normal text-gray-900 dark:text-white p-1 mb-2">
                                     Fluoride Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling,
                                     temporary Filling, Extraction
                                 </p>
-                                <div class="overflow-x-auto ">
-                                    <div class="flex flex-row justify-between items-center w-full gap-4 px-1 mb-5 min-w-max"
+                                <div class="overflow-x-auto">
+                                    <div class="flex flex-row justify-between items-center w-full px-1 mb-5 min-w-max"
                                         id="bottom-teeth-row1">
                                         <!-- Lower teeth 18-11 dynamically inserted here -->
                                     </div>
-                                    <div class="flex flex-row justify-between items-center w-full gap-4 px-1 min-w-max"
+                                    <div class="flex flex-row justify-between items-center w-full px-1 min-w-max"
                                         id="bottom-teeth-row2">
                                         <!-- Lower teeth 48-41 + 31-38 dynamically inserted here -->
                                     </div>
@@ -2517,7 +2445,6 @@ if ($loggedUser['type'] === 'Dentist') {
                 }
 
                 if (isTreatment) {
-                    // Treatment boxes - horizontal text
                     el.dataset.treatment = cond || '';
                     el.textContent = cond || '';
                     el.style.backgroundColor = '#fff';
@@ -2525,21 +2452,12 @@ if ($loggedUser['type'] === 'Dentist') {
                     el.dataset.color = '';
                     el.dataset.condition = '';
                     el.dataset.case = '';
-                    // Remove data-content for treatment boxes
-                    el.removeAttribute('data-content');
                 } else {
-                    // Condition boxes - vertical text
+                    // Store the original condition code (not formatted) and apply formatting for display
                     el.dataset.condition = cond || '';
                     el.dataset.color = color || '';
                     el.dataset.case = textCase || 'upper';
-
-                    // Set the data-content attribute for the pseudo-element
-                    const displayText = formatCondition(cond, textCase);
-                    el.setAttribute('data-content', displayText);
-
-                    // Clear the actual text content since we're using pseudo-element
-                    el.textContent = '';
-
+                    el.textContent = formatCondition(cond, textCase);
                     if (cond && cond.toLowerCase() === '✓') {
                         el.style.backgroundColor = '#fff';
                         el.style.color = '#000';

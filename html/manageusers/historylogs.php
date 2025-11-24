@@ -390,7 +390,7 @@ if ($loggedUser['type'] === 'Dentist') {
         <main class="p-4 md:ml-64 h-auto pt-20">
             <h1 class="text-xl text-center w-full font-bold">History Logs</h1>
             <section id="history" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
-                <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
+                <div class="mx-auto max-w-screen-4xl">
                     <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg">
                         <!-- Sticky Header -->
                         <div class="sticky top-12 z-40 bg-white dark:bg-gray-800 sm:rounded-t-lg border-b border-gray-200 dark:border-gray-700">

@@ -51,7 +51,7 @@ try {
 
         if (!$row) {
             // Debug log: missing tooth
-            error_log("⚠️ Tooth with FDI {$fdi} not found in teeth table!");
+            error_log("Tooth with FDI {$fdi} not found in teeth table!");
             continue;
         }
 
@@ -64,7 +64,7 @@ try {
                 ':tooth_id' => $tooth_id
             ]);
             if ($deleteStmt->rowCount()) $summary['deleted']++;
-            error_log("🗑 Deleted treatment for tooth_id {$tooth_id} (FDI {$fdi})");
+            error_log("Deleted treatment for tooth_id {$tooth_id} (FDI {$fdi})");
             continue;
         }
 

@@ -51,24 +51,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Check if user already verified today
-    $today = date('Y-m-d');
+    // Check if user already verified for current period (resets at 11:59 PM)
+    $currentTime = date('H:i:s');
+    $resetTime = '23:59:00'; // 11:59 PM
+
+    // If current time is before 11:59 PM, check for today's verification
+    // If current time is after 11:59 PM, consider it as next day
+    if ($currentTime < $resetTime) {
+        $checkDate = date('Y-m-d');
+    } else {
+        $checkDate = date('Y-m-d', strtotime('+1 day'));
+    }
+
     $stmt = $pdo->prepare("
         SELECT * FROM daily_verifications 
         WHERE user_id = :uid 
         AND user_type = :utype 
-        AND verification_date = :today
+        AND verification_date = :check_date
         LIMIT 1
     ");
     $stmt->execute([
         'uid' => $user['id'],
         'utype' => $userType,
-        'today' => $today
+        'check_date' => $checkDate
     ]);
     $alreadyVerified = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($alreadyVerified) {
-        // User already verified today - skip MFA and log them in directly
+        // User already verified for current period - skip MFA and log them in directly
+        if (!isset($_SESSION['active_sessions'])) {
+            $_SESSION['active_sessions'] = [];
+        }
+
         $_SESSION['active_sessions'][$user['id']] = [
             'id'    => $user['id'],
             'email' => $user['email'],
@@ -80,15 +94,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->prepare("
             UPDATE daily_verifications 
             SET last_verification_time = NOW() 
-            WHERE user_id = :uid AND user_type = :utype AND verification_date = :today
+            WHERE user_id = :uid AND user_type = :utype AND verification_date = :check_date
         ")->execute([
             'uid' => $user['id'],
             'utype' => $userType,
-            'today' => $today
+            'check_date' => $checkDate
         ]);
 
         // Log the login
-        logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Daily verification bypass - already verified today", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
+        logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Daily verification bypass - already verified for current period", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
 
         // Redirect directly to dashboard
         $redirect = $userType === 'Dentist'
@@ -102,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // User needs MFA verification (first login of the day)
+    // User needs MFA verification (first login of the period)
     // Clean expired MFA codes
     $pdo->prepare("DELETE FROM mfa_codes WHERE expires_at <= NOW() OR used = 1")->execute();
 
@@ -138,10 +152,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->Subject = 'Your Daily Verification Code';
         $mail->Body = "
             <p>Dear <strong>{$user['name']}</strong>,</p>
-            <p>Your daily verification code is:</p>
+            <p>Your verification code is:</p>
             <h2 style='letter-spacing:3px;color:#2563EB;'>{$mfaCode}</h2>
             <p>This code will expire in 5 minutes.</p>
-            <p><em>Note: You only need to verify once per day.</em></p>
+            <p><em>Note: You only need to verify once daily (resets at 11:59 PM).</em></p>
             <br><p>Best regards,<br>Dental Record System</p>
         ";
         $mail->send();

@@ -397,9 +397,9 @@ if ($loggedUser['type'] === 'Dentist') {
                             Print
                         </a>
                     </div>
-                    <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
+                    <div class="flex flex-row justify-between items-center w-full lg:flex lg:flex-row lg:w-auto lg:order-1"
                         id="mobile-menu-2">
-                        <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                        <ul class="flex flex-row font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                             <li>
                                 <a href="#"
                                     class="block py-2 pr-4 pl-3 text-blue-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
@@ -1183,10 +1183,10 @@ if ($loggedUser['type'] === 'Dentist') {
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                     <div class="grid grid-cols-2 ">
                                         <label for="default-checkbox"
-                                            class="ms-2 text-sm w-90 font-medium text-gray-900 dark:text-gray-300">Sugar
+                                            class="ms-2 text-sm  font-medium text-gray-900 dark:text-gray-300">Sugar
                                             Sweetened Beverages/Food (Amount, Frequency & Duration)</label>
                                         <input type="text" id="sugar_details" name="sugar_details" disabled
-                                            class="block py-1 h-4.5 px-0 w-70 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                            class="block py-1 h-4.5 px-0  text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                             placeholder=" " />
                                     </div>
                                 </div>
@@ -1194,13 +1194,13 @@ if ($loggedUser['type'] === 'Dentist') {
                                     <input type="checkbox" name="alcohol_flag" value="1"
                                         onchange="toggleInput(this, 'alcohol_details')"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                    <div class="grid grid-cols-2 gap-6.5">
+                                    <div class="grid grid-cols-2 ">
                                         <label for="default-checkbox"
                                             class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use
                                             of
                                             Alcohol (Amount, Frequency & Duration)</label>
                                         <input type="text" id="alcohol_details" name="alcohol_details" disabled
-                                            class="block py-1 px-0 h-4.5 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                            class="block py-1 px-0 h-4.5  text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                             placeholder=" " />
                                     </div>
                                 </div>
@@ -1208,13 +1208,13 @@ if ($loggedUser['type'] === 'Dentist') {
                                     <input type="checkbox" name="tobacco_flag" value="1"
                                         onchange="toggleInput(this, 'tobacco_details')"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                    <div class="grid grid-cols-2 gap-5.5">
+                                    <div class="grid grid-cols-2 ">
                                         <label for="default-checkbox"
                                             class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Use
                                             of
                                             Tobacco (Amount, Frequency & Duration)</label>
                                         <input type="text" id="tobacco_details" name="tobacco_details" disabled
-                                            class="block py-1 h-4.5 px-0 w-78 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                            class="block py-1 h-4.5 px-0  text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                             placeholder=" " />
                                     </div>
                                 </div>
@@ -1222,12 +1222,12 @@ if ($loggedUser['type'] === 'Dentist') {
                                     <input type="checkbox" name="betel_nut_flag" value="1"
                                         onchange="toggleInput(this, 'betel_nut_details')"
                                         class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                    <div class="grid grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-2 ">
                                         <label for="default-checkbox"
                                             class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Betel
                                             Nut Chewing (Amount, Frequency & Duration)</label>
                                         <input type="text" id="betel_nut_details" name="betel_nut_details" disabled
-                                            class="block py-1 h-4.5 px-0 w-73.5 text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                                            class="block py-1 h-4.5 px-0  text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                                             placeholder=" " />
                                     </div>
                                 </div>

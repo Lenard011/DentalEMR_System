@@ -363,7 +363,7 @@ if ($loggedUser['type'] === 'Dentist') {
         </aside>
 
         <header class="md:ml-64 pt-13 ">
-            <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full drop-shadow-sm pb-2">
+            <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full  drop-shadow-sm pb-2">
                 <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
                     <div class="flex items-center justify-between lg:order-1 w-full ">
                         <!-- Back Btn-->
@@ -398,9 +398,9 @@ if ($loggedUser['type'] === 'Dentist') {
                             Print
                         </a>
                     </div>
-                    <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
+                    <div class=" justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
                         id="mobile-menu-2">
-                        <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
+                        <ul class="flex flex-row font-medium lg:flex-row lg:space-x-8 lg:mt-0">
                             <li>
                                 <a href="#" id="patientInfoLink"
                                     class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
@@ -454,11 +454,11 @@ if ($loggedUser['type'] === 'Dentist') {
                     </div>
                     <div id="oralDataContainer" class="px-2 mb-2">
                         <div
-                            class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                            <div class="items-center justify-between flex flex-row mb-3">
+                            class="mb-5   py-2 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                            <div class="items-center justify-between flex flex-row mb-3 px-3">
                                 <p class="text-base font-normal text-gray-950 dark:text-white ">A.</p>
                             </div>
-                            <div class="flex flex-col justify-center items-center px-5 gap-5 mb-3">
+                            <div class="flex flex-col justify-center items-center  w-full mb-3">
                                 <div class="flex items-center justify-between p-2 gap-1  max-w-5xl w-full">
                                     <div class="grid items-center justify-center grid-flow-col gap-1">
                                         <div>
@@ -531,10 +531,9 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-center p-2 gap-30  max-w-5xl w-full">
-                                <div class="grid items-center justify-center grid-flow-col gap-1">
-                                    <div>
-                                        <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
+                            <div class="flex flex-row items-center justify-center p-2  w-full">
+                                <div class="flex flex-col items-center w-full justify-center">
+                                        <ul class=" text-gray-900 list-disc list-inside dark:text-gray-400"
                                             style="font-size:14.6px;">
                                             <li>
                                                 Calculus
@@ -543,11 +542,10 @@ if ($loggedUser['type'] === 'Dentist') {
                                         <p id="calculus" class="text-xs font-normal text-red-600 dark:text-white ml-5"
                                             style="font-size:13px;">
                                             Absent</p>
-                                    </div>
                                 </div>
-                                <div class="grid items-center justify-center grid-flow-col gap-1">
+                                <div class="flex flex-col items-center w-full justify-center">
                                     <div>
-                                        <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
+                                        <ul class=" text-gray-900 list-disc list-inside dark:text-gray-400"
                                             style="font-size:14.6px;">
                                             <li>
                                                 Abnormal Growth
@@ -559,9 +557,9 @@ if ($loggedUser['type'] === 'Dentist') {
                                             Absent</p>
                                     </div>
                                 </div>
-                                <div class="grid items-center justify-center grid-flow-col gap-1">
+                                <div class="flex flex-col items-center w-full justify-center">
                                     <div>
-                                        <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
+                                        <ul class=" text-gray-900 list-disc list-inside dark:text-gray-400"
                                             style="font-size:14.6px;">
                                             <li>
                                                 Cleft Lip / Palate
@@ -573,9 +571,9 @@ if ($loggedUser['type'] === 'Dentist') {
                                             Absent</p>
                                     </div>
                                 </div>
-                                <div class="grid items-center justify-center grid-flow-col gap-1">
+                                <div class="flex flex-col items-center w-full justify-center">
                                     <div>
-                                        <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
+                                        <ul class=" text-gray-900 list-disc list-inside dark:text-gray-400"
                                             style="font-size:14.6px;">
                                             <li>
                                                 Others
@@ -589,12 +587,12 @@ if ($loggedUser['type'] === 'Dentist') {
                             </div>
                         </div>
                         <div
-                            class="mx-auto max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border  shadow-stone-300 drop-shadow-sm dark:bg-gray-950 dark:border-gray-950">
+                            class="w-full px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border  shadow-stone-300 drop-shadow-sm dark:bg-gray-950 dark:border-gray-950">
                             <div class="items-center justify-between flex flex-row mb-3">
                                 <p class="text-base font-normal text-gray-950 dark:text-white ">B.</p>
                             </div>
-                            <div class="px-15">
-                                <div class="flex flex-row items-center  gap-20  ">
+                            <div class="flex flex-col w-full">
+                                <div class="flex flex-row items-center justify-center gap-5 w-full">
                                     <div
                                         class="flex items-center justify-center p-2 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
                                         <div class="grid items-center justify-center grid-flow-col ">
@@ -712,7 +710,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </div>
                                     <div class="flex items-center justify-center flex-col gap-2">
                                         <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
+                                            class="flex items-center justify-center p-1 px-2  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
                                             <div class="grid items-center justify-center grid-flow-row ">
                                                 <div class="flex items-center justify-center flex-row">
                                                     <div class="w-12">
@@ -722,7 +720,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                                                 alt="" srcset="">
                                                         </div>
                                                     </div>
-                                                    <div>
+                                                    <div >
                                                         <p
                                                             class="text-xs text-center mb-1 font-medium  dark:text-white ">
                                                             Filled Teeth</p>
@@ -737,7 +735,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </div>
                                 </div>
                                 <hr class="h-px my-8  bg-gray-200 border-0 dark:bg-gray-700">
-                                <div class="flex flex-row  items-center gap-20 mb-3 ">
+                                <div class="flex flex-row justify-center  items-center gap-20 mb-3 ">
                                     <div
                                         class="flex items-center justify-center p-2 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
                                         <div class="grid items-center justify-center grid-flow-col ">
@@ -1088,7 +1086,7 @@ if ($loggedUser['type'] === 'Dentist') {
 
         const patientInfoLink = document.getElementById("patientInfoLink");
         if (patientInfoLink && patientId) {
-            patientInfoLink.href = `view_info.php?id=${encodeURIComponent(patientId)}`;
+            patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
             patientInfoLink.addEventListener("click", (e) => {
                 e.preventDefault();
