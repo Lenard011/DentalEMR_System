@@ -750,14 +750,15 @@ if ($loggedUser['type'] === 'Dentist') {
             </div>
         </aside>
 
-        <header class="md:ml-64 pt-13 ">
+        <header class="md:ml-64 pt-13">
             <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full drop-shadow-sm pb-2">
-                <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
-                    <div class="flex items-center justify-between lg:order-1 w-full ">
-                        <!-- Back Btn-->
-                        <div class="relative group inline-block ">
+                <div class="flex flex-col justify-between items-center mx-auto px-2 sm:px-4">
+                    <!-- Top Section: Back Button, Title, Print Button -->
+                    <div class="flex items-center justify-between w-full py-2">
+                        <!-- Back Button -->
+                        <div class="relative group inline-block">
                             <button type="button" onclick="backmain()" class="cursor-pointer">
-                                <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
+                                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-800 dark:text-white" aria-hidden="true"
                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                     viewBox="0 0 24 24">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -765,44 +766,51 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </svg>
                             </button>
                             <!-- Tooltip -->
-                            <span class="absolute left-1/4 -translate-x-1/4  hidden group-hover:block 
+                            <span class="absolute left-1/4 -translate-x-1/4 hidden group-hover:block 
                              bg-gray-100/50 text-gray-900 text-sm px-2 py-1 rounded-sm shadow-sm whitespace-nowrap">
                                 Go back
                             </span>
                         </div>
-                        <p class="text-xl font-semibold px-5  text-gray-900 dark:text-white">Patient Treatment
-                            Record
+
+                        <!-- Title -->
+                        <p class="text-lg sm:text-xl font-semibold px-2 sm:px-4 text-gray-900 dark:text-white text-center flex-1">
+                            Patient Treatment Record
                         </p>
-                        <!-- Print Btn -->
+
+                        <!-- Print Button -->
                         <a href="" id="printdLink"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 mt-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            <svg class="w-5 h-4 text-primary-800 dark:text-white" aria-hidden="true"
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-2 sm:px-3 py-1.5 sm:py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 min-w-[60px]">
+                            <svg class="w-4 h-4 text-white" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                                 viewBox="0 0 24 24">
                                 <path fill-rule="evenodd"
                                     d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z"
                                     clip-rule="evenodd" />
                             </svg>
-                            Print
+                            <span class="hidden sm:inline">Print</span>
                         </a>
                     </div>
-                    <div class="justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
-                        id="mobile-menu-2">
-                        <ul class="flex flex-row font-medium lg:flex-row lg:space-x-8 lg:mt-0">
-                            <li>
+
+                    <!-- Navigation Tabs -->
+                    <div class="w-full border-t border-gray-200 dark:border-gray-700 pt-2">
+                        <ul class="flex flex-col sm:flex-row justify-center font-medium w-full sm:space-x-4 sm:space-y-0 space-y-2">
+                            <li class="w-full sm:w-auto">
                                 <a href="#" id="patientInfoLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
-                                    Information</a>
+                                    class="block py-2 px-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Patient Information
+                                </a>
                             </li>
-                            <li>
+                            <li class="w-full sm:w-auto">
                                 <a href="#"
-                                    class="block py-2 pr-4 pl-3 text-blue-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Oral
-                                    Health Condition</a>
+                                    class="block py-2 px-3 text-blue-800 border-b-2 font-semibold border-blue-800 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-blue-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Oral Health Condition
+                                </a>
                             </li>
-                            <li>
+                            <li class="w-full sm:w-auto">
                                 <a href="#" id="servicesRenderedLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Record
-                                    of Sevices Rendered</a>
+                                    class="block py-2 px-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Record of Services Rendered
+                                </a>
                             </li>
                         </ul>
                     </div>
@@ -2134,6 +2142,58 @@ if ($loggedUser['type'] === 'Dentist') {
             modal.classList.add('hidden');
             modal.classList.remove('flex');
         }
+    </script>
+
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+
+    <script>
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - START ==========
+
+        function setupTreatmentRecordsOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
+
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - Viewing cached data</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTreatmentRecordsOffline();
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for treatment records');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+        });
+
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - END ==========
     </script>
 </body>
 

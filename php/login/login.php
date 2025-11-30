@@ -79,15 +79,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($alreadyVerified) {
         // User already verified for current period - skip MFA and log them in directly
+        // Replace the session creation part with this:
         if (!isset($_SESSION['active_sessions'])) {
             $_SESSION['active_sessions'] = [];
         }
 
+        // Get user name from database
+        $userName = $user['name'] ?? $user['email'] ?? 'Unknown User';
+
         $_SESSION['active_sessions'][$user['id']] = [
             'id'    => $user['id'],
             'email' => $user['email'],
+            'name'  => $userName,  // Add this line
             'type'  => $userType,
-            'login_time' => time()
+            'login_time' => time(),
+            'last_activity' => time() // Add this line
         ];
 
         // Update last verification time

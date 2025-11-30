@@ -1237,6 +1237,58 @@ if ($loggedUser['type'] === 'Dentist') {
             }
         }
     </script>
+
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+
+    <script>
+        // ========== OFFLINE SUPPORT FOR MANAGE USERS - START ==========
+
+        function setupManageUsersOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
+
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - User management disabled</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupManageUsersOffline();
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for manage users');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+        });
+
+        // ========== OFFLINE SUPPORT FOR MANAGE USERS - END ==========
+    </script>
 </body>
 
 </html>

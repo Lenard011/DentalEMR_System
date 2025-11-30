@@ -2,60 +2,68 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
+// Debug: Uncomment to see session data
+// echo "<pre>"; print_r($_SESSION); echo "</pre>"; exit;
+
 // REQUIRE userId parameter for each page
-// Example usage: dashboard.php?uid=5
+// Enhanced session check with offline tolerance
 if (!isset($_GET['uid'])) {
-    echo "<script>
-        alert('Invalid session. Please log in again.');
-        window.location.href = '/dentalemr_system/html/login/login.html';
-    </script>";
+    // If offline, show a more user-friendly message
+    if (isset($_SERVER['HTTP_X_OFFLINE']) || !isset($_SERVER['HTTP_HOST'])) {
+        echo "<script>
+            if (!navigator.onLine && typeof localAuth !== 'undefined' && localAuth.validateOfflineSession()) {
+                // Redirect to offline dashboard if offline session exists
+                window.location.href = '/dentalemr_system/html/offline-dashboard.html';
+            } else {
+                alert('You are currently offline. Please check your internet connection and try again.');
+                window.location.href = '/dentalemr_system/html/login/login.html';
+            }
+        </script>";
+    } else {
+        echo "<script>
+            alert('Invalid session. Please log in again.');
+            window.location.href = '/dentalemr_system/html/login/login.html';
+        </script>";
+    }
     exit;
 }
 
 $userId = intval($_GET['uid']);
 
-// CHECK IF THIS USER IS REALLY LOGGED IN
+// SIMPLIFIED SESSION VALIDATION
+$isValidSession = false;
+
 if (
-    !isset($_SESSION['active_sessions']) ||
-    !isset($_SESSION['active_sessions'][$userId])
+    isset($_SESSION['active_sessions']) &&
+    is_array($_SESSION['active_sessions']) &&
+    isset($_SESSION['active_sessions'][$userId])
 ) {
+
+    $userSession = $_SESSION['active_sessions'][$userId];
+
+    // Check basic required fields
+    if (isset($userSession['id']) && isset($userSession['type'])) {
+        $isValidSession = true;
+
+        // Update last activity
+        $_SESSION['active_sessions'][$userId]['last_activity'] = time();
+        $loggedUser = $userSession;
+    }
+}
+
+if (!$isValidSession) {
     echo "<script>
-        alert('Please log in first.');
-        window.location.href = '/dentalemr_system/html/login/login.html';
+        if (!navigator.onLine && typeof localAuth !== 'undefined' && localAuth.validateOfflineSession()) {
+            // Redirect to offline dashboard if offline session exists
+            window.location.href = '/dentalemr_system/html/offline-dashboard.html?uid=' + $userId;
+        } else {
+            alert('Please log in first.');
+            window.location.href = '/dentalemr_system/html/login/login.html';
+        }
     </script>";
     exit;
 }
 
-// PER-USER INACTIVITY TIMEOUT
-$inactiveLimit = 600; // 10 minutes
-
-if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
-    $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
-
-    if ((time() - $lastActivity) > $inactiveLimit) {
-
-        // Log out ONLY this user (not everyone)
-        unset($_SESSION['active_sessions'][$userId]);
-
-        // If no one else is logged in, end session entirely
-        if (empty($_SESSION['active_sessions'])) {
-            session_unset();
-            session_destroy();
-        }
-
-        echo "<script>
-            alert('You have been logged out due to inactivity.');
-            window.location.href = '/dentalemr_system/html/login/login.html';
-        </script>";
-        exit;
-    }
-}
-
-// Update last activity timestamp
-$_SESSION['active_sessions'][$userId]['last_activity'] = time();
-
-// GET USER DATA FOR PAGE USE
-$loggedUser = $_SESSION['active_sessions'][$userId];
 
 // ---------------- DATABASE CONNECTION ----------------
 $host = "localhost";
@@ -65,7 +73,18 @@ $dbName = "dentalemr_system";
 
 $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Enhanced database error handling with offline fallback
+    echo "<script>
+        if (!navigator.onLine && typeof localAuth !== 'undefined' && localAuth.validateOfflineSession()) {
+            console.log('Database offline, redirecting to offline dashboard');
+            window.location.href = '/dentalemr_system/html/offline-dashboard.html?uid=' + $userId;
+        } else {
+            // Show database error only if online
+            alert('Database connection failed. Please try again.');
+            console.error('Database error: " . addslashes($conn->connect_error) . "');
+        }
+    </script>";
+    exit;
 }
 
 // Fetch dentist name if user is a dentist
@@ -298,17 +317,12 @@ while ($row = $trendResult->fetch_assoc()) {
 
 // ---------------- TABLES ----------------
 $recentVisits = $conn->query("
-    SELECT 
-        MAX(v.visit_date) AS latest_visit,
-        p.firstname,
-        p.surname
+    SELECT v.visit_date, p.firstname, p.surname
     FROM visits v
     JOIN patients p ON v.patient_id = p.patient_id
-    GROUP BY v.patient_id
-    ORDER BY latest_visit DESC
+    ORDER BY v.visit_date DESC
     LIMIT 5
 ");
-
 
 $recentTreatments = $conn->query("
     SELECT s.created_at, p.firstname, p.surname, t.description
@@ -372,7 +386,7 @@ $conn->close();
             var barangayPieData = google.visualization.arrayToDataTable(rawBarangay);
 
             var barangayPieOptions = {
-                title: "Patients per Barangay",
+                // title: "Patients per Barangay",
                 is3D: true,
                 chartArea: {
                     width: '90%',
@@ -809,11 +823,10 @@ $conn->close();
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
                             Clinic</span>
                     </a>
-
                 </div>
                 <!-- UserProfile -->
                 <div class="flex items-center lg:order-2">
-                    <button type="button" 
+                    <button type="button" data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation"
                         class="p-2 mr-1 text-gray-500 rounded-lg md:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
                         <span class="sr-only">Toggle search</span>
                         <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
@@ -876,11 +889,11 @@ $conn->close();
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <a href="#"
-                                onclick="confirmLogout(<?php echo $loggedUser['id']; ?>)"
-                                class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
-                                Sign out
-                            </a>
+                            <li>
+                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
+                                    out</a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -888,7 +901,6 @@ $conn->close();
         </nav>
 
         <!-- Sidebar -->
-
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -1052,7 +1064,7 @@ $conn->close();
 
         <main class="p-4 md:ml-64 h-auto pt-20">
             <div class="dashboard">
-                <h1>🦷 MHO Dental Clinic</h1>
+                <h1>🦷 MHO Dental Clinic Dashboard</h1>
                 <h1 class="text-2xl font-bold mb-4">
                     Welcome,
                     <?php
@@ -1169,7 +1181,7 @@ $conn->close();
 
                     <div class="chart-box" style="grid-column: 1 / -1;">
                         <div class="chart-title">Monthly Patient Visits Trend</div>
-                        <div id="linechart" style="height: 380px;"></div>
+                        <div id="linechart" style="height: 380px; " class="relative"></div>
                     </div>
                 </div>
 
@@ -1181,17 +1193,14 @@ $conn->close();
                             <th>Date</th>
                             <th>Patient Name</th>
                         </tr>
-
                         <?php while ($v = $recentVisits->fetch_assoc()): ?>
                             <tr>
-                                <td><?php echo $v['latest_visit']; ?></td>
+                                <td><?php echo $v['visit_date']; ?></td>
                                 <td><?php echo $v['firstname'] . " " . $v['surname']; ?></td>
                             </tr>
                         <?php endwhile; ?>
-
                     </table>
                 </div>
-
                 <div class="tables">
                     <h3 class="font-bold">Recent Treatments</h3>
                     <table>
@@ -1308,14 +1317,275 @@ $conn->close();
             });
         });
     </script>
+
+    <!-- Load offline systems -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/dentalemr_system/js/local-auth.js"></script>
+
+    <!-- Offline Sync Status Panel -->
+    <div id="offlineSyncPanel" class="hidden fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4 border z-50 max-w-sm">
+        <div class="flex items-center justify-between mb-2">
+            <h4 class="font-semibold text-gray-800">Offline Data Sync</h4>
+            <button onclick="document.getElementById('offlineSyncPanel').classList.add('hidden')"
+                class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="syncStatusContent">
+            <div class="text-sm text-gray-600">No offline data to sync</div>
+        </div>
+    </div>
+
     <script>
-        function confirmLogout(userId) {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '/dentalemr_system/php/login/logout.php?uid=' + userId;
+        // ========== ENHANCED OFFLINE SUPPORT FOR DASHBOARD ==========
+
+        class DashboardOfflineManager {
+            constructor() {
+                this.isInitialized = false;
+                this.init();
+            }
+
+            async init() {
+                if (this.isInitialized) return;
+
+                this.setupConnectionMonitoring();
+                this.setupServiceWorker();
+                this.setupOfflineNavigation();
+                this.setupAutoSync();
+
+                this.isInitialized = true;
+            }
+
+            setupConnectionMonitoring() {
+                const updateStatus = () => {
+                    let statusElement = document.getElementById('connectionStatus');
+
+                    if (!statusElement) {
+                        statusElement = document.createElement('div');
+                        statusElement.id = 'connectionStatus';
+                        statusElement.className = 'hidden fixed top-4 right-4 z-50';
+                        document.body.appendChild(statusElement);
+                    }
+
+                    if (!navigator.onLine) {
+                        statusElement.classList.remove('hidden');
+                        statusElement.innerHTML = `
+                        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+                            <i class="fas fa-wifi-slash mr-2"></i>
+                            <span>Offline Mode - Working Locally</span>
+                        </div>
+                    `;
+
+                        // Show offline sync panel if there's data to sync
+                        this.checkOfflineData();
+                    } else {
+                        statusElement.classList.add('hidden');
+                    }
+                };
+
+                window.addEventListener('online', () => {
+                    updateStatus();
+                    this.syncOfflineData();
+                });
+
+                window.addEventListener('offline', updateStatus);
+
+                // Initial status check
+                updateStatus();
+            }
+
+            setupServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                        .then(registration => {
+                            console.log('SW registered: ', registration.scope);
+                        })
+                        .catch(error => {
+                            console.log('SW registration failed: ', error);
+                        });
+                }
+            }
+
+            setupOfflineNavigation() {
+                // Enhanced link handling for offline
+                document.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'A' && !navigator.onLine) {
+                        const href = e.target.getAttribute('href');
+
+                        if (href && href.includes('.php') && !href.includes('logout')) {
+                            e.preventDefault();
+
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const currentUid = urlParams.get('uid');
+
+                            if (currentUid) {
+                                // Preserve session across pages
+                                const separator = href.includes('?') ? '&' : '?';
+                                window.location.href = href + separator + 'uid=' + currentUid;
+                            } else {
+                                this.showNotification('Session expired. Please go back online to login.', 'error');
+                            }
+                        }
+                    }
+                });
+
+                // Disable server-dependent features when offline
+                if (!navigator.onLine) {
+                    const serverDependentElements = document.querySelectorAll('[data-requires-online]');
+                    serverDependentElements.forEach(element => {
+                        element.style.opacity = '0.6';
+                        element.title = 'This feature requires internet connection';
+                        if (element.tagName === 'BUTTON') {
+                            element.disabled = true;
+                        }
+                    });
+                }
+            }
+
+            setupAutoSync() {
+                // Auto-sync every 2 minutes when online
+                setInterval(() => {
+                    if (navigator.onLine) {
+                        this.syncOfflineData();
+                    }
+                }, 120000);
+            }
+
+            async checkOfflineData() {
+                if (!offlineStorage) return;
+
+                try {
+                    const stats = await offlineStorage.getStorageStats();
+                    const totalUnsynced = stats.unsyncedPatients + stats.unsyncedTreatments;
+
+                    if (totalUnsynced > 0) {
+                        this.showSyncPanel(stats);
+                    }
+                } catch (error) {
+                    console.error('Error checking offline data:', error);
+                }
+            }
+
+            showSyncPanel(stats) {
+                const panel = document.getElementById('offlineSyncPanel');
+                const content = document.getElementById('syncStatusContent');
+
+                const totalUnsynced = stats.unsyncedPatients + stats.unsyncedTreatments;
+
+                content.innerHTML = `
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span>Unsynced Patients:</span>
+                        <span class="font-medium">${stats.unsyncedPatients}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Unsynced Treatments:</span>
+                        <span class="font-medium">${stats.unsyncedTreatments}</span>
+                    </div>
+                    <div class="pt-2 border-t">
+                        <button onclick="dashboardOfflineManager.syncOfflineData()" 
+                                class="w-full bg-blue-600 text-white py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-sync mr-2"></i>Sync Now
+                        </button>
+                    </div>
+                </div>
+            `;
+
+                panel.classList.remove('hidden');
+            }
+
+            async syncOfflineData() {
+                if (!navigator.onLine || !offlineStorage) {
+                    this.showNotification('Cannot sync while offline', 'warning');
+                    return false;
+                }
+
+                try {
+                    const success = await offlineStorage.syncOfflineData();
+
+                    if (success) {
+                        this.showNotification('Data synced successfully!', 'success');
+                        // Hide sync panel if visible
+                        document.getElementById('offlineSyncPanel').classList.add('hidden');
+                        return true;
+                    } else {
+                        this.showNotification('Some data failed to sync', 'warning');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('Sync error:', error);
+                    this.showNotification('Sync failed. Please try again.', 'error');
+                    return false;
+                }
+            }
+
+            showNotification(message, type) {
+                // Create notification element
+                const notification = document.createElement('div');
+                const bgColor = type === 'success' ? 'bg-green-500' :
+                    type === 'warning' ? 'bg-yellow-500' : 'bg-red-500';
+
+                notification.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${bgColor} transition-all duration-300`;
+                notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+
+                document.body.appendChild(notification);
+
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+            }
+
+            // Check if user has valid offline session
+            validateOfflineSession() {
+                if (typeof localAuth !== 'undefined') {
+                    return localAuth.validateOfflineSession();
+                }
+                return false;
+            }
+
+            // Redirect to offline dashboard if needed
+            redirectToOfflineIfNeeded() {
+                if (!navigator.onLine && !this.validateOfflineSession()) {
+                    // Check if we're not already on the offline dashboard
+                    if (!window.location.href.includes('offline-dashboard.html')) {
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const currentUid = urlParams.get('uid');
+
+                        if (currentUid) {
+                            window.location.href = `/dentalemr_system/html/offline-dashboard.html?uid=${currentUid}`;
+                        } else {
+                            window.location.href = '/dentalemr_system/html/offline-dashboard.html';
+                        }
+                    }
+                }
             }
         }
-    </script>
 
+        // Initialize dashboard offline manager
+        let dashboardOfflineManager;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            dashboardOfflineManager = new DashboardOfflineManager();
+
+            // Check if we should redirect to offline dashboard
+            setTimeout(() => {
+                dashboardOfflineManager.redirectToOfflineIfNeeded();
+            }, 1000);
+        });
+
+        // Global function for manual sync (can be called from anywhere)
+        window.syncOfflineData = () => {
+            if (dashboardOfflineManager) {
+                dashboardOfflineManager.syncOfflineData();
+            }
+        };
+    </script>
 </body>
 
 </html>

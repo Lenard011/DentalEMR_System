@@ -362,14 +362,15 @@ if ($loggedUser['type'] === 'Dentist') {
             </div>
         </aside>
 
-        <header class="md:ml-64 pt-13 ">
-            <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full  drop-shadow-sm pb-2">
-                <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
-                    <div class="flex items-center justify-between lg:order-1 w-full ">
-                        <!-- Back Btn-->
-                        <div class="relative group inline-block ">
-                            <button type="button" onclick="back()" class="cursor-pointer">
-                                <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
+        <header class="md:ml-64 pt-13">
+            <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full drop-shadow-sm pb-2">
+                <div class="flex flex-col justify-between items-center mx-auto px-2 sm:px-4">
+                    <!-- Top Section: Back Button, Title, Print Button -->
+                    <div class="flex items-center justify-between w-full py-2">
+                        <!-- Back Button -->
+                        <div class="relative group inline-block">
+                            <button type="button" onclick="backmain()" class="cursor-pointer">
+                                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-800 dark:text-white" aria-hidden="true"
                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                     viewBox="0 0 24 24">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -377,44 +378,51 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </svg>
                             </button>
                             <!-- Tooltip -->
-                            <span class="absolute left-1/4 -translate-x-1/4  hidden group-hover:block 
+                            <span class="absolute left-1/4 -translate-x-1/4 hidden group-hover:block 
                              bg-gray-100/50 text-gray-900 text-sm px-2 py-1 rounded-sm shadow-sm whitespace-nowrap">
                                 Go back
                             </span>
                         </div>
-                        <p class="text-xl font-semibold px-5  text-gray-900 dark:text-white">Patient Treatment
-                            Record
+
+                        <!-- Title -->
+                        <p class="text-lg sm:text-xl font-semibold px-2 sm:px-4 text-gray-900 dark:text-white text-center flex-1">
+                            Patient Treatment Record
                         </p>
-                        <!-- Print Btn -->
+
+                        <!-- Print Button -->
                         <a href="" id="printdLink"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 mt-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            <svg class="w-5 h-4 text-primary-800 dark:text-white" aria-hidden="true"
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-2 sm:px-3 py-1.5 sm:py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 min-w-[60px]">
+                            <svg class="w-4 h-4 text-white" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                                 viewBox="0 0 24 24">
                                 <path fill-rule="evenodd"
                                     d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z"
                                     clip-rule="evenodd" />
                             </svg>
-                            Print
+                            <span class="hidden sm:inline">Print</span>
                         </a>
                     </div>
-                    <div class=" justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
-                        id="mobile-menu-2">
-                        <ul class="flex flex-row font-medium lg:flex-row lg:space-x-8 lg:mt-0">
-                            <li>
+
+                    <!-- Navigation Tabs -->
+                    <div class="w-full border-t border-gray-200 dark:border-gray-700 pt-2">
+                        <ul class="flex flex-col sm:flex-row justify-center font-medium w-full sm:space-x-4 sm:space-y-0 space-y-2">
+                            <li class="w-full sm:w-auto">
                                 <a href="#" id="patientInfoLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
-                                    Information</a>
+                                    class="block py-2 px-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Patient Information
+                                </a>
                             </li>
-                            <li>
+                            <li class="w-full sm:w-auto">
                                 <a href="#"
-                                    class="block py-2 pr-4 pl-3 text-blue-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Oral
-                                    Health Condition</a>
+                                    class="block py-2 px-3 text-blue-800 border-b-2 font-semibold border-blue-800 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-blue-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Oral Health Condition
+                                </a>
                             </li>
-                            <li>
+                            <li class="w-full sm:w-auto">
                                 <a href="#" id="servicesRenderedLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Record
-                                    of Sevices Rendered</a>
+                                    class="block py-2 px-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Record of Services Rendered
+                                </a>
                             </li>
                         </ul>
                     </div>
@@ -422,14 +430,15 @@ if ($loggedUser['type'] === 'Dentist') {
             </nav>
         </header>
 
-        <main class="p-1.5 md:ml-64 h-auto pt-1">
-            <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg">
-                <div class="items-center justify-between flex flex-row mb-3">
-                    <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading
-                        ...
+        <main class="p-2 md:ml-64 h-auto pt-2">
+            <section class="bg-white dark:bg-gray-900 p-3 sm:p-4 rounded-lg">
+                <!-- Patient Name and Add Button -->
+                <div class="items-center justify-between flex flex-col sm:flex-row mb-4 gap-2">
+                    <p id="patientName" class="italic text-base sm:text-lg font-medium text-gray-900 dark:text-white">
+                        Loading ...
                     </p>
                     <button type="button" id="addOHCbtn" onclick="openOHCModal()"
-                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
                         <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path clip-rule="evenodd" fill-rule="evenodd"
@@ -438,416 +447,268 @@ if ($loggedUser['type'] === 'Dentist') {
                         Add
                     </button>
                 </div>
-                <div
-                    class="mx-auto mb-3 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Oral Examination</p>
+
+                <!-- Oral Examination Section -->
+                <div class="mx-auto mb-4 p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                    <div class="items-center justify-between flex flex-row mb-3">
+                        <p class="text-base font-normal text-gray-950 dark:text-white">Oral Examination</p>
                     </div>
-                    <div class="mb-3">
-                        <form class="justify-baseline items-end-safe inline-flex flex-row gap-2">
-                            <label for="dataSelect" class="flex  text-base  text-gray-900 dark:text-white">Date:</label>
+
+                    <!-- Date Selector -->
+                    <div class="mb-4">
+                        <form class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <label for="dataSelect" class="text-sm sm:text-base text-gray-900 dark:text-white">Date:</label>
                             <select id="dataSelect"
-                                class="flex bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm   w-30 p-0.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-sm w-full sm:w-40 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                                 <option selected>Loading...</option>
                             </select>
                         </form>
                     </div>
-                    <div id="oralDataContainer" class="px-2 mb-2">
-                        <div
-                            class="mb-5   py-2 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                            <div class="items-center justify-between flex flex-row mb-3 px-3">
-                                <p class="text-base font-normal text-gray-950 dark:text-white ">A.</p>
+
+                    <!-- Oral Data Container -->
+                    <div id="oralDataContainer" class="space-y-4">
+                        <!-- Section A: Oral Conditions -->
+                        <div class="p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                            <div class="items-center justify-between flex flex-row mb-3">
+                                <p class="text-base font-normal text-gray-950 dark:text-white">A.</p>
                             </div>
-                            <div class="flex flex-col justify-center items-center  w-full mb-3">
-                                <div class="flex items-center justify-between p-2 gap-1  max-w-5xl w-full">
-                                    <div class="grid items-center justify-center grid-flow-col gap-1">
-                                        <div>
-                                            <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                                                style="font-size:14.6px;">
-                                                <li>
-                                                    Orally Fit Child (OFC)
-                                                </li>
-                                            </ul>
-                                            <p id="orally_fit_child"
-                                                class="text-xs font-normal text-red-600 dark:text-white ml-5"
-                                                style="font-size:13px;">
-                                                Absent</p>
-                                        </div>
-                                    </div>
-                                    <div class="grid items-center justify-center grid-flow-col gap-1">
-                                        <div>
-                                            <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                                                style="font-size:14.6px;">
-                                                <li>
-                                                    Dental Caries
-                                                </li>
-                                            </ul>
-                                            <p id="dental_caries"
-                                                class="text-xs font-normal text-green-600 dark:text-white ml-5"
-                                                style="font-size:13px;">
-                                                Present</p>
-                                        </div>
-                                    </div>
-                                    <div class="grid items-center justify-center grid-flow-col gap-1">
-                                        <div>
-                                            <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                                                style="font-size:14.6px;">
-                                                <li>
-                                                    Gingivitis
-                                                </li>
-                                            </ul>
-                                            <p id="gingivitis"
-                                                class="text-xs font-normal text-red-600 dark:text-white ml-5"
-                                                style="font-size:13px;">
-                                                Absent</p>
-                                        </div>
-                                    </div>
-                                    <div class="grid items-center justify-center grid-flow-col gap-1">
-                                        <div>
-                                            <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                                                style="font-size:14.6px;">
-                                                <li>
-                                                    Periodontal Disease
-                                                </li>
-                                            </ul>
-                                            <p id="periodontal_disease"
-                                                class="text-xs font-normal text-red-600 dark:text-white ml-5"
-                                                style="font-size:13px;">
-                                                Absent</p>
-                                        </div>
-                                    </div>
-                                    <div class="grid items-center justify-center grid-flow-col gap-1">
-                                        <div>
-                                            <ul class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                                                style="font-size:14.6px;">
-                                                <li>
-                                                    Debris
-                                                </li>
-                                            </ul>
-                                            <p id="debris" class="text-xs font-normal text-red-600 dark:text-white ml-5"
-                                                style="font-size:13px;">
-                                                Absent</p>
-                                        </div>
-                                    </div>
+
+                            <!-- Oral Conditions Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                                <!-- Orally Fit Child -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Orally Fit Child (OFC)</li>
+                                    </ul>
+                                    <p id="orally_fit_child" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
                                 </div>
-                            </div>
-                            <div class="flex flex-row items-center justify-center p-2  w-full">
-                                <div class="flex flex-col items-center w-full justify-center">
-                                        <ul class=" text-gray-900 list-disc list-inside dark:text-gray-400"
-                                            style="font-size:14.6px;">
-                                            <li>
-                                                Calculus
-                                            </li>
-                                        </ul>
-                                        <p id="calculus" class="text-xs font-normal text-red-600 dark:text-white ml-5"
-                                            style="font-size:13px;">
-                                            Absent</p>
+
+                                <!-- Dental Caries -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Dental Caries</li>
+                                    </ul>
+                                    <p id="dental_caries" class="text-xs font-normal text-green-600 dark:text-white">
+                                        Present
+                                    </p>
                                 </div>
-                                <div class="flex flex-col items-center w-full justify-center">
-                                    <div>
-                                        <ul class=" text-gray-900 list-disc list-inside dark:text-gray-400"
-                                            style="font-size:14.6px;">
-                                            <li>
-                                                Abnormal Growth
-                                            </li>
-                                        </ul>
-                                        <p id="abnormal_growth"
-                                            class="text-xs font-normal text-red-600 dark:text-white ml-5"
-                                            style="font-size:13px;">
-                                            Absent</p>
-                                    </div>
+
+                                <!-- Gingivitis -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Gingivitis</li>
+                                    </ul>
+                                    <p id="gingivitis" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
                                 </div>
-                                <div class="flex flex-col items-center w-full justify-center">
-                                    <div>
-                                        <ul class=" text-gray-900 list-disc list-inside dark:text-gray-400"
-                                            style="font-size:14.6px;">
-                                            <li>
-                                                Cleft Lip / Palate
-                                            </li>
-                                        </ul>
-                                        <p id="cleft_palate"
-                                            class="text-xs font-normal text-red-600 dark:text-white ml-5"
-                                            style="font-size:13px;">
-                                            Absent</p>
-                                    </div>
+
+                                <!-- Periodontal Disease -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Periodontal Disease</li>
+                                    </ul>
+                                    <p id="periodontal_disease" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
                                 </div>
-                                <div class="flex flex-col items-center w-full justify-center">
-                                    <div>
-                                        <ul class=" text-gray-900 list-disc list-inside dark:text-gray-400"
-                                            style="font-size:14.6px;">
-                                            <li>
-                                                Others
-                                            </li>
-                                        </ul>
-                                        <p id="others" class="text-xs font-normal text-red-600 dark:text-white ml-5"
-                                            style="font-size:13px;">
-                                            Absent</p>
-                                    </div>
+
+                                <!-- Debris -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Debris</li>
+                                    </ul>
+                                    <p id="debris" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Calculus -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Calculus</li>
+                                    </ul>
+                                    <p id="calculus" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Abnormal Growth -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Abnormal Growth</li>
+                                    </ul>
+                                    <p id="abnormal_growth" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Cleft Lip / Palate -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Cleft Lip / Palate</li>
+                                    </ul>
+                                    <p id="cleft_palate" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Others -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Others</li>
+                                    </ul>
+                                    <p id="others" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                        <div
-                            class="w-full px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border  shadow-stone-300 drop-shadow-sm dark:bg-gray-950 dark:border-gray-950">
-                            <div class="items-center justify-between flex flex-row mb-3">
-                                <p class="text-base font-normal text-gray-950 dark:text-white ">B.</p>
+
+                        <!-- Section B: Tooth Statistics -->
+                        <div class="p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-950 dark:border-gray-950">
+                            <div class="items-center justify-between flex flex-row mb-4">
+                                <p class="text-base font-normal text-gray-950 dark:text-white">B.</p>
                             </div>
-                            <div class="flex flex-col w-full">
-                                <div class="flex flex-row items-center justify-center gap-5 w-full">
-                                    <div
-                                        class="flex items-center justify-center p-2 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                        <div class="grid items-center justify-center grid-flow-col ">
-                                            <div class="flex items-center justify-center flex-col">
-                                                <div class="w-14">
-                                                    <div
-                                                        class="rounded-full  mb-3 shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                        <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                            alt="" srcset="">
-                                                    </div>
-                                                </div>
-                                                <p class="text-sm text-center mb-1 font-medium  dark:text-white ">
-                                                    Total DMF Teeth</p>
-                                                <p id="perm_total_dmf"
-                                                    class="text-lg text-center font-bold  dark:text-white ">
-                                                    5</p>
+
+                            <!-- Permanent Teeth Section -->
+                            <div class="mb-6">
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4 text-center">Permanent Teeth</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <!-- Total DMF Teeth -->
+                                    <div class="flex flex-col items-center p-3 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                        <div class="w-12 h-12 rounded-full mb-2 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                alt="Tooth" class="w-8 h-8">
+                                        </div>
+                                        <p class="text-xs text-center font-medium dark:text-white mb-1">Total DMF Teeth</p>
+                                        <p id="perm_total_dmf" class="text-lg font-bold dark:text-white">5</p>
+                                    </div>
+
+                                    <!-- Teeth Present & Sound Teeth -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Perm. Teeth Present</p>
+                                                <p id="perm_teeth_present" class="text-sm font-bold dark:text-white">0</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Perm. Sound Teeth</p>
+                                                <p id="perm_sound_teeth" class="text-sm font-bold dark:text-white">0</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center justify-center flex-col gap-2">
-                                        <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Perm. Teeth Present</p>
-                                                        <p id="perm_teeth_present"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            0</p>
-                                                    </div>
 
-                                                </div>
+                                    <!-- Decayed & Missing Teeth -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Decayed teeth (D)</p>
+                                                <p id="perm_decayed_teeth_d" class="text-sm font-bold dark:text-white">3</p>
                                             </div>
                                         </div>
-                                        <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Perm. Sound Teeth</p>
-                                                        <p id="perm_sound_teeth"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            0</p>
-                                                    </div>
-
-                                                </div>
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Missing teeth (M)</p>
+                                                <p id="perm_missing_teeth_m" class="text-sm font-bold dark:text-white">2</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center justify-center flex-col gap-2">
-                                        <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Decayed teeth (D)</p>
-                                                        <p id="perm_decayed_teeth_d"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            3</p>
-                                                    </div>
 
-                                                </div>
-                                            </div>
+                                    <!-- Filled Teeth -->
+                                    <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                        <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                alt="Tooth" class="w-6 h-6">
                                         </div>
-                                        <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Missing teeth (M)</p>
-                                                        <p id="perm_missing_teeth_m"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            2</p>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-center flex-col gap-2">
-                                        <div
-                                            class="flex items-center justify-center p-1 px-2  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div >
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Filled Teeth</p>
-                                                        <p id="perm_filled_teeth_f"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            0</p>
-                                                    </div>
-
-                                                </div>
-                                            </div>
+                                        <div>
+                                            <p class="text-xs font-medium dark:text-white">Filled Teeth</p>
+                                            <p id="perm_filled_teeth_f" class="text-sm font-bold dark:text-white">0</p>
                                         </div>
                                     </div>
                                 </div>
-                                <hr class="h-px my-8  bg-gray-200 border-0 dark:bg-gray-700">
-                                <div class="flex flex-row justify-center  items-center gap-20 mb-3 ">
-                                    <div
-                                        class="flex items-center justify-center p-2 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                        <div class="grid items-center justify-center grid-flow-col ">
-                                            <div class="flex items-center justify-center flex-col">
-                                                <div class="w-14">
-                                                    <div
-                                                        class="rounded-full  mb-3 shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                        <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                            alt="" srcset="">
-                                                    </div>
-                                                </div>
-                                                <p class="text-sm text-center mb-1 font-medium  dark:text-white ">
-                                                    Total df Teeth</p>
-                                                <p id="temp_total_df"
-                                                    class="text-lg text-center font-bold  dark:text-white ">
-                                                    0</p>
+                            </div>
+
+                            <hr class="h-px my-6 bg-gray-200 border-0 dark:bg-gray-700">
+
+                            <!-- Temporary Teeth Section -->
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4 text-center">Temporary Teeth</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <!-- Total df Teeth -->
+                                    <div class="flex flex-col items-center p-3 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                        <div class="w-12 h-12 rounded-full mb-2 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                alt="Tooth" class="w-8 h-8">
+                                        </div>
+                                        <p class="text-xs text-center font-medium dark:text-white mb-1">Total df Teeth</p>
+                                        <p id="temp_total_df" class="text-lg font-bold dark:text-white">0</p>
+                                    </div>
+
+                                    <!-- Teeth Present & Sound Teeth -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Temp. Teeth Present</p>
+                                                <p id="temp_teeth_present" class="text-sm font-bold dark:text-white">0</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Temp. Sound Teeth</p>
+                                                <p id="temp_sound_teeth" class="text-sm font-bold dark:text-white">0</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center justify-center flex-col gap-2">
-                                        <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Temp. Teeth Present</p>
-                                                        <p id="temp_teeth_present"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            0</p>
-                                                    </div>
 
-                                                </div>
+                                    <!-- Decayed & Filled Teeth -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Decayed teeth (d)</p>
+                                                <p id="temp_decayed_teeth_d" class="text-sm font-bold dark:text-white">0</p>
                                             </div>
                                         </div>
-                                        <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Temp. Sound Teeth</p>
-                                                        <p id="temp_sound_teeth"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            0</p>
-                                                    </div>
-
-                                                </div>
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center justify-center flex-col gap-2">
-                                        <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Decayed teeth (d)</p>
-                                                        <p id="temp_decayed_teeth_d"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            0</p>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="flex items-center justify-center p-1 w-40  bg-white rounded-lg shadow dark:border  shadow-stone-400  dark:bg-gray-950 dark:border-gray-950">
-                                            <div class="grid items-center justify-center grid-flow-row ">
-                                                <div class="flex items-center justify-center flex-row">
-                                                    <div class="w-12">
-                                                        <div
-                                                            class="rounded-full  shadow-stone-300 shadow  border-gray-400 dark:bg-blue-300">
-                                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
-                                                                alt="" srcset="">
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p
-                                                            class="text-xs text-center mb-1 font-medium  dark:text-white ">
-                                                            Filled teeth (f)</p>
-                                                        <p id="temp_filled_teeth_f"
-                                                            class="text-sm text-center font-bold  dark:text-white ">
-                                                            0</p>
-                                                    </div>
-
-                                                </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Filled teeth (f)</p>
+                                                <p id="temp_filled_teeth_f" class="text-sm font-bold dark:text-white">0</p>
                                             </div>
                                         </div>
                                     </div>
@@ -856,18 +717,21 @@ if ($loggedUser['type'] === 'Dentist') {
                         </div>
                     </div>
                 </div>
-                <div class="flex justify-end">
+
+                <!-- Next Button -->
+                <div class="flex justify-end mt-4">
                     <button type="button" onclick="next()"
-                        class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        class="text-white cursor-pointer inline-flex items-center justify-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 w-full sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         Next
                     </button>
                 </div>
             </section>
         </main>
 
+        <!-- Modal  -->
         <div id="ohcModal" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl p-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl p-4 m-2 max-h-[90vh] overflow-y-auto">
                 <div class="flex flex-row justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Oral Health Condition</h2>
                     <button type="button" id="cancelMedicalBtn"
@@ -1078,6 +942,12 @@ if ($loggedUser['type'] === 'Dentist') {
         });
 
         resetTimer();
+    </script>
+
+    <script>
+        function backmain() {
+            location.href = ("treatmentrecords.php?uid=<?php echo $userId; ?>");
+        }
     </script>
 
     <script>
@@ -1406,10 +1276,57 @@ if ($loggedUser['type'] === 'Dentist') {
             });
         });
     </script>
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
 
+    <script>
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - START ==========
 
+        function setupTreatmentRecordsOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
 
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - Viewing cached data</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
 
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTreatmentRecordsOffline();
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for treatment records');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+        });
+
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - END ==========
+    </script>
 </body>
 
 </html>

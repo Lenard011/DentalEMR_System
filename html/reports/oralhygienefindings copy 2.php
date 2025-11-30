@@ -26,7 +26,7 @@ if (
 }
 
 // PER-USER INACTIVITY TIMEOUT
-$inactiveLimit = 1800; // 30 minutes
+$inactiveLimit = 600; // 10 minutes
 
 if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
     $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
@@ -142,107 +142,6 @@ function isPregnantCategory($age, $sex, $pregnant)
     return null;
 }
 
-// Function to get quarter dates
-function getQuarterDates($quarter, $year)
-{
-    switch ($quarter) {
-        case 1: // Q1: Jan-Mar
-            $startDate = "$year-01-01";
-            $endDate = "$year-03-31";
-            break;
-        case 2: // Q2: Apr-Jun
-            $startDate = "$year-04-01";
-            $endDate = "$year-06-30";
-            break;
-        case 3: // Q3: Jul-Sep
-            $startDate = "$year-07-01";
-            $endDate = "$year-09-30";
-            break;
-        case 4: // Q4: Oct-Dec
-            $startDate = "$year-10-01";
-            $endDate = "$year-12-31";
-            break;
-        default:
-            $startDate = "$year-01-01";
-            $endDate = "$year-12-31";
-    }
-    return [
-        'startDate' => $startDate,
-        'endDate' => $endDate,
-        'startDateTime' => $startDate . " 00:00:00",
-        'endDateTime' => $endDate . " 23:59:59"
-    ];
-}
-
-// Function to get month name from quarter
-function getQuarterMonthName($quarter)
-{
-    switch ($quarter) {
-        case 1:
-            return 'January-March';
-        case 2:
-            return 'April-June';
-        case 3:
-            return 'July-September';
-        case 4:
-            return 'October-December';
-        default:
-            return 'Unknown Quarter';
-    }
-}
-// Function to get semi-annual and annual dates
-function getSemiAnnualDates($semiAnnual, $year)
-{
-    switch ($semiAnnual) {
-        case 1: // Semi-Annual 1: Jan-Jun
-            $startDate = "$year-01-01";
-            $endDate = "$year-06-30";
-            break;
-        case 2: // Semi-Annual 2: Jul-Dec
-            $startDate = "$year-07-01";
-            $endDate = "$year-12-31";
-            break;
-        case 3: // Annual: Jan-Dec
-            $startDate = "$year-01-01";
-            $endDate = "$year-12-31";
-            break;
-        default:
-            $startDate = "$year-01-01";
-            $endDate = "$year-12-31";
-    }
-    return [
-        'startDate' => $startDate,
-        'endDate' => $endDate,
-        'startDateTime' => $startDate . " 00:00:00",
-        'endDateTime' => $endDate . " 23:59:59"
-    ];
-}
-
-// Function to get period display name
-function getPeriodDisplayName($periodType, $selectedValue)
-{
-    switch ($periodType) {
-        case 'monthly':
-            $monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            return $monthNames[$selectedValue - 1] . "/FY" . date('Y');
-
-        case 'quarterly':
-            $quarterNames = ['January-March', 'April-June', 'July-September', 'October-December'];
-            $quarterYears = ['1st', '2nd', '3rd', '4th'];
-            return $quarterNames[$selectedValue - 1] . "/" . $quarterYears[$selectedValue - 1] . " qtr./" . date('Y');
-
-        case 'semi_annual':
-            $semiAnnualNames = ['January-June', 'July-December'];
-            return $semiAnnualNames[$selectedValue - 1] . "/" . date('Y');
-
-        case 'annual':
-            return "January-December/" . date('Y');
-
-        default:
-            return date('F') . "/FY" . date('Y');
-    }
-}
-
 // Initialize report data structure
 $reportData = [
     // Person attended/examined
@@ -303,91 +202,25 @@ $reportData = [
     'ofc_rehabilitation' => []
 ];
 
-// Determine report period type
-$periodType = isset($_GET['period']) ? $_GET['period'] : 'monthly';
+// Fetch all patients with their related data for the current period
 $selectedMonth = isset($_GET['month']) ? intval($_GET['month']) : date('n');
 $selectedYear = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
-$selectedQuarter = isset($_GET['quarter']) ? intval($_GET['quarter']) : ceil(date('n') / 3);
-$selectedSemiAnnual = isset($_GET['semi_annual']) ? intval($_GET['semi_annual']) : (date('n') <= 6 ? 1 : 2);
 
-// Set dates based on period type
-switch ($periodType) {
-    case 'quarterly':
-        $quarterDates = getQuarterDates($selectedQuarter, $selectedYear);
-        $startDate = $quarterDates['startDate'];
-        $endDate = $quarterDates['endDate'];
-        $startDateTime = $quarterDates['startDateTime'];
-        $endDateTime = $quarterDates['endDateTime'];
-        $periodDisplay = getPeriodDisplayName('quarterly', $selectedQuarter);
-        break;
+// Get start and end dates for the selected period
+$startDate = "$selectedYear-$selectedMonth-01";
+$endDate = date('Y-m-t', strtotime($startDate));
 
-    case 'semi_annual':
-        $semiAnnualDates = getSemiAnnualDates($selectedSemiAnnual, $selectedYear);
-        $startDate = $semiAnnualDates['startDate'];
-        $endDate = $semiAnnualDates['endDate'];
-        $startDateTime = $semiAnnualDates['startDateTime'];
-        $endDateTime = $semiAnnualDates['endDateTime'];
-        $periodDisplay = getPeriodDisplayName('semi_annual', $selectedSemiAnnual);
-        break;
-
-    case 'annual':
-        $annualDates = getSemiAnnualDates(3, $selectedYear); // Use 3 for annual
-        $startDate = $annualDates['startDate'];
-        $endDate = $annualDates['endDate'];
-        $startDateTime = $annualDates['startDateTime'];
-        $endDateTime = $annualDates['endDateTime'];
-        $periodDisplay = getPeriodDisplayName('annual', 3);
-        break;
-
-    default: // monthly
-        $startDate = "$selectedYear-$selectedMonth-01";
-        $endDate = date('Y-m-t', strtotime($startDate));
-        $startDateTime = $startDate . " 00:00:00";
-        $endDateTime = $endDate . " 23:59:59";
-        $periodDisplay = getPeriodDisplayName('monthly', $selectedMonth);
-        break;
-}
-
-
-// FIXED: Simplified approach - get patients who had activity in the selected period
+// NEW: Fetch all patients for person_attended (all patients in the database)
 $allPatientsQuery = "
-    SELECT DISTINCT p.patient_id, p.surname, p.firstname, p.date_of_birth, p.age, p.months_old, 
+    SELECT p.patient_id, p.surname, p.firstname, p.date_of_birth, p.age, p.months_old, 
         p.sex, p.pregnant, p.if_treatment, p.created_at
     FROM patients p
-    WHERE p.created_at BETWEEN ? AND ?
-       OR EXISTS (SELECT 1 FROM visits v WHERE v.patient_id = p.patient_id AND v.visit_date BETWEEN ? AND ?)
-       OR EXISTS (SELECT 1 FROM oral_health_condition ohc WHERE ohc.patient_id = p.patient_id AND (ohc.created_at BETWEEN ? AND ? OR ohc.updated_at BETWEEN ? AND ?))
-       OR EXISTS (SELECT 1 FROM patient_treatment_record ptr WHERE ptr.patient_id = p.patient_id AND ptr.created_at BETWEEN ? AND ?)
     ORDER BY p.patient_id
 ";
 
 $allPatientsStmt = $conn->prepare($allPatientsQuery);
-if (!$allPatientsStmt) {
-    die("Error preparing statement: " . $conn->error);
-}
-
-// Bind parameters for the simplified query
-$allPatientsStmt->bind_param(
-    "ssssssssss",
-    $startDateTime,
-    $endDateTime,     // p.created_at
-    $startDate,
-    $endDate,         // visits v.visit_date  
-    $startDateTime,
-    $endDateTime,     // ohc.created_at
-    $startDateTime,
-    $endDateTime,     // ohc.updated_at
-    $startDateTime,
-    $endDateTime      // ptr.created_at
-);
-
 $allPatientsStmt->execute();
 $allPatientsResult = $allPatientsStmt->get_result();
-
-// Check for query execution errors
-if (!$allPatientsResult) {
-    die("Error executing query: " . $allPatientsStmt->error);
-}
 
 $allProcessedPatients = [];
 
@@ -411,10 +244,10 @@ while ($patient = $allPatientsResult->fetch_assoc()) {
 
     if (!$ageGroup || !$detailedCategory) continue;
 
-    // Person attended - count patients with activity in the selected period
+    // Person attended - count ALL patients
     $reportData['person_attended'][$detailedCategory] = ($reportData['person_attended'][$detailedCategory] ?? 0) + 1;
 
-    // Person examined - count only patients with if_treatment = 1 AND activity in the selected period
+    // Person examined - count only patients with if_treatment = 1
     if ($patient['if_treatment'] == 1) {
         $reportData['person_examined'][$detailedCategory] = ($reportData['person_examined'][$detailedCategory] ?? 0) + 1;
     }
@@ -422,7 +255,7 @@ while ($patient = $allPatientsResult->fetch_assoc()) {
 
 $allPatientsStmt->close();
 
-// Fetch oral health condition data separately to ensure we get all records
+// NEW: Fetch oral health condition data separately to ensure we get all records
 $oralHealthQuery = "
     SELECT ohc.*, p.age, p.months_old, p.sex, p.pregnant
     FROM oral_health_condition ohc
@@ -432,17 +265,11 @@ $oralHealthQuery = "
 ";
 
 $oralHealthStmt = $conn->prepare($oralHealthQuery);
-if (!$oralHealthStmt) {
-    die("Error preparing oral health statement: " . $conn->error);
-}
-
+$startDateTime = $startDate . " 00:00:00";
+$endDateTime = $endDate . " 23:59:59";
 $oralHealthStmt->bind_param("ssss", $startDateTime, $endDateTime, $startDateTime, $endDateTime);
 $oralHealthStmt->execute();
 $oralHealthResult = $oralHealthStmt->get_result();
-
-if (!$oralHealthResult) {
-    die("Error executing oral health query: " . $oralHealthStmt->error);
-}
 
 $processedOralHealth = [];
 $latestOralHealthRecords = [];
@@ -512,7 +339,7 @@ foreach ($latestOralHealthRecords as $oralHealth) {
 
 $oralHealthStmt->close();
 
-// Fetch patients who had activity during the selected period for other report data
+// ORIGINAL: Fetch patients who had activity during the selected period for other report data
 $patientQuery = "
     SELECT DISTINCT p.patient_id, p.surname, p.firstname, p.date_of_birth, p.age, p.months_old, 
         p.sex, p.pregnant, p.created_at,
@@ -533,17 +360,9 @@ $patientQuery = "
 ";
 
 $stmt = $conn->prepare($patientQuery);
-if (!$stmt) {
-    die("Error preparing patient query statement: " . $conn->error);
-}
-
 $stmt->bind_param("ssss", $startDateTime, $endDateTime, $startDate, $endDate);
 $stmt->execute();
 $result = $stmt->get_result();
-
-if (!$result) {
-    die("Error executing patient query: " . $stmt->error);
-}
 
 $processedPatients = [];
 
@@ -673,8 +492,8 @@ function getReportValue($dataType, $category, $reportData)
 }
 
 ?>
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 
 <head>
     <meta charset="UTF-8">
@@ -722,11 +541,6 @@ function getReportValue($dataType, $category, $reportData)
 
         .nowrap {
             white-space: nowrap;
-        }
-
-        /* Hide FHSIS section by default */
-        #fhis-section {
-            display: none;
         }
     </style>
 </head>
@@ -978,19 +792,6 @@ function getReportValue($dataType, $category, $reportData)
                             Download
                         </button>
                     </div>
-                    <!-- Report Toggle Buttons -->
-                    <div class="flex justify-center">
-                        <div class="inline-flex rounded-md shadow-sm" role="group">
-                            <button type="button" id="main-report-btn" onclick="showMainReport()"
-                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-l-lg hover:bg-blue-100 cursor-pointer">
-                                Consolidated Oral Health Report
-                            </button>
-                            <button type="button" id="fhis-report-btn" onclick="showFhisReport()"
-                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100 hover:text-blue-700 cursor-pointer">
-                                FHSIS Report
-                            </button>
-                        </div>
-                    </div>
                     <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
                         id="mobile-menu-2">
                         <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
@@ -1002,14 +803,6 @@ function getReportValue($dataType, $category, $reportData)
                                 <a href="?uid=<?php echo $userId; ?>&period=quarterly"
                                     class="block py-2 pr-4 pl-3 <?php echo (isset($_GET['period']) && $_GET['period'] == 'quarterly') ? 'text-blue-800 font-semibold' : 'text-gray-700'; ?> border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Quarterly</a>
                             </li>
-                            <li>
-                                <a href="?uid=<?php echo $userId; ?>&period=semi_annual"
-                                    class="block py-2 pr-4 pl-3 <?php echo (isset($_GET['period']) && $_GET['period'] == 'semi_annual') ? 'text-blue-800 font-semibold' : 'text-gray-700'; ?> border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Semi-Annual</a>
-                            </li>
-                            <li>
-                                <a href="?uid=<?php echo $userId; ?>&period=annual"
-                                    class="block py-2 pr-4 pl-3 <?php echo (isset($_GET['period']) && $_GET['period'] == 'annual') ? 'text-blue-800 font-semibold' : 'text-gray-700'; ?> border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Annual</a>
-                            </li>
                         </ul>
                     </div>
                 </div>
@@ -1017,69 +810,35 @@ function getReportValue($dataType, $category, $reportData)
         </header>
 
         <main class="p-3 md:ml-64 h-auto pt-0.5">
-            <!-- Main Report Section -->
-            <section id="main-report-section" class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
+            <section class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
                 <!-- Report Controls -->
                 <div class="w-full flex flex-row p-1 justify-between mb-4">
-                    <div class="flex flex-row items-end space-x-4">
-                        <?php if ($periodType === 'quarterly'): ?>
-                            <!-- Quarterly Selection -->
-                            <div>
-                                <label for="report-quarter" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Quarter</label>
-                                <select id="report-quarter" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    <option value="1" <?php echo $selectedQuarter == 1 ? 'selected' : ''; ?>>1st Quarter (Jan-Mar)</option>
-                                    <option value="2" <?php echo $selectedQuarter == 2 ? 'selected' : ''; ?>>2nd Quarter (Apr-Jun)</option>
-                                    <option value="3" <?php echo $selectedQuarter == 3 ? 'selected' : ''; ?>>3rd Quarter (Jul-Sep)</option>
-                                    <option value="4" <?php echo $selectedQuarter == 4 ? 'selected' : ''; ?>>4th Quarter (Oct-Dec)</option>
-                                </select>
-                            </div>
-                        <?php elseif ($periodType === 'semi_annual'): ?>
-                            <!-- Semi-Annual Selection -->
-                            <div>
-                                <label for="report-semi-annual" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Semi-Annual</label>
-                                <select id="report-semi-annual" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    <option value="1" <?php echo $selectedSemiAnnual == 1 ? 'selected' : ''; ?>>Semi-Annual 1 (Jan-Jun)</option>
-                                    <option value="2" <?php echo $selectedSemiAnnual == 2 ? 'selected' : ''; ?>>Semi-Annual 2 (Jul-Dec)</option>
-                                </select>
-                            </div>
-                        <?php elseif ($periodType === 'annual'): ?>
-                            <!-- Annual Selection (No dropdown needed, just show label) -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Annual Period</label>
-                                <div class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-gray-100 rounded-md shadow-sm text-sm">
-                                    January - December
-                                </div>
-                            </div>
-                        <?php else: ?>
-                            <!-- Monthly Selection -->
-                            <div>
-                                <label for="report-month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Month</label>
-                                <select id="report-month" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    <option value="1" <?php echo $selectedMonth == 1 ? 'selected' : ''; ?>>January</option>
-                                    <option value="2" <?php echo $selectedMonth == 2 ? 'selected' : ''; ?>>February</option>
-                                    <option value="3" <?php echo $selectedMonth == 3 ? 'selected' : ''; ?>>March</option>
-                                    <option value="4" <?php echo $selectedMonth == 4 ? 'selected' : ''; ?>>April</option>
-                                    <option value="5" <?php echo $selectedMonth == 5 ? 'selected' : ''; ?>>May</option>
-                                    <option value="6" <?php echo $selectedMonth == 6 ? 'selected' : ''; ?>>June</option>
-                                    <option value="7" <?php echo $selectedMonth == 7 ? 'selected' : ''; ?>>July</option>
-                                    <option value="8" <?php echo $selectedMonth == 8 ? 'selected' : ''; ?>>August</option>
-                                    <option value="9" <?php echo $selectedMonth == 9 ? 'selected' : ''; ?>>September</option>
-                                    <option value="10" <?php echo $selectedMonth == 10 ? 'selected' : ''; ?>>October</option>
-                                    <option value="11" <?php echo $selectedMonth == 11 ? 'selected' : ''; ?>>November</option>
-                                    <option value="12" <?php echo $selectedMonth == 12 ? 'selected' : ''; ?>>December</option>
-                                </select>
-                            </div>
-                        <?php endif; ?>
-
+                    <div class="flex flex-row items-center space-x-4">
+                        <div>
+                            <label for="report-month" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Month</label>
+                            <select id="report-month" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="1" <?php echo $selectedMonth == 1 ? 'selected' : ''; ?>>January</option>
+                                <option value="2" <?php echo $selectedMonth == 2 ? 'selected' : ''; ?>>February</option>
+                                <option value="3" <?php echo $selectedMonth == 3 ? 'selected' : ''; ?>>March</option>
+                                <option value="4" <?php echo $selectedMonth == 4 ? 'selected' : ''; ?>>April</option>
+                                <option value="5" <?php echo $selectedMonth == 5 ? 'selected' : ''; ?>>May</option>
+                                <option value="6" <?php echo $selectedMonth == 6 ? 'selected' : ''; ?>>June</option>
+                                <option value="7" <?php echo $selectedMonth == 7 ? 'selected' : ''; ?>>July</option>
+                                <option value="8" <?php echo $selectedMonth == 8 ? 'selected' : ''; ?>>August</option>
+                                <option value="9" <?php echo $selectedMonth == 9 ? 'selected' : ''; ?>>September</option>
+                                <option value="10" <?php echo $selectedMonth == 10 ? 'selected' : ''; ?>>October</option>
+                                <option value="11" <?php echo $selectedMonth == 11 ? 'selected' : ''; ?>>November</option>
+                                <option value="12" <?php echo $selectedMonth == 12 ? 'selected' : ''; ?>>December</option>
+                            </select>
+                        </div>
                         <div>
                             <label for="report-year" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Year</label>
                             <input type="number" id="report-year" value="<?php echo $selectedYear; ?>"
                                 class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
-
                         <div class="flex items-end">
                             <button type="button" onclick="loadReportData()"
-                                class="px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                                 Load Report
                             </button>
                         </div>
@@ -1093,30 +852,14 @@ function getReportValue($dataType, $category, $reportData)
                             <!-- Title -->
                             <tr>
                                 <th colspan="43" class="border border-gray-400 px-2 py-2 text-center font-bold bg-gray-100">
-                                    CONSOLIDATED ORAL HEALTH STATUS AND SERVICES
-                                    <?php
-                                    switch ($periodType) {
-                                        case 'quarterly':
-                                            echo 'QUARTERLY';
-                                            break;
-                                        case 'semi_annual':
-                                            echo 'SEMI-ANNUAL';
-                                            break;
-                                        case 'annual':
-                                            echo 'ANNUAL';
-                                            break;
-                                        default:
-                                            echo 'MONTHLY';
-                                    }
-                                    ?>
-                                    REPORT
+                                    CONSOLIDATED ORAL HEALTH STATUS AND SERVICES MONTHLY REPORT
                                 </th>
                             </tr>
                             <!-- Month/Year -->
                             <tr>
                                 <th class="border border-gray-400 px-2 py-1 text-left font-medium">Month/Quarter/Year</th>
                                 <th colspan="42" class="border border-gray-400 px-2 py-1 text-left" id="report-period-display">
-                                    <?php echo $periodDisplay; ?>
+                                    <?php echo date('F', strtotime($startDate)); ?>/FY<?php echo $selectedYear; ?>
                                 </th>
                             </tr>
                             <!-- CHD -->
@@ -1130,6 +873,7 @@ function getReportValue($dataType, $category, $reportData)
                                 <th colspan="42" class="border border-gray-400 px-2 py-1 text-left">MAMBURAO/OCCIDENTAL MINDORO</th>
                             </tr>
 
+                            <!-- Complex Age Group Headers -->
                             <tr class="bg-gray-200">
                                 <th rowspan="3" class="border border-gray-400 px-1 py-1 text-center sticky-header">INDICATORS</th>
 
@@ -1425,6 +1169,7 @@ function getReportValue($dataType, $category, $reportData)
                             ];
 
                             // Updated function to handle display values - ONLY show zeros for specific totals, empty for everything else
+                            // Updated function to handle display values - ONLY show zeros for specific totals, empty for everything else
                             function getDisplayValue($dataType, $category, $reportData, $calculatedValue = null)
                             {
                                 if ($calculatedValue !== null) {
@@ -1564,170 +1309,6 @@ function getReportValue($dataType, $category, $reportData)
                     </table>
                 </div>
             </section>
-
-            <!-- FHSIS Report Section -->
-            <section id="fhis-section" class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">FHSIS Report - Oral Health Care and Services</h2>
-
-                <div class="table-container">
-                    <table class="fhis-table border-collapse border border-gray-400 w-full bg-white">
-                        <thead>
-                            <tr>
-                                <th colspan="9" class="border border-gray-400 px-2 py-2 text-center font-bold bg-gray-100">
-                                    FHSIS REPORT for the Quarter: 1ST QTR. YEAR: <?php echo date('Y'); ?> RHU
-                                </th>
-                            </tr>
-                            <tr>
-                                <th class="border border-gray-400 px-2 py-1 text-left font-medium">Name of Municipality/City:</th>
-                                <th colspan="8" class="border border-gray-400 px-2 py-1 text-left">MAMBURAO</th>
-                            </tr>
-                            <tr>
-                                <th class="border border-gray-400 px-2 py-1 text-left font-medium">Name of Province:</th>
-                                <th colspan="8" class="border border-gray-400 px-2 py-1 text-left">OCCIDENTAL MINDORO</th>
-                            </tr>
-                            <tr>
-                                <th class="border border-gray-400 px-2 py-1 text-left font-medium">Projected Population of the Year:</th>
-                                <th colspan="8" class="border border-gray-400 px-2 py-1 text-left">49930</th>
-                            </tr>
-                            <tr>
-                                <th colspan="9" class="border border-gray-400 px-2 py-1 text-left font-medium bg-gray-200">
-                                    Section D. Oral Health Care and Services
-                                </th>
-                            </tr>
-                            <tr class="bg-gray-200">
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">Indicators</th>
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">Eligible Population</th>
-                                <th colspan="3" class="border border-gray-400 px-2 py-2 text-center">Counts</th>
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">%<br>(Col. 5/E.Pop x 100)</th>
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">Interpretation</th>
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">Recommendation/Actions Taken</th>
-                            </tr>
-                            <tr class="bg-gray-200">
-                                <th class="border border-gray-400 px-2 py-2 text-center">Male</th>
-                                <th class="border border-gray-400 px-2 py-2 text-center">Female</th>
-                                <th class="border border-gray-400 px-2 py-2 text-center">Total</th>
-                            </tr>
-                            <tr class="bg-gray-100">
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 1)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 2)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 3)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 4)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 5)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 6)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 7)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 8)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            // FHSIS Indicators data - you'll need to calculate these based on your actual data
-                            $fhisIndicators = [
-                                [
-                                    'indicator' => '1. Orally fit children 12-59 months old upon oral examination plus orally fit after rehabilitation - Total',
-                                    'eligible_population' => 4194,
-                                    'male_count' => getReportValue('ofc_examination', 'under_five_total_m', $reportData) + getReportValue('ofc_rehabilitation', 'under_five_total_m', $reportData),
-                                    'female_count' => getReportValue('ofc_examination', 'under_five_total_f', $reportData) + getReportValue('ofc_rehabilitation', 'under_five_total_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '2. Clients 5 years old and above with cases of DMF - Total',
-                                    'eligible_population' => 'Actual',
-                                    'male_count' => 41, // You'll need to calculate this from your data
-                                    'female_count' => 46  // You'll need to calculate this from your data
-                                ],
-                                [
-                                    'indicator' => '3. Infants 0-11 months old who received BOHC - Total',
-                                    'eligible_population' => 1024,
-                                    'male_count' => getReportValue('person_examined', 'infant_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'infant_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '4. Children 1-4 years old who received BOHC - Total',
-                                    'eligible_population' => 4194,
-                                    'male_count' => getReportValue('person_examined', 'under_five_total_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'under_five_total_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '5. Children 5-9 years old who received BOHC - Total',
-                                    'eligible_population' => 5791,
-                                    'male_count' => getReportValue('person_examined', 'school_age_total_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'school_age_total_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '6. Adolescents 10-14 years old who received BOHC - Total',
-                                    'eligible_population' => 5489,
-                                    'male_count' => getReportValue('person_examined', 'adolescent_10_14_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'adolescent_10_14_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => 'Adolescents 15-19 years old who received BOHC - Total',
-                                    'eligible_population' => 5238,
-                                    'male_count' => getReportValue('person_examined', 'adolescent_15_19_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'adolescent_15_19_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '7. Adults 20-59 years old who received BOHC - Total',
-                                    'eligible_population' => 25181,
-                                    'male_count' => getReportValue('person_examined', 'adult_20_59_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'adult_20_59_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '8. Senior citizens 60 years old and above who received BOHC - Total',
-                                    'eligible_population' => 3744,
-                                    'male_count' => getReportValue('person_examined', 'older_60_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'older_60_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '9a. Pregnant women(10-14) who received BOHC - Total',
-                                    'eligible_population' => 2624,
-                                    'male_count' => 0,
-                                    'female_count' => 0 // You'll need to calculate this from pregnant women data
-                                ],
-                                [
-                                    'indicator' => '9b. Pregnant women(15-19) who received BOHC - Total',
-                                    'eligible_population' => 2520,
-                                    'male_count' => 0,
-                                    'female_count' => 0 // You'll need to calculate this from pregnant women data
-                                ],
-                                [
-                                    'indicator' => '9c. Pregnant women(20-49)who received BOHC - Total',
-                                    'eligible_population' => 10259,
-                                    'male_count' => 0,
-                                    'female_count' => 11 // You'll need to calculate this from pregnant women data
-                                ]
-                            ];
-
-                            foreach ($fhisIndicators as $indicator) {
-                                $total = $indicator['male_count'] + $indicator['female_count'];
-
-                                // Calculate percentage only if eligible population is numeric
-                                if (is_numeric($indicator['eligible_population']) && $indicator['eligible_population'] > 0) {
-                                    $percentage = round(($total / $indicator['eligible_population']) * 100, 2);
-                                } else {
-                                    $percentage = '';
-                                }
-
-                                echo "<tr>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-left'>{$indicator['indicator']}</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>{$indicator['eligible_population']}</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>{$indicator['male_count']}</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>{$indicator['female_count']}</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>$total</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>$percentage</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'></td>"; // Interpretation
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'></td>"; // Recommendation
-                                echo "</tr>";
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Additional FHSIS Notes -->
-                <div class="mt-4 text-sm text-gray-600">
-                    <p><strong>Note:</strong> BOHC = Basic Oral Health Care</p>
-                    <p><strong>Note:</strong> For submission to PHO / CHO</p>
-                </div>
-            </section>
         </main>
     </div>
 
@@ -1736,42 +1317,17 @@ function getReportValue($dataType, $category, $reportData)
     <script>
         // Load report data
         function loadReportData() {
-            const periodType = "<?php echo $periodType; ?>";
-            let urlParams = new URLSearchParams(window.location.search);
+            const monthSelect = document.getElementById('report-month');
+            const yearInput = document.getElementById('report-year');
 
-            // Set common parameters
-            urlParams.set('period', periodType);
-            urlParams.set('year', document.getElementById('report-year').value);
+            const month = monthSelect.value;
+            const year = yearInput.value;
 
-            // Set period-specific parameters and remove others
-            switch (periodType) {
-                case 'quarterly':
-                    urlParams.set('quarter', document.getElementById('report-quarter').value);
-                    urlParams.delete('month');
-                    urlParams.delete('semi_annual');
-                    break;
-
-                case 'semi_annual':
-                    urlParams.set('semi_annual', document.getElementById('report-semi-annual').value);
-                    urlParams.delete('month');
-                    urlParams.delete('quarter');
-                    break;
-
-                case 'annual':
-                    urlParams.delete('month');
-                    urlParams.delete('quarter');
-                    urlParams.delete('semi_annual');
-                    break;
-
-                default: // monthly
-                    urlParams.set('month', document.getElementById('report-month').value);
-                    urlParams.delete('quarter');
-                    urlParams.delete('semi_annual');
-                    break;
-            }
-
-            // Redirect to the same page with new parameters
-            window.location.href = window.location.pathname + '?' + urlParams.toString();
+            // Redirect to the same page with new month/year parameters
+            const url = new URL(window.location.href);
+            url.searchParams.set('month', month);
+            url.searchParams.set('year', year);
+            window.location.href = url.toString();
         }
 
         // Generate report (download/print)
@@ -1782,84 +1338,24 @@ function getReportValue($dataType, $category, $reportData)
 
         // Update report period display
         function updateReportPeriod() {
-            const periodType = "<?php echo $periodType; ?>";
-            const periodDisplay = document.getElementById('report-period-display');
-            const year = document.getElementById('report-year').value;
+            const monthSelect = document.getElementById('report-month');
+            const yearInput = document.getElementById('report-year');
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
 
-            switch (periodType) {
-                case 'quarterly':
-                    const quarterSelect = document.getElementById('report-quarter');
-                    const quarterNames = ['January-March', 'April-June', 'July-September', 'October-December'];
-                    const quarterYears = ['1st', '2nd', '3rd', '4th'];
-                    const quarterName = quarterNames[parseInt(quarterSelect.value) - 1];
-                    const quarterYear = quarterYears[parseInt(quarterSelect.value) - 1];
-                    periodDisplay.textContent = `${quarterName}/${quarterYear} qtr./${year}`;
-                    break;
+            const monthName = monthNames[parseInt(monthSelect.value) - 1];
+            const year = yearInput.value;
 
-                case 'semi_annual':
-                    const semiAnnualSelect = document.getElementById('report-semi-annual');
-                    const semiAnnualNames = ['January-June', 'July-December'];
-                    const semiAnnualName = semiAnnualNames[parseInt(semiAnnualSelect.value) - 1];
-                    periodDisplay.textContent = `${semiAnnualName}/${year}`;
-                    break;
-
-                case 'annual':
-                    periodDisplay.textContent = `January-December/${year}`;
-                    break;
-
-                default: // monthly
-                    const monthSelect = document.getElementById('report-month');
-                    const monthNames = [
-                        'January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'
-                    ];
-                    const monthName = monthNames[parseInt(monthSelect.value) - 1];
-                    periodDisplay.textContent = `${monthName}/FY${year}`;
-                    break;
-            }
-        }
-
-        // Toggle between main report and FHSIS report
-        function showMainReport() {
-            document.getElementById('main-report-section').style.display = 'block';
-            document.getElementById('fhis-section').style.display = 'none';
-            document.getElementById('main-report-btn').classList.remove('bg-white', 'text-gray-900', 'border-gray-200');
-            document.getElementById('main-report-btn').classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-            document.getElementById('fhis-report-btn').classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-            document.getElementById('fhis-report-btn').classList.add('bg-white', 'text-gray-900', 'border-gray-200');
-        }
-
-        function showFhisReport() {
-            document.getElementById('main-report-section').style.display = 'none';
-            document.getElementById('fhis-section').style.display = 'block';
-            document.getElementById('fhis-report-btn').classList.remove('bg-white', 'text-gray-900', 'border-gray-200');
-            document.getElementById('fhis-report-btn').classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-            document.getElementById('main-report-btn').classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-            document.getElementById('main-report-btn').classList.add('bg-white', 'text-gray-900', 'border-gray-200');
+            document.getElementById('report-period-display').textContent = `${monthName}/FY${year}`;
         }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateReportPeriod();
-
-            // Add event listeners based on current period type
-            const periodType = "<?php echo $periodType; ?>";
-            switch (periodType) {
-                case 'quarterly':
-                    document.getElementById('report-quarter').addEventListener('change', updateReportPeriod);
-                    break;
-                case 'semi_annual':
-                    document.getElementById('report-semi-annual').addEventListener('change', updateReportPeriod);
-                    break;
-                default: // monthly
-                    document.getElementById('report-month').addEventListener('change', updateReportPeriod);
-                    break;
-            }
-
+            document.getElementById('report-month').addEventListener('change', updateReportPeriod);
             document.getElementById('report-year').addEventListener('input', updateReportPeriod);
-
-            // Show main report by default
-            showMainReport();
         });
 
         // Inactivity timer
@@ -1869,7 +1365,7 @@ function getReportValue($dataType, $category, $reportData)
         function resetTimer() {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
-                alert("You've been logged out due to 30 minutes of inactivity.");
+                alert("You've been logged out due to 10 minutes of inactivity.");
                 window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>";
             }, inactivityTime);
         }
@@ -1880,6 +1376,7 @@ function getReportValue($dataType, $category, $reportData)
 
         resetTimer();
     </script>
+
     <!-- Load offline storage -->
     <script src="/dentalemr_system/js/offline-storage.js"></script>
 

@@ -3,7 +3,6 @@ session_start();
 date_default_timezone_set('Asia/Manila');
 
 // REQUIRE userId parameter for each page
-// Example usage: dashboard.php?uid=5
 if (!isset($_GET['uid'])) {
     echo "<script>
         alert('Invalid session. Please log in again.');
@@ -31,18 +30,12 @@ $inactiveLimit = 600; // 10 minutes
 
 if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
     $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
-
     if ((time() - $lastActivity) > $inactiveLimit) {
-
-        // Log out ONLY this user (not everyone)
         unset($_SESSION['active_sessions'][$userId]);
-
-        // If no one else is logged in, end session entirely
         if (empty($_SESSION['active_sessions'])) {
             session_unset();
             session_destroy();
         }
-
         echo "<script>
             alert('You have been logged out due to inactivity.');
             window.location.href = '/dentalemr_system/html/login/login.html';
@@ -93,70 +86,121 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// === BARANGAYS (fixed order) ===
+// === BARANGAYS with mapping for address normalization ===
 $barangays = [
-    'Balansay',
-    'Fatima',
-    'Payompon',
-    'Pob 1',
-    'Pob 2',
-    'Pob 3',
-    'Pob 4',
-    'Pob 5',
-    'Pob 6',
-    'Pob 7',
-    'Pob 8',
-    'San Luis',
-    'Talabaan',
-    'Tangkalan',
-    'Tayamaan'
+    'Balansay' => ['Balansay'],
+    'Fatima' => ['Fatima'],
+    'Payompon' => ['Payompon'],
+    'Pob 1' => ['Pob 1', 'Poblacion 1'],
+    'Pob 2' => ['Pob 2', 'Poblacion 2'],
+    'Pob 3' => ['Pob 3', 'Poblacion 3'],
+    'Pob 4' => ['Pob 4', 'Poblacion 4'],
+    'Pob 5' => ['Pob 5', 'Poblacion 5'],
+    'Pob 6' => ['Pob 6', 'Poblacion 6'],
+    'Pob 7' => ['Pob 7', 'Poblacion 7'],
+    'Pob 8' => ['Pob 8', 'Poblacion 8'],
+    'San Luis' => ['San Luis'],
+    'Talabaan' => ['Talabaan'],
+    'Tangkalan' => ['Tangkalan'],
+    'Tayamaan' => ['Tayamaan']
 ];
 
-// === Helper Function ===
-function countPatients($conn, $barangay, $sex, $condition = "1=1")
+// === Get selected year from URL parameter or default to current year ===
+$selectedYear = isset($_GET['year']) ? intval($_GET['year']) : date('Y');
+$currentYear = date('Y');
+
+// === Generate year options for dropdown (current year and previous 5 years) ===
+$yearOptions = [];
+for ($i = 0; $i <= 5; $i++) {
+    $year = $currentYear - $i;
+    $yearOptions[$year] = $year;
+}
+
+// === Improved Helper Function with better address matching ===
+function countPatients($conn, $barangayKey, $barangayValues, $sex, $condition = "1=1", $year = null)
 {
+    $yearCondition = "";
+    if ($year) {
+        $yearCondition = " AND YEAR(p.created_at) = $year";
+    }
+
+    // Create address condition for all variations of this barangay
+    $addressConditions = [];
+    foreach ($barangayValues as $address) {
+        $addressConditions[] = "LOWER(TRIM(p.address)) = LOWER('" . $conn->real_escape_string(trim($address)) . "')";
+    }
+    $addressCondition = "(" . implode(" OR ", $addressConditions) . ")";
+
+    // Use DISTINCT to count each patient only once per condition
     $query = "
-        SELECT COUNT(*) AS total 
-        FROM patients 
-        WHERE LOWER(TRIM(address)) = LOWER('" . $conn->real_escape_string($barangay) . "')
-        AND LOWER(TRIM(sex)) = LOWER('" . $conn->real_escape_string($sex) . "')
+        SELECT COUNT(DISTINCT p.patient_id) AS total 
+        FROM patients p
+        WHERE $addressCondition
+        AND LOWER(TRIM(p.sex)) = LOWER('" . $conn->real_escape_string($sex) . "')
         AND $condition
+        $yearCondition
     ";
+
     $result = $conn->query($query);
     $row = $result ? $result->fetch_assoc() : ['total' => 0];
     return (int)$row['total'] > 0 ? (int)$row['total'] : '';
 }
 
-// === Conditions for each indicator ===
+// === Improved Conditions ===
 $conditions = [
-    "Orally fit children 12 to 59 months old - upon examination" => "age BETWEEN 1 AND 4",
-    "Orally fit children 12 to 59 months old - after rehabilitation" => "age BETWEEN 1 AND 4 AND if_treatment = 1",
-    "5 years old and above examined" => "age >= 5",
-    "5 years old and above with cases of DMFT" => "age >= 5 AND patient_id IN (SELECT patient_id FROM oral_health_condition WHERE perm_total_dmf > 0)",
-    "Infant (0–11 months old)" => "months_old BETWEEN 0 AND 11",
-    "Pre-schooler (12–59 months old)" => "age BETWEEN 1 AND 4",
-    "Schoolers (5–9 years old)" => "age BETWEEN 5 AND 9",
-    "Adolescents (10–14 years old)" => "age BETWEEN 10 AND 14",
-    "Adolescents (15–19 years old)" => "age BETWEEN 15 AND 19",
-    "Adult (20–59 years old)" => "age BETWEEN 20 AND 59",
-    "Senior (60+ years old)" => "age >= 60",
-    "Pregnant (10–14 years old)" => "pregnant = 'yes' AND age BETWEEN 10 AND 14",
-    "Pregnant (15–19 years old)" => "pregnant = 'yes' AND age BETWEEN 15 AND 19",
-    "Pregnant (20–49 years old)" => "pregnant = 'yes' AND age BETWEEN 20 AND 49"
+    "Orally fit children 12 to 59 months old - upon examination" => "p.age BETWEEN 1 AND 4",
+    "Orally fit children 12 to 59 months old - after rehabilitation" => "p.age BETWEEN 1 AND 4 AND p.if_treatment = 1",
+    "5 years old and above examined" => "p.age >= 5",
+    "5 years old and above with cases of DMFT" => "p.age >= 5 AND p.patient_id IN (SELECT DISTINCT patient_id FROM oral_health_condition WHERE perm_total_dmf > 0)",
+    "Infant (0–11 months old)" => "p.months_old BETWEEN 0 AND 11",
+    "Pre-schooler (12–59 months old)" => "p.age BETWEEN 1 AND 4",
+    "Schoolers (5–9 years old)" => "p.age BETWEEN 5 AND 9",
+    "Adolescents (10–14 years old)" => "p.age BETWEEN 10 AND 14",
+    "Adolescents (15–19 years old)" => "p.age BETWEEN 15 AND 19",
+    "Adult (20–59 years old)" => "p.age BETWEEN 20 AND 59",
+    "Senior (60+ years old)" => "p.age >= 60",
+    "Pregnant (10–14 years old)" => "p.pregnant = 'yes' AND p.age BETWEEN 10 AND 14",
+    "Pregnant (15–19 years old)" => "p.pregnant = 'yes' AND p.age BETWEEN 15 AND 19",
+    "Pregnant (20–49 years old)" => "p.pregnant = 'yes' AND p.age BETWEEN 20 AND 49"
 ];
 
 // === Collect data ===
 $data = [];
 foreach ($conditions as $key => $cond) {
-    foreach ($barangays as $b) {
-        $data[$key][$b]['M'] = countPatients($conn, $b, 'Male', $cond);
-        $data[$key][$b]['F'] = countPatients($conn, $b, 'Female', $cond);
+    foreach ($barangays as $bKey => $bValues) {
+        $data[$key][$bKey]['M'] = countPatients($conn, $bKey, $bValues, 'Male', $cond, $selectedYear);
+        $data[$key][$bKey]['F'] = countPatients($conn, $bKey, $bValues, 'Female', $cond, $selectedYear);
     }
+}
+
+// === Get total unique patients for grand total ===
+$totalPatientsByBarangay = [];
+foreach ($barangays as $bKey => $bValues) {
+    $addressConditions = [];
+    foreach ($bValues as $address) {
+        $addressConditions[] = "LOWER(TRIM(address)) = LOWER('" . $conn->real_escape_string(trim($address)) . "')";
+    }
+    $addressCondition = "(" . implode(" OR ", $addressConditions) . ")";
+
+    $yearCondition = $selectedYear ? " AND YEAR(created_at) = $selectedYear" : "";
+
+    // Count males
+    $queryM = "SELECT COUNT(DISTINCT patient_id) AS total FROM patients WHERE $addressCondition AND LOWER(TRIM(sex)) = 'male' $yearCondition";
+    $resultM = $conn->query($queryM);
+    $totalM = $resultM ? $resultM->fetch_assoc()['total'] : 0;
+
+    // Count females
+    $queryF = "SELECT COUNT(DISTINCT patient_id) AS total FROM patients WHERE $addressCondition AND LOWER(TRIM(sex)) = 'female' $yearCondition";
+    $resultF = $conn->query($queryF);
+    $totalF = $resultF ? $resultF->fetch_assoc()['total'] : 0;
+
+    $totalPatientsByBarangay[$bKey] = ['M' => $totalM, 'F' => $totalF];
 }
 
 $conn->close();
 
-
+// Get simple barangay names for display
+$barangayNames = array_keys($barangays);
 ?>
 <!doctype html>
 <html>
@@ -167,6 +211,9 @@ $conn->close();
     <title>Target Client List</title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+
+    </style>
 </head>
 
 <body>
@@ -417,7 +464,6 @@ $conn->close();
                                 <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
                             </svg>
 
-
                             <span class="ml-3">Archived</span>
                         </a>
                     </li>
@@ -439,54 +485,28 @@ $conn->close();
             </div>
         </aside>
 
-        <!-- Individual Patient Treatment Record Inforamtion -->
         <main class="p-3 md:ml-64 h-auto pt-15">
-            <div class="text-center">
-                <p class="text-lg font-semibold  text-gray-900 dark:text-white">Municipal Health Office - Mamburao
-                </p>
-                <p class="text-lg font-semibold  text-gray-900 dark:text-white" style="margin-top:  -5px;;">Oral Health
-                    Program (per brgy)
-                </p>
-            </div>
-
             <section class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
                 <div class="w-full flex flex-row p-1 justify-end">
-                    <div class="flex flex-row justify-between">
-                        <!-- (Buttons unchanged) -->
+                    <div class="flex flex-row justify-between gap-5">
+                        <!-- Year Filter Dropdown -->
                         <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
-                                class="w-full md:w-auto cursor-pointer flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
-                                    class="h-4 w-4 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Filter
-                                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path clip-rule="evenodd" fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                </svg>
-                            </button>
-                            <div id="filterDropdown" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose address</h6>
-                                <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                                    <?php foreach ($barangays as $b): ?>
-                                        <li class="flex items-center">
-                                            <input id="<?= strtolower(str_replace(' ', '_', $b)) ?>" type="checkbox" value="<?= $b ?>"
-                                                class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 dark:bg-gray-600 dark:border-gray-500">
-                                            <label for="<?= strtolower(str_replace(' ', '_', $b)) ?>"
-                                                class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100"><?= $b ?></label>
-                                        </li>
+                            <form method="GET" action="" class="flex items-center space-x-2">
+                                <input type="hidden" name="uid" value="<?php echo $userId; ?>">
+                                <label for="year-select" class="text-sm font-medium text-gray-700 dark:text-gray-300">Year:</label>
+                                <select id="year-select" name="year" onchange="this.form.submit()"
+                                    class="bg-white border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1 cursor-pointer dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                    <?php foreach ($yearOptions as $year): ?>
+                                        <option value="<?php echo $year; ?>" <?php echo $selectedYear == $year ? 'selected' : ''; ?>>
+                                            <?php echo $year; ?>
+                                        </option>
                                     <?php endforeach; ?>
-                                </ul>
-                            </div>
+                                </select>
+                            </form>
                         </div>
                         <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button type="button"
-                                class="flex items-center justify-center cursor-pointer text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg gap-1 text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700">
+                            <button type="button" onclick="printReport()"
+                                class="flex items-center justify-center cursor-pointer text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-sm gap-1 text-sm px-4 py-1 dark:bg-blue-600 dark:hover:bg-blue-700">
                                 <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                     width="24" height="24" fill="none" viewBox="0 0 24 24">
                                     <path stroke="white" stroke-linejoin="round" stroke-width="2"
@@ -497,192 +517,153 @@ $conn->close();
                         </div>
                     </div>
                 </div>
+                <div class="text-center mb-4">
+                    <p class="text-xl font-bold text-gray-900 mb-0">Municipal Health Office - Mamburao</p>
+                    <p class="text-lg font-semibold text-gray-900 mt-0">
+                        Oral Health Program - <?php echo $selectedYear; ?> (per brgy)
+                    </p>
+                    <!-- <p class="text-sm text-gray-600 mt-2">Generated on: <?php echo date('F j, Y'); ?></p> -->
+                </div>
+                <!-- Content for printing -->
+                <div id="print-content">
+                    <div class="overflow-x-auto">
+                        <table class="text-xs text-gray-600 border border-gray-300 border-collapse w-full min-w-[2000px] text-center">
+                            <thead class="text-xs text-center align-top text-gray-700 bg-gray-50">
+                                <tr>
+                                    <th rowspan="2" class="border border-gray-300 px-2 py-1 text-center align-bottom">No.</th>
+                                    <th rowspan="2" class="border border-gray-300 px-2 py-1 text-center align-bottom">INDICATORS</th>
+                                    <?php foreach ($barangayNames as $b): ?>
+                                        <th colspan="2" class="border border-gray-300 px-2 py-1"><?php echo $b; ?></th>
+                                    <?php endforeach; ?>
+                                    <th colspan="2" class="border border-gray-300 px-2 py-1">SUB TOTAL</th>
+                                    <th colspan="2" class="border border-gray-300 px-2 py-1">TOTAL</th>
+                                </tr>
+                                <tr>
+                                    <?php foreach ($barangayNames as $b): ?>
+                                        <th class="border border-gray-300 px-2 py-1">M</th>
+                                        <th class="border border-gray-300 px-2 py-1">F</th>
+                                    <?php endforeach; ?>
+                                    <th class="border border-gray-300 px-2 py-1">M</th>
+                                    <th class="border border-gray-300 px-2 py-1">F</th>
+                                    <th class="border border-gray-300 px-2 py-1"></th>
+                                </tr>
+                            </thead>
 
-                <form action="#">
-                    <div class="grid gap-2 mb-4 mt-5">
-                        <div class="overflow-x-auto">
-                            <table class="text-xs text-gray-600 dark:text-gray-300 border border-gray-300 border-collapse w-full min-w-[2000px] text-center">
-                                <thead class="text-xs text-center align-top  text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
-                                    <tr>
-                                        <th rowspan="2" class="border border-gray-300 px-2 py-1 text-center align-bottom">No.</th>
-                                        <th rowspan="2" class="border border-gray-300 px-2 py-1 text-center align-bottom">INDICATORS</th>
+                            <tbody>
+                                <?php
+                                $rowNum = 1;
 
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1 ">BALANSAY</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">FATIMA</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">PAYOMPON</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">POB 1</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">POB 2</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">POB 3</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">POB 4</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">POB 5</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">POB 6</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">POB 7</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">POB 8</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">SAN LUIS</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">TALABAAN</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">TANGKALAN</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">TAYAMAAN</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">SUB TOTAL</th>
-                                        <th colspan="2" class="border border-gray-300 px-2 py-1">TOTAL</th>
-                                    </tr>
+                                // Helper function to render M/F cells and calculate subtotal/total
+                                function renderRow($indicatorKey, $barangayNames)
+                                {
+                                    $subtotalM = $subtotalF = 0;
+                                    foreach ($barangayNames as $b) {
+                                        $m = isset($indicatorKey[$b]['M']) && is_numeric($indicatorKey[$b]['M']) ? (int)$indicatorKey[$b]['M'] : '';
+                                        $f = isset($indicatorKey[$b]['F']) && is_numeric($indicatorKey[$b]['F']) ? (int)$indicatorKey[$b]['F'] : '';
 
-                                    <tr>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1">M</th>
-                                        <th class="border border-gray-300 px-2 py-1">F</th>
-                                        <th class="border border-gray-300 px-2 py-1"></th>
-                                    </tr>
-                                </thead>
+                                        // Only add to subtotal if values are numeric and not empty
+                                        $subtotalM += ($m !== '' && is_numeric($m)) ? $m : 0;
+                                        $subtotalF += ($f !== '' && is_numeric($f)) ? $f : 0;
 
-                                <tbody>
-                                    <?php
-                                    $rowNum = 1;
-
-                                    // Helper function to render M/F cells and calculate subtotal/total
-                                    function renderRow($indicatorKey, $barangays)
-                                    {
-                                        $subtotalM = $subtotalF = 0;
-                                        foreach ($barangays as $b) {
-                                            $m = isset($indicatorKey[$b]['M']) && is_numeric($indicatorKey[$b]['M']) ? (int)$indicatorKey[$b]['M'] : 0;
-                                            $f = isset($indicatorKey[$b]['F']) && is_numeric($indicatorKey[$b]['F']) ? (int)$indicatorKey[$b]['F'] : 0;
-                                            $subtotalM += $m;
-                                            $subtotalF += $f;
-                                            echo "<td class='border border-gray-300 font-bold'>$m</td><td class='border border-gray-300 font-bold'>$f</td>";
-                                        }
-                                        $totalAll = $subtotalM + $subtotalF;
-                                        echo "<td class='border border-gray-300 font-bold'>{$subtotalM}</td>";
-                                        echo "<td class='border border-gray-300 font-bold'>{$subtotalF}</td>";
-                                        echo "<td class='border border-gray-300 font-bold'>{$totalAll}</td>";
+                                        echo "<td class='border border-gray-300 font-bold'>$m</td><td class='border border-gray-300 font-bold'>$f</td>";
                                     }
+                                    $totalAll = $subtotalM + $subtotalF;
+                                    echo "<td class='border border-gray-300 font-bold'>{$subtotalM}</td>";
+                                    echo "<td class='border border-gray-300 font-bold'>{$subtotalF}</td>";
+                                    echo "<td class='border border-gray-300 font-bold'>{$totalAll}</td>";
+                                }
 
-                                    // List of indicators and sub-rows
-                                    $rows = [
-                                        ["label" => "Orally fit children 12 to 59 months old", "sub" => [
-                                            "upon examination" => "Orally fit children 12 to 59 months old - upon examination",
-                                            "after rehabilitation" => "Orally fit children 12 to 59 months old - after rehabilitation"
-                                        ]],
-                                        ["label" => "5 years old and above examined", "sub" => [
-                                            "5 years old and above examined" => "5 years old and above examined",
-                                            "5 years old and above with cases of DMFT" => "5 years old and above with cases of DMFT"
-                                        ]],
-                                        ["label" => "Infant (0–11 months old)", "sub" => [
-                                            "Infant (0–11 months old)" => "Infant (0–11 months old)"
-                                        ]],
-                                        ["label" => "Pre-schooler (12–59 months old)", "sub" => [
-                                            "Pre-schooler (12–59 months old)" => "Pre-schooler (12–59 months old)"
-                                        ]],
-                                        ["label" => "Schoolers (5–9 years old)", "sub" => [
-                                            "Schoolers (5–9 years old)" => "Schoolers (5–9 years old)"
-                                        ]],
-                                        ["label" => "Adolescents", "sub" => [
-                                            "10–14 years old" => "Adolescents (10–14 years old)",
-                                            "15–19 years old" => "Adolescents (15–19 years old)"
-                                        ]],
-                                        ["label" => "Adult (20–59 years old)", "sub" => [
-                                            "Adult (20–59 years old)" => "Adult (20–59 years old)"
-                                        ]],
-                                        ["label" => "Senior (60+ years old)", "sub" => [
-                                            "Senior (60+ years old)" => "Senior (60+ years old)"
-                                        ]],
-                                        ["label" => "Pregnant women", "sub" => [
-                                            "10–14 years old" => "Pregnant (10–14 years old)",
-                                            "15–19 years old" => "Pregnant (15–19 years old)",
-                                            "20–49 years old" => "Pregnant (20–49 years old)"
-                                        ]]
-                                    ];
+                                // List of indicators and sub-rows
+                                $rows = [
+                                    ["label" => "Orally fit children 12 to 59 months old", "sub" => [
+                                        "upon examination" => "Orally fit children 12 to 59 months old - upon examination",
+                                        "after rehabilitation" => "Orally fit children 12 to 59 months old - after rehabilitation"
+                                    ]],
+                                    ["label" => "5 years old and above examined", "sub" => [
+                                        "5 years old and above examined" => "5 years old and above examined",
+                                        "5 years old and above with cases of DMFT" => "5 years old and above with cases of DMFT"
+                                    ]],
+                                    ["label" => "Infant (0–11 months old)", "sub" => [
+                                        "Infant (0–11 months old)" => "Infant (0–11 months old)"
+                                    ]],
+                                    ["label" => "Pre-schooler (12–59 months old)", "sub" => [
+                                        "Pre-schooler (12–59 months old)" => "Pre-schooler (12–59 months old)"
+                                    ]],
+                                    ["label" => "Schoolers (5–9 years old)", "sub" => [
+                                        "Schoolers (5–9 years old)" => "Schoolers (5–9 years old)"
+                                    ]],
+                                    ["label" => "Adolescents", "sub" => [
+                                        "10–14 years old" => "Adolescents (10–14 years old)",
+                                        "15–19 years old" => "Adolescents (15–19 years old)"
+                                    ]],
+                                    ["label" => "Adult (20–59 years old)", "sub" => [
+                                        "Adult (20–59 years old)" => "Adult (20–59 years old)"
+                                    ]],
+                                    ["label" => "Senior (60+ years old)", "sub" => [
+                                        "Senior (60+ years old)" => "Senior (60+ years old)"
+                                    ]],
+                                    ["label" => "Pregnant women", "sub" => [
+                                        "10–14 years old" => "Pregnant (10–14 years old)",
+                                        "15–19 years old" => "Pregnant (15–19 years old)",
+                                        "20–49 years old" => "Pregnant (20–49 years old)"
+                                    ]]
+                                ];
 
-                                    // Total number of columns for M/F per barangay + subtotal/total (2 + 2 + 1 = 3 extra)
-                                    $totalCols = count($barangays) * 2 + 3;
+                                // Render table rows
+                                foreach ($rows as $row) {
+                                    // Top-level row (empty but with borders across every column)
+                                    echo "<tr>";
+                                    echo "<td class='border border-gray-300 px-2 py-1 font-bold'>{$rowNum}</td>";
+                                    echo "<td class='border border-gray-300 px-2 py-1 text-left font-bold'>{$row['label']}</td>";
 
-                                    // Render table rows
-                                    foreach ($rows as $row) {
-                                        // Top-level row (empty but with borders across every column)
-                                        echo "<tr>";
-                                        echo "<td class='border border-gray-300 px-2 py-1 font-bold'>{$rowNum}</td>";
-                                        echo "<td class='border border-gray-300 px-2 py-1 text-left font-bold'>{$row['label']}</td>";
+                                    // Render empty bordered cells for M/F columns + subtotal/total
+                                    for ($i = 0; $i < count($barangayNames); $i++) {
+                                        echo "<td class='border border-gray-300'></td><td class='border border-gray-300'></td>";
+                                    }
+                                    echo "<td class='border border-gray-300'></td><td class='border border-gray-300'></td><td class='border border-gray-300'></td>";
+                                    echo "</tr>";
 
-                                        // Render empty bordered cells for M/F columns + subtotal/total
-                                        for ($i = 0; $i < count($barangays); $i++) {
-                                            echo "<td class='border border-gray-300'></td><td class='border border-gray-300'></td>";
-                                        }
-                                        echo "<td class='border border-gray-300'></td><td class='border border-gray-300'></td><td class='border border-gray-300'></td>";
+                                    // Render sub-rows with actual values
+                                    foreach ($row['sub'] as $subLabel => $indicatorKey) {
+                                        echo "<tr>
+                                <td></td>
+                                <td class='border border-gray-300 px-2 py-1 text-left font-bold'>$subLabel</td>";
+                                        renderRow($data[$indicatorKey], $barangayNames);
                                         echo "</tr>";
-
-                                        // Render sub-rows with actual values
-                                        foreach ($row['sub'] as $subLabel => $indicatorKey) {
-                                            echo "<tr>
-                                            <td></td>
-                                            <td class='border border-gray-300 px-2 py-1 text-left font-bold'>$subLabel</td>";
-                                            renderRow($data[$indicatorKey], $barangays);
-                                            echo "</tr>";
-                                        }
-
-                                        $rowNum++;
                                     }
 
-                                    // === GRAND TOTAL ROW ===
-                                    echo "<tr class='font-bold bg-gray-100'><td></td>
-                                        <td class='border border-gray-300 px-2 py-1 text-left font-bold'>TOTAL</td>";
-                                    $totalM = $totalF = 0;
-                                    foreach ($barangays as $b) {
-                                        $sumM = $sumF = 0;
-                                        foreach ($data as $indicator) {
-                                            $sumM += isset($indicator[$b]['M']) && is_numeric($indicator[$b]['M']) ? (int)$indicator[$b]['M'] : 0;
-                                            $sumF += isset($indicator[$b]['F']) && is_numeric($indicator[$b]['F']) ? (int)$indicator[$b]['F'] : 0;
-                                        }
-                                        $totalM += $sumM;
-                                        $totalF += $sumF;
-                                        echo "<td class='border border-gray-300 font-bold'>{$sumM}</td>";
-                                        echo "<td class='border border-gray-300 font-bold'>{$sumF}</td>";
-                                    }
-                                    $totalAll = $totalM + $totalF;
-                                    echo "<td class='border border-gray-300 font-bold'>{$totalM}</td>";
-                                    echo "<td class='border border-gray-300 font-bold'>{$totalF}</td>";
-                                    echo "<td class='border border-gray-300 font-bold'>{$totalAll}</td></tr>";
-                                    ?>
-                                </tbody>
+                                    $rowNum++;
+                                }
 
+                                // === GRAND TOTAL ROW - Use pre-calculated totals ===
+                                echo "<tr class='font-bold bg-gray-100'><td></td>
+                            <td class='border border-gray-300 px-2 py-1 text-left font-bold'>TOTAL</td>";
 
+                                $totalM = $totalF = 0;
+                                foreach ($barangayNames as $b) {
+                                    $sumM = $totalPatientsByBarangay[$b]['M'] ?? 0;
+                                    $sumF = $totalPatientsByBarangay[$b]['F'] ?? 0;
 
-                            </table>
-                        </div>
+                                    $totalM += $sumM;
+                                    $totalF += $sumF;
 
+                                    echo "<td class='border border-gray-300 font-bold'>" . ($sumM > 0 ? $sumM : '') . "</td>";
+                                    echo "<td class='border border-gray-300 font-bold'>" . ($sumF > 0 ? $sumF : '') . "</td>";
+                                }
+
+                                $totalAll = $totalM + $totalF;
+                                echo "<td class='border border-gray-300 font-bold'>{$totalM}</td>";
+                                echo "<td class='border border-gray-300 font-bold'>{$totalF}</td>";
+                                echo "<td class='border border-gray-300 font-bold'>{$totalAll}</td></tr>";
+                                ?>
+                            </tbody>
+                        </table>
                     </div>
-                </form>
+                </div>
             </section>
         </main>
     </div>
 
-    <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
     <!-- Client-side 10-minute inactivity logout -->
@@ -705,6 +686,181 @@ $conn->close();
         resetTimer();
     </script>
 
+    <script>
+        function printReport() {
+            // Store original content and body classes
+            const originalContent = document.body.innerHTML;
+            const originalBodyClasses = document.body.className;
+
+            // Get the print content
+            const printContent = document.getElementById('print-content').innerHTML;
+
+            // Create a new window for printing
+            const printWindow = window.open('', '_blank', 'width=1200,height=800');
+
+            // Write the print content to the new window
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>MHO OHP Report - <?php echo $selectedYear; ?></title>
+                    <style>
+                        @media print {
+                            @page {
+                                size: landscape;
+                                margin: 10mm;
+                            }
+                            body {
+                                font-family: Arial, sans-serif;
+                                margin: 0;
+                                padding: 10px;
+                                background: white;
+                                color: black;
+                                line-height: 1.2;
+                            }
+                            .header {
+                                text-align: center;
+                                margin-bottom: 10px;
+                            }
+                            .header p {
+                                margin: 2px 0;
+                            }
+                            .header-title {
+                                font-size: 18px;
+                                font-weight: bold;
+                                margin-bottom: 1px !important;
+                            }
+                            .header-subtitle {
+                                font-size: 16px;
+                                font-weight: 600;
+                                margin-top: 0 !important;
+                                margin-bottom: 2px !important;
+                            }
+                            .header-date {
+                                font-size: 12px;
+                                margin-top: 3px !important;
+                            }
+                            .dentist{
+                                margin-top:10px;
+                                margin-left:30px;
+                                display: flex;
+                                flex-direction: row;
+                                gap:20px;
+                            }
+                            .dentist-prep{
+                                font-size: 14px;
+                                font-weight: 600;
+                            }
+                            .dentist-name{
+                                font-size: 14px;
+                                font-weight: 600;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 10px;
+                            }
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 4px 2px;
+                                text-align: center;
+                            }
+                            th {
+                                background-color: #f0f0f0;
+                                font-weight: bold;
+                            }
+                            .text-center { text-align: center; }
+                            .text-left { text-align: left; }
+                            .font-bold { font-weight: bold; }
+                            .bg-gray-100 { background-color: #f7fafc; }
+                        }
+                        @media screen {
+                            body { 
+                                padding: 20px; 
+                                background: white; 
+                                color: black; 
+                                line-height: 1.2;
+                            }
+                            .header {
+                                text-align: center;
+                                margin-bottom: 10px;
+                            }
+                            .header p {
+                                margin: 2px 0;
+                            }
+                            .header-title {
+                                font-size: 18px;
+                                font-weight: bold;
+                                margin-bottom: 1px !important;
+                            }
+                            .header-subtitle {
+                                font-size: 16px;
+                                font-weight: 600;
+                                margin-top: 0 !important;
+                                margin-bottom: 2px !important;
+                            }
+                            .header-date {
+                                font-size: 12px;
+                                margin-top: 3px !important;
+                            }
+
+                            .dentist{
+                                margin-top:10px;
+                                margin-left:30px;
+                                display: flex;
+                                flex-direction: row;
+                                gap:5px;
+                            }
+                            .dentist-prep{
+                                font-size: 14px;
+                                font-weight: 600;
+                            }
+                            .dentist-name{
+                                font-size: 14px;
+                                font-weight: 600;
+                            }
+                            table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 10px;
+                            }
+                            th, td {
+                                border: 1px solid #000;
+                                padding: 4px 2px;
+                                text-align: center;
+                            }
+                            th {
+                                background-color: #f0f0f0;
+                                font-weight: bold;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <p class="header-title">Municipal Health Office - Mamburao</p>
+                        <p class="header-subtitle">Oral Health Program - <?php echo $selectedYear; ?> (per brgy)</p>
+                    </div>
+                    ${printContent.replace('<div class="text-center mb-2">', '<div style="display:none">').replace('</div>', '</div>')}
+                    <div class="dentist">
+                        <p class="dentist-prep">Prepared by:</p>
+                        <p class="dentist-name">BERNADETTE A. SERVANDO / Dentist I</p>
+                    </div>
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                            setTimeout(function() {
+                                window.close();
+                            }, 500);
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `);
+
+            printWindow.document.close();
+        }
+    </script>
 </body>
 
 </html>

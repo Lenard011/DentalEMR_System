@@ -2,192 +2,86 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
-// Check if we're in offline mode
-$isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
+// REQUIRE userId parameter for each page
+// Example usage: dashboard.php?uid=5
+if (!isset($_GET['uid'])) {
+    echo "<script>
+        alert('Invalid session. Please log in again.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
 
-// Enhanced session validation with offline support
-if ($isOfflineMode) {
-    // Offline mode session validation
-    $isValidSession = false;
+$userId = intval($_GET['uid']);
 
-    // Check if we have offline session data
-    if (isset($_SESSION['offline_user'])) {
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    } else {
-        // Try to create offline session from localStorage data (via JavaScript)
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const checkOfflineSession = () => {
-                    try {
-                        // Check sessionStorage first
-                        const sessionData = sessionStorage.getItem('dentalemr_current_user');
-                        if (sessionData) {
-                            const user = JSON.parse(sessionData);
-                            if (user && user.isOffline) {
-                                console.log('Valid offline session detected:', user.email);
-                                return true;
-                            }
-                        }
-                        
-                        // Fallback: check localStorage for offline users
-                        const offlineUsers = localStorage.getItem('dentalemr_local_users');
-                        if (offlineUsers) {
-                            const users = JSON.parse(offlineUsers);
-                            if (users && users.length > 0) {
-                                console.log('Offline users found in localStorage');
-                                return true;
-                            }
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error checking offline session:', error);
-                        return false;
-                    }
-                };
-                
-                if (!checkOfflineSession()) {
-                    alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
-                }
-            });
-        </script>";
+// CHECK IF THIS USER IS REALLY LOGGED IN
+if (
+    !isset($_SESSION['active_sessions']) ||
+    !isset($_SESSION['active_sessions'][$userId])
+) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
 
-        // Create offline session for this request
-        $_SESSION['offline_user'] = [
-            'id' => 'offline_user',
-            'name' => 'Offline User',
-            'email' => 'offline@dentalclinic.com',
-            'type' => 'Dentist',
-            'isOffline' => true
-        ];
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    }
-} else {
-    // Online mode - normal session validation
-    if (!isset($_GET['uid'])) {
-        echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
-            } else {
-                alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
-        </script>";
-        exit;
-    }
+// PER-USER INACTIVITY TIMEOUT
+$inactiveLimit = 600; // 10 minutes
 
-    $userId = intval($_GET['uid']);
-    $isValidSession = false;
+if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
+    $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
 
-    // CHECK IF THIS USER IS REALLY LOGGED IN
-    if (
-        isset($_SESSION['active_sessions']) &&
-        isset($_SESSION['active_sessions'][$userId])
-    ) {
-        $userSession = $_SESSION['active_sessions'][$userId];
+    if ((time() - $lastActivity) > $inactiveLimit) {
 
-        // Check basic required fields
-        if (isset($userSession['id']) && isset($userSession['type'])) {
-            $isValidSession = true;
-            // Update last activity
-            $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-            $loggedUser = $userSession;
+        // Log out ONLY this user (not everyone)
+        unset($_SESSION['active_sessions'][$userId]);
+
+        // If no one else is logged in, end session entirely
+        if (empty($_SESSION['active_sessions'])) {
+            session_unset();
+            session_destroy();
         }
-    }
 
-    if (!$isValidSession) {
         echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
-            } else {
-                alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
+            alert('You have been logged out due to inactivity.');
+            window.location.href = '/dentalemr_system/html/login/login.html';
         </script>";
         exit;
     }
 }
 
-// PER-USER INACTIVITY TIMEOUT (Online mode only)
-if (!$isOfflineMode) {
-    $inactiveLimit = 600; // 10 minutes
-
-    if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
-        $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
-
-        if ((time() - $lastActivity) > $inactiveLimit) {
-            // Log out ONLY this user (not everyone)
-            unset($_SESSION['active_sessions'][$userId]);
-
-            // If no one else is logged in, end session entirely
-            if (empty($_SESSION['active_sessions'])) {
-                session_unset();
-                session_destroy();
-            }
-
-            echo "<script>
-                alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            </script>";
-            exit;
-        }
-    }
-
-    // Update last activity timestamp
-    $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-}
+// Update last activity timestamp
+$_SESSION['active_sessions'][$userId]['last_activity'] = time();
 
 // GET USER DATA FOR PAGE USE
-if ($isOfflineMode) {
-    $loggedUser = $_SESSION['offline_user'];
-} else {
-    $loggedUser = $_SESSION['active_sessions'][$userId];
+$loggedUser = $_SESSION['active_sessions'][$userId];
+
+// Store user session info safely
+$host = "localhost";
+$dbUser = "root";
+$dbPass = "";
+$dbName = "dentalemr_system";
+
+$conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Database connection only for online mode
-$conn = null;
-if (!$isOfflineMode) {
-    $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
-
-    $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
-    if ($conn->connect_error) {
-        // If database fails but browser is online, show error
-        if (!isset($_GET['offline'])) {
-            echo "<script>
-                if (navigator.onLine) {
-                    alert('Database connection failed. Please try again.');
-                    console.error('Database error: " . addslashes($conn->connect_error) . "');
-                } else {
-                    // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
-                }
-            </script>";
-            exit;
-        }
+// Fetch dentist name if user is a dentist
+if ($loggedUser['type'] === 'Dentist') {
+    $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
+    $stmt->bind_param("i", $loggedUser['id']);
+    $stmt->execute();
+    $stmt->bind_result($dentistName);
+    if ($stmt->fetch()) {
+        $loggedUser['name'] = $dentistName;
     }
-
-    // Fetch dentist name if user is a dentist (only in online mode)
-    if ($conn && !$conn->connect_error && $loggedUser['type'] === 'Dentist') {
-        $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
-        $stmt->bind_param("i", $loggedUser['id']);
-        $stmt->execute();
-        $stmt->bind_result($dentistName);
-        if ($stmt->fetch()) {
-            $loggedUser['name'] = $dentistName;
-        }
-        $stmt->close();
-    }
+    $stmt->close();
 }
+
 ?>
+
 <!doctype html>
 <html>
 
@@ -198,36 +92,6 @@ if (!$isOfflineMode) {
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        .offline-indicator {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            animation: pulse 2s infinite;
-            font-size: 0.875rem;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.8;
-            }
-        }
-
-        .offline-card {
-            border-left: 4px solid #f59e0b;
-            background: #fffbeb;
-        }
-
         /* Popup overlay */
         #validationPopup {
             position: fixed;
@@ -311,12 +175,7 @@ if (!$isOfflineMode) {
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
                             Clinic</span>
                     </a>
-                    <?php if ($isOfflineMode): ?>
-                        <div class="offline-indicator ml-3">
-                            <i class="fas fa-wifi-slash"></i>
-                            <span>Offline Mode</span>
-                        </div>
-                    <?php endif; ?>
+
                 </div>
                 <!-- UserProfile -->
                 <div class="flex items-center lg:order-2">
@@ -417,8 +276,7 @@ if (!$isOfflineMode) {
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="index.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="index.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -443,7 +301,7 @@ if (!$isOfflineMode) {
                                     d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" />
                             </svg>
 
-                            <span class="ml-3"><?php echo $isOfflineMode ? 'Add Patient (Offline)' : 'Add patient'; ?></span>
+                            <span class="ml-3">Add Patient</span>
                         </a>
                     </li>
                     <li>
@@ -822,7 +680,7 @@ if (!$isOfflineMode) {
                                     <p class="text-sm font-semibold text-gray-900 dark:text-white">Other Patient Information (Membership)</p>
                                     <div class="space-y-3">
                                         <!-- Membership checkboxes remain the same but with responsive padding -->
-                                        <div class="flex items-center mb-1">
+                                        <div class="flex items-center p-1">
                                             <input type="checkbox" value="1" name="nhts_pr"
                                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
                                             <label for="default-checkbox"
@@ -1276,92 +1134,22 @@ if (!$isOfflineMode) {
     <script src="../js/tailwind.config.js"></script>
     <!-- Client-side 10-minute inactivity logout -->
     <script>
-        // Client-side 10-minute inactivity logout (only for online mode)
         let inactivityTime = 600000; // 10 minutes in ms
         let logoutTimer;
 
         function resetTimer() {
             clearTimeout(logoutTimer);
-
-            // Only set timer for online mode
-            if (!<?php echo $isOfflineMode ? 'true' : 'false'; ?>) {
-                logoutTimer = setTimeout(() => {
-                    alert("You've been logged out due to 10 minutes of inactivity.");
-                    window.location.href = "/dentalemr_system/php/login/logout.php";
-                }, inactivityTime);
-            }
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "/dentalemr_system/php/login/logout.php";
+            }, inactivityTime);
         }
 
         ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
             document.addEventListener(evt, resetTimer, false);
         });
 
-        // Only start timer if not in offline mode
-        if (!<?php echo $isOfflineMode ? 'true' : 'false'; ?>) {
-            resetTimer();
-        }
-
-
-        // Enhanced connection monitoring for add patient
-        function setupAddPatientConnectionMonitoring() {
-            window.addEventListener('online', handleAddPatientOnlineStatus);
-            window.addEventListener('offline', handleAddPatientOfflineStatus);
-
-            // Initial status check
-            if (navigator.onLine === false) {
-                handleAddPatientOfflineStatus();
-            } else {
-                handleAddPatientOnlineStatus();
-            }
-        }
-
-        function handleAddPatientOnlineStatus() {
-            const indicator = document.getElementById('connectionStatus');
-            if (indicator) {
-                indicator.innerHTML = `
-            <div class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                <i class="fas fa-wifi mr-2"></i>
-                <span>Back Online - Syncing data...</span>
-            </div>
-        `;
-                indicator.classList.remove('hidden');
-
-                // Sync any offline data
-                if (typeof offlineStorage !== 'undefined' && offlineStorage.syncOfflineData) {
-                    setTimeout(() => {
-                        offlineStorage.syncOfflineData();
-                    }, 1000);
-                }
-
-                setTimeout(() => {
-                    indicator.classList.add('hidden');
-                }, 3000);
-            }
-        }
-
-        function handleAddPatientOfflineStatus() {
-            const indicator = document.getElementById('connectionStatus');
-            if (indicator) {
-                indicator.innerHTML = `
-            <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                <i class="fas fa-wifi-slash mr-2"></i>
-                <span>Offline Mode - Data will be saved locally</span>
-            </div>
-        `;
-                indicator.classList.remove('hidden');
-            }
-        }
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            setupAddPatientConnectionMonitoring();
-
-            // Show appropriate connection status based on PHP offline mode
-            const isOfflineMode = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
-            if (isOfflineMode) {
-                handleAddPatientOfflineStatus();
-            }
-        });
+        resetTimer();
     </script>
     <script>
         function toggleInput(checkbox, inputId) {
@@ -1421,12 +1209,10 @@ if (!$isOfflineMode) {
     <!-- Table  -->
     <script>
         const API_PATH = "../php/register_patient/getPatients.php";
-        // Table functionality - make loadPatients globally accessible
         let currentSearch = "";
         let currentPage = 1;
         let limit = 10;
         let selectedAddresses = [];
-        let isTableLoading = false;
 
         // FIXED debounce utility
         function debounce(fn, delay = 300) {
@@ -1439,10 +1225,8 @@ if (!$isOfflineMode) {
 
         // render helper
         function showMessageInTable(html) {
-            const tbody = document.getElementById("patientsBody");
-            if (tbody) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6">${html}</td></tr>`;
-            }
+            document.getElementById("patientsBody").innerHTML =
+                `<tr><td colspan="6" class="text-center py-6">${html}</td></tr>`;
         }
 
         // escape HTML
@@ -1456,116 +1240,88 @@ if (!$isOfflineMode) {
                 .replaceAll("'", "&#039;");
         }
 
-        // load patients - MAKE THIS GLOBALLY ACCESSIBLE
-        async function loadPatients(page = 1, forceRefresh = false) {
-            if (isTableLoading) return;
-
-            isTableLoading = true;
+        // load patients
+        async function loadPatients(page = 1) {
             currentPage = page;
-
-            // Add cache busting for force refresh
-            const cacheBuster = forceRefresh ? `&_t=${Date.now()}` : '';
-            const url = `${API_PATH}?page=${page}&limit=${limit}&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}${cacheBuster}`;
+            const url = `${API_PATH}?page=${page}&limit=${limit}&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}`;
 
             try {
-                // Show loading state
-                showMessageInTable('<div class="flex justify-center items-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div><span class="ml-2">Loading patients...</span></div>');
-
                 const res = await fetch(url, {
-                    cache: "no-store",
-                    headers: {
-                        'Cache-Control': 'no-cache'
-                    }
+                    cache: "no-store"
                 });
-
                 if (!res.ok) {
                     showMessageInTable("Server error: " + res.status);
-                    isTableLoading = false;
                     return;
                 }
-
                 const data = await res.json();
-                const tbody = document.getElementById("patientsBody");
-                const paginationNav = document.getElementById("paginationNav");
-
-                if (!tbody) {
-                    isTableLoading = false;
-                    return;
-                }
-
                 if (!data.patients || data.patients.length === 0) {
                     showMessageInTable("No patients found.");
-                    if (paginationNav) paginationNav.innerHTML = "";
-                    isTableLoading = false;
+                    document.getElementById("paginationNav").innerHTML = "";
                     return;
                 }
 
+                const tbody = document.getElementById("patientsBody");
                 tbody.innerHTML = "";
                 data.patients.forEach((p, index) => {
                     const displayId = (currentPage - 1) * limit + index + 1;
                     tbody.insertAdjacentHTML("beforeend", `
-            <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700">
-                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${displayId}</td>
-                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
-                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.sex)}</td>
-                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(String(p.age))}</td>
-                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.address)}</td>
-                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                    <button onclick="window.location.href='viewrecord.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>&id=${encodeURIComponent(p.patient_id)}'"
-                        class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
-                        View
-                    </button>
-                </td>
-            </tr>
-        `);
+                <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700">
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${displayId}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.sex)}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(String(p.age))}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.address)}</td>
+                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                        <button onclick="window.location.href='viewrecord.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(p.patient_id)}'"
+                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
+                            View
+                        </button>
+                    </td>
+                </tr>
+            `);
                 });
 
                 renderPagination(data.total, data.limit, data.page);
                 renderFilterAddresses(data.addresses);
 
             } catch (err) {
-                console.error("Error loading patients:", err);
-                showMessageInTable("Error loading data. Please try again.");
-            } finally {
-                isTableLoading = false;
+                console.error(err);
+                showMessageInTable("Error loading data.");
             }
         }
 
         // pagination renderer
         function renderPagination(total, limitVal, page) {
             const paginationNav = document.getElementById("paginationNav");
-            if (!paginationNav) return;
-
             const totalPages = Math.max(1, Math.ceil(total / limitVal));
             const start = (page - 1) * limitVal + 1;
             const end = Math.min(page * limitVal, total);
 
             const showingText = `
-    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-    Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
-    of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
-    </span>
-`;
+        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+        Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
+        of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
+        </span>
+    `;
 
             let pagesHTML = "";
             if (page > 1) {
                 pagesHTML += `<li><a href="#" onclick="loadPatients(${page - 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 ml-0 text-gray-500 bg-white rounded-l-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-        </svg></a></li>`;
+            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            </svg></a></li>`;
             }
             for (let i = 1; i <= totalPages; i++) {
                 pagesHTML += (i === page) ?
                     `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>` :
                     `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 
-             text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
+                 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
             }
             if (page < totalPages) {
                 pagesHTML += `<li><a href="#" onclick="loadPatients(${page + 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 leading-tight text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"> 
-    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-    </svg></a></li>`;
+        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+        </svg></a></li>`;
             }
 
             paginationNav.innerHTML = `${showingText} <ul class="inline-flex -space-x-1px">${pagesHTML}</ul>`;
@@ -1574,20 +1330,18 @@ if (!$isOfflineMode) {
         // filter addresses dropdown
         function renderFilterAddresses(addresses) {
             const container = document.getElementById("filterAddresses");
-            if (!container) return;
-
             container.innerHTML = "";
             addresses.forEach(addr => {
                 const checked = selectedAddresses.includes(addr) ? "checked" : "";
                 container.insertAdjacentHTML("beforeend", `
-        <li>
-            <label class="flex items-center space-x-2">
-            <input type="checkbox" value="${escapeHtml(addr)}" ${checked}
-                    class="address-filter">
-            <span class="text-gray-700 dark:text-gray-200">${escapeHtml(addr)}</span>
-            </label>
-        </li>
-    `);
+            <li>
+                <label class="flex items-center space-x-2">
+                <input type="checkbox" value="${escapeHtml(addr)}" ${checked}
+                        class="address-filter">
+                <span class="text-gray-700 dark:text-gray-200">${escapeHtml(addr)}</span>
+                </label>
+            </li>
+        `);
             });
 
             document.querySelectorAll(".address-filter").forEach(cb => {
@@ -1598,132 +1352,16 @@ if (!$isOfflineMode) {
             });
         }
 
-        // Enhanced sync function that properly refreshes the table
-        function syncOfflineDataAndRefresh() {
-            if (!navigator.onLine) {
-                console.log('Still offline, cannot sync data');
-                return;
-            }
-
-            const offlinePatients = offlineStorage.getOfflinePatients();
-            const unsyncedPatients = offlinePatients.filter(patient => !patient.synced);
-
-            if (unsyncedPatients.length === 0) {
-                console.log('No unsynced patients found');
-                // Even if no unsynced patients, refresh the table to get latest data
-                loadPatients(1, true);
-                return;
-            }
-
-            console.log(`Syncing ${unsyncedPatients.length} offline patients...`);
-
-            let successCount = 0;
-            let errorCount = 0;
-
-            // Process sync sequentially to avoid race conditions
-            const syncNextPatient = async (index) => {
-                if (index >= unsyncedPatients.length) {
-                    // All patients processed
-                    if (successCount > 0) {
-                        offlineStorage.showSyncNotification(`Successfully synced ${successCount} patient(s)`);
-                        // Force refresh the table after successful sync
-                        setTimeout(() => {
-                            loadPatients(1, true);
-                        }, 500);
-                    }
-                    if (errorCount > 0) {
-                        offlineStorage.showSyncNotification(`Failed to sync ${errorCount} patient(s)`, 'error');
-                    }
-                    return;
-                }
-
-                const patient = unsyncedPatients[index];
-                try {
-                    const formData = new FormData();
-
-                    Object.entries(patient.data).forEach(([key, value]) => {
-                        if (value !== null && value !== undefined) {
-                            formData.append(key, value);
-                        }
-                    });
-
-                    formData.append("patient", "1");
-                    formData.append("offline_sync", "true");
-
-                    const response = await fetch("/dentalemr_system/php/register_patient/addpatient.php", {
-                        method: "POST",
-                        body: formData
-                    });
-
-                    const result = await response.json();
-
-                    if (result.status === "success") {
-                        patient.synced = true;
-                        offlineStorage.removePatient(patient.id);
-                        successCount++;
-                        console.log('Successfully synced patient:', patient.id);
-                    } else {
-                        console.error('Failed to sync patient:', patient.id, result);
-                        errorCount++;
-                    }
-                } catch (error) {
-                    console.error('Error syncing patient:', patient.id, error);
-                    errorCount++;
-                }
-
-                // Process next patient
-                syncNextPatient(index + 1);
-            };
-
-            // Start syncing from the first patient
-            syncNextPatient(0);
-        }
-
-        // Replace the existing syncOfflineData function in offlineStorage
-        if (typeof offlineStorage !== 'undefined') {
-            offlineStorage.syncOfflineData = syncOfflineDataAndRefresh;
-        }
-
-        // Initialize table when page loads
-        document.addEventListener("DOMContentLoaded", function() {
-            // Set up search functionality
-            const searchInput = document.getElementById("simple-search");
-            if (searchInput) {
-                searchInput.addEventListener("input", debounce(() => {
-                    currentSearch = searchInput.value.trim();
-                    loadPatients(1);
-                }, 300));
-            }
-
-            // Initial load
+        // search input listener
+        const searchInput = document.getElementById("simple-search");
+        searchInput.addEventListener("input", debounce(() => {
+            currentSearch = searchInput.value.trim();
             loadPatients(1);
+        }, 300));
 
-            // Set up periodic refresh when online (every 30 seconds)
-            setInterval(() => {
-                if (navigator.onLine && !isTableLoading) {
-                    loadPatients(currentPage, true);
-                }
-            }, 30000);
-
-            // Listen for online/offline events to refresh table
-            window.addEventListener('online', function() {
-                console.log('Online - refreshing table data');
-                // Small delay to ensure connection is stable
-                setTimeout(() => {
-                    loadPatients(currentPage, true);
-                }, 1000);
-            });
-
-            window.addEventListener('offline', function() {
-                console.log('Offline mode');
-                // You could show offline patients here if needed
-            });
-        });
-
-        // Make loadPatients available globally for other scripts
-        window.loadPatients = loadPatients;
+        // initial load
+        window.addEventListener("DOMContentLoaded", () => loadPatients(1));
     </script>
-
 
     <!-- age group  -->
     <script>
@@ -1804,7 +1442,7 @@ if (!$isOfflineMode) {
             const popupMessage = document.getElementById("popupMessage");
             const popupOkBtn = document.getElementById("popupOkBtn");
 
-            let reloadOnClose = false;
+            let reloadOnClose = false; // Track if we should reload
 
             function showPopup(title, message, color = "red", reload = false) {
                 popupTitle.style.color = color;
@@ -1812,7 +1450,7 @@ if (!$isOfflineMode) {
                 popupMessage.innerHTML = message;
                 popupOkBtn.style.background = color;
                 popupContainer.style.display = "flex";
-                reloadOnClose = reload;
+                reloadOnClose = reload; // Set flag to reload when OK clicked
             }
 
             popupOkBtn.addEventListener("click", function() {
@@ -1822,331 +1460,178 @@ if (!$isOfflineMode) {
                 }
             });
 
-            // ========== OFFLINE STORAGE IMPLEMENTATION ==========
-            const offlineStorage = {
-                async savePatient(patientData) {
-                    return new Promise((resolve, reject) => {
-                        try {
-                            const offlinePatients = JSON.parse(localStorage.getItem('dentalemr_offline_patients') || '[]');
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                let missing = [];
 
-                            const offlinePatient = {
-                                id: 'offline_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                                data: patientData,
-                                timestamp: new Date().toISOString(),
-                                synced: false,
-                                if_treatment: 0
-                            };
+                // Always required fields
+                form.querySelectorAll("[data-required]").forEach(input => {
+                    if (!input.value.trim()) {
+                        missing.push(input.getAttribute("data-label"));
+                    }
+                });
 
-                            offlinePatients.push(offlinePatient);
-                            localStorage.setItem('dentalemr_offline_patients', JSON.stringify(offlinePatients));
+                // Conditional required fields
+                const conditionalMap = {
+                    "allergies_flag": ["allergies_details", "Allergies"],
+                    "hepatitis_flag": ["hepatitis_details", "Hepatitis"],
+                    "malignancy_flag": ["malignancy_details", "Malignancy"],
+                    "prev_hospitalization_flag": ["last_admission_date", "Medical Last Admission"],
+                    "blood_transfusion_flag": ["blood_transfusion", "Blood Transfusion"],
+                    "other_conditions_flag": ["other_conditions", "Other Conditions"],
+                    "sugar_flag": ["sugar_details", "Sugar"],
+                    "alcohol_flag": ["alcohol_details", "Use of Alcohol"],
+                    "tobacco_flag": ["tobacco_details", "Use of tobacco"],
+                    "betel_nut_flag": ["betel_nut_details", "Betel Nut Chewing"],
+                    "philhealth_flag": ["philhealth_number", "Philhealth Number"],
+                    "sss_flag": ["sss_number", "SSS Number"],
+                    "gsis_flag": ["gsis_number", "GSIS Number"]
+                };
 
-                            console.log('Patient saved offline:', offlinePatient.id);
+                Object.entries(conditionalMap).forEach(([flagName, [detailsName, label]]) => {
+                    const checkbox = form.querySelector("[name='" + flagName + "']");
+                    const detailsField = form.querySelector("[name='" + detailsName + "']");
+                    if (checkbox && checkbox.checked && detailsField && !detailsField.value.trim()) {
+                        missing.push(label);
+                    }
+                });
 
-                            // Immediately refresh table to show offline patient
-                            if (typeof loadPatients === 'function') {
-                                setTimeout(() => loadPatients(1, true), 100);
-                            }
+                if (missing.length > 0) {
+                    showPopup(
+                        "⚠ Submission Error",
+                        "Please fill in the following required fields:<br><br>" + missing.join("<br>"),
+                        "red"
+                    );
+                    return;
+                }
 
-                            resolve(offlinePatient.id);
-                        } catch (error) {
-                            console.error('Error saving patient offline:', error);
-                            reject(error);
-                        }
+                let formData = new FormData(form);
+                formData.append("patient", "1"); // Ensure PHP sees it
+
+                fetch("/dentalemr_system/php/register_patient/addpatient.php", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        const color = data.status === "success" ? "blue" : "red";
+                        showPopup(
+                            data.title || "Message",
+                            data.message || "No message",
+                            color,
+                            data.status === "success" // reload only on success
+                        );
+                        if (data.status === "success") form.reset(); // optional: reset form
+                    })
+                    .catch(err => {
+                        console.error("AJAX error:", err);
+                        showPopup("Error", "Error while saving patient. Check console.", "red");
                     });
-                },
+            });
+        });
+    </script>
 
-                getOfflinePatients() {
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+
+    <script>
+        // ========== OFFLINE SUPPORT FOR ADD PATIENT - START ==========
+
+        // Enhanced connection detection for add patient
+        function setupAddPatientConnectionMonitoring() {
+            window.addEventListener('online', handleAddPatientOnlineStatus);
+            window.addEventListener('offline', handleAddPatientOfflineStatus);
+
+            // Initial status check
+            if (navigator.onLine === false) {
+                handleAddPatientOfflineStatus();
+            } else {
+                handleAddPatientOnlineStatus();
+            }
+        }
+
+        function handleAddPatientOnlineStatus() {
+            const indicator = document.getElementById('connectionStatus');
+            if (indicator) {
+                indicator.innerHTML = `
+      <div class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+        <i class="fas fa-wifi mr-2"></i>
+        <span>Back Online - Syncing data...</span>
+      </div>
+    `;
+                indicator.classList.remove('hidden');
+
+                setTimeout(() => {
+                    indicator.classList.add('hidden');
+                }, 3000);
+            }
+
+            // Sync any offline data
+            if (offlineStorage && offlineStorage.syncOfflineData) {
+                offlineStorage.syncOfflineData();
+            }
+        }
+
+        function handleAddPatientOfflineStatus() {
+            const indicator = document.getElementById('connectionStatus');
+            if (indicator) {
+                indicator.innerHTML = `
+      <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+        <i class="fas fa-wifi-slash mr-2"></i>
+        <span>Offline Mode - Data will be saved locally</span>
+      </div>
+    `;
+                indicator.classList.remove('hidden');
+            }
+        }
+
+        // Modify form submission to handle offline
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('patientForm');
+
+            // Setup connection monitoring
+            setupAddPatientConnectionMonitoring();
+
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed: ', error);
+                    });
+            }
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                if (!navigator.onLine) {
+                    // Save to offline storage
+                    const formData = new FormData(form);
+                    const patientData = Object.fromEntries(formData.entries());
+
                     try {
-                        return JSON.parse(localStorage.getItem('dentalemr_offline_patients') || '[]');
+                        await offlineStorage.savePatient(patientData);
+
+                        // Show success message
+                        showPopup(
+                            '⚠ Offline Mode',
+                            'Patient data saved locally. It will be synced when you are back online.',
+                            'blue'
+                        );
+
+                        form.reset();
                     } catch (error) {
-                        console.error('Error getting offline patients:', error);
-                        return [];
+                        console.error('Error saving offline:', error);
+                        showPopup('Error', 'Failed to save patient data offline.', 'red');
                     }
-                },
-
-                removePatient(patientId) {
-                    try {
-                        const offlinePatients = this.getOfflinePatients();
-                        const updatedPatients = offlinePatients.filter(patient => patient.id !== patientId);
-                        localStorage.setItem('dentalemr_offline_patients', JSON.stringify(updatedPatients));
-                        console.log('Patient removed from offline storage:', patientId);
-                    } catch (error) {
-                        console.error('Error removing offline patient:', error);
-                    }
-                },
-
-                async syncOfflineData() {
-                    if (!navigator.onLine) {
-                        console.log('Still offline, cannot sync data');
-                        return {
-                            success: 0,
-                            error: 0
-                        };
-                    }
-
-                    const offlinePatients = this.getOfflinePatients();
-                    const unsyncedPatients = offlinePatients.filter(patient => !patient.synced);
-
-                    if (unsyncedPatients.length === 0) {
-                        console.log('No unsynced patients found');
-                        // Force refresh table anyway to get latest data
-                        if (typeof loadPatients === 'function') {
-                            setTimeout(() => loadPatients(1, true), 500);
-                        }
-                        return {
-                            success: 0,
-                            error: 0
-                        };
-                    }
-
-                    console.log(`Syncing ${unsyncedPatients.length} offline patients...`);
-
-                    let successCount = 0;
-                    let errorCount = 0;
-
-                    for (const patient of unsyncedPatients) {
-                        try {
-                            const formData = new FormData();
-                            Object.entries(patient.data).forEach(([key, value]) => {
-                                if (value !== null && value !== undefined) {
-                                    formData.append(key, value);
-                                }
-                            });
-
-                            formData.append("patient", "1");
-                            formData.append("offline_sync", "true");
-
-                            const response = await fetch("/dentalemr_system/php/register_patient/addpatient.php", {
-                                method: "POST",
-                                body: formData
-                            });
-
-                            const result = await response.json();
-
-                            if (result.status === "success") {
-                                patient.synced = true;
-                                this.removePatient(patient.id);
-                                successCount++;
-                                console.log('Successfully synced patient:', patient.id);
-                            } else {
-                                console.error('Failed to sync patient:', patient.id, result);
-                                errorCount++;
-                            }
-                        } catch (error) {
-                            console.error('Error syncing patient:', patient.id, error);
-                            errorCount++;
-                        }
-
-                        // Small delay between syncs to avoid overwhelming the server
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
-
-                    // Refresh table after all syncs are done
-                    if (successCount > 0) {
-                        console.log(`Sync completed: ${successCount} successful, ${errorCount} failed`);
-                        this.showSyncNotification(`Successfully synced ${successCount} patient(s)`);
-
-                        // Force refresh table
-                        if (typeof loadPatients === 'function') {
-                            setTimeout(() => {
-                                loadPatients(1, true);
-                            }, 1000);
-                        }
-                    }
-
-                    if (errorCount > 0) {
-                        this.showSyncNotification(`Failed to sync ${errorCount} patient(s)`, 'error');
-                    }
-
-                    return {
-                        success: successCount,
-                        error: errorCount
-                    };
-                },
-
-                showSyncNotification(message, type = 'success') {
-                    const toast = document.getElementById('syncToast');
-                    if (toast) {
-                        const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-                        toast.innerHTML = `
-                        <div class="${bgColor} text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                            <span>${message}</span>
-                        </div>
-                    `;
-                        toast.classList.remove('hidden');
-
-                        setTimeout(() => {
-                            toast.classList.add('hidden');
-                        }, 5000);
-                    }
-                },
-
-                hasUnsyncedPatients() {
-                    const offlinePatients = this.getOfflinePatients();
-                    return offlinePatients.some(patient => !patient.synced);
-                },
-
-                getUnsyncedCount() {
-                    const offlinePatients = this.getOfflinePatients();
-                    return offlinePatients.filter(patient => !patient.synced).length;
-                },
-
-                // Enhanced: Display offline patients in the table
-                displayOfflinePatients() {
-                    const offlinePatients = this.getOfflinePatients();
-                    const unsyncedPatients = offlinePatients.filter(patient => !patient.synced);
-
-                    if (unsyncedPatients.length > 0) {
-                        console.log('Displaying offline patients:', unsyncedPatients.length);
-
-                        // You can implement a visual indicator for offline patients
-                        unsyncedPatients.forEach(patient => {
-                            console.log('Offline patient:', patient.data.surname, patient.data.firstname);
-                        });
-
-                        // Refresh table to potentially show offline indicator
-                        if (typeof loadPatients === 'function') {
-                            loadPatients(currentPage, true);
-                        }
-                    }
-                }
-            };
-
-            // ========== CONNECTION MONITORING ==========
-            function setupConnectionMonitoring() {
-                window.addEventListener('online', handleOnlineStatus);
-                window.addEventListener('offline', handleOfflineStatus);
-
-                // Initial status check
-                if (navigator.onLine === false) {
-                    handleOfflineStatus();
                 } else {
-                    handleOnlineStatus();
-                }
-            }
-
-            async function handleOnlineStatus() {
-                const indicator = document.getElementById('connectionStatus');
-                if (indicator) {
-                    indicator.innerHTML = `
-                    <div class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                        <span>Back Online - Syncing data...</span>
-                    </div>
-                `;
-                    indicator.classList.remove('hidden');
-
-                    // Wait for connection to stabilize
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-
-                    // Sync offline data and reload table
-                    try {
-                        console.log('Starting offline data sync...');
-                        await offlineStorage.syncOfflineData();
-
-                        // Force refresh table after sync
-                        if (typeof loadPatients === 'function') {
-                            console.log('Refreshing table after sync...');
-                            setTimeout(() => {
-                                loadPatients(1, true);
-                                // Hide indicator after table refresh
-                                setTimeout(() => {
-                                    indicator.classList.add('hidden');
-                                }, 2000);
-                            }, 1000);
-                        } else {
-                            console.error('loadPatients function not found');
-                            indicator.classList.add('hidden');
-                        }
-                    } catch (error) {
-                        console.error('Error during sync:', error);
-                        indicator.classList.add('hidden');
-                    }
-                }
-            }
-
-            function handleOfflineStatus() {
-                const indicator = document.getElementById('connectionStatus');
-                if (indicator) {
-                    indicator.innerHTML = `
-                    <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                        <span>Offline Mode - Data will be saved locally</span>
-                    </div>
-                `;
-                    indicator.classList.remove('hidden');
-
-                    // Show offline patients count
-                    const unsyncedCount = offlineStorage.getUnsyncedCount();
-                    if (unsyncedCount > 0) {
-                        const offlineToast = document.getElementById('syncToast');
-                        if (offlineToast) {
-                            offlineToast.innerHTML = `
-                            <div class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                                <span>${unsyncedCount} patient(s) waiting to sync</span>
-                            </div>
-                        `;
-                            offlineToast.classList.remove('hidden');
-                        }
-                    }
-
-                    // Show offline patients in the table
-                    offlineStorage.displayOfflinePatients();
-                }
-            }
-
-            // ========== CHECK FOR OFFLINE PATIENTS ON LOAD ==========
-            function checkOfflinePatientsOnLoad() {
-                const offlinePatients = offlineStorage.getOfflinePatients();
-                const unsyncedPatients = offlinePatients.filter(patient => !patient.synced);
-
-                if (unsyncedPatients.length > 0 && navigator.onLine) {
-                    console.log(`Found ${unsyncedPatients.length} unsynced offline patients, syncing...`);
-                    offlineStorage.syncOfflineData();
-                }
-            }
-
-            // ========== FORM SUBMISSION HANDLER ==========
-            function setupFormSubmission() {
-                const form = document.getElementById('patientForm');
-
-                // Remove any existing event listeners to prevent duplicates
-                const newForm = form.cloneNode(true);
-                form.parentNode.replaceChild(newForm, form);
-
-                newForm.addEventListener('submit', handleFormSubmit);
-
-                async function handleFormSubmit(e) {
-                    e.preventDefault();
-                    console.log('Form submission started...');
-
-                    // Validation code remains the same...
+                    // Online submission - your existing code
                     let missing = [];
-                    newForm.querySelectorAll("[data-required]").forEach(input => {
+                    form.querySelectorAll("[data-required]").forEach(input => {
                         if (!input.value.trim()) {
                             missing.push(input.getAttribute("data-label"));
-                        }
-                    });
-
-                    const conditionalMap = {
-                        "allergies_flag": ["allergies_details", "Allergies"],
-                        "hepatitis_flag": ["hepatitis_details", "Hepatitis"],
-                        "malignancy_flag": ["malignancy_details", "Malignancy"],
-                        "prev_hospitalization_flag": ["last_admission_date", "Medical Last Admission"],
-                        "blood_transfusion_flag": ["blood_transfusion_date", "Blood Transfusion"],
-                        "other_conditions_flag": ["other_conditions", "Other Conditions"],
-                        "sugar_flag": ["sugar_details", "Sugar"],
-                        "alcohol_flag": ["alcohol_details", "Use of Alcohol"],
-                        "tobacco_flag": ["tobacco_details", "Use of tobacco"],
-                        "betel_nut_flag": ["betel_nut_details", "Betel Nut Chewing"],
-                        "philhealth_flag": ["philhealth_number", "Philhealth Number"],
-                        "sss_flag": ["sss_number", "SSS Number"],
-                        "gsis_flag": ["gsis_number", "GSIS Number"]
-                    };
-
-                    Object.entries(conditionalMap).forEach(([flagName, [detailsName, label]]) => {
-                        const checkbox = newForm.querySelector("[name='" + flagName + "']");
-                        const detailsField = newForm.querySelector("[name='" + detailsName + "']");
-                        if (checkbox && checkbox.checked && detailsField && !detailsField.value.trim()) {
-                            missing.push(label);
                         }
                     });
 
@@ -2159,52 +1644,15 @@ if (!$isOfflineMode) {
                         return;
                     }
 
-                    // Check if offline and handle accordingly
-                    if (!navigator.onLine) {
-                        console.log('Offline mode detected, saving locally...');
-                        const formData = new FormData(newForm);
-                        const patientData = Object.fromEntries(formData.entries());
+                    let formData = new FormData(form);
+                    formData.append("patient", "1");
 
-                        try {
-                            await offlineStorage.savePatient(patientData);
-
-                            showPopup(
-                                '✅ Saved Offline',
-                                'Patient data has been saved locally. It will be automatically synced when you are back online.',
-                                'blue',
-                                true
-                            );
-
-                            newForm.reset();
-
-                            // Close all modals
-                            const modals = ['addpatientModal', 'addpatientModal2', 'addpatientModal3'];
-                            modals.forEach(modalId => {
-                                const modal = document.getElementById(modalId);
-                                if (modal) {
-                                    modal.classList.add('hidden');
-                                }
-                            });
-
-                        } catch (error) {
-                            console.error('Error saving offline:', error);
-                            showPopup('Error', 'Failed to save patient data offline.', 'red');
-                        }
-                    } else {
-                        // Online submission code remains the same...
-                        console.log('Online mode detected, submitting to server...');
-                        let formData = new FormData(newForm);
-                        formData.append("patient", "1");
-
-                        try {
-                            const response = await fetch("/dentalemr_system/php/register_patient/addpatient.php", {
-                                method: "POST",
-                                body: formData
-                            });
-
-                            const data = await response.json();
-                            console.log('Server response:', data);
-
+                    fetch("/dentalemr_system/php/register_patient/addpatient.php", {
+                            method: "POST",
+                            body: formData
+                        })
+                        .then(res => res.json())
+                        .then(data => {
                             const color = data.status === "success" ? "blue" : "red";
                             showPopup(
                                 data.title || "Message",
@@ -2212,65 +1660,17 @@ if (!$isOfflineMode) {
                                 color,
                                 data.status === "success"
                             );
-
-                            if (data.status === "success") {
-                                newForm.reset();
-
-                                // Close all modals
-                                const modals = ['addpatientModal', 'addpatientModal2', 'addpatientModal3'];
-                                modals.forEach(modalId => {
-                                    const modal = document.getElementById(modalId);
-                                    if (modal) {
-                                        modal.classList.add('hidden');
-                                    }
-                                });
-
-                                // Refresh the table data
-                                setTimeout(() => {
-                                    if (typeof loadPatients === 'function') {
-                                        loadPatients(1, true);
-                                    }
-                                }, 1000);
-                            }
-                        } catch (err) {
+                            if (data.status === "success") form.reset();
+                        })
+                        .catch(err => {
                             console.error("AJAX error:", err);
                             showPopup("Error", "Error while saving patient. Check console.", "red");
-                        }
-                    }
+                        });
                 }
-            }
-
-            // ========== INITIALIZATION ==========
-            setupConnectionMonitoring();
-            setupFormSubmission();
-
-            // Check for unsynced patients on load and reload table after sync
-            if (navigator.onLine && offlineStorage.hasUnsyncedPatients()) {
-                console.log('Found unsynced patients on page load, syncing...');
-                setTimeout(() => {
-                    offlineStorage.syncOfflineData().then(() => {
-                        // Reload table after sync completes
-                        setTimeout(() => {
-                            if (typeof loadPatients === 'function') {
-                                loadPatients(1, true);
-                            }
-                        }, 1500);
-                    });
-                }, 1000);
-            }
-
-            // Add CSS for better offline indicator styling
-            const style = document.createElement('style');
-            style.textContent = `
-            .hidden {
-                display: none !important;
-            }
-            #connectionStatus, #syncToast {
-                z-index: 9999;
-            }
-        `;
-            document.head.appendChild(style);
+            });
         });
+
+        // ========== OFFLINE SUPPORT FOR ADD PATIENT - END ==========
     </script>
 </body>
 

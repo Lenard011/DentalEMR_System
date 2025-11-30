@@ -361,14 +361,15 @@ if ($loggedUser['type'] === 'Dentist') {
             </div>
         </aside>
 
-        <header class="md:ml-64 pt-13 ">
+        <header class="md:ml-64 pt-13">
             <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full drop-shadow-sm pb-2">
-                <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
-                    <div class="flex items-center justify-between lg:order-1 w-full ">
-                        <!-- Back Btn-->
-                        <div class="relative group inline-block ">
+                <div class="flex flex-col justify-between items-center mx-auto px-2 sm:px-4">
+                    <!-- Top Section: Back Button, Title, Print Button -->
+                    <div class="flex items-center justify-between w-full py-2">
+                        <!-- Back Button -->
+                        <div class="relative group inline-block">
                             <button type="button" onclick="back()" class="cursor-pointer">
-                                <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
+                                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-800 dark:text-white" aria-hidden="true"
                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                     viewBox="0 0 24 24">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -376,60 +377,68 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </svg>
                             </button>
                             <!-- Tooltip -->
-                            <span class="absolute left-1/4 -translate-x-1/4  hidden group-hover:block 
+                            <span class="absolute left-1/4 -translate-x-1/4 hidden group-hover:block 
                              bg-gray-100/50 text-gray-900 text-sm px-2 py-1 rounded-sm shadow-sm whitespace-nowrap">
                                 Go back
                             </span>
                         </div>
-                        <p class="text-xl font-semibold px-5  text-gray-900 dark:text-white">Patient Treatment
-                            Record
+
+                        <!-- Title -->
+                        <p class="text-lg sm:text-xl font-semibold px-2 sm:px-4 text-gray-900 dark:text-white text-center flex-1">
+                            Patient Treatment Record
                         </p>
-                        <!-- Print Btn -->
+
+                        <!-- Print Button -->
                         <a href="" id="printdLink"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 mt-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            <svg class="w-5 h-4 text-primary-800 dark:text-white" aria-hidden="true"
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-2 sm:px-3 py-1.5 sm:py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 min-w-[60px]">
+                            <svg class="w-4 h-4 text-white" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                                 viewBox="0 0 24 24">
                                 <path fill-rule="evenodd"
                                     d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z"
                                     clip-rule="evenodd" />
                             </svg>
-                            Print
+                            <span class="hidden sm:inline">Print</span>
                         </a>
                     </div>
-                    <div class="flex flex-row justify-between items-center w-full lg:flex lg:flex-row lg:w-auto lg:order-1"
-                        id="mobile-menu-2">
-                        <ul class="flex flex-row font-medium lg:flex-row lg:space-x-8 lg:mt-0">
-                            <li>
+
+                    <!-- Navigation Tabs -->
+                    <div class="w-full border-t border-gray-200 dark:border-gray-700 pt-2">
+                        <ul class="flex flex-col sm:flex-row justify-center font-medium w-full sm:space-x-4 sm:space-y-0 space-y-2">
+                            <li class="w-full sm:w-auto">
                                 <a href="#"
-                                    class="block py-2 pr-4 pl-3 text-blue-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
-                                    Information</a>
+                                    class="block py-2 px-3 text-blue-800 border-b-2 font-semibold border-blue-800 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-blue-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Patient Information
+                                </a>
                             </li>
-                            <li>
+                            <li class="w-full sm:w-auto">
                                 <a href="#" id="oralHealthLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Oral
-                                    Health Condition</a>
+                                    class="block py-2 px-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Oral Health Condition
+                                </a>
                             </li>
-                            <li>
+                            <li class="w-full sm:w-auto">
                                 <a href="#" id="servicesRenderedLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Record
-                                    of Sevices Rendered</a>
+                                    class="block py-2 px-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Record of Services Rendered
+                                </a>
                             </li>
                         </ul>
                     </div>
                 </div>
             </nav>
         </header>
-        <main class="p-1.5 md:ml-64 h-auto pt-1">
-            <section class="relative bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg mb-2">
-                <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading ...</p>
+
+        <main class="p-2 md:ml-64 h-auto pt-2">
+            <section class="relative bg-white dark:bg-gray-900 p-3 sm:p-4 rounded-lg mb-4">
+                <p id="patientName" class="italic text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-3">Loading ...</p>
+
                 <!-- Patient Info -->
-                <div
-                    class="relative mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Patient Detatils</p>
+                <div class="relative mx-auto mb-5 p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                    <div class="items-center justify-between flex flex-col sm:flex-row mb-4 gap-2">
+                        <p class="text-base font-normal text-gray-950 dark:text-white">Patient Details</p>
                         <button id="editBtn" type="button"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                 class="bi bi-pencil-square" viewBox="0 0 16 16">
                                 <path
@@ -440,189 +449,165 @@ if ($loggedUser['type'] === 'Dentist') {
                             Edit
                         </button>
                     </div>
-                    <div class="relative flex flex-col justify-center items-center px-5 gap-5 mb-3">
-                        <div class="flex items-center justify-between p-2  max-w-5xl w-full">
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg class="w-6 h-6 text-blue-800 dark:text-white" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                            viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="1"
-                                                d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p id="patientName2" class="text-sm font-medium text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Loading ...</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Name</p>
-                                </div>
+
+                    <!-- Patient Details Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-4">
+                        <!-- Name -->
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="rounded-full p-2 bg-gray-100 dark:bg-blue-300 flex-shrink-0">
+                                <svg class="w-5 h-5 text-blue-800 dark:text-white" aria-hidden="true"
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                    viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                        stroke-width="1"
+                                        d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0a8.949 8.949 0 0 0 4.951-1.488A3.987 3.987 0 0 0 13 16h-2a3.987 3.987 0 0 0-3.951 3.512A8.948 8.948 0 0 0 12 21Zm3-11a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                </svg>
                             </div>
-                            <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="0 0 20 16">
-                                            <path fill-rule="evenodd"
-                                                d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1zm-.997 4.346a3 3 0 1 0-5.006 3.309 3 3 0 0 0 5.006-3.31z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p id="patientSex" class="text-sm font-medium text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Loading ...</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Gender</p>
-                                </div>
-                            </div>
-                            <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="0 0 18 15">
-                                            <path fill-rule="evenodd"
-                                                d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p id="patientAge" class="text-sm font-medium text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Loading ...</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Age</p>
-                                </div>
-                            </div>
-                            <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-1 -3 16 22">
-                                            <path
-                                                d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0" />
-                                            <path
-                                                d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p id="patientDob" class="text-sm font-medium text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Loading ...</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Date of Birth</p>
-                                </div>
-                            </div>
-                            <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-1 -3 16 22">
-                                            <path
-                                                d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
-                                            <path
-                                                d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p id="patientOccupation" class="text-sm font-medium text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Loading ...</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Occupation</p>
-                                </div>
+                            <div class="min-w-0 flex-1">
+                                <p id="patientName2" class="text-sm font-medium text-gray-950 dark:text-white truncate">
+                                    Loading ...
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Name</p>
                             </div>
                         </div>
-                        <div class="relative flex items-center justify-between  p-2   max-w-5xl w-full">
-                            <div class="grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-2 0 20 16">
-                                            <path
-                                                d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10" />
-                                            <path
-                                                d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p id="patientBirthPlace" class="text-sm font-medium text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Loading ...</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Place of Birth</p>
-                                </div>
-                            </div>
-                            <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-2 0 20 16">
 
-                                            <path fill-rule="evenodd"
-                                                d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.3 1.3 0 0 0-.37.265.3.3 0 0 0-.057.09V14l.002.008.016.033a.6.6 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.6.6 0 0 0 .146-.15l.015-.033L12 14v-.004a.3.3 0 0 0-.057-.09 1.3 1.3 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465s-2.462-.172-3.34-.465c-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p id="patientAddress" class="text-sm font-medium text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Loading ...</p>
-                                    <p class="text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Address</p>
-                                </div>
+                        <!-- Gender -->
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="rounded-full p-2 bg-gray-100 dark:bg-blue-300 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
+                                    class="w-5 h-5 text-blue-800 dark:text-white" viewBox="0 0 20 16">
+                                    <path fill-rule="evenodd"
+                                        d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1zm-.997 4.346a3 3 0 1 0-5.006 3.309 3 3 0 0 0 5.006-3.31z" />
+                                </svg>
                             </div>
-                            <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                                <div class="flex items-center w-12 ">
-                                    <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                            fill="currentColor" class="w-6 h-6 text-blue-800 dark:text-white"
-                                            viewBox="-2.5 0 20 16">
-                                            <path
-                                                d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p id="patientGuardian"
-                                        class="relative text-sm font-medium text-gray-950 dark:text-white"
-                                        style="font-size:14.6px;">
-                                        Loading ...</p>
-                                    <p class="relative text-xs font-normal text-gray-950 dark:text-white"
-                                        style="font-size:13px;">
-                                        Parent/Guardian</p>
-                                </div>
+                            <div class="min-w-0 flex-1">
+                                <p id="patientSex" class="text-sm font-medium text-gray-950 dark:text-white">
+                                    Loading ...
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Gender</p>
+                            </div>
+                        </div>
+
+                        <!-- Age -->
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="rounded-full p-2 bg-gray-100 dark:bg-blue-300 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
+                                    class="w-5 h-5 text-blue-800 dark:text-white" viewBox="0 0 18 15">
+                                    <path fill-rule="evenodd"
+                                        d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p id="patientAge" class="text-sm font-medium text-gray-950 dark:text-white">
+                                    Loading ...
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Age</p>
+                            </div>
+                        </div>
+
+                        <!-- Date of Birth -->
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="rounded-full p-2 bg-gray-100 dark:bg-blue-300 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor"
+                                    class="w-5 h-5 text-blue-800 dark:text-white" viewBox="-1 -3 16 22">
+                                    <path
+                                        d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0" />
+                                    <path
+                                        d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p id="patientDob" class="text-sm font-medium text-gray-950 dark:text-white">
+                                    Loading ...
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Date of Birth</p>
+                            </div>
+                        </div>
+
+                        <!-- Occupation -->
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="rounded-full p-2 bg-gray-100 dark:bg-blue-300 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="w-5 h-5 text-blue-800 dark:text-white" viewBox="-1 -3 16 22">
+                                    <path
+                                        d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+                                    <path
+                                        d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p id="patientOccupation" class="text-sm font-medium text-gray-950 dark:text-white">
+                                    Loading ...
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Occupation</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Row: Place of Birth, Address, Guardian -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Place of Birth -->
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="rounded-full p-2 bg-gray-100 dark:bg-blue-300 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                                    class="w-5 h-5 text-blue-800 dark:text-white" viewBox="-2 0 20 16">
+                                    <path
+                                        d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10" />
+                                    <path
+                                        d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p id="patientBirthPlace" class="text-sm font-medium text-gray-950 dark:text-white truncate">
+                                    Loading ...
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Place of Birth</p>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="rounded-full p-2 bg-gray-100 dark:bg-blue-300 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
+                                    class="w-5 h-5 text-blue-800 dark:text-white" viewBox="-2 0 20 16">
+                                    <path fill-rule="evenodd"
+                                        d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.3 1.3 0 0 0-.37.265.3.3 0 0 0-.057.09V14l.002.008.016.033a.6.6 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.6.6 0 0 0 .146-.15l.015-.033L12 14v-.004a.3.3 0 0 0-.057-.09 1.3 1.3 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465s-2.462-.172-3.34-.465c-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p id="patientAddress" class="text-sm font-medium text-gray-950 dark:text-white truncate">
+                                    Loading ...
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Address</p>
+                            </div>
+                        </div>
+
+                        <!-- Parent/Guardian -->
+                        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <div class="rounded-full p-2 bg-gray-100 dark:bg-blue-300 flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
+                                    class="w-5 h-5 text-blue-800 dark:text-white" viewBox="-2.5 0 20 16">
+                                    <path
+                                        d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1zm-7.978-1L7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002-.014.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0M6.936 9.28a6 6 0 0 0-1.23-.247A7 7 0 0 0 5 9c-4 0-5 3-5 4q0 1 1 1h4.216A2.24 2.24 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816M4.92 10A5.5 5.5 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0m3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4" />
+                                </svg>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p id="patientGuardian" class="text-sm font-medium text-gray-950 dark:text-white truncate">
+                                    Loading ...
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Parent/Guardian</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Others Info (Membersip)-->
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
+
+                <!-- Other sections (Membership, Vital Signs, Medical History, Dietary) remain with similar responsive improvements -->
+                <!-- Membership -->
+                <div class="mx-auto mb-5 p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                    <div class="items-center justify-between flex flex-col sm:flex-row mb-3 gap-2">
                         <p class="text-base font-normal text-gray-950 dark:text-white">Membership</p>
                         <button id="addBtn" type="button"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
                             <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path clip-rule="evenodd" fill-rule="evenodd"
@@ -632,17 +617,16 @@ if ($loggedUser['type'] === 'Dentist') {
                         </button>
                     </div>
                     <ul id="membershipList"
-                        class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                        style="font-size:14.6px;">
+                        class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400 text-sm">
                     </ul>
                 </div>
+
                 <!-- Vital Signs -->
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 pb-4 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Vital Signs</p>
+                <div class="mx-auto mb-5 p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                    <div class="items-center justify-between flex flex-col sm:flex-row mb-3 gap-2">
+                        <p class="text-base font-normal text-gray-950 dark:text-white">Vital Signs</p>
                         <button type="button" id="addVitalbtn"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
                             <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path clip-rule="evenodd" fill-rule="evenodd"
@@ -651,40 +635,33 @@ if ($loggedUser['type'] === 'Dentist') {
                             Add
                         </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-x-2 gap-y-4 p-1">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-1">
                         <!-- Blood Pressure -->
-                        <div
-                            class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
-                            <div class="w-full flex items-center justify-center">
-                                <div
-                                    class="flex rounded-full items-center justify-center p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
+                        <div class="flex flex-col items-center p-4 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
+                            <div class="w-full flex items-center justify-center mb-2">
+                                <div class="rounded-full flex items-center justify-center p-2 bg-gray-100 dark:bg-blue-300 w-12 h-12">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                        class="bi bi-capsule w-6 h-6 p-0.5 text-blue-800 dark:text-white"
+                                        class="bi bi-capsule w-6 h-6 text-blue-800 dark:text-white"
                                         viewBox="0 0 16 16">
                                         <path
                                             d="M1.828 8.9 8.9 1.827a4 4 0 1 1 5.657 5.657l-7.07 7.071A4 4 0 1 1 1.827 8.9Zm9.128.771 2.893-2.893a3 3 0 1 0-4.243-4.242L6.713 5.429z" />
                                     </svg>
                                 </div>
                             </div>
-                            <div class="w-full flex items-center justify-center mt-1">
-                                <p class="text-sm font-normal text-gray-950 dark:text-white">Blood Pressure</p>
-                            </div>
-                            <div class="relative overflow-x-auto mt-5">
-                                <table
-                                    class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                                    <tbody id="bpTableBody" class="block"></tbody>
+                            <p class="text-sm font-normal text-gray-950 dark:text-white mb-3">Blood Pressure</p>
+                            <div class="relative overflow-x-auto w-full">
+                                <table class="w-full text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
+                                    <tbody id="bpTableBody"></tbody>
                                 </table>
                             </div>
                         </div>
 
                         <!-- Temperature -->
-                        <div
-                            class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
-                            <div class="w-full flex items-center justify-center">
-                                <div
-                                    class="rounded-full flex items-center justify-center p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
+                        <div class="flex flex-col items-center p-4 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
+                            <div class="w-full flex items-center justify-center mb-2">
+                                <div class="rounded-full flex items-center justify-center p-2 bg-gray-100 dark:bg-blue-300 w-12 h-12">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                        class="bi bi-capsule w-6 h-6 p-0.5 text-blue-800 dark:text-white"
+                                        class="bi bi-capsule w-6 h-6 text-blue-800 dark:text-white"
                                         viewBox="0 0 16 16">
                                         <path
                                             d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415" />
@@ -693,25 +670,20 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </svg>
                                 </div>
                             </div>
-                            <div class="w-full flex items-center justify-center">
-                                <p class="text-sm font-normal text-gray-950 dark:text-white">Temperature</p>
-                            </div>
-                            <div class="relative overflow-x-auto mt-5">
-                                <table
-                                    class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                                    <tbody id="tempTableBody" class="block"></tbody>
+                            <p class="text-sm font-normal text-gray-950 dark:text-white mb-3">Temperature</p>
+                            <div class="relative overflow-x-auto w-full">
+                                <table class="w-full text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
+                                    <tbody id="tempTableBody"></tbody>
                                 </table>
                             </div>
                         </div>
 
                         <!-- Pulse Rate -->
-                        <div
-                            class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
-                            <div class="w-full flex items-center justify-center">
-                                <div
-                                    class="rounded-full flex items-center justify-center p-1.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
+                        <div class="flex flex-col items-center p-4 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
+                            <div class="w-full flex items-center justify-center mb-2">
+                                <div class="rounded-full flex items-center justify-center p-2 bg-gray-100 dark:bg-blue-300 w-12 h-12">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                        class="bi bi-capsule w-6 h-6 p-0.5 text-blue-800 dark:text-white"
+                                        class="bi bi-capsule w-6 h-6 text-blue-800 dark:text-white"
                                         viewBox="0 0 16 16">
                                         <path
                                             d="m8 2.748-.717-.737C5.6.281 2.514.878 1.4 3.053.918 3.995.78 5.323 1.508 7H.43c-2.128-5.697 4.165-8.83 7.394-5.857q.09.083.176.171a3 3 0 0 1 .176-.17c3.23-2.974 9.522.159 7.394 5.856h-1.078c.728-1.677.59-3.005.108-3.947C13.486.878 10.4.28 8.717 2.01zM2.212 10h1.315C4.593 11.183 6.05 12.458 8 13.795c1.949-1.337 3.407-2.612 4.473-3.795h1.315c-1.265 1.566-3.14 3.25-5.788 5-2.648-1.75-4.523-3.434-5.788-5" />
@@ -720,46 +692,37 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </svg>
                                 </div>
                             </div>
-                            <div class="w-full flex items-center justify-center">
-                                <p class="text-sm font-normal text-gray-950 dark:text-white">Pulse Rate</p>
-                            </div>
-                            <div class="relative overflow-x-auto mt-5">
-                                <table
-                                    class="w-full block text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
-                                    <tbody id="pulseTableBody" class="block"></tbody>
+                            <p class="text-sm font-normal text-gray-950 dark:text-white mb-3">Pulse Rate</p>
+                            <div class="relative overflow-x-auto w-full">
+                                <table class="w-full text-sm text-left rtl:text-right text-gray-900 dark:text-gray-400 border dark:bg-gray-800 dark:border-gray-700 border-gray-200 rounded-lg">
+                                    <tbody id="pulseTableBody"></tbody>
                                 </table>
                             </div>
                         </div>
 
                         <!-- Weight -->
-                        <div
-                            class="flex-row items-center justify-center p-5 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
-                            <div class="w-full flex items-center justify-center">
-                                <div
-                                    class="rounded-full flex items-center justify-center p-2.5 bg-gray-100 dark:bg-blue-300 w-10 h-10">
-                                    <img src="../../img/9767079.png" alt="">
+                        <div class="flex flex-col items-center p-4 rounded-lg shadow dar:border shadow-stone-300 dark:bg-gray-800 dark:border-gray-950">
+                            <div class="w-full flex items-center justify-center mb-2">
+                                <div class="rounded-full flex items-center justify-center p-3 bg-gray-100 dark:bg-blue-300 w-12 h-12">
+                                    <img src="../../img/9767079.png" alt="Weight icon" class="w-6 h-6">
                                 </div>
                             </div>
-                            <div class="w-full flex items-center justify-center">
-                                <p class="text-sm font-normal text-gray-950 dark:text-white">Weight</p>
-                            </div>
-                            <div class="relative overflow-x-auto mt-5">
-                                <table
-                                    class="w-full block text-sm text-left rtl:text-right text-gray-900 border border-gray-200 rounded-lg">
-                                    <tbody id="weightTableBody" class="block"></tbody>
+                            <p class="text-sm font-normal text-gray-950 dark:text-white mb-3">Weight</p>
+                            <div class="relative overflow-x-auto w-full">
+                                <table class="w-full text-sm text-left rtl:text-right text-gray-900 border border-gray-200 rounded-lg">
+                                    <tbody id="weightTableBody"></tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- medical -->
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">Medical History</p>
+                <!-- Medical History -->
+                <div class="mx-auto mb-5 p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                    <div class="items-center justify-between flex flex-col sm:flex-row mb-3 gap-2">
+                        <p class="text-base font-normal text-gray-950 dark:text-white">Medical History</p>
                         <button type="button" id="addMedicalHistoryBtn"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
                             <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path clip-rule="evenodd" fill-rule="evenodd"
@@ -769,19 +732,16 @@ if ($loggedUser['type'] === 'Dentist') {
                         </button>
                     </div>
                     <ul id="medicalHistoryList"
-                        class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                        style="font-size:14.6px;">
+                        class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400 text-sm">
                     </ul>
                 </div>
 
                 <!-- Dietary -->
-                <div
-                    class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row mb-3">
-                        <p class="text-base font-normal text-gray-950 dark:text-white">Dietary Habits / Social History
-                        </p>
+                <div class="mx-auto mb-5 p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                    <div class="items-center justify-between flex flex-col sm:flex-row mb-3 gap-2">
+                        <p class="text-base font-normal text-gray-950 dark:text-white">Dietary Habits / Social History</p>
                         <button type="button" id="addDietaryHistoryBtn"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
                             <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"
                                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path clip-rule="evenodd" fill-rule="evenodd"
@@ -791,10 +751,10 @@ if ($loggedUser['type'] === 'Dentist') {
                         </button>
                     </div>
                     <ul id="dietaryHistoryList"
-                        class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400"
-                        style="font-size:14.6px;">
+                        class="max-w-full space-y-1 text-gray-900 list-disc list-inside dark:text-gray-400 text-sm">
                     </ul>
                 </div>
+
                 <!-- Edit Patient Modal -->
                 <div id="editPatientModal" tabindex="-1" aria-hidden="true"
                     class="fixed inset-0 hidden justify-center items-center z-50 bg-gray-600/50">
@@ -987,6 +947,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         </form>
                     </div>
                 </div>
+
                 <!-- Medical History Modal -->
                 <div id="medicalModal" tabindex="-1" aria-hidden="true"
                     class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
@@ -1304,6 +1265,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 <div id="notice"
                     style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
                 </div>
+
             </section>
         </main>
     </div>
@@ -1985,7 +1947,57 @@ if ($loggedUser['type'] === 'Dentist') {
             });
         }
     </script>
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
 
+    <script>
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - START ==========
+
+        function setupTreatmentRecordsOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
+
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - Viewing cached data</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTreatmentRecordsOffline();
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for treatment records');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+        });
+
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - END ==========
+    </script>
 </body>
 
 </html>

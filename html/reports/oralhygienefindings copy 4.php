@@ -26,7 +26,7 @@ if (
 }
 
 // PER-USER INACTIVITY TIMEOUT
-$inactiveLimit = 1800; // 30 minutes
+$inactiveLimit = 600; // 10 minutes
 
 if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
     $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
@@ -723,11 +723,6 @@ function getReportValue($dataType, $category, $reportData)
         .nowrap {
             white-space: nowrap;
         }
-
-        /* Hide FHSIS section by default */
-        #fhis-section {
-            display: none;
-        }
     </style>
 </head>
 
@@ -978,19 +973,6 @@ function getReportValue($dataType, $category, $reportData)
                             Download
                         </button>
                     </div>
-                    <!-- Report Toggle Buttons -->
-                    <div class="flex justify-center">
-                        <div class="inline-flex rounded-md shadow-sm" role="group">
-                            <button type="button" id="main-report-btn" onclick="showMainReport()"
-                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-l-lg hover:bg-blue-100 cursor-pointer">
-                                Consolidated Oral Health Report
-                            </button>
-                            <button type="button" id="fhis-report-btn" onclick="showFhisReport()"
-                                class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-md hover:bg-gray-100 hover:text-blue-700 cursor-pointer">
-                                FHSIS Report
-                            </button>
-                        </div>
-                    </div>
                     <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
                         id="mobile-menu-2">
                         <ul class="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
@@ -1002,14 +984,6 @@ function getReportValue($dataType, $category, $reportData)
                                 <a href="?uid=<?php echo $userId; ?>&period=quarterly"
                                     class="block py-2 pr-4 pl-3 <?php echo (isset($_GET['period']) && $_GET['period'] == 'quarterly') ? 'text-blue-800 font-semibold' : 'text-gray-700'; ?> border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Quarterly</a>
                             </li>
-                            <li>
-                                <a href="?uid=<?php echo $userId; ?>&period=semi_annual"
-                                    class="block py-2 pr-4 pl-3 <?php echo (isset($_GET['period']) && $_GET['period'] == 'semi_annual') ? 'text-blue-800 font-semibold' : 'text-gray-700'; ?> border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Semi-Annual</a>
-                            </li>
-                            <li>
-                                <a href="?uid=<?php echo $userId; ?>&period=annual"
-                                    class="block py-2 pr-4 pl-3 <?php echo (isset($_GET['period']) && $_GET['period'] == 'annual') ? 'text-blue-800 font-semibold' : 'text-gray-700'; ?> border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Annual</a>
-                            </li>
                         </ul>
                     </div>
                 </div>
@@ -1017,8 +991,7 @@ function getReportValue($dataType, $category, $reportData)
         </header>
 
         <main class="p-3 md:ml-64 h-auto pt-0.5">
-            <!-- Main Report Section -->
-            <section id="main-report-section" class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
+            <section class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
                 <!-- Report Controls -->
                 <div class="w-full flex flex-row p-1 justify-between mb-4">
                     <div class="flex flex-row items-end space-x-4">
@@ -1032,23 +1005,6 @@ function getReportValue($dataType, $category, $reportData)
                                     <option value="3" <?php echo $selectedQuarter == 3 ? 'selected' : ''; ?>>3rd Quarter (Jul-Sep)</option>
                                     <option value="4" <?php echo $selectedQuarter == 4 ? 'selected' : ''; ?>>4th Quarter (Oct-Dec)</option>
                                 </select>
-                            </div>
-                        <?php elseif ($periodType === 'semi_annual'): ?>
-                            <!-- Semi-Annual Selection -->
-                            <div>
-                                <label for="report-semi-annual" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Semi-Annual</label>
-                                <select id="report-semi-annual" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    <option value="1" <?php echo $selectedSemiAnnual == 1 ? 'selected' : ''; ?>>Semi-Annual 1 (Jan-Jun)</option>
-                                    <option value="2" <?php echo $selectedSemiAnnual == 2 ? 'selected' : ''; ?>>Semi-Annual 2 (Jul-Dec)</option>
-                                </select>
-                            </div>
-                        <?php elseif ($periodType === 'annual'): ?>
-                            <!-- Annual Selection (No dropdown needed, just show label) -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Annual Period</label>
-                                <div class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-gray-100 rounded-md shadow-sm text-sm">
-                                    January - December
-                                </div>
                             </div>
                         <?php else: ?>
                             <!-- Monthly Selection -->
@@ -1070,13 +1026,11 @@ function getReportValue($dataType, $category, $reportData)
                                 </select>
                             </div>
                         <?php endif; ?>
-
                         <div>
                             <label for="report-year" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Year</label>
                             <input type="number" id="report-year" value="<?php echo $selectedYear; ?>"
                                 class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
-
                         <div class="flex items-end">
                             <button type="button" onclick="loadReportData()"
                                 class="px-4 py-2 cursor-pointer bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
@@ -1093,23 +1047,7 @@ function getReportValue($dataType, $category, $reportData)
                             <!-- Title -->
                             <tr>
                                 <th colspan="43" class="border border-gray-400 px-2 py-2 text-center font-bold bg-gray-100">
-                                    CONSOLIDATED ORAL HEALTH STATUS AND SERVICES
-                                    <?php
-                                    switch ($periodType) {
-                                        case 'quarterly':
-                                            echo 'QUARTERLY';
-                                            break;
-                                        case 'semi_annual':
-                                            echo 'SEMI-ANNUAL';
-                                            break;
-                                        case 'annual':
-                                            echo 'ANNUAL';
-                                            break;
-                                        default:
-                                            echo 'MONTHLY';
-                                    }
-                                    ?>
-                                    REPORT
+                                    CONSOLIDATED ORAL HEALTH STATUS AND SERVICES <?php echo $periodType === 'quarterly' ? 'QUARTERLY' : 'MONTHLY'; ?> REPORT
                                 </th>
                             </tr>
                             <!-- Month/Year -->
@@ -1564,170 +1502,6 @@ function getReportValue($dataType, $category, $reportData)
                     </table>
                 </div>
             </section>
-
-            <!-- FHSIS Report Section -->
-            <section id="fhis-section" class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">FHSIS Report - Oral Health Care and Services</h2>
-
-                <div class="table-container">
-                    <table class="fhis-table border-collapse border border-gray-400 w-full bg-white">
-                        <thead>
-                            <tr>
-                                <th colspan="9" class="border border-gray-400 px-2 py-2 text-center font-bold bg-gray-100">
-                                    FHSIS REPORT for the Quarter: 1ST QTR. YEAR: <?php echo date('Y'); ?> RHU
-                                </th>
-                            </tr>
-                            <tr>
-                                <th class="border border-gray-400 px-2 py-1 text-left font-medium">Name of Municipality/City:</th>
-                                <th colspan="8" class="border border-gray-400 px-2 py-1 text-left">MAMBURAO</th>
-                            </tr>
-                            <tr>
-                                <th class="border border-gray-400 px-2 py-1 text-left font-medium">Name of Province:</th>
-                                <th colspan="8" class="border border-gray-400 px-2 py-1 text-left">OCCIDENTAL MINDORO</th>
-                            </tr>
-                            <tr>
-                                <th class="border border-gray-400 px-2 py-1 text-left font-medium">Projected Population of the Year:</th>
-                                <th colspan="8" class="border border-gray-400 px-2 py-1 text-left">49930</th>
-                            </tr>
-                            <tr>
-                                <th colspan="9" class="border border-gray-400 px-2 py-1 text-left font-medium bg-gray-200">
-                                    Section D. Oral Health Care and Services
-                                </th>
-                            </tr>
-                            <tr class="bg-gray-200">
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">Indicators</th>
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">Eligible Population</th>
-                                <th colspan="3" class="border border-gray-400 px-2 py-2 text-center">Counts</th>
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">%<br>(Col. 5/E.Pop x 100)</th>
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">Interpretation</th>
-                                <th rowspan="2" class="border border-gray-400 px-2 py-2 text-center">Recommendation/Actions Taken</th>
-                            </tr>
-                            <tr class="bg-gray-200">
-                                <th class="border border-gray-400 px-2 py-2 text-center">Male</th>
-                                <th class="border border-gray-400 px-2 py-2 text-center">Female</th>
-                                <th class="border border-gray-400 px-2 py-2 text-center">Total</th>
-                            </tr>
-                            <tr class="bg-gray-100">
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 1)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 2)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 3)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 4)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 5)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 6)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 7)</th>
-                                <th class="border border-gray-400 px-2 py-1 text-center">(Col. 8)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            // FHSIS Indicators data - you'll need to calculate these based on your actual data
-                            $fhisIndicators = [
-                                [
-                                    'indicator' => '1. Orally fit children 12-59 months old upon oral examination plus orally fit after rehabilitation - Total',
-                                    'eligible_population' => 4194,
-                                    'male_count' => getReportValue('ofc_examination', 'under_five_total_m', $reportData) + getReportValue('ofc_rehabilitation', 'under_five_total_m', $reportData),
-                                    'female_count' => getReportValue('ofc_examination', 'under_five_total_f', $reportData) + getReportValue('ofc_rehabilitation', 'under_five_total_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '2. Clients 5 years old and above with cases of DMF - Total',
-                                    'eligible_population' => 'Actual',
-                                    'male_count' => 41, // You'll need to calculate this from your data
-                                    'female_count' => 46  // You'll need to calculate this from your data
-                                ],
-                                [
-                                    'indicator' => '3. Infants 0-11 months old who received BOHC - Total',
-                                    'eligible_population' => 1024,
-                                    'male_count' => getReportValue('person_examined', 'infant_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'infant_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '4. Children 1-4 years old who received BOHC - Total',
-                                    'eligible_population' => 4194,
-                                    'male_count' => getReportValue('person_examined', 'under_five_total_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'under_five_total_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '5. Children 5-9 years old who received BOHC - Total',
-                                    'eligible_population' => 5791,
-                                    'male_count' => getReportValue('person_examined', 'school_age_total_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'school_age_total_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '6. Adolescents 10-14 years old who received BOHC - Total',
-                                    'eligible_population' => 5489,
-                                    'male_count' => getReportValue('person_examined', 'adolescent_10_14_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'adolescent_10_14_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => 'Adolescents 15-19 years old who received BOHC - Total',
-                                    'eligible_population' => 5238,
-                                    'male_count' => getReportValue('person_examined', 'adolescent_15_19_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'adolescent_15_19_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '7. Adults 20-59 years old who received BOHC - Total',
-                                    'eligible_population' => 25181,
-                                    'male_count' => getReportValue('person_examined', 'adult_20_59_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'adult_20_59_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '8. Senior citizens 60 years old and above who received BOHC - Total',
-                                    'eligible_population' => 3744,
-                                    'male_count' => getReportValue('person_examined', 'older_60_m', $reportData),
-                                    'female_count' => getReportValue('person_examined', 'older_60_f', $reportData)
-                                ],
-                                [
-                                    'indicator' => '9a. Pregnant women(10-14) who received BOHC - Total',
-                                    'eligible_population' => 2624,
-                                    'male_count' => 0,
-                                    'female_count' => 0 // You'll need to calculate this from pregnant women data
-                                ],
-                                [
-                                    'indicator' => '9b. Pregnant women(15-19) who received BOHC - Total',
-                                    'eligible_population' => 2520,
-                                    'male_count' => 0,
-                                    'female_count' => 0 // You'll need to calculate this from pregnant women data
-                                ],
-                                [
-                                    'indicator' => '9c. Pregnant women(20-49)who received BOHC - Total',
-                                    'eligible_population' => 10259,
-                                    'male_count' => 0,
-                                    'female_count' => 11 // You'll need to calculate this from pregnant women data
-                                ]
-                            ];
-
-                            foreach ($fhisIndicators as $indicator) {
-                                $total = $indicator['male_count'] + $indicator['female_count'];
-
-                                // Calculate percentage only if eligible population is numeric
-                                if (is_numeric($indicator['eligible_population']) && $indicator['eligible_population'] > 0) {
-                                    $percentage = round(($total / $indicator['eligible_population']) * 100, 2);
-                                } else {
-                                    $percentage = '';
-                                }
-
-                                echo "<tr>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-left'>{$indicator['indicator']}</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>{$indicator['eligible_population']}</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>{$indicator['male_count']}</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>{$indicator['female_count']}</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>$total</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'>$percentage</td>";
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'></td>"; // Interpretation
-                                echo "<td class='border border-gray-400 px-2 py-1 text-center'></td>"; // Recommendation
-                                echo "</tr>";
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Additional FHSIS Notes -->
-                <div class="mt-4 text-sm text-gray-600">
-                    <p><strong>Note:</strong> BOHC = Basic Oral Health Care</p>
-                    <p><strong>Note:</strong> For submission to PHO / CHO</p>
-                </div>
-            </section>
         </main>
     </div>
 
@@ -1739,35 +1513,28 @@ function getReportValue($dataType, $category, $reportData)
             const periodType = "<?php echo $periodType; ?>";
             let urlParams = new URLSearchParams(window.location.search);
 
-            // Set common parameters
-            urlParams.set('period', periodType);
-            urlParams.set('year', document.getElementById('report-year').value);
+            if (periodType === 'quarterly') {
+                const quarterSelect = document.getElementById('report-quarter');
+                const yearInput = document.getElementById('report-year');
+                const quarter = quarterSelect.value;
+                const year = yearInput.value;
 
-            // Set period-specific parameters and remove others
-            switch (periodType) {
-                case 'quarterly':
-                    urlParams.set('quarter', document.getElementById('report-quarter').value);
-                    urlParams.delete('month');
-                    urlParams.delete('semi_annual');
-                    break;
+                urlParams.set('period', 'quarterly');
+                urlParams.set('quarter', quarter);
+                urlParams.set('year', year);
+                // Remove month parameter for quarterly reports
+                urlParams.delete('month');
+            } else {
+                const monthSelect = document.getElementById('report-month');
+                const yearInput = document.getElementById('report-year');
+                const month = monthSelect.value;
+                const year = yearInput.value;
 
-                case 'semi_annual':
-                    urlParams.set('semi_annual', document.getElementById('report-semi-annual').value);
-                    urlParams.delete('month');
-                    urlParams.delete('quarter');
-                    break;
-
-                case 'annual':
-                    urlParams.delete('month');
-                    urlParams.delete('quarter');
-                    urlParams.delete('semi_annual');
-                    break;
-
-                default: // monthly
-                    urlParams.set('month', document.getElementById('report-month').value);
-                    urlParams.delete('quarter');
-                    urlParams.delete('semi_annual');
-                    break;
+                urlParams.set('period', 'monthly');
+                urlParams.set('month', month);
+                urlParams.set('year', year);
+                // Remove quarter parameter for monthly reports
+                urlParams.delete('quarter');
             }
 
             // Redirect to the same page with new parameters
@@ -1784,58 +1551,39 @@ function getReportValue($dataType, $category, $reportData)
         function updateReportPeriod() {
             const periodType = "<?php echo $periodType; ?>";
             const periodDisplay = document.getElementById('report-period-display');
-            const year = document.getElementById('report-year').value;
 
-            switch (periodType) {
-                case 'quarterly':
-                    const quarterSelect = document.getElementById('report-quarter');
-                    const quarterNames = ['January-March', 'April-June', 'July-September', 'October-December'];
-                    const quarterYears = ['1st', '2nd', '3rd', '4th'];
-                    const quarterName = quarterNames[parseInt(quarterSelect.value) - 1];
-                    const quarterYear = quarterYears[parseInt(quarterSelect.value) - 1];
-                    periodDisplay.textContent = `${quarterName}/${quarterYear} qtr./${year}`;
-                    break;
+            if (periodType === 'quarterly') {
+                const quarterSelect = document.getElementById('report-quarter');
+                const yearInput = document.getElementById('report-year');
+                const quarterNames = [
+                    'Jan-March',
+                    'Apr-June',
+                    'July-Sept',
+                    'Oct-Dec'
+                ];
+                const quarteryears = [
+                    '1st',
+                    '2nd',
+                    '3rd',
+                    '4th'
+                ];
 
-                case 'semi_annual':
-                    const semiAnnualSelect = document.getElementById('report-semi-annual');
-                    const semiAnnualNames = ['January-June', 'July-December'];
-                    const semiAnnualName = semiAnnualNames[parseInt(semiAnnualSelect.value) - 1];
-                    periodDisplay.textContent = `${semiAnnualName}/${year}`;
-                    break;
+                const quarterName = quarterNames[parseInt(quarterSelect.value) - 1];
+                const quarteryear = quarteryears[parseInt(quarterSelect.value) - 1];
+                const year = yearInput.value;
+                periodDisplay.textContent = `${quarterName}/${quarteryear} qtr./${year}`;
+            } else {
+                const monthSelect = document.getElementById('report-month');
+                const yearInput = document.getElementById('report-year');
+                const monthNames = [
+                    'January', 'February', 'March', 'April', 'May', 'June',
+                    'July', 'August', 'September', 'October', 'November', 'December'
+                ];
 
-                case 'annual':
-                    periodDisplay.textContent = `January-December/${year}`;
-                    break;
-
-                default: // monthly
-                    const monthSelect = document.getElementById('report-month');
-                    const monthNames = [
-                        'January', 'February', 'March', 'April', 'May', 'June',
-                        'July', 'August', 'September', 'October', 'November', 'December'
-                    ];
-                    const monthName = monthNames[parseInt(monthSelect.value) - 1];
-                    periodDisplay.textContent = `${monthName}/FY${year}`;
-                    break;
+                const monthName = monthNames[parseInt(monthSelect.value) - 1];
+                const year = yearInput.value;
+                periodDisplay.textContent = `${monthName}/FY${year}`;
             }
-        }
-
-        // Toggle between main report and FHSIS report
-        function showMainReport() {
-            document.getElementById('main-report-section').style.display = 'block';
-            document.getElementById('fhis-section').style.display = 'none';
-            document.getElementById('main-report-btn').classList.remove('bg-white', 'text-gray-900', 'border-gray-200');
-            document.getElementById('main-report-btn').classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-            document.getElementById('fhis-report-btn').classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-            document.getElementById('fhis-report-btn').classList.add('bg-white', 'text-gray-900', 'border-gray-200');
-        }
-
-        function showFhisReport() {
-            document.getElementById('main-report-section').style.display = 'none';
-            document.getElementById('fhis-section').style.display = 'block';
-            document.getElementById('fhis-report-btn').classList.remove('bg-white', 'text-gray-900', 'border-gray-200');
-            document.getElementById('fhis-report-btn').classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-            document.getElementById('main-report-btn').classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-            document.getElementById('main-report-btn').classList.add('bg-white', 'text-gray-900', 'border-gray-200');
         }
 
         // Initialize
@@ -1844,22 +1592,13 @@ function getReportValue($dataType, $category, $reportData)
 
             // Add event listeners based on current period type
             const periodType = "<?php echo $periodType; ?>";
-            switch (periodType) {
-                case 'quarterly':
-                    document.getElementById('report-quarter').addEventListener('change', updateReportPeriod);
-                    break;
-                case 'semi_annual':
-                    document.getElementById('report-semi-annual').addEventListener('change', updateReportPeriod);
-                    break;
-                default: // monthly
-                    document.getElementById('report-month').addEventListener('change', updateReportPeriod);
-                    break;
+            if (periodType === 'quarterly') {
+                document.getElementById('report-quarter').addEventListener('change', updateReportPeriod);
+            } else {
+                document.getElementById('report-month').addEventListener('change', updateReportPeriod);
             }
 
             document.getElementById('report-year').addEventListener('input', updateReportPeriod);
-
-            // Show main report by default
-            showMainReport();
         });
 
         // Inactivity timer
@@ -1869,7 +1608,7 @@ function getReportValue($dataType, $category, $reportData)
         function resetTimer() {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
-                alert("You've been logged out due to 30 minutes of inactivity.");
+                alert("You've been logged out due to 10 minutes of inactivity.");
                 window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>";
             }, inactivityTime);
         }
@@ -1880,6 +1619,7 @@ function getReportValue($dataType, $category, $reportData)
 
         resetTimer();
     </script>
+
     <!-- Load offline storage -->
     <script src="/dentalemr_system/js/offline-storage.js"></script>
 

@@ -363,14 +363,15 @@ if ($loggedUser['type'] === 'Dentist') {
             </div>
         </aside>
 
-        <header class="md:ml-64 pt-13 ">
+        <header class="md:ml-64 pt-13">
             <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full drop-shadow-sm pb-2">
-                <div class="flex flex-col justify-between items-center mx-auto max-w-screen-xl">
-                    <div class="flex items-center justify-between lg:order-1 w-full ">
-                        <!-- Back Btn-->
-                        <div class="relative group inline-block ">
+                <div class="flex flex-col justify-between items-center mx-auto px-2 sm:px-4">
+                    <!-- Top Section: Back Button, Title, Print Button -->
+                    <div class="flex items-center justify-between w-full py-2">
+                        <!-- Back Button -->
+                        <div class="relative group inline-block">
                             <button type="button" onclick="backmain()" class="cursor-pointer">
-                                <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white " aria-hidden="true"
+                                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-800 dark:text-white" aria-hidden="true"
                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                     viewBox="0 0 24 24">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -378,58 +379,66 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </svg>
                             </button>
                             <!-- Tooltip -->
-                            <span class="absolute left-1/4 -translate-x-1/4  hidden group-hover:block 
+                            <span class="absolute left-1/4 -translate-x-1/4 hidden group-hover:block 
                              bg-gray-100/50 text-gray-900 text-sm px-2 py-1 rounded-sm shadow-sm whitespace-nowrap">
                                 Go back
                             </span>
                         </div>
-                        <p class="text-xl font-semibold px-5  text-gray-900 dark:text-white">Patient Treatment
-                            Record
+
+                        <!-- Title -->
+                        <p class="text-lg sm:text-xl font-semibold px-2 sm:px-4 text-gray-900 dark:text-white text-center flex-1">
+                            Patient Treatment Record
                         </p>
-                        <!-- Print Btn -->
+
+                        <!-- Print Button -->
                         <a href="" id="printdLink"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 mt-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                            <svg class="w-5 h-4 text-primary-800 dark:text-white" aria-hidden="true"
+                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-2 sm:px-3 py-1.5 sm:py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 min-w-[60px]">
+                            <svg class="w-4 h-4 text-white" aria-hidden="true"
                                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                                 viewBox="0 0 24 24">
                                 <path fill-rule="evenodd"
                                     d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z"
                                     clip-rule="evenodd" />
                             </svg>
-                            Print
+                            <span class="hidden sm:inline">Print</span>
                         </a>
                     </div>
-                    <div class=" justify-between items-center w-full lg:flex lg:w-auto lg:order-1"
-                        id="mobile-menu-2">
-                        <ul class="flex flex-row font-medium lg:flex-row lg:space-x-8 lg:mt-0">
-                            <li>
-                                <a href="view_info.php" id="patientInfoLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Patient
-                                    Information</a>
+
+                    <!-- Navigation Tabs -->
+                    <div class="w-full border-t border-gray-200 dark:border-gray-700 pt-2">
+                        <ul class="flex flex-col sm:flex-row justify-center font-medium w-full sm:space-x-4 sm:space-y-0 space-y-2">
+                            <li class="w-full sm:w-auto">
+                                <a href="#" id="patientInfoLink"
+                                    class="block py-2 px-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Patient Information
+                                </a>
                             </li>
-                            <li>
+                            <li class="w-full sm:w-auto">
                                 <a href="#"
-                                    class="block py-2 pr-4 pl-3 text-blue-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Oral
-                                    Health Condition</a>
+                                    class="block py-2 px-3 text-blue-800 border-b-2 font-semibold border-blue-800 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-blue-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Oral Health Condition
+                                </a>
                             </li>
-                            <li>
+                            <li class="w-full sm:w-auto">
                                 <a href="#" id="servicesRenderedLink"
-                                    class="block py-2 pr-4 pl-3 text-gray-800 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700">Record
-                                    of Sevices Rendered</a>
+                                    class="block py-2 px-3 text-gray-700 border-b font-semibold border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700 text-center sm:text-left">
+                                    Record of Services Rendered
+                                </a>
                             </li>
                         </ul>
                     </div>
                 </div>
             </nav>
         </header>
-        <main class="p-1.5 md:ml-64 h-auto pt-1">
-            <section class="bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg">
-                <div class="items-center justify-between flex flex-row mb-3">
-                    <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading
-                        ...
+        <main class="p-2 md:ml-64 h-auto pt-2">
+            <section class="bg-white dark:bg-gray-900 p-3 sm:p-4 rounded-lg">
+                <!-- Patient Name and Add Button -->
+                <div class="items-center justify-between flex flex-col sm:flex-row mb-4 gap-2">
+                    <p id="patientName" class="italic text-base sm:text-lg font-medium text-gray-900 dark:text-white">
+                        Loading ...
                     </p>
                     <button type="button" id="addSMC"
-                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
                         <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path clip-rule="evenodd" fill-rule="evenodd"
@@ -438,368 +447,330 @@ if ($loggedUser['type'] === 'Dentist') {
                         Add
                     </button>
                 </div>
+
+                <!-- Services Monitoring Chart Container -->
                 <div id="tables-container"
-                    class="mx-auto flex flex-col justify-center items-center max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
-                    <div class="items-center justify-between flex flex-row w-full">
-                        <p class="text-base font-normal text-gray-950 dark:text-white ">B. Services Monitoring Chart</p>
+                    class="mx-auto flex flex-col justify-center items-center p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                    <div class="items-center justify-between flex flex-row w-full mb-4">
+                        <p class="text-base font-normal text-gray-950 dark:text-white">B. Services Monitoring Chart</p>
                     </div>
-                    <!-- First table -->
-                    <div class=" w-full  px-4 lg:px-12 mt-10">
-                        <!-- Start coding here -->
-                        <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
-                            <!-- Table -->
-                            <div class="overflow-x-auto">
-                                <table id="table-first"
-                                    class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                    <thead
-                                        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                        <tr class="">
-                                            <th scope="col" class="px-4 py-3 text-center">Date</th>
-                                            <th scope="col" class="px-4 py-3 text-center">55</th>
-                                            <th scope="col" class="px-4 py-3 text-center">54</th>
-                                            <th scope="col" class="px-4 py-3 text-center">53</th>
-                                            <th scope="col" class="px-4 py-3 text-center">52</th>
-                                            <th scope="col" class="px-4 py-3 text-center">51</th>
-                                            <th scope="col" class="px-4 py-3 text-center">61</th>
-                                            <th scope="col" class="px-4 py-3 text-center">62</th>
-                                            <th scope="col" class="px-4 py-3 text-center">63</th>
-                                            <th scope="col" class="px-4 py-3 text-center">64</th>
-                                            <th scope="col" class="px-4 py-3 text-center">65</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
+                    <!-- Tables Section -->
+                    <div class="w-full space-y-6">
+                        <!-- First table -->
+                        <div class="w-full">
+                            <div class="bg-white dark:bg-gray-800 relative shadow-md rounded-lg overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table id="table-first"
+                                        class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400 min-w-[800px]">
+                                        <thead
+                                            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                            <tr>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">55</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">54</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">53</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">52</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">51</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">61</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">62</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">63</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">64</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">65</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Table rows will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Second table -->
-                    <div class=" w-full px-4 lg:px-12 mt-10">
-                        <!-- Start coding here -->
-                        <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
-                            <!-- Table -->
-                            <div class="overflow-x-auto">
-                                <table id="table-second"
-                                    class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                    <thead
-                                        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                        <tr class="">
-                                            <th scope="col" class="px-4 py-3 text-center">Date</th>
-                                            <th scope="col" class="px-4 py-3 text-center">85</th>
-                                            <th scope="col" class="px-4 py-3 text-center">84</th>
-                                            <th scope="col" class="px-4 py-3 text-center">83</th>
-                                            <th scope="col" class="px-4 py-3 text-center">82</th>
-                                            <th scope="col" class="px-4 py-3 text-center">81</th>
-                                            <th scope="col" class="px-4 py-3 text-center">71</th>
-                                            <th scope="col" class="px-4 py-3 text-center">72</th>
-                                            <th scope="col" class="px-4 py-3 text-center">73</th>
-                                            <th scope="col" class="px-4 py-3 text-center">74</th>
-                                            <th scope="col" class="px-4 py-3 text-center">75</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
+                        <!-- Second table -->
+                        <div class="w-full">
+                            <div class="bg-white dark:bg-gray-800 relative shadow-md rounded-lg overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table id="table-second"
+                                        class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400 min-w-[800px]">
+                                        <thead
+                                            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                            <tr>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">85</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">84</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">83</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">82</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">81</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">71</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">72</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">73</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">74</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">75</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Table rows will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Third table -->
-                    <div class=" w-full  px-4  mt-10">
-                        <!-- Start coding here -->
-                        <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
-                            <!-- Table -->
-                            <div class="overflow-x-auto">
-                                <table id="table-third"
-                                    class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                    <thead
-                                        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                        <tr class="">
-                                            <th scope="col" class="px-4 py-3 text-center">Date</th>
-                                            <th scope="col" class="px-4 py-3 text-center">18</th>
-                                            <th scope="col" class="px-4 py-3 text-center">17</th>
-                                            <th scope="col" class="px-4 py-3 text-center">16</th>
-                                            <th scope="col" class="px-4 py-3 text-center">15</th>
-                                            <th scope="col" class="px-4 py-3 text-center">14</th>
-                                            <th scope="col" class="px-4 py-3 text-center">13</th>
-                                            <th scope="col" class="px-4 py-3 text-center">12</th>
-                                            <th scope="col" class="px-4 py-3 text-center">11</th>
-                                            <th scope="col" class="px-4 py-3 text-center">21</th>
-                                            <th scope="col" class="px-4 py-3 text-center">22</th>
-                                            <th scope="col" class="px-4 py-3 text-center">23</th>
-                                            <th scope="col" class="px-4 py-3 text-center">24</th>
-                                            <th scope="col" class="px-4 py-3 text-center">25</th>
-                                            <th scope="col" class="px-4 py-3 text-center">26</th>
-                                            <th scope="col" class="px-4 py-3 text-center">27</th>
-                                            <th scope="col" class="px-4 py-3 text-center">28</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
+                        <!-- Third table -->
+                        <div class="w-full">
+                            <div class="bg-white dark:bg-gray-800 relative shadow-md rounded-lg overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table id="table-third"
+                                        class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400 min-w-[1200px]">
+                                        <thead
+                                            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                            <tr>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">18</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">17</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">16</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">15</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">14</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">13</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">12</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">11</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">21</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">22</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">23</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">24</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">25</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">26</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">27</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">28</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Table rows will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Fourth table -->
-                    <div class="w-full px-4 mt-10 mb-10">
-                        <!-- Start coding here -->
-                        <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 
-                            <!-- Table -->
-                            <div class="overflow-x-auto">
-                                <table id="table-fourth"
-                                    class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                                    <thead
-                                        class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                        <tr class="">
-                                            <th scope="col" class="px-4 py-3 text-center">Date</th>
-                                            <th scope="col" class="px-4 py-3 text-center">48</th>
-                                            <th scope="col" class="px-4 py-3 text-center">47</th>
-                                            <th scope="col" class="px-4 py-3 text-center">46</th>
-                                            <th scope="col" class="px-4 py-3 text-center">45</th>
-                                            <th scope="col" class="px-4 py-3 text-center">44</th>
-                                            <th scope="col" class="px-4 py-3 text-center">43</th>
-                                            <th scope="col" class="px-4 py-3 text-center">42</th>
-                                            <th scope="col" class="px-4 py-3 text-center">41</th>
-                                            <th scope="col" class="px-4 py-3 text-center">31</th>
-                                            <th scope="col" class="px-4 py-3 text-center">32</th>
-                                            <th scope="col" class="px-4 py-3 text-center">33</th>
-                                            <th scope="col" class="px-4 py-3 text-center">34</th>
-                                            <th scope="col" class="px-4 py-3 text-center">35</th>
-                                            <th scope="col" class="px-4 py-3 text-center">36</th>
-                                            <th scope="col" class="px-4 py-3 text-center">37</th>
-                                            <th scope="col" class="px-4 py-3 text-center">38</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                    </tbody>
-                                </table>
+                        <!-- Fourth table -->
+                        <div class="w-full">
+                            <div class="bg-white dark:bg-gray-800 relative shadow-md rounded-lg overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table id="table-fourth"
+                                        class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400 min-w-[1200px]">
+                                        <thead
+                                            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                            <tr>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">48</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">47</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">46</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">45</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">44</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">43</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">42</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">41</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">31</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">32</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">33</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">34</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">35</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">36</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">37</th>
+                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">38</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Table rows will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="w-full">
-                    <div class="flex justify-between mt-5">
+                <!-- Navigation Button -->
+                <div class="w-full mt-6">
+                    <div class="flex justify-between">
                         <button type="button" onclick="back()"
-                            class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-15 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            class="text-white cursor-pointer inline-flex items-center justify-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 w-full sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                             Back
                         </button>
                     </div>
                 </div>
             </section>
-            <!-- modal  -->
-            <div id="SMCModal" tabindex="-1" aria-hidden="true"
-                class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl p-6">
+        </main>
+
+        <!-- Modal -->
+        <div id="SMCModal" tabindex="-1" aria-hidden="true"
+            class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-7xl mx-4 max-h-[90vh] overflow-y-auto">
+                <div class="p-4 sm:p-6">
                     <div class="flex flex-row justify-between items-center mb-4">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Oral Health Condition</h2>
                         <button type="button" id="cancelMedicalBtn"
-                            class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white"
+                            class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white text-xl"
                             onclick="closeSMC()">
                             ✕
                         </button>
                     </div>
+
                     <form id="ohcForm" class="space-y-4">
                         <input type="hidden" name="patient_id" id="patient_id" value="">
+
                         <div>
-                            <div class="mb-3">
-                                <p class="text-14 font-semibold  text-gray-900 dark:text-white">B. Services Monitoring
-                                    Chart
+                            <div class="mb-4">
+                                <p class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">
+                                    B. Services Monitoring Chart
                                 </p>
                             </div>
-                            <div class="flex flex-col w-full justify-between items-center">
-                                <!-- top -->
-                                <div class="w-full flex flex-row  gap-10">
-                                    <div class="w-160 flex flex-col">
-                                        <p style="font-size: 14.2px;"
-                                            class=" font-normal text-gray-900 dark:text-white p-1 mb-2"> Fluoride
-                                            Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling, temporary
-                                            Filling, Extraction
-                                        </p>
-                                        <div class="flex flex-row justify-between items-center w-full px-1 mb-5">
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" data-tooth-id="55" readonly
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">55</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="54"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">54</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="53"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">53</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="52"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">52</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="51"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">51</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="61"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">61</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="62"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">62</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="63"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">63</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="64"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">64</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="65"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">65</label>
-                                            </div>
-                                        </div>
-                                        <div class="flex flex-row justify-between items-center w-full px-1">
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="85"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"><label
-                                                    for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">85</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="84"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">84</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="83"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">83</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="82"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">82</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="81"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">81</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="71"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">71</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="72"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">72</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="73"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">73</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="74"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">74</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="75"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">75</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="controls  flex rounded-sm flex-col ">
-                                        <div class="w-full flex flex-col justify-center items-center ">
-                                            <div class="flex flex-col gap-0.5">
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-medium  text-gray-900 dark:text-white">Legend:
-                                                    <span class="font-normal">Treament</span>
-                                                </p>
-                                                <div class="flex flex-col gap-0.5">
-                                                    <p style="font-size: 14.2px;"
-                                                        class="text-sm font-normal  text-gray-900 dark:text-white">
-                                                        Topical
-                                                        Fluoride
-                                                        Application:
-                                                    </p>
-                                                    <p style="font-size: 14.2px;"
-                                                        class="text-sm font-normal ml-5 text-gray-900 dark:text-white">
-                                                        FV -
-                                                        Fluoride
-                                                        Varnish
-                                                    <p style="font-size: 14.2px;"
-                                                        class="text-sm font-normal ml-5 text-gray-900 dark:text-white">
-                                                        FG -
-                                                        Fluoride
-                                                        Gel
-                                                    </p>
-                                                </div>
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-normal  text-gray-900 dark:text-white">PFS - Pit
-                                                    and
-                                                    Fissure Sealant
-                                                </p>
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-normal  text-gray-900 dark:text-white">PF -
-                                                    Permanent
-                                                    Filling (Composite, Am, ART)
-                                                </p>
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-normal  text-gray-900 dark:text-white">TF -
-                                                    Temporary
-                                                    Filling
-                                                </p>
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-normal  text-gray-900 dark:text-white">X -
-                                                    Extraction
-                                                </p>
-                                                <p style="font-size: 14.2px;"
-                                                    class="text-sm font-normal  text-gray-900 dark:text-white">O -
-                                                    Others
-                                                </p>
-                                            </div>
 
+                            <!-- Top Section - Responsive Layout -->
+                            <div class="flex flex-col lg:flex-row gap-4 mb-6">
+                                <!-- Teeth Inputs -->
+                                <div class="flex-1">
+                                    <p class="text-xs sm:text-sm font-normal text-gray-900 dark:text-white p-1 mb-3">
+                                        Fluoride Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling, temporary Filling, Extraction
+                                    </p>
+
+                                    <!-- Top Teeth Row 1 -->
+                                    <div class="grid grid-cols-5 sm:grid-cols-10 gap-2 mb-4">
+                                        <!-- Teeth 55-65 -->
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" data-tooth-id="55" readonly
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">55</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="54"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">54</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="53"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">53</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="52"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">52</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="51"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">51</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="61"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">61</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="62"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">62</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="63"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">63</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="64"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">64</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="65"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">65</label>
                                         </div>
                                     </div>
-                                    <div class="w-48 flex flex-col p-2">
+                                    <!-- Top Teeth Row 2 -->
+                                    <div class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                                        <!-- Teeth 85-75 -->
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="85"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"><label
+                                                for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">85</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="84"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">84</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="83"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">83</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="82"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">82</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="81"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">81</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="71"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">71</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="72"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">72</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="73"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">73</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="74"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">74</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="75"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">75</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Legend and Controls -->
+                                <div class="lg:w-64 space-y-4">
+                                    <!-- Treatment Selector -->
+                                    <div>
                                         <select id="selcttreatment"
-                                            class="bg-gray-50 border border-gray-300 w-full text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            class="bg-gray-50 border border-gray-300 w-full text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                             <option value="">-- Select Treatment --</option>
                                             <option value="FV">FV - Fluoride Varnish</option>
                                             <option value="FG">FG - Fluoride Gel</option>
@@ -810,228 +781,250 @@ if ($loggedUser['type'] === 'Dentist') {
                                             <option value="O">O - Others</option>
                                         </select>
                                     </div>
-                                </div>
-                                <!-- Bot -->
-                                <div style="margin-top: -25px;" class="w-full flex flex-row gap-5">
-                                    <div class="w-full flex flex-col">
-                                        <p style="font-size: 14.2px;"
-                                            class=" font-normal text-gray-900 dark:text-white p-1 mb-2"> Fluoride
-                                            Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling, temporary
-                                            Filling, Extraction
-                                        </p>
-                                        <div class="flex flex-row justify-between items-center w-full px-1 mb-5">
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="18"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">18</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="17"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">17</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="16"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">16</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="15"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">15</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="14"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">14</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="13"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">13</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="12"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">12</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="11"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">11</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="21"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">21</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="22"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">22</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="23"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">23</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="24"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">24</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="25"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">25</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="26"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">26</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="27"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">27</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="28"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">28</label>
-                                            </div>
-                                        </div>
-                                        <div class="flex flex-row justify-between items-center w-full px-1 mb-3">
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="48"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">48</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="47"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">47</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="46"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">46</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="45"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">45</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="44"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">44</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="43"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">43</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="42"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">42</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="41"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">41</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="31"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">31</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="32"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">32</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="33"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">33</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="34"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">34</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="35"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">35</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="36"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">36</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="37"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">37</label>
-                                            </div>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" readonly data-tooth-id="38"
-                                                    class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                                <label for="name"
-                                                    class="flex text-sm font-medium text-gray-900 dark:text-white">38</label>
-                                            </div>
+
+                                    <!-- Legend -->
+                                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-sm">
+                                        <p class="text-xs font-medium text-gray-900 dark:text-white mb-2">Legend: <span class="font-normal">Treatment</span></p>
+                                        <div class="space-y-1 text-xs">
+                                            <p class="font-medium text-gray-900 dark:text-white">Topical Fluoride Application:</p>
+                                            <p class="ml-3 text-gray-900 dark:text-white">FV - Fluoride Varnish</p>
+                                            <p class="ml-3 text-gray-900 dark:text-white">FG - Fluoride Gel</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">PFS - Pit and Fissure Sealant</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">PF - Permanent Filling (Composite, Am, ART)</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">TF - Temporary Filling</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">X - Extraction</p>
+                                            <p class="font-medium text-gray-900 dark:text-white">O - Others</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Bottom Teeth Section -->
+                            <div class="border-t pt-4">
+                                <p class="text-xs sm:text-sm font-normal text-gray-900 dark:text-white p-1 mb-3">
+                                    Fluoride Varnish/Fluoride Gel, Pit and fissure Sealant, Permanent Filling, temporary Filling, Extraction
+                                </p>
+
+                                <!-- Bottom Teeth Row 1 -->
+                                <div class="grid grid-cols-8 sm:grid-cols-16 gap-2 mb-4">
+                                    <!-- Teeth 18-28 -->
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="18"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">18</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="17"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">17</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="16"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">16</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="15"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">15</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="14"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">14</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="13"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">13</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="12"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">12</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="11"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">11</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="21"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">21</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="22"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">22</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="23"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">23</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="24"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">24</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="25"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">25</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="26"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">26</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="27"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">27</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="28"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">28</label>
+                                    </div>
+                                </div>
+
+                                <!-- Bottom Teeth Row 2 -->
+                                <div class="grid grid-cols-8 sm:grid-cols-16 gap-2">
+                                    <!-- Teeth 48-38 -->
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="48"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">48</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="47"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">47</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="46"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">46</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="45"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">45</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="44"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">44</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="43"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">43</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="42"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">42</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="41"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">41</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="31"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">31</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="32"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">32</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="33"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">33</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="34"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">34</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="35"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">35</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="36"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">36</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="37"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">37</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="38"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">38</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex justify-end gap-2">
+
+                        <!-- Save Button -->
+                        <div class="flex justify-end gap-2 pt-4">
                             <button type="button" onclick="saveSMC()"
-                                class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-18 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                class="text-white cursor-pointer inline-flex items-center justify-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 w-full sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                 Save
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
-            <div id="notice"
-                style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
-            </div>
-        </main>
+        </div>
+
+        <!-- Notification -->
+        <div id="notice"
+            style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
+        </div>
     </div>
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
@@ -1363,7 +1356,57 @@ if ($loggedUser['type'] === 'Dentist') {
         }
     </script>
 
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
 
+    <script>
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - START ==========
+
+        function setupTreatmentRecordsOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
+
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - Viewing cached data</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTreatmentRecordsOffline();
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for treatment records');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+        });
+
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - END ==========
+    </script>
 </body>
 
 </html>

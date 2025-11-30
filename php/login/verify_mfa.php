@@ -102,33 +102,70 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
                     'vdate' => $verificationDate
                 ]);
 
+                // After successful MFA code verification, replace the entire redirect section with:
+
                 // NEW MULTI-SESSION SYSTEM
                 if (!isset($_SESSION['active_sessions'])) {
                     $_SESSION['active_sessions'] = [];
                 }
 
+                // Get user name from database
+                $stmt = $pdo->prepare("SELECT name FROM {$userType} WHERE id = :id");
+                $stmt->execute(['id' => $userId]);
+                $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+                $userName = $userData['name'] ?? $userEmail;
+
                 // Store login session per user ID
                 $_SESSION['active_sessions'][$userId] = [
                     'id'    => $userId,
                     'email' => $userEmail,
+                    'name'  => $userName,
                     'type'  => $userType,
-                    'login_time' => time()
+                    'login_time' => time(),
+                    'last_activity' => time()
                 ];
 
-                // Clean up
-                unset($_SESSION['pending_user']);
-                unset($_SESSION['pending_users']);
+                // ========== OFFLINE ACCESS REGISTRATION - START ==========
+                // Check if we have pending offline user data from login.php
+                if (isset($_SESSION['pending_offline_user'])) {
+                    // Add user data for offline access session
+                    $_SESSION['user_data'] = $_SESSION['pending_offline_user'];
 
-                // Redirect based on user role
-                $redirect = $userType === 'Dentist'
-                    ? "/dentalemr_system/html/index.php?uid={$userId}"
-                    : "/dentalemr_system/html/a_staff/addpatient.php?uid={$userId}";
+                    // Return user data for JavaScript to capture
+                    $userData = $_SESSION['pending_offline_user'];
+                    $redirect = $userType === 'Dentist'
+                        ? "/dentalemr_system/html/index.php?uid={$userId}"
+                        : "/dentalemr_system/html/a_staff/addpatient.php?uid={$userId}";
 
-                echo "<script>
-                    alert('Verified successfully!');
-                    window.location.href='{$redirect}';
-                </script>";
-                exit;
+                    // echo "Login successful&user_id=" . $userData['id'] . "&user_name=" . urlencode($userData['name']) . "&redirect=" . urlencode($redirect);
+                    echo "<script> alert('Verified successfully!'); window.location.href='{$redirect}'; </script>";
+                    // Clean up
+                    unset($_SESSION['pending_offline_user']);
+                    unset($_SESSION['pending_user']);
+                    unset($_SESSION['pending_users']);
+                    exit;
+                } else {
+                    // Fallback: Create offline user data from current session
+                    $_SESSION['user_data'] = [
+                        'id' => $userId,
+                        'email' => $userEmail,
+                        'name' => $userName,
+                        'type' => $userType
+                    ];
+
+                    $redirect = $userType === 'Dentist'
+                        ? "/dentalemr_system/html/index.php?uid={$userId}"
+                        : "/dentalemr_system/html/a_staff/addpatient.php?uid={$userId}";
+
+                        // echo "Login successful&user_id=" . $userId . "&user_name=" . urlencode($userName) . "&redirect=" . urlencode($redirect);
+                        echo "<script> alert('Verified successfully!'); window.location.href='{$redirect}'; </script>";
+
+                    // Clean up
+                    unset($_SESSION['pending_user']);
+                    unset($_SESSION['pending_users']);
+                    exit;
+                }
+                // ========== OFFLINE ACCESS REGISTRATION - END ==========
             }
         }
 

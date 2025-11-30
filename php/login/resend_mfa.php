@@ -1,5 +1,18 @@
 <?php
 session_start();
+
+// In resend_mfa.php, after session_start()
+// Preserve pending_offline_user if it exists
+if (isset($_SESSION['pending_offline_user'])) {
+    $preserved_offline_user = $_SESSION['pending_offline_user'];
+}
+
+// After successful resend, restore it
+if (isset($preserved_offline_user)) {
+    $_SESSION['pending_offline_user'] = $preserved_offline_user;
+}
+
+
 require_once 'db_connect.php';
 require_once '../../vendor/autoload.php';
 date_default_timezone_set('Asia/Manila');

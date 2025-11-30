@@ -3006,7 +3006,92 @@ if ($loggedUser['type'] === 'Dentist') {
             }
         }
     </script>
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
 
+    <script>
+        // ========== OFFLINE SUPPORT FOR PATIENT TREATMENT - START ==========
+
+        function setupPatientTreatmentOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
+
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - Data will be saved locally</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            window.addEventListener('online', function() {
+                updateStatus();
+                if (offlineStorage && offlineStorage.syncOfflineData) {
+                    offlineStorage.syncOfflineData();
+                }
+            });
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        // Modify form submission for offline support
+        document.addEventListener('DOMContentLoaded', function() {
+            setupPatientTreatmentOffline();
+
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for patient treatment');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+
+            // Find the main form and add offline support
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    if (!navigator.onLine) {
+                        e.preventDefault();
+
+                        const formData = new FormData(form);
+                        const treatmentData = Object.fromEntries(formData.entries());
+
+                        try {
+                            // Save treatment data offline
+                            if (offlineStorage && offlineStorage.saveTreatment) {
+                                await offlineStorage.saveTreatment(treatmentData);
+                                alert('Treatment data saved locally. It will sync when online.');
+                                form.reset();
+                            } else {
+                                alert('Offline storage not available. Please try again when online.');
+                            }
+                        } catch (error) {
+                            console.error('Error saving treatment offline:', error);
+                            alert('Failed to save treatment data offline.');
+                        }
+                    }
+                    // If online, form submits normally
+                });
+            });
+        });
+
+        // ========== OFFLINE SUPPORT FOR PATIENT TREATMENT - END ==========
+    </script>
 </body>
 
 </html>
