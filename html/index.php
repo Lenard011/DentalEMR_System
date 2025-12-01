@@ -1598,13 +1598,13 @@ if (!$isOfflineMode && $conn && !$dbError) {
         }
 
         // Client-side 10-minute inactivity logout
-        let inactivityTime = 600000;
+        let inactivityTime = 1800000;
         let logoutTimer;
 
         function resetTimer() {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
-                alert("You've been logged out due to 10 minutes of inactivity.");
+                alert("You've been logged out due to 30 minutes of inactivity.");
                 window.location.href = "/dentalemr_system/php/login/logout.php";
             }, inactivityTime);
         }

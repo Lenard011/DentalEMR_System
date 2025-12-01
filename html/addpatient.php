@@ -116,7 +116,7 @@ if ($isOfflineMode) {
 
 // PER-USER INACTIVITY TIMEOUT (Online mode only)
 if (!$isOfflineMode) {
-    $inactiveLimit = 600; // 10 minutes
+    $inactiveLimit = 1800; // 10 minutes
 
     if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
         $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
@@ -1277,7 +1277,7 @@ if (!$isOfflineMode) {
     <!-- Client-side 10-minute inactivity logout -->
     <script>
         // Client-side 10-minute inactivity logout (only for online mode)
-        let inactivityTime = 600000; // 10 minutes in ms
+        let inactivityTime = 1800000; // 10 minutes in ms
         let logoutTimer;
 
         function resetTimer() {
@@ -1286,7 +1286,7 @@ if (!$isOfflineMode) {
             // Only set timer for online mode
             if (!<?php echo $isOfflineMode ? 'true' : 'false'; ?>) {
                 logoutTimer = setTimeout(() => {
-                    alert("You've been logged out due to 10 minutes of inactivity.");
+                    alert("You've been logged out due to 30 minutes of inactivity.");
                     window.location.href = "/dentalemr_system/php/login/logout.php";
                 }, inactivityTime);
             }

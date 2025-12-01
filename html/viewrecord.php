@@ -27,7 +27,7 @@ if (
 }
 
 // PER-USER INACTIVITY TIMEOUT
-$inactiveLimit = 600; // 10 minutes
+$inactiveLimit = 1800; // 10 minutes
 
 if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
   $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
@@ -1273,13 +1273,13 @@ if ($loggedUser['type'] === 'Dentist') {
   <script src="../js/tailwind.config.js"></script>
   <!-- Client-side 10-minute inactivity logout -->
   <script>
-    let inactivityTime = 600000; // 10 minutes in ms
+    let inactivityTime = 1800000; // 10 minutes in ms
     let logoutTimer;
 
     function resetTimer() {
       clearTimeout(logoutTimer);
       logoutTimer = setTimeout(() => {
-        alert("You've been logged out due to 10 minutes of inactivity.");
+        alert("You've been logged out due to 30 minutes of inactivity.");
         window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
       }, inactivityTime);
     }
