@@ -467,12 +467,14 @@ if (!$isOfflineMode) {
                         </button>
                         <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="./treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
+                                <a href="./treatmentrecords/treatmentrecords.php?uid=<?php echo $userId;
+                                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="./addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
+                                <a href="./addpatienttreatment/patienttreatment.php?uid=<?php echo $userId;
+                                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -762,7 +764,7 @@ if (!$isOfflineMode) {
                                                     <label for="agemonth"
                                                         class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Month</label>
                                                     <input type="number" id="agemonth" name="agemonth" min="0" max="59" data-label="AgeMonth"
-                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus-border-primary-500">
                                                 </div>
                                             </div>
 
@@ -771,7 +773,7 @@ if (!$isOfflineMode) {
                                                 <label for="sex"
                                                     class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Sex</label>
                                                 <select id="sex" name="sex" data-required data-label="Sex"
-                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus-border-primary-500">
                                                     <option value="">-- Select --</option>
                                                     <option value="Male">Male</option>
                                                     <option value="Female">Female</option>
@@ -779,8 +781,8 @@ if (!$isOfflineMode) {
                                                 </select>
                                             </div>
 
-                                            <!-- Pregnant (hidden by default) -->
-                                            <div id="pregnant-section" class="hidden sm:col-span-2">
+                                            <!-- Pregnant (hidden by default) - This will become part of the second column when visible -->
+                                            <div id="pregnant-section" class="hidden sm:col-span-2 ">
                                                 <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Pregnant</label>
                                                 <div class="flex flex-row gap-4 items-center">
                                                     <div class="flex items-center">
@@ -1386,37 +1388,7 @@ if (!$isOfflineMode) {
     </script>
 
     <!-- ShowPregnant Input -->
-    <script>
-        const ageInput = document.getElementById('age');
-        const sexInput = document.getElementById('sex');
-        const formContainer = document.getElementById('form-container');
-        const pregnantSection = document.getElementById('pregnant-section');
-        const pregnantRadios = pregnantSection.querySelectorAll('input[name="pregnant"]');
-
-        function togglePregnantSection() {
-            const age = parseInt(ageInput.value, 10);
-            const sex = sexInput.value;
-
-            if (sex === 'Female' && age >= 10 && age <= 49) {
-                pregnantSection.classList.remove('hidden');
-                formContainer.classList.replace('grid-cols-2', 'grid-cols-3'); // 🔑 make 3 columns
-                pregnantRadios.forEach(radio => {
-                    radio.disabled = false;
-                    radio.required = true;
-                });
-            } else {
-                pregnantSection.classList.add('hidden');
-                formContainer.classList.replace('grid-cols-3', 'grid-cols-2'); // 🔑 back to 2 columns
-                pregnantRadios.forEach(radio => {
-                    radio.disabled = true;
-                    radio.required = false;
-                    radio.checked = radio.value === "no";
-                });
-            }
-        }
-        ageInput.addEventListener('input', togglePregnantSection);
-        sexInput.addEventListener('change', togglePregnantSection);
-    </script>
+    <script></script>
 
     <!-- Table  -->
     <script>
@@ -1725,77 +1697,6 @@ if (!$isOfflineMode) {
     </script>
 
 
-    <!-- age group  -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dobField = document.getElementById('dob');
-            const ageInput = document.getElementById('age');
-            const monthInput = document.getElementById('agemonth');
-            const monthContainer = document.getElementById('monthContainer');
-
-            // Hide month container initially
-            monthContainer.style.display = 'none';
-            monthInput.value = '';
-
-            // Function to calculate and display age/month from DOB
-            function updateFromDOB() {
-                const dob = new Date(dobField.value);
-                const today = new Date();
-
-                if (!dob || dob > today) {
-                    ageInput.value = '';
-                    monthInput.value = '';
-                    monthContainer.style.display = 'none';
-                    return;
-                }
-
-                let years = today.getFullYear() - dob.getFullYear();
-                let months = today.getMonth() - dob.getMonth();
-                const days = today.getDate() - dob.getDate();
-
-                // Adjust month/year differences
-                if (months < 0 || (months === 0 && days < 0)) {
-                    years--;
-                    months += 12;
-                }
-
-                if (years < 0) years = 0;
-                if (months < 0) months = 0;
-
-                ageInput.value = years;
-
-                // Show or hide month container depending on age
-                handleMonthVisibility(years, months);
-            }
-
-            // Function to show/hide the month field
-            function handleMonthVisibility(years, months = 0) {
-                if (years < 5) {
-                    const totalMonths = (years * 12) + months;
-                    if (totalMonths >= 0 && totalMonths <= 59) {
-                        monthContainer.style.display = 'block';
-                        monthInput.value = totalMonths;
-                    } else {
-                        monthContainer.style.display = 'none';
-                        monthInput.value = '';
-                    }
-                } else {
-                    monthContainer.style.display = 'none';
-                    monthInput.value = '';
-                }
-            }
-
-            // 📅 When user changes DOB → auto-fill age & month
-            dobField.addEventListener('change', updateFromDOB);
-
-            // ✍️ When user manually changes age → show/hide month field dynamically
-            ageInput.addEventListener('input', function() {
-                const years = parseInt(this.value) || 0;
-                handleMonthVisibility(years);
-            });
-        });
-    </script>
-
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const form = document.getElementById("patientForm");
@@ -1821,6 +1722,214 @@ if (!$isOfflineMode) {
                     window.location.reload();
                 }
             });
+
+            // ========== AGE CALCULATION FUNCTIONALITY ==========
+            function initializeAgeCalculator() {
+                const dobField = document.getElementById('dob');
+                const ageInput = document.getElementById('age');
+                const monthInput = document.getElementById('agemonth');
+                const monthContainer = document.getElementById('monthContainer');
+                const sexInput = document.getElementById('sex');
+                const formContainer = document.getElementById('form-container');
+                const pregnantSection = document.getElementById('pregnant-section');
+                const pregnantRadios = pregnantSection.querySelectorAll('input[name="pregnant"]');
+
+                // Hide month container initially
+                if (monthContainer) {
+                    monthContainer.style.display = 'none';
+                }
+                if (monthInput) {
+                    monthInput.value = '';
+                }
+
+                // Function to calculate age from DOB
+                function calculateAge(dobString) {
+                    if (!dobString) return {
+                        years: 0,
+                        months: 0,
+                        days: 0
+                    };
+
+                    const birthDate = new Date(dobString);
+                    const today = new Date();
+
+                    if (isNaN(birthDate.getTime()) || birthDate > today) {
+                        return {
+                            years: 0,
+                            months: 0,
+                            days: 0
+                        };
+                    }
+
+                    let years = today.getFullYear() - birthDate.getFullYear();
+                    let months = today.getMonth() - birthDate.getMonth();
+                    let days = today.getDate() - birthDate.getDate();
+
+                    // Adjust for negative months
+                    if (months < 0) {
+                        years--;
+                        months += 12;
+                    }
+
+                    // Adjust for negative days
+                    if (days < 0) {
+                        months--;
+                        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+
+                        // If months went negative, adjust years
+                        if (months < 0) {
+                            years--;
+                            months += 12;
+                        }
+                    }
+
+                    return {
+                        years: Math.max(0, years),
+                        months: Math.max(0, months),
+                        days: Math.max(0, days)
+                    };
+                }
+
+                // Update from DOB
+                function updateFromDOB() {
+                    if (!dobField || !dobField.value) {
+                        if (ageInput) ageInput.value = '';
+                        if (monthInput) monthInput.value = '';
+                        if (monthContainer) monthContainer.style.display = 'none';
+                        updatePregnantSection();
+                        return;
+                    }
+
+                    const {
+                        years,
+                        months
+                    } = calculateAge(dobField.value);
+
+                    // Update age field
+                    if (ageInput) {
+                        ageInput.value = years;
+                    }
+
+                    // Handle month field
+                    if (monthContainer && monthInput) {
+                        if (years < 5) {
+                            monthContainer.style.display = 'block';
+                            const totalMonths = (years * 12) + months;
+                            // Limit to 59 months (4 years 11 months)
+                            monthInput.value = Math.min(totalMonths, 59);
+                        } else {
+                            monthContainer.style.display = 'none';
+                            monthInput.value = '';
+                        }
+                    }
+
+                    updatePregnantSection();
+                }
+
+                // Handle manual age input
+                function handleManualAgeInput() {
+                    if (!ageInput) return;
+
+                    const years = parseInt(ageInput.value) || 0;
+
+                    if (monthContainer && monthInput) {
+                        if (years < 5) {
+                            monthContainer.style.display = 'block';
+                            // If month is empty and age < 5, set to 0
+                            if (!monthInput.value.trim() && years >= 0) {
+                                monthInput.value = 0;
+                            }
+                        } else {
+                            monthContainer.style.display = 'none';
+                            monthInput.value = '';
+                        }
+                    }
+
+                    updatePregnantSection();
+                }
+
+                // Update pregnant section
+                function updatePregnantSection() {
+                    if (!pregnantSection || !sexInput || !ageInput || !formContainer) return;
+
+                    const age = parseInt(ageInput.value) || 0;
+                    const sex = sexInput.value;
+
+                    if (sex === 'Female' && age >= 10 && age <= 49) {
+                        pregnantSection.classList.remove('hidden');
+                        // On small screens, make it span both columns
+                        formContainer.classList.remove('sm:grid-cols-2');
+                        formContainer.classList.add('sm:grid-cols-3', 'sm:grid-rows-1');
+
+                        // Add specific styling for the pregnant section
+                        pregnantSection.classList.remove('sm:col-span-2');
+                        pregnantSection.classList.add('col-span-1');
+
+                        pregnantRadios.forEach(radio => {
+                            radio.disabled = false;
+                            radio.required = true;
+                        });
+                    } else {
+                        pregnantSection.classList.add('hidden');
+                        // Reset to original layout
+                        formContainer.classList.remove('sm:grid-rows-2');
+                        pregnantSection.classList.remove('col-span-2', 'sm:col-span-2');
+                        pregnantSection.classList.add('sm:col-span-2');
+
+                        pregnantRadios.forEach(radio => {
+                            radio.disabled = true;
+                            radio.required = false;
+                            if (radio.value === "No") {
+                                radio.checked = true;
+                            }
+                        });
+                    }
+                }
+
+                // Set up event listeners
+                if (dobField) {
+                    dobField.addEventListener('change', updateFromDOB);
+                    dobField.addEventListener('input', updateFromDOB);
+
+                    // If DOB already has value, calculate immediately
+                    if (dobField.value) {
+                        setTimeout(updateFromDOB, 100);
+                    }
+                }
+
+                if (ageInput) {
+                    ageInput.addEventListener('input', handleManualAgeInput);
+                    ageInput.addEventListener('change', handleManualAgeInput);
+                }
+
+                if (sexInput) {
+                    sexInput.addEventListener('change', updatePregnantSection);
+                }
+
+                if (monthInput) {
+                    monthInput.addEventListener('input', function() {
+                        const age = parseInt(ageInput.value) || 0;
+                        if (age < 5 && this.value && monthContainer) {
+                            monthContainer.style.display = 'block';
+                        }
+                    });
+                }
+
+                // Initial update
+                updatePregnantSection();
+            }
+
+            // Initialize age calculator when modal is opened
+            const modalToggleButton = document.querySelector('[data-modal-target="addpatientModal"]');
+            if (modalToggleButton) {
+                modalToggleButton.addEventListener('click', function() {
+                    // Small delay to ensure modal is visible
+                    setTimeout(initializeAgeCalculator, 300);
+                });
+            }
+
+            // Also try to initialize on page load (in case modal is already open)
+            setTimeout(initializeAgeCalculator, 500);
 
             // ========== OFFLINE STORAGE IMPLEMENTATION ==========
             const offlineStorage = {
@@ -2131,7 +2240,7 @@ if (!$isOfflineMode) {
                         "hepatitis_flag": ["hepatitis_details", "Hepatitis"],
                         "malignancy_flag": ["malignancy_details", "Malignancy"],
                         "prev_hospitalization_flag": ["last_admission_date", "Medical Last Admission"],
-                        "blood_transfusion_flag": ["blood_transfusion_date", "Blood Transfusion"],
+                        "blood_transfusion_flag": ["blood_transfusion", "Blood Transfusion"],
                         "other_conditions_flag": ["other_conditions", "Other Conditions"],
                         "sugar_flag": ["sugar_details", "Sugar"],
                         "alcohol_flag": ["alcohol_details", "Use of Alcohol"],
@@ -2272,6 +2381,8 @@ if (!$isOfflineMode) {
             document.head.appendChild(style);
         });
     </script>
+
+
 </body>
 
 </html>

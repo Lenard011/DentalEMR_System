@@ -4,11 +4,10 @@
 // ===========================
 session_start();
 
-// Enable error logging to help debug
+// Suppress HTML error display, log errors instead
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/php_errors.log');
 error_reporting(E_ALL);
 
 // Set JSON header FIRST
@@ -23,7 +22,7 @@ $dbName = "dentalemr_system";
 $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
 if ($conn->connect_error) {
     http_response_code(500);
-    echo json_encode(["error" => "Database connection failed: " . $conn->connect_error]);
+    echo json_encode(["error" => "Database connection failed"]);
     exit;
 }
 
@@ -276,81 +275,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 // ===========================
-// POST REQUESTS - IMPROVED VERSION
+// POST REQUESTS
 // ===========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Initialize input array
     $input = [];
 
-    // Always check for FormData first (most common from your frontend)
-    if (!empty($_POST)) {
+    // Check if it's multipart/form-data (FormData from JavaScript)
+    if (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'multipart/form-data') !== false) {
+        // Handle FormData submission
         $input = $_POST;
 
-        // For FormData, unchecked checkboxes are not sent at all
-        // So we need to check each possible checkbox field and set default to 0
-        $checkboxFields = [
-            // Medical history
-            'allergies_flag',
-            'hypertension_cva',
-            'diabetes_mellitus',
-            'blood_disorders',
-            'heart_disease',
-            'thyroid_disorders',
-            'hepatitis_flag',
-            'malignancy_flag',
-            'prev_hospitalization_flag',
-            'blood_transfusion_flag',
-            'tattoo',
-            'other_conditions_flag',
-            // Dietary habits
-            'sugar_flag',
-            'alcohol_flag',
-            'tobacco_flag',
-            'betel_nut_flag',
-            // Membership
-            'nhts_pr',
-            'four_ps',
-            'indigenous_people',
-            'pwd',
-            'philhealth_flag',
-            'sss_flag',
-            'gsis_flag'
-        ];
-
-        foreach ($checkboxFields as $field) {
-            // If not set in POST, it means checkbox was unchecked
-            if (!isset($input[$field])) {
-                $input[$field] = 0;
-            } else {
-                // If set, convert to integer
-                $input[$field] = intval($input[$field]);
+        // Convert checkbox values to integers (0/1)
+        foreach ($input as $key => $value) {
+            if (strpos($key, '_flag') !== false || in_array($key, ['nhts_pr', 'four_ps', 'indigenous_people', 'pwd', 'tattoo'])) {
+                $input[$key] = ($value === '1' || $value === 'on') ? 1 : 0;
             }
         }
-    }
-    // If no POST data, try to get raw input (for JSON or form-urlencoded)
-    else {
+    } else {
+        // Handle JSON or form-urlencoded
         $rawInput = file_get_contents('php://input');
 
-        if (!empty($rawInput)) {
-            // Check Content-Type
-            $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-
-            if (strpos($contentType, 'application/json') !== false) {
-                $input = json_decode($rawInput, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    http_response_code(400);
-                    echo json_encode(["error" => "Invalid JSON input", "details" => json_last_error_msg()]);
-                    exit;
-                }
-            }
-            // Check for form-urlencoded (not common with FormData but for completeness)
-            else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
-                parse_str($rawInput, $input);
+        // Check if it's form-urlencoded
+        if (isset($_SERVER['CONTENT_TYPE']) && strpos($_SERVER['CONTENT_TYPE'], 'application/x-www-form-urlencoded') !== false) {
+            parse_str($rawInput, $input);
+        } else {
+            // Assume JSON
+            $input = json_decode($rawInput, true);
+            if ($input === null && json_last_error() !== JSON_ERROR_NONE) {
+                http_response_code(400);
+                echo json_encode(["error" => "Invalid JSON input", "details" => json_last_error_msg()]);
+                exit;
             }
         }
     }
 
-    if (empty($input) || !isset($input['action'])) {
+    // Log the received input for debugging
+    error_log("POST Input: " . print_r($input, true));
+
+    if (!$input || !isset($input['action'])) {
         http_response_code(400);
         echo json_encode(["error" => "Invalid request. No action specified."]);
         exit;
@@ -455,7 +418,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // SAVE MEMBERSHIP
+        // SAVE MEMBERSHIP
         if ($action === 'save_membership') {
+            // Debug log the input
+            error_log("save_membership called with: " . print_r($input, true));
+
             // Check if record exists
             $check = $conn->prepare("SELECT patient_id FROM patient_other_info WHERE patient_id=?");
             $check->bind_param("i", $patientId);
@@ -473,19 +440,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ins->close();
             }
 
-            // Prepare the UPDATE statement
+            // Prepare the UPDATE statement WITHOUT updated_at column
             $sql = "UPDATE patient_other_info SET 
-                nhts_pr = ?, 
-                four_ps = ?, 
-                indigenous_people = ?, 
-                pwd = ?, 
-                philhealth_flag = ?, 
-                philhealth_number = ?, 
-                sss_flag = ?, 
-                sss_number = ?, 
-                gsis_flag = ?, 
-                gsis_number = ?
-            WHERE patient_id = ?";
+        nhts_pr = ?, 
+        four_ps = ?, 
+        indigenous_people = ?, 
+        pwd = ?, 
+        philhealth_flag = ?, 
+        philhealth_number = ?, 
+        sss_flag = ?, 
+        sss_number = ?, 
+        gsis_flag = ?, 
+        gsis_number = ?
+    WHERE patient_id = ?";
 
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
@@ -493,13 +460,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Handle checkbox values - default to 0 if not set
-            $nhts_pr = $input['nhts_pr'] ?? 0;
-            $four_ps = $input['four_ps'] ?? 0;
-            $indigenous_people = $input['indigenous_people'] ?? 0;
-            $pwd = $input['pwd'] ?? 0;
-            $philhealth_flag = $input['philhealth_flag'] ?? 0;
-            $sss_flag = $input['sss_flag'] ?? 0;
-            $gsis_flag = $input['gsis_flag'] ?? 0;
+            $nhts_pr = isset($input['nhts_pr']) ? intval($input['nhts_pr']) : 0;
+            $four_ps = isset($input['four_ps']) ? intval($input['four_ps']) : 0;
+            $indigenous_people = isset($input['indigenous_people']) ? intval($input['indigenous_people']) : 0;
+            $pwd = isset($input['pwd']) ? intval($input['pwd']) : 0;
+            $philhealth_flag = isset($input['philhealth_flag']) ? intval($input['philhealth_flag']) : 0;
+            $sss_flag = isset($input['sss_flag']) ? intval($input['sss_flag']) : 0;
+            $gsis_flag = isset($input['gsis_flag']) ? intval($input['gsis_flag']) : 0;
 
             // Handle optional number fields
             $philhealth_number = !empty($input['philhealth_number']) ? $input['philhealth_number'] : null;
@@ -533,239 +500,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // SAVE MEDICAL HISTORY - FIXED VERSION
+        // SAVE MEDICAL HISTORY
         if ($action === 'save_medical') {
-            // First, let's log what we're receiving
-            error_log("=== SAVE_MEDICAL REQUEST ===");
-            error_log("Patient ID: " . $patientId);
-            error_log("Received data: " . print_r($input, true));
-
-            // Clean and validate input values
-            $allergies_flag = isset($input['allergies_flag']) ? intval($input['allergies_flag']) : 0;
-            $allergies_details = isset($input['allergies_details']) ? trim($input['allergies_details']) : null;
-            $hypertension_cva = isset($input['hypertension_cva']) ? intval($input['hypertension_cva']) : 0;
-            $diabetes_mellitus = isset($input['diabetes_mellitus']) ? intval($input['diabetes_mellitus']) : 0;
-            $blood_disorders = isset($input['blood_disorders']) ? intval($input['blood_disorders']) : 0;
-            $heart_disease = isset($input['heart_disease']) ? intval($input['heart_disease']) : 0;
-            $thyroid_disorders = isset($input['thyroid_disorders']) ? intval($input['thyroid_disorders']) : 0;
-            $hepatitis_flag = isset($input['hepatitis_flag']) ? intval($input['hepatitis_flag']) : 0;
-            $hepatitis_details = isset($input['hepatitis_details']) ? trim($input['hepatitis_details']) : null;
-            $malignancy_flag = isset($input['malignancy_flag']) ? intval($input['malignancy_flag']) : 0;
-            $malignancy_details = isset($input['malignancy_details']) ? trim($input['malignancy_details']) : null;
-            $prev_hospitalization_flag = isset($input['prev_hospitalization_flag']) ? intval($input['prev_hospitalization_flag']) : 0;
-            $last_admission_date = isset($input['last_admission_date']) && !empty($input['last_admission_date']) ? $input['last_admission_date'] : null;
-            $admission_cause = isset($input['admission_cause']) ? trim($input['admission_cause']) : null;
-            $surgery_details = isset($input['surgery_details']) ? trim($input['surgery_details']) : null;
-            $blood_transfusion_flag = isset($input['blood_transfusion_flag']) ? intval($input['blood_transfusion_flag']) : 0;
-            $blood_transfusion = isset($input['blood_transfusion']) ? trim($input['blood_transfusion']) : null;
-            $tattoo = isset($input['tattoo']) ? intval($input['tattoo']) : 0;
-            $other_conditions_flag = isset($input['other_conditions_flag']) ? intval($input['other_conditions_flag']) : 0;
-            $other_conditions = isset($input['other_conditions']) ? trim($input['other_conditions']) : null;
-
-            // Check if medical_history table exists and has correct structure
-            $checkTable = $conn->query("SHOW TABLES LIKE 'medical_history'");
-            if ($checkTable->num_rows === 0) {
-                throw new Exception("medical_history table does not exist");
-            }
-
             // Check if record exists
-            $checkStmt = $conn->prepare("SELECT patient_id FROM medical_history WHERE patient_id = ?");
-            if (!$checkStmt) {
-                throw new Exception("Check prepare failed: " . $conn->error);
+            $check = $conn->prepare("SELECT 1 FROM medical_history WHERE patient_id=?");
+            $check->bind_param("i", $patientId);
+            $check->execute();
+
+            if (!$check->get_result()->fetch_assoc()) {
+                $ins = $conn->prepare("INSERT INTO medical_history (patient_id) VALUES (?)");
+                $ins->bind_param("i", $patientId);
+                $ins->execute();
+                $ins->close();
             }
+            $check->close();
 
-            $checkStmt->bind_param("i", $patientId);
-            $checkStmt->execute();
-            $checkStmt->store_result();
-            $exists = $checkStmt->num_rows > 0;
-            $checkStmt->close();
-
-            if (!$exists) {
-                // Insert a new record
-                $insertStmt = $conn->prepare("INSERT INTO medical_history (patient_id) VALUES (?)");
-                if (!$insertStmt) {
-                    throw new Exception("Insert prepare failed: " . $conn->error);
-                }
-                $insertStmt->bind_param("i", $patientId);
-                if (!$insertStmt->execute()) {
-                    $insertStmt->close();
-                    throw new Exception("Failed to create medical history record: " . $conn->error);
-                }
-                $insertStmt->close();
-            }
-
-            // Build the UPDATE query dynamically based on what columns exist
-            $columns = [];
-            $values = [];
-            $types = "";
-            $bindParams = [];
-
-            // List all possible columns with their values and types
-            $fieldMap = [
-                'allergies_flag' => ['value' => $allergies_flag, 'type' => 'i'],
-                'allergies_details' => ['value' => $allergies_details, 'type' => 's'],
-                'hypertension_cva' => ['value' => $hypertension_cva, 'type' => 'i'],
-                'diabetes_mellitus' => ['value' => $diabetes_mellitus, 'type' => 'i'],
-                'blood_disorders' => ['value' => $blood_disorders, 'type' => 'i'],
-                'heart_disease' => ['value' => $heart_disease, 'type' => 'i'],
-                'thyroid_disorders' => ['value' => $thyroid_disorders, 'type' => 'i'],
-                'hepatitis_flag' => ['value' => $hepatitis_flag, 'type' => 'i'],
-                'hepatitis_details' => ['value' => $hepatitis_details, 'type' => 's'],
-                'malignancy_flag' => ['value' => $malignancy_flag, 'type' => 'i'],
-                'malignancy_details' => ['value' => $malignancy_details, 'type' => 's'],
-                'prev_hospitalization_flag' => ['value' => $prev_hospitalization_flag, 'type' => 'i'],
-                'last_admission_date' => ['value' => $last_admission_date, 'type' => 's'],
-                'admission_cause' => ['value' => $admission_cause, 'type' => 's'],
-                'surgery_details' => ['value' => $surgery_details, 'type' => 's'],
-                'blood_transfusion_flag' => ['value' => $blood_transfusion_flag, 'type' => 'i'],
-                'blood_transfusion' => ['value' => $blood_transfusion, 'type' => 's'],
-                'tattoo' => ['value' => $tattoo, 'type' => 'i'],
-                'other_conditions_flag' => ['value' => $other_conditions_flag, 'type' => 'i'],
-                'other_conditions' => ['value' => $other_conditions, 'type' => 's']
-            ];
-
-            // Check which columns actually exist in the table
-            $result = $conn->query("DESCRIBE medical_history");
-            $existingColumns = [];
-            while ($row = $result->fetch_assoc()) {
-                $existingColumns[] = $row['Field'];
-            }
-
-            // Build the SQL query only with existing columns
-            $sql = "UPDATE medical_history SET ";
-            $setParts = [];
-
-            foreach ($fieldMap as $column => $data) {
-                if (in_array($column, $existingColumns)) {
-                    $setParts[] = "$column = ?";
-                    $values[] = $data['value'];
-                    $types .= $data['type'];
-                }
-            }
-
-            if (empty($setParts)) {
-                throw new Exception("No valid columns found in medical_history table");
-            }
-
-            $sql .= implode(", ", $setParts);
-            $sql .= " WHERE patient_id = ?";
-
-            // Add patient_id to values
-            $values[] = $patientId;
-            $types .= 'i';
-
-            error_log("Medical History SQL: " . $sql);
-            error_log("Types: " . $types);
+            $sql = "UPDATE medical_history SET 
+                allergies_flag=?, allergies_details=?,
+                hypertension_cva=?, diabetes_mellitus=?, blood_disorders=?, heart_disease=?, thyroid_disorders=?,
+                hepatitis_flag=?, hepatitis_details=?,
+                malignancy_flag=?, malignancy_details=?,
+                prev_hospitalization_flag=?, last_admission_date=?, admission_cause=?,
+                surgery_details=?,
+                blood_transfusion_flag=?, blood_transfusion=?,
+                tattoo=?, other_conditions_flag=?, other_conditions=?
+            WHERE patient_id=?";
 
             $stmt = $conn->prepare($sql);
-            if (!$stmt) {
-                error_log("Prepare failed: " . $conn->error);
-                throw new Exception("Failed to prepare medical history update: " . $conn->error);
-            }
-
-            // Bind parameters dynamically
-            $bindParams = [$types];
-            foreach ($values as $key => $value) {
-                $bindParams[] = &$values[$key];
-            }
-
-            call_user_func_array([$stmt, 'bind_param'], $bindParams);
+            $stmt->bind_param(
+                "isiiiiisssssssssssi",
+                $input['allergies_flag'] ?? 0,
+                $input['allergies_details'] ?? null,
+                $input['hypertension_cva'] ?? 0,
+                $input['diabetes_mellitus'] ?? 0,
+                $input['blood_disorders'] ?? 0,
+                $input['heart_disease'] ?? 0,
+                $input['thyroid_disorders'] ?? 0,
+                $input['hepatitis_flag'] ?? 0,
+                $input['hepatitis_details'] ?? null,
+                $input['malignancy_flag'] ?? 0,
+                $input['malignancy_details'] ?? null,
+                $input['prev_hospitalization_flag'] ?? 0,
+                $input['last_admission_date'] ?? null,
+                $input['admission_cause'] ?? null,
+                $input['surgery_details'] ?? null,
+                $input['blood_transfusion_flag'] ?? 0,
+                $input['blood_transfusion'] ?? null,
+                $input['tattoo'] ?? 0,
+                $input['other_conditions_flag'] ?? 0,
+                $input['other_conditions'] ?? null,
+                $patientId
+            );
 
             if ($stmt->execute()) {
-                if ($stmt->affected_rows > 0) {
-                    echo json_encode([
-                        "success" => true,
-                        "message" => "Medical history saved successfully",
-                        "affected_rows" => $stmt->affected_rows
-                    ]);
-                } else {
-                    echo json_encode([
-                        "success" => true,
-                        "message" => "Medical history updated (no changes detected)",
-                        "affected_rows" => 0
-                    ]);
-                }
+                echo json_encode(["success" => true, "message" => "Medical history saved successfully"]);
             } else {
-                error_log("Execute failed: " . $stmt->error);
                 throw new Exception("Failed to save medical history: " . $stmt->error);
             }
             $stmt->close();
             exit;
         }
 
-        // SAVE DIETARY HABITS - FIXED VERSION
+        // SAVE DIETARY HABITS
         if ($action === 'save_dietary') {
-            // Check if record exists, create if not
-            $check = $conn->prepare("SELECT patient_id FROM dietary_habits WHERE patient_id = ?");
-            if (!$check) {
-                throw new Exception("Check prepare failed: " . $conn->error);
-            }
+            // Check if record exists
+            $check = $conn->prepare("SELECT 1 FROM dietary_habits WHERE patient_id=?");
             $check->bind_param("i", $patientId);
             $check->execute();
-            $check->store_result();
 
-            if ($check->num_rows === 0) {
-                $check->close();
-                // Create a new record
-                $insert = $conn->prepare("INSERT INTO dietary_habits (patient_id) VALUES (?)");
-                if (!$insert) {
-                    throw new Exception("Insert prepare failed: " . $conn->error);
-                }
-                $insert->bind_param("i", $patientId);
-                if (!$insert->execute()) {
-                    $insert->close();
-                    throw new Exception("Failed to create dietary habits record: " . $conn->error);
-                }
-                $insert->close();
-            } else {
-                $check->close();
+            if (!$check->get_result()->fetch_assoc()) {
+                $ins = $conn->prepare("INSERT INTO dietary_habits (patient_id) VALUES (?)");
+                $ins->bind_param("i", $patientId);
+                $ins->execute();
+                $ins->close();
             }
+            $check->close();
 
-            // Prepare the UPDATE statement
             $sql = "UPDATE dietary_habits SET 
-                sugar_flag = ?, 
-                sugar_details = ?,
-                alcohol_flag = ?, 
-                alcohol_details = ?,
-                tobacco_flag = ?, 
-                tobacco_details = ?,
-                betel_nut_flag = ?, 
-                betel_nut_details = ?
-            WHERE patient_id = ?";
+                sugar_flag=?, sugar_details=?,
+                alcohol_flag=?, alcohol_details=?,
+                tobacco_flag=?, tobacco_details=?,
+                betel_nut_flag=?, betel_nut_details=?
+            WHERE patient_id=?";
 
             $stmt = $conn->prepare($sql);
-            if (!$stmt) {
-                throw new Exception("Database prepare failed for dietary habits: " . $conn->error);
-            }
-
-            // Get values with defaults
-            $sugar_flag = $input['sugar_flag'] ?? 0;
-            $sugar_details = !empty($input['sugar_details']) ? trim($input['sugar_details']) : null;
-            $alcohol_flag = $input['alcohol_flag'] ?? 0;
-            $alcohol_details = !empty($input['alcohol_details']) ? trim($input['alcohol_details']) : null;
-            $tobacco_flag = $input['tobacco_flag'] ?? 0;
-            $tobacco_details = !empty($input['tobacco_details']) ? trim($input['tobacco_details']) : null;
-            $betel_nut_flag = $input['betel_nut_flag'] ?? 0;
-            $betel_nut_details = !empty($input['betel_nut_details']) ? trim($input['betel_nut_details']) : null;
-
             $stmt->bind_param(
                 "isississi",
-                $sugar_flag,
-                $sugar_details,
-                $alcohol_flag,
-                $alcohol_details,
-                $tobacco_flag,
-                $tobacco_details,
-                $betel_nut_flag,
-                $betel_nut_details,
+                $input['sugar_flag'] ?? 0,
+                $input['sugar_details'] ?? null,
+                $input['alcohol_flag'] ?? 0,
+                $input['alcohol_details'] ?? null,
+                $input['tobacco_flag'] ?? 0,
+                $input['tobacco_details'] ?? null,
+                $input['betel_nut_flag'] ?? 0,
+                $input['betel_nut_details'] ?? null,
                 $patientId
             );
 
             if ($stmt->execute()) {
-                echo json_encode([
-                    "success" => true,
-                    "message" => "Dietary habits saved successfully"
-                ]);
+                echo json_encode(["success" => true, "message" => "Dietary habits saved successfully"]);
             } else {
                 throw new Exception("Failed to save dietary habits: " . $stmt->error);
             }
@@ -777,13 +610,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         http_response_code(400);
         echo json_encode(["error" => "Invalid action"]);
     } catch (Exception $e) {
-        error_log("Exception in POST handler: " . $e->getMessage());
         http_response_code(500);
-        echo json_encode([
-            "error" => "Database error",
-            "message" => $e->getMessage(),
-            "action" => $action ?? 'unknown'
-        ]);
+        echo json_encode(["error" => "Database error: " . $e->getMessage()]);
     }
 }
 

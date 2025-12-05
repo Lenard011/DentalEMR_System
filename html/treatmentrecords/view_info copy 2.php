@@ -2,189 +2,84 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
-// Check if we're in offline mode
-$isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
+// REQUIRE userId parameter for each page
+// Example usage: dashboard.php?uid=5
+if (!isset($_GET['uid'])) {
+    echo "<script>
+        alert('Invalid session. Please log in again.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
 
-// Enhanced session validation with offline support
-if ($isOfflineMode) {
-    // Offline mode session validation
-    $isValidSession = false;
+$userId = intval($_GET['uid']);
 
-    // Check if we have offline session data
-    if (isset($_SESSION['offline_user'])) {
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    } else {
-        // Try to create offline session from localStorage data
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const checkOfflineSession = () => {
-                    try {
-                        const sessionData = sessionStorage.getItem('dentalemr_current_user');
-                        if (sessionData) {
-                            const user = JSON.parse(sessionData);
-                            if (user && user.isOffline) {
-                                console.log('Valid offline session detected:', user.email);
-                                return true;
-                            }
-                        }
-                        
-                        const offlineUsers = localStorage.getItem('dentalemr_local_users');
-                        if (offlineUsers) {
-                            const users = JSON.parse(offlineUsers);
-                            if (users && users.length > 0) {
-                                console.log('Offline users found in localStorage');
-                                return true;
-                            }
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error checking offline session:', error);
-                        return false;
-                    }
-                };
-                
-                if (!checkOfflineSession()) {
-                    alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
-                }
-            });
-        </script>";
+// CHECK IF THIS USER IS REALLY LOGGED IN
+if (
+    !isset($_SESSION['active_sessions']) ||
+    !isset($_SESSION['active_sessions'][$userId])
+) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
 
-        // Create offline session for this request
-        $_SESSION['offline_user'] = [
-            'id' => 'offline_user',
-            'name' => 'Offline User',
-            'email' => 'offline@dentalclinic.com',
-            'type' => 'Dentist',
-            'isOffline' => true
-        ];
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    }
-} else {
-    // Online mode - normal session validation
-    if (!isset($_GET['uid'])) {
-        echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
-            } else {
-                alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
-        </script>";
-        exit;
-    }
+// PER-USER INACTIVITY TIMEOUT
+$inactiveLimit = 600; // 10 minutes
 
-    $userId = intval($_GET['uid']);
-    $isValidSession = false;
+if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
+    $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
 
-    // CHECK IF THIS USER IS REALLY LOGGED IN
-    if (
-        isset($_SESSION['active_sessions']) &&
-        isset($_SESSION['active_sessions'][$userId])
-    ) {
-        $userSession = $_SESSION['active_sessions'][$userId];
+    if ((time() - $lastActivity) > $inactiveLimit) {
 
-        // Check basic required fields
-        if (isset($userSession['id']) && isset($userSession['type'])) {
-            $isValidSession = true;
-            // Update last activity
-            $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-            $loggedUser = $userSession;
+        // Log out ONLY this user (not everyone)
+        unset($_SESSION['active_sessions'][$userId]);
+
+        // If no one else is logged in, end session entirely
+        if (empty($_SESSION['active_sessions'])) {
+            session_unset();
+            session_destroy();
         }
-    }
 
-    if (!$isValidSession) {
         echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
-            } else {
-                alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
+            alert('You have been logged out due to inactivity.');
+            window.location.href = '/dentalemr_system/html/login/login.html';
         </script>";
         exit;
     }
 }
 
-// PER-USER INACTIVITY TIMEOUT (Online mode only)
-if (!$isOfflineMode) {
-    $inactiveLimit = 1800; // 10 minutes
-
-    if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
-        $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
-
-        if ((time() - $lastActivity) > $inactiveLimit) {
-            // Log out ONLY this user (not everyone)
-            unset($_SESSION['active_sessions'][$userId]);
-
-            // If no one else is logged in, end session entirely
-            if (empty($_SESSION['active_sessions'])) {
-                session_unset();
-                session_destroy();
-            }
-
-            echo "<script>
-                alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            </script>";
-            exit;
-        }
-    }
-
-    // Update last activity timestamp
-    $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-}
+// Update last activity timestamp
+$_SESSION['active_sessions'][$userId]['last_activity'] = time();
 
 // GET USER DATA FOR PAGE USE
-if ($isOfflineMode) {
-    $loggedUser = $_SESSION['offline_user'];
-} else {
-    $loggedUser = $_SESSION['active_sessions'][$userId];
+$loggedUser = $_SESSION['active_sessions'][$userId];
+
+// Store user session info safely
+$host = "localhost";
+$dbUser = "root";
+$dbPass = "";
+$dbName = "dentalemr_system";
+
+$conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Database connection only for online mode
-$conn = null;
-if (!$isOfflineMode) {
-    $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
-
-    $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
-    if ($conn->connect_error) {
-        // If database fails but browser is online, show error
-        if (!isset($_GET['offline'])) {
-            echo "<script>
-                if (navigator.onLine) {
-                    alert('Database connection failed. Please try again.');
-                    console.error('Database error: " . addslashes($conn->connect_error) . "');
-                } else {
-                    // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
-                }
-            </script>";
-            exit;
-        }
+// Fetch dentist name if user is a dentist
+if ($loggedUser['type'] === 'Dentist') {
+    $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
+    $stmt->bind_param("i", $loggedUser['id']);
+    $stmt->execute();
+    $stmt->bind_result($dentistName);
+    if ($stmt->fetch()) {
+        $loggedUser['name'] = $dentistName;
     }
-
-    // Fetch dentist name if user is a dentist (only in online mode)
-    if ($conn && !$conn->connect_error && $loggedUser['type'] === 'Dentist') {
-        $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
-        $stmt->bind_param("i", $loggedUser['id']);
-        $stmt->execute();
-        $stmt->bind_result($dentistName);
-        if ($stmt->fetch()) {
-            $loggedUser['name'] = $dentistName;
-        }
-        $stmt->close();
-    }
+    $stmt->close();
 }
+
 ?>
 <!doctype html>
 <html>
@@ -1597,64 +1492,28 @@ if (!$isOfflineMode) {
             };
 
             // Save Patient Info
-            // Save Patient Info - FIXED VERSION
             document.getElementById("editPatientForm").addEventListener("submit", async e => {
                 e.preventDefault();
-
-                // Create FormData from the form
-                const form = e.target;
-                const formData = new FormData(form);
-
-                // Add action and patient_id
-                formData.append('action', 'save_patient');
-                formData.append('patient_id', patientId);
-
-                console.log('FormData entries:');
-                for (let [key, value] of formData.entries()) {
-                    console.log(key, ':', value);
-                }
+                const formData = new FormData(e.target);
+                formData.append("patient_id", patientId);
+                formData.append("action", "save_patient");
 
                 try {
                     const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
                         method: "POST",
                         body: formData
-                        // Don't set Content-Type header - let browser set it for FormData
                     });
+                    const result = await res.json();
 
-                    console.log('Response status:', res.status);
-
-                    // First, check if response is OK
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
+                    if (result.success) {
+                        showNotice("Patient updated successfully!", "blue");
+                        closeModal();
+                        await loadPatient();
+                    } else {
+                        showNotice(result.error || "Update failed.", "crimson");
                     }
-
-                    // Try to parse as JSON
-                    try {
-                        const result = await res.json();
-                        console.log('Response result:', result);
-
-                        if (result.success) {
-                            showNotice("Patient updated successfully!", "blue");
-                            closeModal();
-                            await loadPatient();
-                        } else {
-                            showNotice(result.error || "Update failed.", "crimson");
-                        }
-                    } catch (jsonError) {
-                        // If not JSON, get the text response
-                        const text = await res.text();
-                        console.error('Not JSON response:', text.substring(0, 500));
-
-                        // Check if it's an HTML error
-                        if (text.includes('<br />') || text.includes('<b>')) {
-                            showNotice("Server returned HTML error. Check PHP error logs.", "crimson");
-                        } else {
-                            showNotice("Server returned unexpected response: " + text.substring(0, 100), "crimson");
-                        }
-                    }
-                } catch (error) {
-                    console.error('Network/Request error:', error);
-                    showNotice("Error: " + error.message, "crimson");
+                } catch {
+                    showNotice("Error updating patient.", "crimson");
                 }
             });
 
@@ -1670,65 +1529,28 @@ if (!$isOfflineMode) {
             });
 
             // Save Membership Info
-            // Save Membership Info - IMPROVED VERSION
             document.getElementById("membershipForm").addEventListener("submit", async e => {
                 e.preventDefault();
-
-                // Create a new FormData object
                 const formData = new FormData(e.target);
-
-                // Add patient_id and action
                 formData.append("patient_id", patientId);
                 formData.append("action", "save_membership");
-
-                // Debug: Log all form data
-                console.log('Membership FormData:');
-                for (let [key, value] of formData.entries()) {
-                    console.log(key, ':', value);
-                }
 
                 try {
                     const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
                         method: "POST",
                         body: formData
                     });
+                    const result = await res.json();
 
-                    console.log('Response status:', res.status);
-
-                    // Get the response text first to see what's happening
-                    const responseText = await res.text();
-                    console.log('Response text:', responseText.substring(0, 500));
-
-                    if (!res.ok) {
-                        // Try to parse as JSON for error details
-                        try {
-                            const errorData = JSON.parse(responseText);
-                            showNotice("Error: " + (errorData.error || `HTTP ${res.status}`), "crimson");
-                        } catch {
-                            showNotice(`HTTP error ${res.status}: ${responseText.substring(0, 100)}`, "crimson");
-                        }
-                        return;
+                    if (result.success) {
+                        showNotice("Membership updated successfully!", "blue");
+                        membershipModal.classList.add("hidden");
+                        await loadMembership();
+                    } else {
+                        showNotice(result.error || "Failed to update membership.", "crimson");
                     }
-
-                    // Try to parse the successful response as JSON
-                    try {
-                        const result = JSON.parse(responseText);
-                        console.log('Response result:', result);
-
-                        if (result.success) {
-                            showNotice("Membership updated successfully!", "blue");
-                            membershipModal.classList.add("hidden");
-                            await loadMembership();
-                        } else {
-                            showNotice(result.error || "Failed to update membership.", "crimson");
-                        }
-                    } catch (jsonError) {
-                        console.error('JSON parse error:', jsonError);
-                        showNotice("Invalid server response. Check console for details.", "crimson");
-                    }
-                } catch (error) {
-                    console.error('Network error:', error);
-                    showNotice("Network error: " + error.message, "crimson");
+                } catch {
+                    showNotice("Error saving membership.", "crimson");
                 }
             });
         });
@@ -1856,11 +1678,8 @@ if (!$isOfflineMode) {
         });
     </script>
 
-    <!-- sfsd -->
-
     <!-- Medical History & dietary Habits -->
     <script>
-        // Medical History & dietary Habits - IMPROVED VERSION
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
             const patient_id = urlParams.get("id");
@@ -1885,45 +1704,23 @@ if (!$isOfflineMode) {
                 }, 3000);
             }
 
-            // Toggle function for enabling/disabling inputs
-            window.toggleInput = (checkbox, targetId) => {
-                const target = document.getElementById(targetId);
-                if (!target) return;
-                target.disabled = !checkbox.checked;
-                if (!checkbox.checked) target.value = "";
-            };
+            // MEDICAL HISTORY SECTION
+            const medicalForm = document.querySelector("#medicalHistoryForm");
+            const medicalList = document.querySelector("#medicalHistoryList");
 
-            window.toggleHospitalization = (cb) => {
-                const last = document.getElementById("last_admission_date");
-                const cause = document.getElementById("admission_cause");
-                const surgery = document.getElementById("surgery_details");
-
-                if (cb.checked) {
-                    if (last) last.disabled = false;
-                    if (cause) cause.disabled = false;
-                    if (surgery) surgery.disabled = false;
-                } else {
-                    if (last) {
-                        last.disabled = true;
-                        last.value = "";
-                    }
-                    if (cause) {
-                        cause.disabled = true;
-                        cause.value = "";
-                    }
-                    if (surgery) {
-                        surgery.disabled = true;
-                        surgery.value = "";
+            function populateMedicalForm(values) {
+                if (!values) return;
+                for (const key in values) {
+                    const field = document.querySelector(`[name="${key}"]`);
+                    if (field) {
+                        if (field.type === "checkbox" || field.type === "radio") {
+                            field.checked = values[key] == 1;
+                        } else {
+                            field.value = values[key] ?? "";
+                        }
                     }
                 }
-            };
-
-            // MEDICAL HISTORY SECTION
-            const medicalList = document.querySelector("#medicalHistoryList");
-            const medicalModal = document.getElementById("medicalModal");
-            const addMedicalBtn = document.getElementById("addMedicalHistoryBtn");
-            const cancelMedicalBtn = document.getElementById("cancelMedicalBtn");
-            const medicalModalForm = document.getElementById("medicalForm");
+            }
 
             function loadMedicalHistory() {
                 fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_medical&patient_id=${patient_id}`)
@@ -1939,12 +1736,46 @@ if (!$isOfflineMode) {
                         } else {
                             medicalList.innerHTML = `<li class="text-gray-500">No medical history recorded.</li>`;
                         }
+
+                        populateMedicalForm(data.values);
                     })
                     .catch(err => {
                         console.error("Error loading medical history:", err);
                         showNotice("Error loading medical history.", "red");
                     });
             }
+
+            document.querySelector("#saveMedicalBtn")?.addEventListener("click", (e) => {
+                e.preventDefault();
+                const formData = new FormData(medicalForm);
+                formData.append("action", "save_medical");
+                formData.append("patient_id", patient_id);
+
+                fetch("/dentalemr_system/php/treatmentrecords/view_info.php", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotice("Medical history saved successfully!", "blue");
+                            loadMedicalHistory();
+                        } else {
+                            showNotice("Failed to save medical history.", "red");
+                            console.error(data);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Save error:", err);
+                        showNotice("Save request failed.", "red");
+                    });
+            });
+
+            // MEDICAL HISTORY MODAL (FIXED)
+            const medicalModal = document.getElementById("medicalModal");
+            const addMedicalBtn = document.getElementById("addMedicalHistoryBtn");
+            const cancelMedicalBtn = document.getElementById("cancelMedicalBtn");
+            const medicalModalForm = document.getElementById("medicalForm");
 
             // Show modal and load existing values
             addMedicalBtn?.addEventListener("click", () => {
@@ -1962,11 +1793,7 @@ if (!$isOfflineMode) {
             function loadMedicalFormValues() {
                 fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_medical&patient_id=${patient_id}`)
                     .then(res => res.json())
-                    .then(data => {
-                        if (data.success && data.values) {
-                            populateMedicalModalForm(data.values);
-                        }
-                    })
+                    .then(data => populateMedicalModalForm(data.values))
                     .catch(err => {
                         console.error("Error loading medical form:", err);
                         showNotice("Failed to load medical form.", "red");
@@ -1975,93 +1802,44 @@ if (!$isOfflineMode) {
 
             function populateMedicalModalForm(values) {
                 if (!values) return;
-
-                // Handle all checkboxes
-                const checkboxes = medicalModalForm.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => {
-                    const fieldName = checkbox.name;
-                    if (values[fieldName] !== undefined) {
-                        checkbox.checked = values[fieldName] == 1;
-                        // Trigger change event to enable/disable associated inputs
-                        checkbox.dispatchEvent(new Event('change'));
+                for (const key in values) {
+                    const field = medicalModalForm.querySelector(`[name="${key}"]`);
+                    if (!field) continue;
+                    if (field.type === "checkbox") {
+                        field.checked = values[key] == 1;
+                        field.dispatchEvent(new Event("change"));
+                    } else {
+                        field.value = values[key] ?? "";
                     }
-                });
-
-                // Handle all text inputs
-                const textInputs = medicalModalForm.querySelectorAll('input[type="text"], input[type="date"]');
-                textInputs.forEach(input => {
-                    const fieldName = input.name;
-                    if (values[fieldName] !== undefined) {
-                        input.value = values[fieldName] || '';
-                    }
-                });
+                }
             }
 
-            // Save medical history from modal submit
-            medicalModalForm?.addEventListener("submit", async (e) => {
+            // Save directly from modal submit
+            medicalModalForm?.addEventListener("submit", (e) => {
                 e.preventDefault();
-
-                // Create FormData from the form
                 const formData = new FormData(medicalModalForm);
-
-                // Add action and patient_id
                 formData.append("action", "save_medical");
                 formData.append("patient_id", patient_id);
 
-                // Handle checkbox values properly
-                const checkboxes = medicalModalForm.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => {
-                    formData.set(checkbox.name, checkbox.checked ? '1' : '0');
-                });
-
-                console.log('Medical FormData:');
-                for (let [key, value] of formData.entries()) {
-                    console.log(key, ':', value);
-                }
-
-                try {
-                    const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
+                fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
                         method: "POST",
                         body: formData
-                    });
-
-                    console.log('Medical Response status:', res.status);
-
-                    // Get response text first
-                    const responseText = await res.text();
-                    console.log('Medical Response:', responseText.substring(0, 500));
-
-                    if (!res.ok) {
-                        // Try to parse as JSON for error details
-                        try {
-                            const errorData = JSON.parse(responseText);
-                            showNotice("Medical Error: " + (errorData.error || `HTTP ${res.status}`), "red");
-                        } catch {
-                            showNotice(`Medical HTTP error ${res.status}`, "red");
-                        }
-                        return;
-                    }
-
-                    // Try to parse the successful response as JSON
-                    try {
-                        const result = JSON.parse(responseText);
-                        console.log('Medical Result:', result);
-
-                        if (result.success) {
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
                             showNotice("Medical history saved successfully!", "blue");
                             medicalModal.classList.add("hidden");
                             loadMedicalHistory();
                         } else {
-                            showNotice("Medical Error: " + (result.error || "Failed to save"), "red");
+                            showNotice("Failed to save medical history.", "red");
+                            console.error(data);
                         }
-                    } catch (jsonError) {
-                        console.error('Medical JSON parse error:', jsonError);
-                        showNotice("Invalid server response for medical history.", "red");
-                    }
-                } catch (error) {
-                    console.error('Medical Network error:', error);
-                    showNotice("Network error: " + error.message, "red");
-                }
+                    })
+                    .catch(err => {
+                        console.error("Save error:", err);
+                        showNotice("Save request failed.", "red");
+                    });
             });
 
             // DIETARY / SOCIAL HISTORY SECTION
@@ -2071,12 +1849,19 @@ if (!$isOfflineMode) {
             const dietaryForm = document.getElementById("dietaryForm");
             const dietaryList = document.getElementById("dietaryHistoryList");
 
+            // toggle enable/disable text inputs
+            window.toggleInput = (checkbox, targetId) => {
+                const target = document.getElementById(targetId);
+                if (!target) return;
+                target.disabled = !checkbox.checked;
+                if (!checkbox.checked) target.value = "";
+            };
+
             // Show/Hide Modal
             addDietaryBtn?.addEventListener("click", () => {
                 dietaryModal.classList.remove("hidden");
                 loadDietaryFormValues();
             });
-
             cancelDietaryBtn?.addEventListener("click", () => dietaryModal.classList.add("hidden"));
             dietaryModal?.addEventListener("click", (e) => {
                 if (e.target === dietaryModal) dietaryModal.classList.add("hidden");
@@ -2108,106 +1893,53 @@ if (!$isOfflineMode) {
             function loadDietaryFormValues() {
                 fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_dietary&patient_id=${patient_id}`)
                     .then(res => res.json())
-                    .then(data => {
-                        if (data.success && data.values) {
-                            populateDietaryForm(data.values);
-                        }
-                    })
+                    .then(data => populateDietaryForm(data.values))
                     .catch(err => {
-                        console.error("Error loading dietary form:", err);
+                        console.error("Error loading form:", err);
                         showNotice("Failed to load dietary/social form.", "red");
                     });
             }
 
             function populateDietaryForm(values) {
                 if (!values) return;
-
-                // Handle all checkboxes
-                const checkboxes = dietaryForm.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => {
-                    const fieldName = checkbox.name;
-                    if (values[fieldName] !== undefined) {
-                        checkbox.checked = values[fieldName] == 1;
-                        // Trigger change event to enable/disable associated inputs
-                        checkbox.dispatchEvent(new Event('change'));
+                for (const key in values) {
+                    const field = dietaryForm.querySelector(`[name="${key}"]`);
+                    if (!field) continue;
+                    if (field.type === "checkbox") {
+                        field.checked = values[key] == 1;
+                        field.dispatchEvent(new Event("change"));
+                    } else {
+                        field.value = values[key] ?? "";
                     }
-                });
-
-                // Handle all text inputs
-                const textInputs = dietaryForm.querySelectorAll('input[type="text"]');
-                textInputs.forEach(input => {
-                    const fieldName = input.name;
-                    if (values[fieldName] !== undefined) {
-                        input.value = values[fieldName] || '';
-                    }
-                });
+                }
             }
 
             // Save dietary/social history
-            dietaryForm?.addEventListener("submit", async (e) => {
+            dietaryForm?.addEventListener("submit", (e) => {
                 e.preventDefault();
-
-                // Create FormData from the form
                 const formData = new FormData(dietaryForm);
-
-                // Add action and patient_id
                 formData.append("action", "save_dietary");
                 formData.append("patient_id", patient_id);
 
-                // Handle checkbox values properly
-                const checkboxes = dietaryForm.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(checkbox => {
-                    formData.set(checkbox.name, checkbox.checked ? '1' : '0');
-                });
-
-                console.log('Dietary FormData:');
-                for (let [key, value] of formData.entries()) {
-                    console.log(key, ':', value);
-                }
-
-                try {
-                    const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
+                fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
                         method: "POST",
                         body: formData
-                    });
-
-                    console.log('Dietary Response status:', res.status);
-
-                    // Get response text first
-                    const responseText = await res.text();
-                    console.log('Dietary Response:', responseText.substring(0, 500));
-
-                    if (!res.ok) {
-                        // Try to parse as JSON for error details
-                        try {
-                            const errorData = JSON.parse(responseText);
-                            showNotice("Dietary Error: " + (errorData.error || `HTTP ${res.status}`), "red");
-                        } catch {
-                            showNotice(`Dietary HTTP error ${res.status}`, "red");
-                        }
-                        return;
-                    }
-
-                    // Try to parse the successful response as JSON
-                    try {
-                        const result = JSON.parse(responseText);
-                        console.log('Dietary Result:', result);
-
-                        if (result.success) {
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
                             showNotice("Dietary/Social history saved successfully!", "blue");
                             dietaryModal.classList.add("hidden");
                             loadDietaryHistory();
                         } else {
-                            showNotice("Dietary Error: " + (result.error || "Failed to save"), "red");
+                            showNotice("Failed to save dietary/social history.", "red");
+                            console.error(data);
                         }
-                    } catch (jsonError) {
-                        console.error('Dietary JSON parse error:', jsonError);
-                        showNotice("Invalid server response for dietary history.", "red");
-                    }
-                } catch (error) {
-                    console.error('Dietary Network error:', error);
-                    showNotice("Network error: " + error.message, "red");
-                }
+                    })
+                    .catch(err => {
+                        console.error("Save error:", err);
+                        showNotice("Save request failed.", "red");
+                    });
             });
 
             // INITIAL LOAD
@@ -2216,7 +1948,355 @@ if (!$isOfflineMode) {
         });
     </script>
 
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    
+    <!-- Offline/Online Sync Handler -->
+    <script>
+        // Global offline sync manager
+        class OfflineSyncManager {
+            constructor() {
+                this.offlineActions = JSON.parse(localStorage.getItem('offline_actions') || '[]');
+                this.isOnline = navigator.onLine;
+                this.syncInterval = null;
 
+                this.init();
+            }
+
+            init() {
+                // Listen for online/offline events
+                window.addEventListener('online', () => this.handleOnline());
+                window.addEventListener('offline', () => this.handleOffline());
+
+                // Start periodic sync
+                this.startSyncInterval();
+
+                // Try to sync immediately if online
+                if (this.isOnline) {
+                    setTimeout(() => this.syncOfflineActions(), 1000);
+                }
+            }
+
+            handleOnline() {
+                this.isOnline = true;
+                console.log('Device is online, syncing...');
+                this.syncOfflineActions();
+                this.startSyncInterval();
+            }
+
+            handleOffline() {
+                this.isOnline = false;
+                console.log('Device is offline');
+                this.stopSyncInterval();
+            }
+
+            startSyncInterval() {
+                if (this.syncInterval) clearInterval(this.syncInterval);
+                this.syncInterval = setInterval(() => this.syncOfflineActions(), 30000); // Every 30 seconds
+            }
+
+            stopSyncInterval() {
+                if (this.syncInterval) {
+                    clearInterval(this.syncInterval);
+                    this.syncInterval = null;
+                }
+            }
+
+            addOfflineAction(action, data) {
+                const actionData = {
+                    id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+                    action: action,
+                    data: data,
+                    timestamp: new Date().toISOString(),
+                    patient_id: data.patient_id || data.id || null
+                };
+
+                this.offlineActions.push(actionData);
+                this.saveToStorage();
+
+                console.log('Action saved for offline sync:', actionData);
+
+                // Try to sync immediately if online
+                if (this.isOnline) {
+                    setTimeout(() => this.syncOfflineActions(), 500);
+                }
+
+                return actionData.id;
+            }
+
+            removeOfflineAction(actionId) {
+                this.offlineActions = this.offlineActions.filter(action => action.id !== actionId);
+                this.saveToStorage();
+            }
+
+            saveToStorage() {
+                try {
+                    localStorage.setItem('offline_actions', JSON.stringify(this.offlineActions));
+                } catch (e) {
+                    console.error('Failed to save offline actions:', e);
+                }
+            }
+
+            async syncOfflineActions() {
+                if (!this.isOnline || this.offlineActions.length === 0) {
+                    return;
+                }
+
+                console.log(`Syncing ${this.offlineActions.length} offline actions...`);
+
+                // Group actions by type for batch processing
+                const archiveActions = this.offlineActions.filter(a => a.action === 'archive_patient');
+
+                // Process archive actions
+                if (archiveActions.length > 0) {
+                    await this.syncArchiveActions(archiveActions);
+                }
+
+                // Process other action types as needed
+            }
+
+            async syncArchiveActions(archiveActions) {
+                const patientIds = archiveActions.map(action => action.data.patient_id || action.data.id);
+
+                try {
+                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            sync_offline_archives: '1',
+                            archive_ids: JSON.stringify(patientIds)
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        console.log('Offline archive sync successful:', result);
+
+                        // Remove successfully synced actions
+                        archiveActions.forEach(action => {
+                            this.removeOfflineAction(action.id);
+                        });
+
+                        // Show success message
+                        if (result.synced_count > 0) {
+                            showNotice(`Synced ${result.synced_count} archived patients from offline mode`, 'green');
+                        }
+
+                        // Refresh the patient list if on treatment records page
+                        if (window.location.pathname.includes('treatmentrecords.php')) {
+                            setTimeout(() => {
+                                if (typeof window.loadPatients === 'function') {
+                                    window.loadPatients();
+                                }
+                            }, 1000);
+                        }
+                    } else {
+                        console.error('Offline archive sync failed:', result);
+                    }
+                } catch (error) {
+                    console.error('Failed to sync offline archives:', error);
+                }
+            }
+
+            // Add this to your existing archive function
+            async archivePatientWithOfflineSupport(patientId, patientName) {
+                if (!this.isOnline) {
+                    // Store for offline sync
+                    const actionId = this.addOfflineAction('archive_patient', {
+                        patient_id: patientId,
+                        patient_name: patientName,
+                        id: patientId
+                    });
+
+                    // Remove from local display immediately for better UX
+                    showNotice(`Patient "${patientName}" marked for archive (offline). Will sync when online.`, 'orange');
+
+                    // Return a promise that resolves immediately for offline
+                    return Promise.resolve({
+                        success: true,
+                        offline: true,
+                        actionId: actionId,
+                        message: 'Patient marked for archive (offline)'
+                    });
+                }
+
+                // Online: proceed with normal archive
+                try {
+                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            archive_id: patientId
+                        })
+                    });
+
+                    return await response.json();
+                } catch (error) {
+                    console.error('Archive request failed:', error);
+
+                    // Fallback to offline mode if request fails
+                    const actionId = this.addOfflineAction('archive_patient', {
+                        patient_id: patientId,
+                        patient_name: patientName,
+                        id: patientId
+                    });
+
+                    return {
+                        success: true,
+                        offline: true,
+                        actionId: actionId,
+                        message: 'Archive failed, saved for offline sync'
+                    };
+                }
+            }
+        }
+
+        // Initialize offline sync manager
+        const offlineSync = new OfflineSyncManager();
+
+        // Add to window for global access
+        window.offlineSync = offlineSync;
+
+        // Enhanced notification function with better styling
+        function showNotice(message, color = "blue") {
+            const notice = document.getElementById("notice");
+            if (!notice) return;
+
+            // Map color names to actual colors
+            const colorMap = {
+                'blue': '#3b82f6',
+                'green': '#10b981',
+                'red': '#ef4444',
+                'orange': '#f59e0b',
+                'yellow': '#fbbf24'
+            };
+
+            const bgColor = colorMap[color] || color;
+
+            notice.textContent = message;
+            notice.style.background = bgColor;
+            notice.style.display = "block";
+            notice.style.opacity = "1";
+            notice.style.position = "fixed";
+            notice.style.top = "14px";
+            notice.style.right = "14px";
+            notice.style.padding = "12px 16px";
+            notice.style.borderRadius = "8px";
+            notice.style.color = "white";
+            notice.style.fontWeight = "500";
+            notice.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+            notice.style.zIndex = "9999";
+            notice.style.maxWidth = "350px";
+            notice.style.wordBreak = "break-word";
+
+            setTimeout(() => {
+                notice.style.transition = "opacity 0.6s ease";
+                notice.style.opacity = "0";
+                setTimeout(() => {
+                    notice.style.display = "none";
+                    notice.style.transition = "";
+                }, 600);
+            }, 5000);
+        }
+
+        // Enhanced fetch with offline fallback
+        async function fetchWithOfflineFallback(url, options = {}) {
+            if (!navigator.onLine) {
+                // Check if we have offline data
+                const cachedData = localStorage.getItem(`cache_${url}`);
+                if (cachedData) {
+                    return JSON.parse(cachedData);
+                }
+
+                throw new Error('You are offline and no cached data is available');
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+
+                // Cache successful responses
+                if (response.ok && options.method === 'GET') {
+                    try {
+                        localStorage.setItem(`cache_${url}`, JSON.stringify(data));
+                    } catch (e) {
+                        console.warn('Could not cache data, storage might be full');
+                    }
+                }
+
+                return data;
+            } catch (error) {
+                console.error('Fetch failed:', error);
+
+                // Try to return cached data as fallback
+                const cachedData = localStorage.getItem(`cache_${url}`);
+                if (cachedData) {
+                    console.log('Returning cached data as fallback');
+                    return JSON.parse(cachedData);
+                }
+
+                throw error;
+            }
+        }
+
+        // Monitor network status with visual indicator
+        function setupNetworkStatusIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'network-status';
+            indicator.style.position = 'fixed';
+            indicator.style.bottom = '10px';
+            indicator.style.right = '10px';
+            indicator.style.width = '12px';
+            indicator.style.height = '12px';
+            indicator.style.borderRadius = '50%';
+            indicator.style.zIndex = '9998';
+            indicator.style.transition = 'all 0.3s ease';
+
+            document.body.appendChild(indicator);
+
+            function updateIndicator() {
+                if (navigator.onLine) {
+                    indicator.style.backgroundColor = '#10b981';
+                    indicator.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
+                    indicator.title = 'Online';
+                } else {
+                    indicator.style.backgroundColor = '#ef4444';
+                    indicator.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.5)';
+                    indicator.title = 'Offline';
+                }
+            }
+
+            updateIndicator();
+            window.addEventListener('online', updateIndicator);
+            window.addEventListener('offline', updateIndicator);
+        }
+
+        // Call setup on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNetworkStatusIndicator();
+
+            // Override the original archive function to use offline support
+            if (typeof window.archivePatient === 'function') {
+                const originalArchive = window.archivePatient;
+                window.archivePatient = async function(patientId, patientName) {
+                    return await offlineSync.archivePatientWithOfflineSupport(patientId, patientName);
+                };
+            }
+
+            // Check for pending offline actions on page load
+            setTimeout(() => {
+                if (offlineSync.offlineActions.length > 0 && navigator.onLine) {
+                    showNotice(`You have ${offlineSync.offlineActions.length} pending offline actions. Syncing...`, 'yellow');
+                    offlineSync.syncOfflineActions();
+                }
+            }, 2000);
+        });
+    </script>
 </body>
 
 </html>

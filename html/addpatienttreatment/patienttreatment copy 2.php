@@ -2,191 +2,84 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
-// Check if we're in offline mode
-$isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
+// REQUIRE userId parameter for each page
+// Example usage: dashboard.php?uid=5
+if (!isset($_GET['uid'])) {
+    echo "<script>
+        alert('Invalid session. Please log in again.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
 
-// Enhanced session validation with offline support
-if ($isOfflineMode) {
-    // Offline mode session validation
-    $isValidSession = false;
+$userId = intval($_GET['uid']);
 
-    // Check if we have offline session data
-    if (isset($_SESSION['offline_user'])) {
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    } else {
-        // Try to create offline session from localStorage data (via JavaScript)
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const checkOfflineSession = () => {
-                    try {
-                        // Check sessionStorage first
-                        const sessionData = sessionStorage.getItem('dentalemr_current_user');
-                        if (sessionData) {
-                            const user = JSON.parse(sessionData);
-                            if (user && user.isOffline) {
-                                console.log('Valid offline session detected:', user.email);
-                                return true;
-                            }
-                        }
-                        
-                        // Fallback: check localStorage for offline users
-                        const offlineUsers = localStorage.getItem('dentalemr_local_users');
-                        if (offlineUsers) {
-                            const users = JSON.parse(offlineUsers);
-                            if (users && users.length > 0) {
-                                console.log('Offline users found in localStorage');
-                                return true;
-                            }
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error checking offline session:', error);
-                        return false;
-                    }
-                };
-                
-                if (!checkOfflineSession()) {
-                    alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
-                }
-            });
-        </script>";
+// CHECK IF THIS USER IS REALLY LOGGED IN
+if (
+    !isset($_SESSION['active_sessions']) ||
+    !isset($_SESSION['active_sessions'][$userId])
+) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
 
-        // Create offline session for this request
-        $_SESSION['offline_user'] = [
-            'id' => 'offline_user',
-            'name' => 'Offline User',
-            'email' => 'offline@dentalclinic.com',
-            'type' => 'Dentist',
-            'isOffline' => true
-        ];
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    }
-} else {
-    // Online mode - normal session validation
-    if (!isset($_GET['uid'])) {
-        echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = 'patienttreatment.php?offline=true';
-            } else {
-                alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
-        </script>";
-        exit;
-    }
+// PER-USER INACTIVITY TIMEOUT
+$inactiveLimit = 1800; // 10 minutes
 
-    $userId = intval($_GET['uid']);
-    $isValidSession = false;
+if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
+    $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
 
-    // CHECK IF THIS USER IS REALLY LOGGED IN
-    if (
-        isset($_SESSION['active_sessions']) &&
-        isset($_SESSION['active_sessions'][$userId])
-    ) {
-        $userSession = $_SESSION['active_sessions'][$userId];
+    if ((time() - $lastActivity) > $inactiveLimit) {
 
-        // Check basic required fields
-        if (isset($userSession['id']) && isset($userSession['type'])) {
-            $isValidSession = true;
-            // Update last activity
-            $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-            $loggedUser = $userSession;
+        // Log out ONLY this user (not everyone)
+        unset($_SESSION['active_sessions'][$userId]);
+
+        // If no one else is logged in, end session entirely
+        if (empty($_SESSION['active_sessions'])) {
+            session_unset();
+            session_destroy();
         }
-    }
 
-    if (!$isValidSession) {
         echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = 'patienttreatment.php?offline=true';
-            } else {
-                alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
+            alert('You have been logged out due to inactivity.');
+            window.location.href = '/dentalemr_system/html/login/login.html';
         </script>";
         exit;
     }
 }
 
-// PER-USER INACTIVITY TIMEOUT (Online mode only)
-if (!$isOfflineMode) {
-    $inactiveLimit = 600; // 10 minutes
-
-    if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
-        $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
-
-        if ((time() - $lastActivity) > $inactiveLimit) {
-            // Log out ONLY this user (not everyone)
-            unset($_SESSION['active_sessions'][$userId]);
-
-            // If no one else is logged in, end session entirely
-            if (empty($_SESSION['active_sessions'])) {
-                session_unset();
-                session_destroy();
-            }
-
-            echo "<script>
-                alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            </script>";
-            exit;
-        }
-    }
-
-    // Update last activity timestamp
-    $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-}
+// Update last activity timestamp
+$_SESSION['active_sessions'][$userId]['last_activity'] = time();
 
 // GET USER DATA FOR PAGE USE
-if ($isOfflineMode) {
-    $loggedUser = $_SESSION['offline_user'];
-} else {
-    $loggedUser = $_SESSION['active_sessions'][$userId];
+$loggedUser = $_SESSION['active_sessions'][$userId];
+
+// Store user session info safely
+$host = "localhost";
+$dbUser = "root";
+$dbPass = "";
+$dbName = "dentalemr_system";
+
+$conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Database connection only for online mode
-$conn = null;
-if (!$isOfflineMode) {
-    $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
-
-    $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
-    if ($conn->connect_error) {
-        // If database fails but browser is online, show error
-        if (!isset($_GET['offline'])) {
-            echo "<script>
-                if (navigator.onLine) {
-                    alert('Database connection failed. Please try again.');
-                    console.error('Database error: " . addslashes($conn->connect_error) . "');
-                } else {
-                    // Switch to offline mode automatically
-                    window.location.href = 'patienttreatment.php?offline=true';
-                }
-            </script>";
-            exit;
-        }
+// Fetch dentist name if user is a dentist
+if ($loggedUser['type'] === 'Dentist') {
+    $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
+    $stmt->bind_param("i", $loggedUser['id']);
+    $stmt->execute();
+    $stmt->bind_result($dentistName);
+    if ($stmt->fetch()) {
+        $loggedUser['name'] = $dentistName;
     }
-
-    // Fetch dentist name if user is a dentist (only in online mode)
-    if ($conn && !$conn->connect_error && $loggedUser['type'] === 'Dentist') {
-        $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
-        $stmt->bind_param("i", $loggedUser['id']);
-        $stmt->execute();
-        $stmt->bind_result($dentistName);
-        if ($stmt->fetch()) {
-            $loggedUser['name'] = $dentistName;
-        }
-        $stmt->close();
-    }
+    $stmt->close();
 }
+
 ?>
 <!doctype html>
 <html>
@@ -194,112 +87,9 @@ if (!$isOfflineMode) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Treatment Record</title>
+    <title>Patient Information</title>
+    <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        .offline-indicator {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            animation: pulse 2s infinite;
-            font-size: 0.875rem;
-            margin-left: 10px;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.8;
-            }
-        }
-
-        .offline-warning {
-            border-left: 4px solid #f59e0b;
-            background: #fffbeb;
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-
-        #connectionStatus,
-        #syncToast {
-            z-index: 9999;
-        }
-
-        .toast-success {
-            background-color: #10b981 !important;
-        }
-
-        .toast-warning {
-            background-color: #f59e0b !important;
-        }
-
-        .toast-error {
-            background-color: #ef4444 !important;
-        }
-
-        /* Popup styles */
-        .popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-
-        .popup-content {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .popup-title {
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .popup-message {
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        .popup-button {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .popup-button-ok {
-            background-color: #3b82f6;
-            color: white;
-        }
-
-        .popup-button-ok:hover {
-            background-color: #2563eb;
-        }
-    </style>
     <style>
         .controls {
             margin-bottom: 20px;
@@ -551,27 +341,13 @@ if (!$isOfflineMode) {
 
         /* for condition boxes we will allow JS to set colors on the element */
     </style>
+
 </head>
 
 <body>
-    <!-- Connection Status Indicator -->
-    <div id="connectionStatus" class="hidden fixed top-4 right-4 z-60"></div>
-
-    <!-- Sync Toast -->
-    <div id="syncToast" class="hidden fixed top-4 right-4 z-60"></div>
-
-    <!-- Popup Container -->
-    <div id="popupContainer" class="popup-overlay">
-        <div class="popup-content">
-            <div id="popupTitle" class="popup-title"></div>
-            <div id="popupMessage" class="popup-message"></div>
-            <button id="popupOkBtn" class="popup-button popup-button-ok">OK</button>
-        </div>
-    </div>
-
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
-        <!-- Navbar (similar to addpatient.php) -->
-        <nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
+        <nav
+            class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
             <div class="flex flex-wrap justify-between items-center">
                 <div class="flex justify-start items-center">
                     <button data-drawer-target="drawer-navigation" data-drawer-toggle="drawer-navigation"
@@ -583,23 +359,34 @@ if (!$isOfflineMode) {
                                 d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
                                 clip-rule="evenodd"></path>
                         </svg>
+                        <svg aria-hidden="true" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="#" class="flex items-center justify-between mr-4">
+                    <a href="https://flowbite.com" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
-                            class="mr-3 h-8" alt="Clinic Logo" />
-                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
+                            class="mr-3 h-8" alt="Flowbite Logo" />
+                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
+                            Clinic</span>
                     </a>
-                    <?php if ($isOfflineMode): ?>
-                        <div class="offline-indicator">
-                            <i class="fas fa-wifi-slash"></i>
-                            <span>Offline Mode</span>
-                        </div>
-                    <?php endif; ?>
-                </div>
 
-                <!-- User Profile -->
+                </div>
+                <!-- UserProfile -->
                 <div class="flex items-center lg:order-2">
+                    <button type="button" data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation"
+                        class="p-2 mr-1 text-gray-500 rounded-lg md:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
+                        <span class="sr-only">Toggle search</span>
+                        <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path clip-rule="evenodd" fill-rule="evenodd"
+                                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z">
+                            </path>
+                        </svg>
+                    </button>
                     <button type="button"
                         class="flex mx-3 cursor-pointer text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
                         id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown">
@@ -634,13 +421,29 @@ if (!$isOfflineMode) {
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
                                 <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My profile</a>
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My
+                                    profile</a>
+                            </li>
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
+                            </li>
+                        </ul>
+                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">History logs</a>
+                            </li>
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
                                 <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign out</a>
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
+                                    out</a>
                             </li>
                         </ul>
                     </div>
@@ -648,15 +451,30 @@ if (!$isOfflineMode) {
             </div>
         </nav>
 
-        <!-- Sidebar (similar structure) -->
+        <!-- Sidebar -->
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
             <div class="overflow-y-auto py-5 px-3 h-full bg-white dark:bg-gray-800">
+                <form action="#" method="GET" class="md:hidden mb-2">
+                    <label for="sidebar-search" class="sr-only">Search</label>
+                    <div class="relative">
+                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor"
+                                viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z">
+                                </path>
+                            </svg>
+                        </div>
+                        <input type="text" name="search" id="sidebar-search"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                            placeholder="Search" />
+                    </div>
+                </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="/dentalemr_system/html/index.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="../index.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -670,8 +488,7 @@ if (!$isOfflineMode) {
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="/dentalemr_system/html/addpatient.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                                            echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="../addpatient.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -681,6 +498,7 @@ if (!$isOfflineMode) {
                                 <path
                                     d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" />
                             </svg>
+
                             <span class="ml-3">Add Patient</span>
                         </a>
                     </li>
@@ -705,12 +523,13 @@ if (!$isOfflineMode) {
                         </button>
                         <ul id="dropdown-pages" class="visible py-2 space-y-2">
                             <li>
-                                <a href="/dentalemr_system/html/treatmentrecords/treatmentrecords.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                                                                            echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment Records</a>
+                                <a href="../treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
+                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
+                                    Records</a>
                             </li>
                             <li>
-                                <a href="#" class="pl-11 flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">Add Patient Treatment</a>
+                                <a href="#" class="pl-11 flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">Add
+                                    Patient Treatment</a>
                             </li>
                         </ul>
                     </li>
@@ -792,7 +611,6 @@ if (!$isOfflineMode) {
                 </ul>
             </div>
         </aside>
-
         <form action="">
             <input type="hidden" id="patient_id">
             <input type="hidden" id="visit_id" value="0">
@@ -1969,630 +1787,31 @@ if (!$isOfflineMode) {
                 </div>
             </main>
         </form>
-
-        <!-- Add offline warning if applicable -->
-        <?php if ($isOfflineMode): ?>
-            <div class="md:ml-64 pt-16 p-4">
-                <div class="offline-warning">
-                    <div class="flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="font-medium">Working in Offline Mode</span>
-                    </div>
-                    <p class="text-sm mt-1 text-gray-600">Patient treatment data will be saved locally and synced when you're back online.</p>
-                </div>
-            </div>
-        <?php endif; ?>
     </div>
 
+    <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-
-    <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
-    <script src="/dentalemr_system/js/local-auth.js"></script>
-
+    <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
     <script>
-        // ========== OFFLINE STORAGE FOR PATIENT TREATMENT ==========
-        const treatmentOfflineStorage = {
-            // Save treatment data offline
-            async saveTreatment(treatmentData) {
-                return new Promise((resolve, reject) => {
-                    try {
-                        const offlineTreatments = JSON.parse(localStorage.getItem('dentalemr_offline_treatments') || '[]');
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
 
-                        const treatmentRecord = {
-                            id: 'treatment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                            data: treatmentData,
-                            timestamp: new Date().toISOString(),
-                            synced: false,
-                            type: 'treatment_record'
-                        };
-
-                        offlineTreatments.push(treatmentRecord);
-                        localStorage.setItem('dentalemr_offline_treatments', JSON.stringify(offlineTreatments));
-
-                        console.log('Treatment saved offline:', treatmentRecord.id);
-                        resolve(treatmentRecord.id);
-                    } catch (error) {
-                        console.error('Error saving treatment offline:', error);
-                        reject(error);
-                    }
-                });
-            },
-
-            // Save oral health data offline
-            async saveOralHealth(oralHealthData) {
-                return new Promise((resolve, reject) => {
-                    try {
-                        const offlineOralHealth = JSON.parse(localStorage.getItem('dentalemr_offline_oral_health') || '[]');
-
-                        const record = {
-                            id: 'oral_health_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                            data: oralHealthData,
-                            timestamp: new Date().toISOString(),
-                            synced: false,
-                            type: 'oral_health'
-                        };
-
-                        offlineOralHealth.push(record);
-                        localStorage.setItem('dentalemr_offline_oral_health', JSON.stringify(record));
-
-                        console.log('Oral health saved offline:', record.id);
-                        resolve(record.id);
-                    } catch (error) {
-                        console.error('Error saving oral health offline:', error);
-                        reject(error);
-                    }
-                });
-            },
-
-            // Get all offline treatments
-            getOfflineTreatments() {
-                try {
-                    return JSON.parse(localStorage.getItem('dentalemr_offline_treatments') || '[]');
-                } catch (error) {
-                    console.error('Error getting offline treatments:', error);
-                    return [];
-                }
-            },
-
-            // Sync offline treatment data
-            async syncOfflineTreatments() {
-                if (!navigator.onLine) {
-                    console.log('Cannot sync - offline');
-                    return {
-                        success: 0,
-                        error: 0
-                    };
-                }
-
-                const offlineTreatments = this.getOfflineTreatments();
-                const unsyncedTreatments = offlineTreatments.filter(treatment => !treatment.synced);
-
-                if (unsyncedTreatments.length === 0) {
-                    console.log('No unsynced treatments found');
-                    return {
-                        success: 0,
-                        error: 0
-                    };
-                }
-
-                console.log(`Syncing ${unsyncedTreatments.length} offline treatments...`);
-
-                let successCount = 0;
-                let errorCount = 0;
-
-                for (const treatment of unsyncedTreatments) {
-                    try {
-                        // Determine which endpoint to use based on treatment type
-                        let endpoint, payload;
-
-                        if (treatment.type === 'treatment_record') {
-                            endpoint = '/dentalemr_system/php/treatment/treatment_record_api.php';
-                            payload = treatment.data;
-                        } else if (treatment.type === 'oral_health') {
-                            endpoint = '/dentalemr_system/php/treatment/oral_health_api.php';
-                            payload = treatment.data;
-                        } else {
-                            console.error('Unknown treatment type:', treatment.type);
-                            errorCount++;
-                            continue;
-                        }
-
-                        const response = await fetch(endpoint, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify(payload)
-                        });
-
-                        const result = await response.json();
-
-                        if (result.success) {
-                            treatment.synced = true;
-                            this.removeTreatment(treatment.id);
-                            successCount++;
-                            console.log('Successfully synced treatment:', treatment.id);
-                        } else {
-                            console.error('Failed to sync treatment:', treatment.id, result);
-                            errorCount++;
-                        }
-                    } catch (error) {
-                        console.error('Error syncing treatment:', treatment.id, error);
-                        errorCount++;
-                    }
-
-                    // Small delay between syncs
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-
-                // Update localStorage
-                if (successCount > 0) {
-                    const updatedTreatments = offlineTreatments.filter(t => !t.synced);
-                    localStorage.setItem('dentalemr_offline_treatments', JSON.stringify(updatedTreatments));
-                }
-
-                return {
-                    success: successCount,
-                    error: errorCount
-                };
-            },
-
-            // Remove treatment from offline storage
-            removeTreatment(treatmentId) {
-                try {
-                    const offlineTreatments = this.getOfflineTreatments();
-                    const updatedTreatments = offlineTreatments.filter(treatment => treatment.id !== treatmentId);
-                    localStorage.setItem('dentalemr_offline_treatments', JSON.stringify(updatedTreatments));
-                    console.log('Treatment removed from offline storage:', treatmentId);
-                } catch (error) {
-                    console.error('Error removing offline treatment:', error);
-                }
-            }
-        };
-
-        // ========== CONNECTION MONITORING ==========
-        function setupConnectionMonitoring() {
-            const indicator = document.getElementById('connectionStatus');
-            const offlineWarning = document.getElementById('offlineFormWarning');
-
-            function updateConnectionStatus() {
-                if (!navigator.onLine) {
-                    // Offline
-                    if (indicator) {
-                        indicator.innerHTML = `
-                            <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                                <i class="fas fa-wifi-slash mr-2"></i>
-                                <span>Offline Mode - Data will be saved locally</span>
-                            </div>
-                        `;
-                        indicator.classList.remove('hidden');
-                    }
-
-                    if (offlineWarning) {
-                        offlineWarning.classList.remove('hidden');
-                    }
-                } else {
-                    // Online
-                    if (indicator) {
-                        indicator.innerHTML = `
-                            <div class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                                <i class="fas fa-wifi mr-2"></i>
-                                <span>Back Online - Syncing data...</span>
-                            </div>
-                        `;
-                        indicator.classList.remove('hidden');
-
-                        // Sync offline data and hide indicator after a few seconds
-                        setTimeout(() => {
-                            treatmentOfflineStorage.syncOfflineTreatments().then(result => {
-                                if (result.success > 0) {
-                                    showToast(`Synced ${result.success} treatment(s)`, 'success');
-                                }
-                            });
-                        }, 1000);
-
-                        setTimeout(() => {
-                            indicator.classList.add('hidden');
-                        }, 5000);
-                    }
-
-                    if (offlineWarning) {
-                        offlineWarning.classList.add('hidden');
-                    }
-                }
-            }
-
-            window.addEventListener('online', updateConnectionStatus);
-            window.addEventListener('offline', updateConnectionStatus);
-
-            // Initial status
-            updateConnectionStatus();
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "/dentalemr_system/php/login/logout.php";
+            }, inactivityTime);
         }
 
-        // ========== TOAST NOTIFICATIONS ==========
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('syncToast');
-            if (!toast) return;
-
-            const typeClass = {
-                'success': 'toast-success',
-                'warning': 'toast-warning',
-                'error': 'toast-error',
-                'info': 'bg-blue-500'
-            } [type] || 'bg-blue-500';
-
-            toast.innerHTML = `
-                <div class="${typeClass} text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                    <span>${message}</span>
-                </div>
-            `;
-            toast.classList.remove('hidden');
-
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 5000);
-        }
-
-        // ========== POPUP FUNCTIONS ==========
-        function showPopup(title, message, type = 'info', callback = null) {
-            const popup = document.getElementById('popupContainer');
-            const popupTitle = document.getElementById('popupTitle');
-            const popupMessage = document.getElementById('popupMessage');
-            const popupOkBtn = document.getElementById('popupOkBtn');
-
-            if (!popup || !popupTitle || !popupMessage || !popupOkBtn) return;
-
-            // Set colors based on type
-            const colors = {
-                'success': '#10b981',
-                'error': '#ef4444',
-                'warning': '#f59e0b',
-                'info': '#3b82f6'
-            };
-
-            popupTitle.style.color = colors[type] || colors.info;
-            popupTitle.textContent = title;
-            popupMessage.innerHTML = message;
-            popup.style.display = 'flex';
-
-            // Handle OK button click
-            const handleOk = () => {
-                popup.style.display = 'none';
-                if (typeof callback === 'function') {
-                    callback();
-                }
-            };
-
-            // Remove previous event listener
-            const newOkBtn = popupOkBtn.cloneNode(true);
-            popupOkBtn.parentNode.replaceChild(newOkBtn, popupOkBtn);
-            newOkBtn.addEventListener('click', handleOk);
-        }
-
-        // ========== MODIFIED SUBMIT FUNCTIONS FOR OFFLINE SUPPORT ==========
-
-        // Modify the submitTreatmentRecord function
-        const originalSubmitTreatmentRecord = window.submitTreatmentRecord;
-        window.submitTreatmentRecord = async function() {
-            const pid = document.getElementById("patient_id")?.value;
-            if (!pid) {
-                alert("No patient selected.");
-                return;
-            }
-
-            const payload = {
-                patient_id: pid,
-                oral_prophylaxis: document.querySelector("[name='oral_prophylaxis']").value.trim(),
-                fluoride: document.querySelector("[name='fluoride']").value.trim(),
-                sealant: document.querySelector("[name='sealant']").value.trim(),
-                permanent_filling: document.querySelector("[name='permanent_filling']").value.trim(),
-                temporary_filling: document.querySelector("[name='temporary_filling']").value.trim(),
-                extraction: document.querySelector("[name='extraction']").value.trim(),
-                consultation: document.querySelector("[name='consultation']").value.trim(),
-                remarks: document.querySelector("[name='remarks']").value.trim(),
-            };
-
-            // Check if offline
-            if (!navigator.onLine) {
-                try {
-                    await treatmentOfflineStorage.saveTreatment(payload);
-
-                    showPopup(
-                        '✅ Saved Offline',
-                        'Treatment record has been saved locally. It will be automatically synced when you are back online.',
-                        'success',
-                        function() {
-                            // Redirect to treatment records page
-                            window.location.href = "/dentalemr_system/html/treatmentrecords/treatmentrecords.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>";
-                        }
-                    );
-                } catch (error) {
-                    console.error('Error saving treatment offline:', error);
-                    showPopup('Error', 'Failed to save treatment data offline.', 'error');
-                }
-                return;
-            }
-
-            // Online submission
-            try {
-                const res = await fetch("/dentalemr_system/php/treatment/treatment_record_api.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const text = await res.text();
-                console.log("Server response:", text);
-
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    console.error("Invalid JSON:", e, text);
-                    showPopup("Error", "Server returned invalid response.", "error");
-                    return;
-                }
-
-                if (data.success) {
-                    showPopup(
-                        "Success",
-                        "Treatment record saved successfully!",
-                        "success",
-                        function() {
-                            window.location.href = "/dentalemr_system/html/treatmentrecords/treatmentrecords.php?uid=<?php echo $loggedUser['id']; ?>";
-                        }
-                    );
-                } else {
-                    showPopup("Error", "Failed to save: " + (data.message || "Unknown error"), "error");
-                }
-            } catch (err) {
-                console.error("Fetch error:", err);
-                showPopup("Error", "Error saving data. Please try again.", "error");
-            }
-        };
-
-        // Modify the saveOralHealthAndNext function
-        const originalSaveOralHealthAndNext = window.saveOralHealthAndNext;
-        window.saveOralHealthAndNext = async function() {
-            const pid = document.getElementById("patient_id")?.value;
-            console.log("DEBUG: patient_id resolved ->", pid);
-
-            if (!pid) {
-                alert("No patient selected.");
-                return;
-            }
-
-            const payload = {
-                patient_id: pid,
-                orally_fit_child: document.getElementById("ofc")?.value || "",
-                dental_caries: document.getElementById("dental_caries")?.value || "",
-                gingivitis: document.getElementById("gingivitis")?.value || "",
-                periodontal_disease: document.getElementById("periodontal_disease")?.value || "",
-                others: document.getElementById("others")?.value || "",
-                debris: document.getElementById("debris")?.value || "",
-                calculus: document.getElementById("calculus")?.value || "",
-                abnormal_growth: document.getElementById("abnormal_growth")?.value || "",
-                cleft_palate: document.getElementById("cleft_palate")?.value || "",
-                perm_teeth_present: document.getElementById("perm_teeth_present")?.value || 0,
-                perm_sound_teeth: document.getElementById("perm_sound_teeth")?.value || 0,
-                perm_decayed_teeth_d: document.getElementById("perm_decayed_teeth_d")?.value || 0,
-                perm_missing_teeth_m: document.getElementById("perm_missing_teeth_m")?.value || 0,
-                perm_filled_teeth_f: document.getElementById("perm_filled_teeth_f")?.value || 0,
-                perm_total_dmf: document.getElementById("perm_total_dmf")?.value || 0,
-                temp_teeth_present: document.getElementById("temp_teeth_present")?.value || 0,
-                temp_sound_teeth: document.getElementById("temp_sound_teeth")?.value || 0,
-                temp_decayed_teeth_d: document.getElementById("temp_decayed_teeth_d")?.value || 0,
-                temp_filled_teeth_f: document.getElementById("temp_filled_teeth_f")?.value || 0,
-                temp_total_df: document.getElementById("temp_total_df")?.value || 0
-            };
-
-            // Check if offline
-            if (!navigator.onLine) {
-                try {
-                    await treatmentOfflineStorage.saveOralHealth(payload);
-                    showToast("Oral health data saved offline", "success");
-                    if (typeof next2 === "function") next2();
-                } catch (error) {
-                    console.error("Error saving oral health offline:", error);
-                    showPopup("Error", "Failed to save oral health data offline.", "error");
-                }
-                return;
-            }
-
-            // Online submission
-            try {
-                const res = await fetch("/dentalemr_system/php/treatment/oral_health_api.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                const text = await res.text();
-                console.log("Raw response from server:", text);
-
-                let data;
-                try {
-                    data = JSON.parse(text);
-                } catch (e) {
-                    showPopup("Error", "Server returned invalid response.", "error");
-                    return;
-                }
-
-                if (data.success) {
-                    showToast("Oral health record saved!", "success");
-                    if (typeof next2 === "function") next2();
-                } else {
-                    showPopup("Error", "Failed: " + (data.message || "Unknown error"), "error");
-                }
-            } catch (err) {
-                console.error("Fetch error:", err);
-                showPopup("Error", "Error saving data. Please try again.", "error");
-            }
-        };
-
-        // ========== INITIALIZATION ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            // Setup connection monitoring
-            setupConnectionMonitoring();
-
-            // Check for unsynced data on page load
-            if (navigator.onLine) {
-                setTimeout(() => {
-                    treatmentOfflineStorage.syncOfflineTreatments().then(result => {
-                        if (result.success > 0) {
-                            showToast(`Synced ${result.success} offline treatment(s)`, 'success');
-                        }
-                    });
-                }, 2000);
-            }
-
-            // Setup service worker for offline capabilities
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/dentalemr_system/sw.js')
-                    .then(registration => {
-                        console.log('Service Worker registered for patient treatment');
-                    })
-                    .catch(error => {
-                        console.log('Service Worker registration failed:', error);
-                    });
-            }
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
         });
 
-        // ========== INACTIVITY TIMER (ONLINE MODE ONLY) ==========
-        <?php if (!$isOfflineMode): ?>
-            let inactivityTime = 1800000; // 10 minutes in ms
-            let logoutTimer;
-
-            function resetTimer() {
-                clearTimeout(logoutTimer);
-                logoutTimer = setTimeout(() => {
-                    alert("You've been logged out due to 10 minutes of inactivity.");
-                    window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
-                }, inactivityTime);
-            }
-
-            ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
-                document.addEventListener(evt, resetTimer, false);
-            });
-
-            resetTimer();
-        <?php endif; ?>
+        resetTimer();
     </script>
 
-    <!-- Your existing JavaScript functions -->
-    <script>
-        // Keep all your existing functions
-        function toggleInput(checkbox, inputId) {
-            const input = document.getElementById(inputId);
-            if (input) {
-                input.disabled = !checkbox.checked;
-            }
-        }
-
-        function toggleHospitalization(checkbox) {
-            const fields = [
-                "last_admission_date",
-                "admission_cause",
-                "surgery_details"
-            ];
-            fields.forEach(id => {
-                const field = document.getElementById(id);
-                if (field) {
-                    field.disabled = !checkbox.checked;
-                }
-            });
-        }
-
-        // Your existing navigation functions
-        function next() {
-            document.getElementById("patienttreatment").style.display = "none";
-            document.getElementById("patienttreatmentvital").style.display = "flex";
-            document.getElementById("oralhealth").style.display = "none";
-        }
-
-        function back() {
-            document.getElementById("patienttreatment").style.display = "flex";
-            document.getElementById("patienttreatmentvital").style.display = "none";
-            document.getElementById("oralhealth").style.display = "none";
-            document.getElementById("oralhealthA&B").style.display = "none";
-        }
-
-        function next1() {
-            document.getElementById("patienttreatment").style.display = "none";
-            document.getElementById("patienttreatmentvital").style.display = "none";
-            document.getElementById("oralhealth").style.display = "flex";
-            document.getElementById("oralhealthA&B").style.display = "none";
-        }
-
-        function back1() {
-            document.getElementById("patienttreatment").style.display = "none";
-            document.getElementById("patienttreatmentvital").style.display = "flex";
-            document.getElementById("oralhealth").style.display = "none";
-            document.getElementById("oralhealthA&B").style.display = "none";
-        }
-
-        function next2() {
-            document.getElementById("patienttreatment").style.display = "none";
-            document.getElementById("patienttreatmentvital").style.display = "none";
-            document.getElementById("oralhealth").style.display = "none";
-            document.getElementById("oralhealthA&B").style.display = "flex";
-        }
-
-        function back2() {
-            document.getElementById("patienttreatment").style.display = "none";
-            document.getElementById("patienttreatmentvital").style.display = "none";
-            document.getElementById("oralhealth").style.display = "flex";
-            document.getElementById("oralhealthA&B").style.display = "none";
-        }
-
-        function next3() {
-            document.getElementById("patienttreatment").style.display = "none";
-            document.getElementById("patienttreatmentvital").style.display = "none";
-            document.getElementById("oralhealth").style.display = "none";
-            document.getElementById("oralhealthA&B").style.display = "none";
-            document.getElementById("recofservoriented").style.display = "flex";
-        }
-
-        function back3() {
-            document.getElementById("patienttreatment").style.display = "none";
-            document.getElementById("patienttreatmentvital").style.display = "none";
-            document.getElementById("oralhealth").style.display = "none";
-            document.getElementById("oralhealthA&B").style.display = "flex";
-            document.getElementById("recofservoriented").style.display = "none";
-        }
-
-        function calcTotals() {
-            const D = parseInt(document.getElementById("perm_decayed_teeth_d")?.value) || 0;
-            const M = parseInt(document.getElementById("perm_missing_teeth_m")?.value) || 0;
-            const F = parseInt(document.getElementById("perm_filled_teeth_f")?.value) || 0;
-            const d = parseInt(document.getElementById("temp_decayed_teeth_d")?.value) || 0;
-            const f = parseInt(document.getElementById("temp_filled_teeth_f")?.value) || 0;
-
-            const permTotal = D + M + F;
-            const tempTotal = d + f;
-
-            const permTotalElem = document.getElementById("perm_total_dmf");
-            const tempTotalElem = document.getElementById("temp_total_df");
-
-            if (permTotalElem) permTotalElem.value = permTotal;
-            if (tempTotalElem) tempTotalElem.value = tempTotal;
-        }
-
-        function toggleCheck(input) {
-            if (!input) return;
-            if (input.value === "") input.value = "✓";
-            else if (input.value === "✓") input.value = "✗";
-            else input.value = "";
-        }
-    </script>
     <script>
         function toggleInput(checkbox, inputId) {
             document.getElementById(inputId).disabled = !checkbox.checked;
@@ -2720,6 +1939,71 @@ if (!$isOfflineMode) {
                 handleMonthVisibility(years);
             });
         });
+    </script>
+
+    <!-- Next&Back Button Function  -->
+    <script>
+        function next() {
+            document.getElementById("patienttreatment").style.display = "none";
+            document.getElementById("patienttreatmentvital").style.display = "flex";
+            document.getElementById("oralhealth").style.display = "none";
+        }
+
+        function back() {
+            document.getElementById("patienttreatment").style.display = "flex";
+            document.getElementById("patienttreatmentvital").style.display = "none";
+            document.getElementById("oralhealth").style.display = "none";
+            document.getElementById("oralhealthA&B").style.display = "none";
+        }
+
+        function next1() {
+            document.getElementById("patienttreatment").style.display = "none";
+            document.getElementById("patienttreatmentvital").style.display = "none";
+            document.getElementById("oralhealth").style.display = "flex";
+            document.getElementById("oralhealthA&B").style.display = "none";
+        }
+
+        function back1() {
+            document.getElementById("patienttreatment").style.display = "none";
+            document.getElementById("patienttreatmentvital").style.display = "flex";
+            document.getElementById("oralhealth").style.display = "none";
+            document.getElementById("oralhealthA&B").style.display = "none";
+        }
+
+        function next2() {
+            document.getElementById("patienttreatment").style.display = "none";
+            document.getElementById("patienttreatmentvital").style.display = "none";
+            document.getElementById("oralhealth").style.display = "none";
+            document.getElementById("oralhealthA&B").style.display = "flex";
+        }
+
+        function back2() {
+            document.getElementById("patienttreatment").style.display = "none";
+            document.getElementById("patienttreatmentvital").style.display = "none";
+            document.getElementById("oralhealth").style.display = "flex";
+            document.getElementById("oralhealthA&B").style.display = "none";
+        }
+
+        function next3() {
+            document.getElementById("patienttreatment").style.display = "none";
+            document.getElementById("patienttreatmentvital").style.display = "none";
+            document.getElementById("oralhealth").style.display = "none";
+            document.getElementById("oralhealthA&B").style.display = "none";
+            document.getElementById("recofservoriented").style.display = "flex";
+        }
+
+        function back3() {
+            document.getElementById("patienttreatment").style.display = "none";
+            document.getElementById("patienttreatmentvital").style.display = "none";
+            document.getElementById("oralhealth").style.display = "none";
+            document.getElementById("oralhealthA&B").style.display = "flex";
+            document.getElementById("recofservoriented").style.display = "none";
+        }
+
+        function submit() {
+            alert("Patient Treatment Record Added Successfully!");
+            location.href = "../treatmentrecords.html";
+        }
     </script>
 
     <!-- fetch patient -->
@@ -3723,7 +3007,93 @@ if (!$isOfflineMode) {
             }
         }
     </script>
+    
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
 
+    <script>
+        // ========== OFFLINE SUPPORT FOR PATIENT TREATMENT - START ==========
+
+        function setupPatientTreatmentOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
+
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - Data will be saved locally</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            window.addEventListener('online', function() {
+                updateStatus();
+                if (offlineStorage && offlineStorage.syncOfflineData) {
+                    offlineStorage.syncOfflineData();
+                }
+            });
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        // Modify form submission for offline support
+        document.addEventListener('DOMContentLoaded', function() {
+            setupPatientTreatmentOffline();
+
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for patient treatment');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+
+            // Find the main form and add offline support
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    if (!navigator.onLine) {
+                        e.preventDefault();
+
+                        const formData = new FormData(form);
+                        const treatmentData = Object.fromEntries(formData.entries());
+
+                        try {
+                            // Save treatment data offline
+                            if (offlineStorage && offlineStorage.saveTreatment) {
+                                await offlineStorage.saveTreatment(treatmentData);
+                                alert('Treatment data saved locally. It will sync when online.');
+                                form.reset();
+                            } else {
+                                alert('Offline storage not available. Please try again when online.');
+                            }
+                        } catch (error) {
+                            console.error('Error saving treatment offline:', error);
+                            alert('Failed to save treatment data offline.');
+                        }
+                    }
+                    // If online, form submits normally
+                });
+            });
+        });
+
+        // ========== OFFLINE SUPPORT FOR PATIENT TREATMENT - END ==========
+    </script>
 </body>
 
 </html>

@@ -24,61 +24,69 @@ try {
     exit;
 }
 
-// Add this function to treatment.php
-function getPatientById($conn, $patient_id)
+// Pre-cache all table columns at once to avoid multiple SHOW COLUMNS queries
+$columnsCache = [];
+function getAllTableColumns($conn)
 {
-    $stmt = $conn->prepare("SELECT patient_id, firstname, surname, middlename, date_of_birth, sex, age, place_of_birth, address, occupation, guardian FROM patients WHERE patient_id=? AND if_treatment=1");
-    $stmt->bind_param("i", $patient_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $patient = $result->fetch_assoc();
-    $stmt->close();
-    return $patient;
+    global $columnsCache;
+
+    if (!empty($columnsCache)) {
+        return $columnsCache;
+    }
+
+    $tables = [
+        'patients',
+        'archived_patients',
+        'visits',
+        'archived_visits',
+        'oral_health_condition',
+        'archived_oral_health_condition',
+        'patient_treatment_record',
+        'archived_patient_treatment_record',
+        'services_monitoring_chart',
+        'archived_services_monitoring_chart',
+        'dietary_habits',
+        'archived_dietary_habits',
+        'medical_history',
+        'archived_medical_history',
+        'vital_signs',
+        'archived_vital_signs',
+        'patient_other_info',
+        'archived_patient_other_info',
+        'visittoothcondition',
+        'archived_visittoothcondition',
+        'visittoothtreatment',
+        'archived_visittoothtreatment'
+    ];
+
+    foreach ($tables as $table) {
+        $cols = [];
+        $res = $conn->query("SHOW COLUMNS FROM `$table`");
+        if ($res) {
+            while ($row = $res->fetch_assoc()) {
+                $cols[] = $row['Field'];
+            }
+            $columnsCache[$table] = $cols;
+        }
+    }
+
+    return $columnsCache;
+}
+
+// Initialize column cache
+$columnsCache = getAllTableColumns($conn);
+
+function getColumns($table)
+{
+    global $columnsCache;
+    return $columnsCache[$table] ?? [];
 }
 
 // =====================================================
-// OFFLINE SYNC HANDLING IMPROVEMENTS
+// FAST ARCHIVE FUNCTIONS
 // =====================================================
-
-// Check if we're in offline sync mode and verify patient existence
-function verifyPatientExists($conn, $patient_id)
+function fastArchivePatient($conn, $patient_id)
 {
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM patients WHERE patient_id = ?");
-    $stmt->bind_param("i", $patient_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-
-    return $row['count'] > 0;
-}
-
-// Function to check if patient is already archived
-function isPatientAlreadyArchived($conn, $patient_id)
-{
-    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM archived_patients WHERE patient_id = ?");
-    $stmt->bind_param("i", $patient_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    $stmt->close();
-
-    return $row['count'] > 0;
-}
-
-// Enhanced fastArchivePatient with better error handling
-function fastArchivePatient($conn, $patient_id, $isOfflineSync = false)
-{
-    // Skip if patient doesn't exist (might have been archived already)
-    if (!$isOfflineSync && !verifyPatientExists($conn, $patient_id)) {
-        return false; // Patient doesn't exist
-    }
-
-    // Check if already archived (for offline sync)
-    if ($isOfflineSync && isPatientAlreadyArchived($conn, $patient_id)) {
-        return true; // Already archived, skip
-    }
-
     // Use a single optimized transaction
     $conn->begin_transaction();
 
@@ -168,18 +176,12 @@ function fastArchivePatient($conn, $patient_id, $isOfflineSync = false)
         return true;
     } catch (Exception $e) {
         $conn->rollback();
-
-        // Check if it's a duplicate entry error (already archived)
-        if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-            return true; // Already archived, consider successful
-        }
-
         throw $e;
     }
 }
 
 // =====================================================
-// REQUEST HANDLING WITH OFFLINE SYNC IMPROVEMENTS
+// REQUEST HANDLING
 // =====================================================
 
 // SINGLE PATIENT ARCHIVE
@@ -187,101 +189,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_id']) && !iss
     $patient_id = intval($_POST['archive_id']);
 
     try {
-        // Verify patient exists before archiving
-        if (!verifyPatientExists($conn, $patient_id)) {
+        $success = fastArchivePatient($conn, $patient_id);
+        echo json_encode(["success" => true, "message" => "Patient archived successfully."]);
+    } catch (Exception $e) {
+        http_response_code(400);
+        echo json_encode(["success" => false, "message" => "Archive failed: " . $e->getMessage()]);
+    }
+
+    $conn->close();
+    exit;
+}
+
+// BULK SYNC OFFLINE ARCHIVES
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_offline_archives'])) {
+    if (isset($_POST['archive_ids']) && is_array($_POST['archive_ids'])) {
+        $patientIds = array_map('intval', $_POST['archive_ids']);
+        $patientIds = array_filter(array_unique($patientIds), function ($id) {
+            return $id > 0;
+        });
+
+        if (empty($patientIds)) {
             echo json_encode([
                 "success" => false,
-                "message" => "Patient not found or already archived.",
-                "patient_id" => $patient_id
+                "message" => "No valid patient IDs provided"
             ]);
+            $conn->close();
             exit;
         }
 
-        $success = fastArchivePatient($conn, $patient_id);
-        echo json_encode([
-            "success" => true,
-            "message" => "Patient archived successfully.",
-            "patient_id" => $patient_id
-        ]);
-    } catch (Exception $e) {
-        http_response_code(400);
-        echo json_encode([
-            "success" => false,
-            "message" => "Archive failed: " . $e->getMessage(),
-            "patient_id" => $patient_id
-        ]);
-    }
+        $success = 0;
+        $errors = [];
+        $conn->begin_transaction();
 
-    $conn->close();
-    exit;
-}
+        try {
+            foreach ($patientIds as $patientId) {
+                try {
+                    fastArchivePatient($conn, $patientId);
+                    $success++;
+                } catch (Exception $e) {
+                    $errors[] = "Patient $patientId: " . $e->getMessage();
+                }
+            }
 
-// BULK SYNC OFFLINE ARCHIVES WITH IMPROVED VALIDATION
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sync_offline_archives'])) {
-    $patientIds = [];
+            $conn->commit();
+            echo json_encode([
+                'success' => true,
+                'message' => "Archived $success patient(s) successfully",
+                'synced_count' => $success,
+                'error_count' => count($errors),
+                'errors' => $errors
+            ]);
+        } catch (Exception $e) {
+            $conn->rollback();
+            echo json_encode([
+                'success' => false,
+                'message' => "Transaction failed: " . $e->getMessage(),
+                'errors' => [$e->getMessage()]
+            ]);
+        }
 
-    if (isset($_POST['archive_ids']) && is_array($_POST['archive_ids'])) {
-        $patientIds = array_map('intval', $_POST['archive_ids']);
-    } elseif (isset($_POST['patient_ids']) && is_array($_POST['patient_ids'])) {
-        // Alternative parameter name for compatibility
-        $patientIds = array_map('intval', $_POST['patient_ids']);
-    }
-
-    $patientIds = array_filter(array_unique($patientIds), function ($id) {
-        return $id > 0;
-    });
-
-    if (empty($patientIds)) {
-        echo json_encode([
-            "success" => false,
-            "message" => "No valid patient IDs provided",
-            "provided_ids" => $_POST['archive_ids'] ?? $_POST['patient_ids'] ?? []
-        ]);
         $conn->close();
         exit;
     }
-
-    $success = 0;
-    $skipped = 0;
-    $errors = [];
-
-    // Process each patient individually (not in transaction for offline sync)
-    // This allows partial success if some patients fail
-    foreach ($patientIds as $patientId) {
-        try {
-            // Check if patient exists before attempting archive
-            if (!verifyPatientExists($conn, $patientId)) {
-                $skipped++;
-                $errors[] = "Patient $patientId: Not found or already archived";
-                continue;
-            }
-
-            // Use offline sync mode
-            fastArchivePatient($conn, $patientId, true);
-            $success++;
-        } catch (Exception $e) {
-            $errors[] = "Patient $patientId: " . $e->getMessage();
-        }
-    }
-
-    echo json_encode([
-        'success' => true,
-        'message' => "Offline sync completed. Archived: $success, Skipped: $skipped, Errors: " . count($errors),
-        'synced_count' => $success,
-        'skipped_count' => $skipped,
-        'error_count' => count($errors),
-        'errors' => $errors
-    ]);
-
-    $conn->close();
-    exit;
 }
 
-// FETCH ACTIVE PATIENTS WITH PAGINATION - ADD OFFLINE SYNC CHECK
+// FETCH ACTIVE PATIENTS WITH PAGINATION
 try {
     // Get pagination parameters
     $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
-    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 50;
+    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 50; // Increased default limit
     $offset = ($page - 1) * $limit;
 
     // Check if we need total count
@@ -295,7 +271,7 @@ try {
         echo json_encode(['total' => (int)$row['total']]);
     } else {
         // Get paginated data - OPTIMIZED QUERY
-        // Added check for potential offline sync issues
+        // Removed unnecessary GROUP BY and MAX() for visits
         $sql = "
             SELECT 
                 p.patient_id,
@@ -304,9 +280,7 @@ try {
                 p.age,
                 p.address,
                 (SELECT visit_date FROM visits v WHERE v.patient_id = p.patient_id ORDER BY visit_date DESC LIMIT 1) AS last_visit,
-                p.if_treatment,
-                -- Check if patient exists in archived table (for debugging)
-                (SELECT COUNT(*) FROM archived_patients ap WHERE ap.patient_id = p.patient_id) as is_archived
+                p.if_treatment
             FROM patients p
             WHERE p.if_treatment = 1
             ORDER BY p.patient_id ASC
@@ -327,8 +301,7 @@ try {
                 'age' => (int)$row['age'],
                 'address' => $row['address'] ?? '',
                 'last_visit' => $row['last_visit'] ?? 'Never',
-                'if_treatment' => (int)$row['if_treatment'],
-                'is_archived' => (int)$row['is_archived'] // For debugging
+                'if_treatment' => (int)$row['if_treatment']
             ];
         }
 
@@ -337,8 +310,7 @@ try {
             'patients' => $patients,
             'page' => $page,
             'limit' => $limit,
-            'hasMore' => count($patients) === $limit,
-            'total_patients' => count($patients)
+            'hasMore' => count($patients) === $limit
         ];
 
         echo json_encode($response, JSON_NUMERIC_CHECK);

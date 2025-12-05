@@ -8,8 +8,10 @@ $offlineDataAvailable = false;
 
 // Enhanced session check with proper offline support
 if (!isset($_GET['uid']) && !$isOfflineMode) {
+    // If no UID and not explicitly in offline mode, check if we should go offline
     echo "<script>
         if (!navigator.onLine) {
+            // Redirect to offline mode on the same page
             window.location.href = '/dentalemr_system/html/index.php?offline=true';
         } else {
             alert('Invalid session. Please log in again.');
@@ -20,25 +22,42 @@ if (!isset($_GET['uid']) && !$isOfflineMode) {
 }
 
 // Handle offline mode session
+// Handle offline mode session
 if ($isOfflineMode) {
+    // Enhanced offline session validation
     echo "<script>
+        // Wait for the page to fully load and check for offline session
         document.addEventListener('DOMContentLoaded', function() {
+            // Check if we have a valid offline session
             const checkOfflineSession = () => {
                 try {
+                    // Check sessionStorage first (set by login process)
                     const sessionData = sessionStorage.getItem('dentalemr_current_user');
                     if (sessionData) {
                         const user = JSON.parse(sessionData);
-                        if (user && user.isOffline) return true;
+                        if (user && user.isOffline) {
+                            console.log('Valid offline session detected:', user.email);
+                            return true;
+                        }
                     }
                     
-                    if (typeof localAuth !== 'undefined' && localAuth.validateOfflineSession()) return true;
+                    // Fallback: check if localAuth is available
+                    if (typeof localAuth !== 'undefined' && localAuth.validateOfflineSession()) {
+                        console.log('Valid offline session via localAuth');
+                        return true;
+                    }
                     
+                    // Final fallback: check localStorage for offline users
                     const offlineUsers = localStorage.getItem('dentalemr_local_users');
                     if (offlineUsers) {
                         const users = JSON.parse(offlineUsers);
-                        if (users && users.length > 0) return true;
+                        if (users && users.length > 0) {
+                            console.log('Offline users found in localStorage, allowing access');
+                            return true;
+                        }
                     }
                     
+                    console.log('No valid offline session found');
                     return false;
                 } catch (error) {
                     console.error('Error checking offline session:', error);
@@ -46,6 +65,7 @@ if ($isOfflineMode) {
                 }
             };
             
+            // Check session and redirect if invalid
             if (!checkOfflineSession()) {
                 alert('Please log in first for offline access.');
                 window.location.href = '/dentalemr_system/html/login/login.html';
@@ -56,6 +76,7 @@ if ($isOfflineMode) {
         });
     </script>";
 
+    // Create a temporary session for offline mode
     $loggedUser = [
         'id' => 'offline_user',
         'name' => 'Offline User',
@@ -66,6 +87,7 @@ if ($isOfflineMode) {
     $userId = 'offline';
     $isValidSession = true;
 } else {
+    // Online mode with UID - normal session validation
     $userId = intval($_GET['uid']);
     $isValidSession = false;
 
@@ -76,8 +98,10 @@ if ($isOfflineMode) {
     ) {
         $userSession = $_SESSION['active_sessions'][$userId];
 
+        // Check basic required fields
         if (isset($userSession['id']) && isset($userSession['type'])) {
             $isValidSession = true;
+            // Update last activity
             $_SESSION['active_sessions'][$userId]['last_activity'] = time();
             $loggedUser = $userSession;
         }
@@ -86,6 +110,7 @@ if ($isOfflineMode) {
     if (!$isValidSession) {
         echo "<script>
             if (!navigator.onLine) {
+                // Redirect to same page in offline mode
                 window.location.href = '/dentalemr_system/html/index.php?offline=true';
             } else {
                 alert('Please log in first.');
@@ -109,12 +134,14 @@ if (!$isOfflineMode) {
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
         $dbError = true;
+        // If database fails but browser is online, show error
         if (!isset($_GET['offline'])) {
             echo "<script>
                 if (navigator.onLine) {
                     alert('Database connection failed. Please try again.');
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
+                    // Switch to offline mode automatically
                     window.location.href = '/dentalemr_system/html/index.php?offline=true&uid=' + $userId;
                 }
             </script>";
@@ -122,6 +149,7 @@ if (!$isOfflineMode) {
         }
     }
 
+    // Fetch dentist name if user is a dentist (only in online mode)
     if (!$dbError && $loggedUser['type'] === 'Dentist') {
         $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
         $stmt->bind_param("i", $loggedUser['id']);
@@ -134,7 +162,7 @@ if (!$isOfflineMode) {
     }
 }
 
-// Initialize data variables
+// Initialize data variables with default values
 $totalPatients = 0;
 $totalChildren = 0;
 $totalYouth = 0;
@@ -143,7 +171,7 @@ $activeVisits = 0;
 $totalTreatments = 0;
 $patientsWithConditions = 0;
 
-// Initialize chart data
+// Initialize chart data with empty defaults
 $donutData = [['Sex', 'Total']];
 $barangayData = [['Barangay', 'Patients']];
 $stackData = [['Month']];
@@ -154,24 +182,7 @@ $years = [date('Y')];
 $recentVisitsData = [];
 $recentTreatmentsData = [];
 
-// NEW: Data arrays for clickable functionality
-$malePatients = [];
-$femalePatients = [];
-$unknownGenderPatients = [];
-$patientsByBarangay = [];
-$patientsByCondition = [];
-$patientsByTreatment = [];
-$patientsByMonth = [];
-$patientsByAgeGroup = [
-    'children' => [],
-    'youth' => [],
-    'adults' => []
-];
-$patientsWithActiveVisits = [];
-$patientsWithTreatments = [];
-$patientsWithOralConditions = [];
-
-// Load data only if we're online
+// Load data only if we're online and database is working
 if (!$isOfflineMode && $conn && !$dbError) {
     // ---------------- KPI CARDS ----------------
     function get_count($conn, $sql)
@@ -197,119 +208,6 @@ if (!$isOfflineMode && $conn && !$dbError) {
 
     $patientsWithConditionsResult = $conn->query("SELECT COUNT(DISTINCT patient_id) AS count FROM oral_health_condition WHERE dental_caries='✓' OR gingivitis='✓' OR periodontal_disease='✓' OR others='✓'");
     $patientsWithConditions = $patientsWithConditionsResult ? $patientsWithConditionsResult->fetch_assoc()['count'] : 0;
-
-    // NEW: Fetch detailed patient data for all categories
-    $allPatientsQuery = $conn->query("
-        SELECT 
-            p.patient_id,
-            p.firstname,
-            p.surname,
-            p.middlename,
-            p.age,
-            p.address,
-            p.sex,
-            p.created_at
-        FROM patients p
-        ORDER BY p.firstname, p.surname
-    ");
-
-    if ($allPatientsQuery) {
-        while ($patient = $allPatientsQuery->fetch_assoc()) {
-            // Gender categorization
-            $sex = strtoupper(trim($patient['sex']));
-            if ($sex === 'M' || $sex === 'MALE') {
-                $malePatients[] = $patient;
-            } elseif ($sex === 'F' || $sex === 'FEMALE') {
-                $femalePatients[] = $patient;
-            } else {
-                $unknownGenderPatients[] = $patient;
-            }
-
-            // Barangay categorization
-            $barangay = $patient['address'] ? trim($patient['address']) : 'Unknown';
-            if (!isset($patientsByBarangay[$barangay])) {
-                $patientsByBarangay[$barangay] = [];
-            }
-            $patientsByBarangay[$barangay][] = $patient;
-
-            // Age group categorization
-            $age = intval($patient['age']);
-            if ($age <= 12) {
-                $patientsByAgeGroup['children'][] = $patient;
-            } elseif ($age <= 24) {
-                $patientsByAgeGroup['youth'][] = $patient;
-            } else {
-                $patientsByAgeGroup['adults'][] = $patient;
-            }
-        }
-    }
-
-    // NEW: Fetch patients with active visits today
-    $activeVisitsPatientsQuery = $conn->query("
-        SELECT 
-            p.patient_id,
-            p.firstname,
-            p.surname,
-            p.middlename,
-            p.age,
-            p.address,
-            p.sex,
-            p.created_at
-        FROM patients p
-        WHERE DATE(p.created_at) = '$today'
-        ORDER BY p.created_at DESC
-    ");
-
-    if ($activeVisitsPatientsQuery) {
-        while ($patient = $activeVisitsPatientsQuery->fetch_assoc()) {
-            $patientsWithActiveVisits[] = $patient;
-        }
-    }
-
-    // NEW: Fetch patients with treatments
-    $treatedPatientsQuery = $conn->query("
-        SELECT DISTINCT
-            p.patient_id,
-            p.firstname,
-            p.surname,
-            p.middlename,
-            p.age,
-            p.address,
-            p.sex,
-            p.created_at
-        FROM patients p
-        JOIN services_monitoring_chart s ON p.patient_id = s.patient_id
-        ORDER BY p.firstname, p.surname
-    ");
-
-    if ($treatedPatientsQuery) {
-        while ($patient = $treatedPatientsQuery->fetch_assoc()) {
-            $patientsWithTreatments[] = $patient;
-        }
-    }
-
-    // NEW: Fetch patients with oral conditions
-    $oralConditionPatientsQuery = $conn->query("
-        SELECT DISTINCT
-            p.patient_id,
-            p.firstname,
-            p.surname,
-            p.middlename,
-            p.age,
-            p.address,
-            p.sex,
-            p.created_at
-        FROM patients p
-        JOIN oral_health_condition o ON p.patient_id = o.patient_id
-        WHERE o.dental_caries='✓' OR o.gingivitis='✓' OR o.periodontal_disease='✓' OR o.others='✓'
-        ORDER BY p.firstname, p.surname
-    ");
-
-    if ($oralConditionPatientsQuery) {
-        while ($patient = $oralConditionPatientsQuery->fetch_assoc()) {
-            $patientsWithOralConditions[] = $patient;
-        }
-    }
 
     // ---------------- PIE CHART ----------------
     $conditionFields = [
@@ -348,6 +246,10 @@ if (!$isOfflineMode && $conn && !$dbError) {
         }
     }
 
+    // ---------------- PIE CHART (still works with latest year) ----------------
+    $latest = $result[count($result) - 1] ?? null;
+    $pieData = [['Condition', 'Cases']];
+
     $labelNames = [
         'orally_fit_child'     => 'Orally Fit Child',
         'dental_caries'        => 'Dental Caries',
@@ -360,28 +262,11 @@ if (!$isOfflineMode && $conn && !$dbError) {
         'cleft_palate'         => 'Cleft Palate'
     ];
 
-    // NEW: Fetch patients by oral condition
-    foreach ($conditionFields as $field) {
-        $conditionPatientsQuery = $conn->query("
-            SELECT DISTINCT
-                p.patient_id,
-                p.firstname,
-                p.surname,
-                p.middlename,
-                p.age,
-                p.address,
-                p.sex,
-                p.created_at
-            FROM patients p
-            JOIN oral_health_condition o ON p.patient_id = o.patient_id
-            WHERE o.$field IN ('✓','Yes','yes','YES')
-            ORDER BY p.firstname, p.surname
-        ");
-
-        $patientsByCondition[$field] = [];
-        if ($conditionPatientsQuery) {
-            while ($patient = $conditionPatientsQuery->fetch_assoc()) {
-                $patientsByCondition[$field][] = $patient;
+    if ($latest) {
+        foreach ($conditionFields as $field) {
+            $count = (int)$latest[$field];
+            if ($count > 0) {
+                $pieData[] = [$labelNames[$field], $count];
             }
         }
     }
@@ -405,59 +290,22 @@ if (!$isOfflineMode && $conn && !$dbError) {
     }
 
     // ---------------- BAR CHART ----------------
-    // FIXED: This query was working before, but let's debug it
     $treatmentsResult = $conn->query("
-        SELECT t.code, t.description AS treatment, COUNT(*) AS count
+        SELECT t.description AS treatment, COUNT(*) AS count
         FROM services_monitoring_chart s
         JOIN treatments t ON s.treatment_code = t.code
-        GROUP BY t.code, t.description
+        GROUP BY t.description
         ORDER BY count DESC
     ");
 
-    // Debug: Check if query has results
-    $treatmentDebug = "Treatments query returned: ";
-    if ($treatmentsResult) {
-        $treatmentDebug .= $treatmentsResult->num_rows . " rows\n";
-    } else {
-        $treatmentDebug .= "Error: " . $conn->error . "\n";
-    }
-
     $barData = [['Treatment', 'Count']];
-    if ($treatmentsResult && $treatmentsResult->num_rows > 0) {
+    if ($treatmentsResult) {
         while ($row = $treatmentsResult->fetch_assoc()) {
             $barData[] = [$row['treatment'], (int)$row['count']];
-
-            // NEW: Fetch patients by treatment
-            $treatmentPatientsQuery = $conn->query("
-                SELECT DISTINCT
-                    p.patient_id,
-                    p.firstname,
-                    p.surname,
-                    p.middlename,
-                    p.age,
-                    p.address,
-                    p.sex,
-                    p.created_at
-                FROM patients p
-                JOIN services_monitoring_chart s ON p.patient_id = s.patient_id
-                JOIN treatments t ON s.treatment_code = t.code
-                WHERE t.code = '{$row['code']}'
-                ORDER BY p.firstname, p.surname
-            ");
-
-            $patientsByTreatment[$row['treatment']] = [];
-            if ($treatmentPatientsQuery) {
-                while ($patient = $treatmentPatientsQuery->fetch_assoc()) {
-                    $patientsByTreatment[$row['treatment']][] = $patient;
-                }
-            }
         }
-    } else {
-        // If no treatments, add placeholder
-        $barData[] = ['No treatments recorded', 0];
     }
 
-    // Male&Female Query for donut chart
+    // Male&Female 
     $sexQuery = $conn->query("
         SELECT 
             sex,
@@ -537,100 +385,37 @@ if (!$isOfflineMode && $conn && !$dbError) {
     if ($trendResult) {
         while ($row = $trendResult->fetch_assoc()) {
             $lineData[] = [$row['month'], (int)$row['count']];
-
-            // NEW: Fetch patients by month
-            $monthPatientsQuery = $conn->query("
-                SELECT DISTINCT
-                    p.patient_id,
-                    p.firstname,
-                    p.surname,
-                    p.middlename,
-                    p.age,
-                    p.address,
-                    p.sex,
-                    p.created_at
-                FROM patients p
-                JOIN visits v ON p.patient_id = v.patient_id
-                WHERE DATE_FORMAT(v.visit_date, '%Y-%m') = '{$row['month']}'
-                ORDER BY p.firstname, p.surname
-            ");
-
-            $patientsByMonth[$row['month']] = [];
-            if ($monthPatientsQuery) {
-                while ($patient = $monthPatientsQuery->fetch_assoc()) {
-                    $patientsByMonth[$row['month']][] = $patient;
-                }
-            }
         }
     }
 
     // ---------------- TABLES ----------------
-    // FIXED: Recent Visits query - check if visits table exists and has data
-    $checkVisitsTable = $conn->query("SHOW TABLES LIKE 'visits'");
-    if ($checkVisitsTable && $checkVisitsTable->num_rows > 0) {
-        $recentVisits = $conn->query("
-            SELECT v.visit_id, v.visit_date, p.patient_id, p.firstname, p.surname, p.middlename, p.age, p.address, p.sex
-            FROM visits v
-            JOIN patients p ON v.patient_id = p.patient_id
-            ORDER BY v.visit_date DESC
-            LIMIT 5
-        ");
+    $recentVisits = $conn->query("
+        SELECT v.visit_date, p.firstname, p.surname
+        FROM visits v
+        JOIN patients p ON v.patient_id = p.patient_id
+        ORDER BY v.visit_date DESC
+        LIMIT 5
+    ");
 
-        if ($recentVisits) {
-            while ($v = $recentVisits->fetch_assoc()) {
-                $recentVisitsData[] = $v;
-            }
+    if ($recentVisits) {
+        while ($v = $recentVisits->fetch_assoc()) {
+            $recentVisitsData[] = $v;
         }
-    } else {
-        // Debug info
-        $visitDebug = "Visits table doesn't exist or is empty";
     }
 
-    // FIXED: Recent Treatments query - check if services_monitoring_chart table exists
-    $checkTreatmentsTable = $conn->query("SHOW TABLES LIKE 'services_monitoring_chart'");
-    if ($checkTreatmentsTable && $checkTreatmentsTable->num_rows > 0) {
-        $recentTreatments = $conn->query("
-            SELECT 
-                s.id, 
-                s.created_at, 
-                p.patient_id, 
-                p.firstname, 
-                p.surname, 
-                p.middlename, 
-                p.age, 
-                p.address, 
-                p.sex, 
-                t.description, 
-                t.code
-            FROM services_monitoring_chart s
-            LEFT JOIN treatments t ON s.treatment_code = t.code
-            LEFT JOIN patients p ON s.patient_id = p.patient_id
-            ORDER BY s.created_at DESC
-            LIMIT 5
-        ");
+    $recentTreatments = $conn->query("
+        SELECT s.created_at, p.firstname, p.surname, t.description
+        FROM services_monitoring_chart s
+        JOIN treatments t ON s.treatment_code = t.code
+        JOIN patients p ON s.patient_id = p.patient_id
+        ORDER BY s.created_at DESC
+        LIMIT 5
+    ");
 
-        // Debug: Check what the query returns
-        $treatmentQueryDebug = "";
-        if ($recentTreatments) {
-            $treatmentQueryDebug = "Recent treatments query returned: " . $recentTreatments->num_rows . " rows\n";
-            if ($recentTreatments->num_rows > 0) {
-                while ($t = $recentTreatments->fetch_assoc()) {
-                    $recentTreatmentsData[] = $t;
-                    $treatmentQueryDebug .= "Found: " . $t['firstname'] . " " . $t['surname'] . " - " . $t['description'] . "\n";
-                }
-            }
-        } else {
-            $treatmentQueryDebug = "Recent treatments query error: " . $conn->error . "\n";
+    if ($recentTreatments) {
+        while ($t = $recentTreatments->fetch_assoc()) {
+            $recentTreatmentsData[] = $t;
         }
-    } else {
-        $treatmentQueryDebug = "services_monitoring_chart table doesn't exist\n";
-    }
-
-    // Let's also check what tables we have
-    $tablesResult = $conn->query("SHOW TABLES");
-    $tableList = [];
-    while ($row = $tablesResult->fetch_array()) {
-        $tableList[] = $row[0];
     }
 
     if ($conn) {
@@ -639,10 +424,14 @@ if (!$isOfflineMode && $conn && !$dbError) {
 } else {
     // Offline mode - set placeholder data
     $offlineDataAvailable = true;
+
+    // Simple placeholder data for charts
     $donutData = [['Sex', 'Total'], ['Male', 0], ['Female', 0]];
     $barangayData = [['Barangay', 'Patients'], ['No Data', 0]];
     $barData = [['Treatment', 'Count'], ['No Data', 0]];
     $lineData = [['Month', 'Visits'], [date('Y-m'), 0]];
+
+    // Simple stack data for offline
     $stackData = [['Month', 'Dental Caries', 'Gingivitis']];
     $currentMonth = date('F Y');
     $stackData[] = [$currentMonth, 0, 0];
@@ -662,251 +451,50 @@ if (!$isOfflineMode && $conn && !$dbError) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* Your existing styles remain the same with additions */
-        .clickable {
-            cursor: pointer !important;
-            transition: all 0.3s ease !important;
-        }
-
-        .clickable:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
-        }
-
-        .clickable-card {
-            cursor: pointer !important;
-            transition: all 0.3s ease !important;
-        }
-
-        .clickable-card:hover {
-            transform: translateY(-5px) !important;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
-        }
-
-        .clickable-row {
-            cursor: pointer !important;
-            transition: background-color 0.2s ease !important;
-        }
-
-        .clickable-row:hover {
-            background-color: #dbeafe !important;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1050;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content {
-            background-color: #fff;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 1000px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            animation: modalFadeIn 0.3s;
-        }
-
-        @keyframes modalFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
+        .offline-indicator {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: inline-flex;
             align-items: center;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            gap: 8px;
+            animation: pulse 2s infinite;
+            margin-left: 16px;
         }
 
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #1e3a8a;
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
         }
 
-        .close-btn {
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #6b7280;
-            transition: color 0.3s;
+        .offline-card {
+            border-left: 4px solid #f59e0b;
+            background: #fffbeb;
         }
 
-        .close-btn:hover {
-            color: #ef4444;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        .badge-male {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-female {
-            background-color: #fce7f3;
-            color: #be185d;
-        }
-
-        .badge-unknown {
-            background-color: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .badge-barangay {
-            background-color: #e0f2fe;
-            color: #0369a1;
-        }
-
-        .badge-treatment {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-
-        .badge-condition {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-visit {
-            background-color: #f3e8ff;
-            color: #7c3aed;
-        }
-
-        .patient-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .patient-table th {
-            background-color: #f8fafc;
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #e2e8f0;
-            font-weight: 600;
-            color: #475569;
-        }
-
-        .patient-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .patient-table tr:hover {
-            background-color: #f1f5f9;
-        }
-
-        .search-box {
-            margin-bottom: 20px;
+        .offline-feature-disabled {
+            opacity: 0.6;
             position: relative;
         }
 
-        .search-box input {
-            width: 100%;
-            padding: 10px 15px 10px 40px;
-            border: 1px solid #d1d5db;
+        .offline-data-placeholder {
+            background: #f3f4f6;
+            border: 2px dashed #d1d5db;
             border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-        }
-
-        .patient-count {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        .modal-tabs {
-            display: flex;
-            border-bottom: 1px solid #e5e7eb;
-            margin-bottom: 20px;
-        }
-
-        .modal-tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .modal-tab.active {
-            border-bottom: 3px solid #3b82f6;
-            color: #3b82f6;
-            font-weight: 600;
-        }
-
-        .modal-tab:hover {
-            background-color: #f3f4f6;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .info-icon {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: #6b7280;
-            cursor: help;
-            font-size: 14px;
-        }
-
-        .empty-state {
+            padding: 20px;
             text-align: center;
-            padding: 40px 20px;
             color: #6b7280;
         }
 
-        .empty-state i {
-            font-size: 48px;
-            margin-bottom: 16px;
-            color: #d1d5db;
-        }
-
-        /* Rest of your existing styles remain the same */
         .connection-status {
             position: fixed;
             top: 80px;
@@ -932,6 +520,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
             border: 1px solid #fde68a;
         }
 
+        /* Rest of your existing styles remain the same */
         .charts {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -982,25 +571,31 @@ if (!$isOfflineMode && $conn && !$dbError) {
             transition: transform .3s, box-shadow .3s;
             opacity: 0;
             animation: fadeUp .8s ease forwards;
-            position: relative;
         }
 
+        /* Container for all KPI cards */
         #kpi-cards-grid {
             display: flex;
             flex-wrap: wrap;
+            /* flex-direction: row; */
             gap: 1rem;
             margin-bottom: 20px;
+            /* border: solid 1px black; */
         }
 
+        /* Patient cards section */
         .patient-cards-section {
             display: flex;
             flex-wrap: wrap;
             gap: 1rem;
             flex: 1 1 auto;
+            /* allow to grow/shrink in the row */
             min-width: 200px;
             position: relative;
+            /* for filter button positioning */
         }
 
+        /* Filter button floating inside patient cards section */
         .filter-btn {
             position: absolute;
             top: -0.75rem;
@@ -1018,9 +613,11 @@ if (!$isOfflineMode && $conn && !$dbError) {
             font-size: 0.875rem;
         }
 
+        /* Dropdown menu */
         #filterDropdown {
             position: absolute;
             top: 2.5rem;
+            /* below button */
             right: 0;
             z-index: 50;
             display: none;
@@ -1035,11 +632,13 @@ if (!$isOfflineMode && $conn && !$dbError) {
             display: block;
         }
 
+        /* Patient cards themselves */
         .patient-cards-section .card {
             flex: 1 1 200px;
             min-width: 200px;
         }
 
+        /* Other KPI cards (always visible) */
         #kpi-cards-grid>.card {
             flex: 1 1 200px;
             min-width: 200px;
@@ -1081,6 +680,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 1.5rem;
+            /* border: solid 1px black; */
         }
 
         .chart-box {
@@ -1089,6 +689,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
             padding: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transition: transform .3s;
+            /* border: solid 1px black; */
         }
 
         .chart-box:hover {
@@ -1105,6 +706,10 @@ if (!$isOfflineMode && $conn && !$dbError) {
         }
 
         .tables:hover {
+            transform: scale(1.02);
+        }
+
+        .table-box:hover {
             transform: scale(1.02);
         }
 
@@ -1175,67 +780,6 @@ if (!$isOfflineMode && $conn && !$dbError) {
 </head>
 
 <body>
-    <!-- Patient Details Modal -->
-    <div id="patientModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="modalTitle">Patient Details</h2>
-                <span class="close-btn" onclick="closeModal()">&times;</span>
-            </div>
-
-            <div class="modal-tabs" id="modalTabs">
-                <div class="modal-tab active" data-tab="patients">Patients</div>
-                <div class="modal-tab" data-tab="stats">Statistics</div>
-            </div>
-
-            <div class="tab-content active" id="patientsTab">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="patientSearch" placeholder="Search patients by name, age, or address..."
-                        onkeyup="searchPatients()">
-                </div>
-                <div id="patientCount" class="text-sm text-gray-600 mb-4"></div>
-                <div class="overflow-x-auto">
-                    <table class="patient-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Age</th>
-                                <th>Address</th>
-                                <th>Gender</th>
-                                <th>Registration Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="patientList">
-                            <!-- Patient list will be populated here -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab-content" id="statsTab">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-blue-50 p-4 rounded-lg">
-                        <h4 class="font-semibold text-blue-800">Gender Distribution</h4>
-                        <div id="modalGenderChart" class="mt-2" style="height: 150px;"></div>
-                    </div>
-                    <div class="bg-green-50 p-4 rounded-lg">
-                        <h4 class="font-semibold text-green-800">Age Groups</h4>
-                        <div id="modalAgeChart" class="mt-2" style="height: 150px;"></div>
-                    </div>
-                    <div class="bg-purple-50 p-4 rounded-lg">
-                        <h4 class="font-semibold text-purple-800">Registration Year</h4>
-                        <div id="modalYearChart" class="mt-2" style="height: 150px;"></div>
-                    </div>
-                </div>
-                <div class="text-sm text-gray-600">
-                    <p>Statistics based on the filtered patient list.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
         <!-- Connection Status Indicator -->
         <div id="connectionStatus" class="connection-status <?php echo $isOfflineMode ? 'offline' : 'online'; ?> hidden">
@@ -1423,14 +967,12 @@ if (!$isOfflineMode && $conn && !$dbError) {
                         </button>
                         <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="./treatmentrecords/treatmentrecords.php?uid=<?php echo $userId;
-                                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                                <a href="./treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="./addpatienttreatment/patienttreatment.php?uid=<?php echo $userId;
-                                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                                <a href="./addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -1529,23 +1071,39 @@ if (!$isOfflineMode && $conn && !$dbError) {
                     ?>!
                 </h1>
 
-                <!-- Debug Information (Hidden by default) -->
-                <?php if (!$isOfflineMode && isset($treatmentQueryDebug)): ?>
-                    <div class="bg-gray-100 p-4 rounded-lg mb-6 hidden" id="debugInfo">
-                        <h3 class="font-bold mb-2">Database Debug Info:</h3>
-                        <pre class="text-sm"><?php
-                                                echo "Tables in database: " . implode(', ', $tableList) . "\n";
-                                                echo "Treatments chart query: " . ($treatmentDebug ?? 'N/A') . "\n";
-                                                echo "Recent treatments query: " . ($treatmentQueryDebug ?? 'N/A') . "\n";
-                                                echo "Visits query: " . ($visitDebug ?? 'N/A') . "\n";
-                                                ?></pre>
-                    </div>
-                <?php endif; ?>
-
                 <!-- Offline Data Management Panel -->
                 <?php if ($isOfflineMode): ?>
                     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-                        <!-- Your existing offline panel -->
+                        <div class="flex items-center mb-4">
+                            <i class="fas fa-database text-yellow-600 text-2xl mr-3"></i>
+                            <h3 class="text-lg font-semibold text-yellow-800">Offline Data Management</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
+                            <div>
+                                <span class="font-medium">Local Patients:</span>
+                                <span id="offlinePatientCount">0</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">Local Treatments:</span>
+                                <span id="offlineTreatmentCount">0</span>
+                            </div>
+                            <div>
+                                <span class="font-medium">Pending Sync:</span>
+                                <span id="pendingSyncCount">0</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="syncOfflineData()"
+                                class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors flex items-center gap-2">
+                                <i class="fas fa-sync"></i>
+                                Sync When Online
+                            </button>
+                            <button onclick="viewOfflinePatients()"
+                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <i class="fas fa-list"></i>
+                                View Local Data
+                            </button>
+                        </div>
                     </div>
                 <?php endif; ?>
 
@@ -1575,68 +1133,38 @@ if (!$isOfflineMode && $conn && !$dbError) {
                             </div>
                         <?php endif; ?>
 
-                        <!-- Patient Cards (Clickable) -->
-                        <div class="card clickable-card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>"
-                            data-group="total"
-                            onclick="<?php if (!$isOfflineMode): ?>showAllPatients()<?php endif; ?>"
-                            title="Click to view all patients">
-                            <i class="fas fa-info-circle info-icon" title="Total registered patients"></i>
+                        <!-- Patient Cards -->
+                        <div class="card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>" data-group="total">
                             <h3 class="font-medium">Total Patients</h3>
                             <h2 class="count-up" data-value="<?php echo $totalPatients; ?>">0</h2>
                             <?php if ($isOfflineMode): ?>
                                 <div class="text-xs text-orange-600 mt-1">Local data only</div>
                             <?php endif; ?>
                         </div>
-
-                        <div class="card clickable-card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>"
-                            data-group="children"
-                            style="display:none;"
-                            onclick="<?php if (!$isOfflineMode): ?>showAgeGroupPatients('children')<?php endif; ?>"
-                            title="Click to view children patients (0-12 years)">
+                        <div class="card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>" data-group="children" style="display:none;">
                             <h3>Total Children</h3>
                             <h2 class="count-up" data-value="<?php echo $totalChildren; ?>">0</h2>
                         </div>
-
-                        <div class="card clickable-card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>"
-                            data-group="youth"
-                            style="display:none;"
-                            onclick="<?php if (!$isOfflineMode): ?>showAgeGroupPatients('youth')<?php endif; ?>"
-                            title="Click to view youth patients (13-24 years)">
+                        <div class="card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>" data-group="youth" style="display:none;">
                             <h3 class="font-medium">Total Youth</h3>
                             <h2 class="count-up" data-value="<?php echo $totalYouth; ?>">0</h2>
                         </div>
-
-                        <div class="card clickable-card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>"
-                            data-group="adults"
-                            style="display:none;"
-                            onclick="<?php if (!$isOfflineMode): ?>showAgeGroupPatients('adults')<?php endif; ?>"
-                            title="Click to view adult patients (25+ years)">
+                        <div class="card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>" data-group="adults" style="display:none;">
                             <h3 class="font-medium">Total Adults</h3>
                             <h2 class="count-up" data-value="<?php echo $totalAdults; ?>">0</h2>
                         </div>
                     </div>
 
-                    <!-- Other KPI Cards (Clickable) -->
-                    <div class="card clickable-card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>"
-                        onclick="<?php if (!$isOfflineMode): ?>showActiveVisitsPatients()<?php endif; ?>"
-                        title="Click to view patients with visits today">
-                        <i class="fas fa-info-circle info-icon" title="Patients who visited today"></i>
+                    <!-- Other KPI Cards -->
+                    <div class="card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>">
                         <h3 class="font-medium">Active Visits Today</h3>
                         <h2 class="count-up" data-value="<?php echo $activeVisits; ?>">0</h2>
                     </div>
-
-                    <div class="card clickable-card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>"
-                        onclick="<?php if (!$isOfflineMode): ?>showTreatedPatients()<?php endif; ?>"
-                        title="Click to view patients who received treatments">
-                        <i class="fas fa-info-circle info-icon" title="Patients who received treatments"></i>
+                    <div class="card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>">
                         <h3 class="font-medium">Total Treatments Done</h3>
                         <h2 class="count-up" data-value="<?php echo $totalTreatments; ?>">0</h2>
                     </div>
-
-                    <div class="card clickable-card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>"
-                        onclick="<?php if (!$isOfflineMode): ?>showOralConditionPatients()<?php endif; ?>"
-                        title="Click to view patients with oral health conditions">
-                        <i class="fas fa-info-circle info-icon" title="Patients with oral health conditions"></i>
+                    <div class="card <?php echo $isOfflineMode ? 'offline-card' : ''; ?>">
                         <h3 class="font-medium">Patients with Conditions</h3>
                         <h2 class="count-up" data-value="<?php echo $patientsWithConditions; ?>">0</h2>
                     </div>
@@ -1655,13 +1183,13 @@ if (!$isOfflineMode && $conn && !$dbError) {
                             </div>
                         </div>
                     <?php else: ?>
-                        <!-- Online charts (All clickable) -->
-                        <div class="chart-box clickable" onclick="document.getElementById('donutchart').click()">
+                        <!-- Online charts -->
+                        <div class="chart-box">
                             <div class="chart-title">Male and Female Patients</div>
                             <div id="donutchart" style="height: 320px;"></div>
                         </div>
 
-                        <div class="chart-box clickable" onclick="document.getElementById('combochart_barangay').click()">
+                        <div class="chart-box">
                             <div class="chart-title">Patients per Barangay</div>
                             <div style="margin-bottom: 10px; text-align:center;">
                                 <label style="font-weight: medium; font-size:14px ;">Filter Year: </label>
@@ -1677,7 +1205,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                             <div id="combochart_barangay" style="height: 320px;"></div>
                         </div>
 
-                        <div class="chart-box clickable" onclick="document.getElementById('oralChart').click()">
+                        <div class="chart-box">
                             <div class="chart-title">Oral Health Condition</div>
                             <div style="text-align:center; margin-bottom:10px;">
                                 <label style="font-weight: medium; font-size:14px ;"><b>Filter Year:</b></label>
@@ -1691,94 +1219,63 @@ if (!$isOfflineMode && $conn && !$dbError) {
                             <div id="oralChart" style="height: 320px;"></div>
                         </div>
 
-                        <div class="chart-box clickable" onclick="document.getElementById('barchart').click()">
+                        <div class="chart-box">
                             <div class="chart-title">Most Common Treatments</div>
                             <div id="barchart" style="height: 320px;"></div>
                         </div>
 
-                        <div class="chart-box clickable" style="grid-column: 1 / -1;" onclick="document.getElementById('linechart').click()">
+                        <div class="chart-box" style="grid-column: 1 / -1;">
                             <div class="chart-title">Monthly Patient Visits Trend</div>
                             <div id="linechart" style="height: 380px;" class="relative"></div>
                         </div>
                     <?php endif; ?>
                 </div>
 
-                <!-- Tables (Clickable rows) -->
-                <?php if (!$isOfflineMode): ?>
-                    <!-- Recent Visits Table -->
+                <!-- Tables -->
+                <?php if (!$isOfflineMode && (!empty($recentVisitsData) || !empty($recentTreatmentsData))): ?>
                     <div class="tables">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold">Recent Visits</h3>
-                            <?php if (empty($recentVisitsData)): ?>
-                                <span class="text-sm text-gray-500">No visits recorded</span>
-                            <?php endif; ?>
-                        </div>
-                        <?php if (!empty($recentVisitsData)): ?>
-                            <table>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Patient Name</th>
-                                    <th>Action</th>
-                                </tr>
+                        <h3 class="font-bold">Recent Visits</h3>
+                        <table>
+                            <tr>
+                                <th>Date</th>
+                                <th>Patient Name</th>
+                            </tr>
+                            <?php if (!empty($recentVisitsData)): ?>
                                 <?php foreach ($recentVisitsData as $v): ?>
-                                    <tr class="clickable-row" onclick="viewPatientDetails(<?php echo $v['patient_id']; ?>)">
+                                    <tr>
                                         <td><?php echo $v['visit_date']; ?></td>
                                         <td><?php echo $v['firstname'] . " " . $v['surname']; ?></td>
-                                        <td>
-                                            <button class="text-blue-600 hover:text-blue-800 text-sm"
-                                                onclick="event.stopPropagation(); viewVisitDetails(<?php echo $v['visit_id']; ?>)">
-                                                <i class="fas fa-eye mr-1"></i>View Details
-                                            </button>
-                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
-                            </table>
-                        <?php else: ?>
-                            <div class="empty-state">
-                                <i class="fas fa-calendar-check"></i>
-                                <p>No recent visits found</p>
-                                <p class="text-sm mt-2">Patient visits will appear here once recorded</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Recent Treatments Table -->
-                    <div class="tables">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold">Recent Treatments</h3>
-                            <?php if (empty($recentTreatmentsData)): ?>
-                                <span class="text-sm text-gray-500">No treatments recorded</span>
-                            <?php endif; ?>
-                        </div>
-                        <?php if (!empty($recentTreatmentsData)): ?>
-                            <table>
+                            <?php else: ?>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Patient Name</th>
-                                    <th>Treatment</th>
-                                    <th>Action</th>
+                                    <td colspan="2" class="text-center text-gray-500 py-4">No recent visits</td>
                                 </tr>
+                            <?php endif; ?>
+                        </table>
+                    </div>
+                    <div class="tables">
+                        <h3 class="font-bold">Recent Treatments</h3>
+                        <table>
+                            <tr>
+                                <th>Date</th>
+                                <th>Patient Name</th>
+                                <th>Treatment</th>
+                            </tr>
+                            <?php if (!empty($recentTreatmentsData)): ?>
                                 <?php foreach ($recentTreatmentsData as $t): ?>
-                                    <tr class="clickable-row" onclick="viewPatientDetails(<?php echo $t['patient_id']; ?>)">
+                                    <tr>
                                         <td><?php echo $t['created_at']; ?></td>
                                         <td><?php echo $t['firstname'] . " " . $t['surname']; ?></td>
-                                        <td><?php echo $t['description'] ?? 'Unknown Treatment'; ?></td>
-                                        <td>
-                                            <button class="text-blue-600 hover:text-blue-800 text-sm"
-                                                onclick="event.stopPropagation(); viewTreatmentDetails(<?php echo $t['id']; ?>, '<?php echo $t['description'] ?? 'Unknown'; ?>')">
-                                                <i class="fas fa-eye mr-1"></i>View Details
-                                            </button>
-                                        </td>
+                                        <td><?php echo $t['description']; ?></td>
                                     </tr>
                                 <?php endforeach; ?>
-                            </table>
-                        <?php else: ?>
-                            <div class="empty-state">
-                                <i class="fas fa-stethoscope"></i>
-                                <p>No recent treatments found</p>
-                                <p class="text-sm mt-2">Patient treatments will appear here once recorded</p>
-                            </div>
-                        <?php endif; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="3" class="text-center text-gray-500 py-4">No recent treatments</td>
+                                </tr>
+                            <?php endif; ?>
+                        </table>
                     </div>
                 <?php endif; ?>
             </div>
@@ -1794,423 +1291,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
     <script src="/dentalemr_system/js/local-auth.js"></script>
 
     <script>
-        // Data passed from PHP
-        const genderData = {
-            male: <?php echo json_encode($malePatients); ?>,
-            female: <?php echo json_encode($femalePatients); ?>,
-            unknown: <?php echo json_encode($unknownGenderPatients); ?>
-        };
-
-        const barangayData = <?php echo json_encode($patientsByBarangay); ?>;
-        const conditionData = <?php echo json_encode($patientsByCondition); ?>;
-        const treatmentData = <?php echo json_encode($patientsByTreatment); ?>;
-        const monthData = <?php echo json_encode($patientsByMonth); ?>;
-        const ageGroupData = <?php echo json_encode($patientsByAgeGroup); ?>;
-
-        // Additional patient lists
-        const allPatients = <?php echo json_encode(array_merge($malePatients, $femalePatients, $unknownGenderPatients)); ?>;
-        const activeVisitsPatients = <?php echo json_encode($patientsWithActiveVisits); ?>;
-        const treatedPatients = <?php echo json_encode($patientsWithTreatments); ?>;
-        const oralConditionPatients = <?php echo json_encode($patientsWithOralConditions); ?>;
-
-        // Debug: Show data counts
-        console.log('Data loaded:', {
-            allPatients: allPatients.length,
-            recentTreatmentsData: <?php echo json_encode($recentTreatmentsData); ?>,
-            treatmentData: Object.keys(treatmentData || {}).length,
-            treatedPatients: treatedPatients.length
-        });
-
-        // Current modal data
-        let currentModalData = {
-            type: '',
-            title: '',
-            patients: []
-        };
-
-        // ========== CARD FUNCTIONS ==========
-        function showAllPatients() {
-            showPatientDetails('All Patients', allPatients, 'badge-barangay');
-        }
-
-        function showAgeGroupPatients(ageGroup) {
-            let title = '';
-            switch (ageGroup) {
-                case 'children':
-                    title = 'Children Patients (0-12 years)';
-                    break;
-                case 'youth':
-                    title = 'Youth Patients (13-24 years)';
-                    break;
-                case 'adults':
-                    title = 'Adult Patients (25+ years)';
-                    break;
-            }
-            showPatientDetails(title, ageGroupData[ageGroup] || [], 'badge-treatment');
-        }
-
-        function showActiveVisitsPatients() {
-            showPatientDetails('Patients with Visits Today', activeVisitsPatients, 'badge-visit');
-        }
-
-        function showTreatedPatients() {
-            showPatientDetails('Patients Who Received Treatments', treatedPatients, 'badge-treatment');
-        }
-
-        function showOralConditionPatients() {
-            showPatientDetails('Patients with Oral Health Conditions', oralConditionPatients, 'badge-condition');
-        }
-
-        // ========== CHART FUNCTIONS ==========
-        function showGenderDetails(gender) {
-            let genderText = '';
-            let badgeClass = '';
-            let patients = [];
-
-            switch (gender) {
-                case 'Male':
-                    genderText = 'Male Patients';
-                    badgeClass = 'badge-male';
-                    patients = genderData.male;
-                    break;
-                case 'Female':
-                    genderText = 'Female Patients';
-                    badgeClass = 'badge-female';
-                    patients = genderData.female;
-                    break;
-                case 'Unknown':
-                    genderText = 'Unknown Gender Patients';
-                    badgeClass = 'badge-unknown';
-                    patients = genderData.unknown;
-                    break;
-            }
-
-            showPatientDetails(genderText, patients, badgeClass);
-        }
-
-        function showBarangayDetails(barangay) {
-            const patients = barangayData[barangay] || [];
-            showPatientDetails(`${barangay} Patients`, patients, 'badge-barangay');
-        }
-
-        function showConditionDetails(conditionName) {
-            // Map display names to field names
-            const conditionMap = {
-                'Orally Fit Child': 'orally_fit_child',
-                'Dental Caries': 'dental_caries',
-                'Gingivitis': 'gingivitis',
-                'Periodontal Disease': 'periodontal_disease',
-                'Others': 'others',
-                'Debris': 'debris',
-                'Calculus': 'calculus',
-                'Abnormal Growth': 'abnormal_growth',
-                'Cleft Palate': 'cleft_palate'
-            };
-
-            const fieldName = conditionMap[conditionName];
-            const patients = conditionData[fieldName] || [];
-            showPatientDetails(`${conditionName} Patients`, patients, 'badge-condition');
-        }
-
-        function showTreatmentDetails(treatmentName) {
-            const patients = treatmentData[treatmentName] || [];
-            showPatientDetails(`${treatmentName} Patients`, patients, 'badge-treatment');
-        }
-
-        function showMonthDetails(month) {
-            const patients = monthData[month] || [];
-            const formattedMonth = formatMonth(month);
-            showPatientDetails(`Patients Visited in ${formattedMonth}`, patients, 'badge-visit');
-        }
-
-        function formatMonth(monthString) {
-            if (!monthString) return 'Unknown Month';
-            const [year, month] = monthString.split('-');
-            const date = new Date(year, month - 1);
-            return date.toLocaleDateString('en-US', {
-                month: 'long',
-                year: 'numeric'
-            });
-        }
-
-        // ========== MAIN MODAL FUNCTION ==========
-        function showPatientDetails(title, patients, badgeClass) {
-            const modal = document.getElementById('patientModal');
-            const modalTitle = document.getElementById('modalTitle');
-
-            // Store current modal data
-            currentModalData = {
-                type: 'custom',
-                title: title,
-                patients: patients
-            };
-
-            const badgeText = badgeClass ? `<span class="badge ${badgeClass}">${patients.length} patients</span>` : '';
-            modalTitle.innerHTML = `${title} ${badgeText}`;
-            updatePatientList(patients);
-
-            // Reset to patients tab
-            switchTab('patients');
-
-            // Show modal
-            modal.style.display = 'block';
-
-            // Reset search
-            document.getElementById('patientSearch').value = '';
-
-            // Draw statistics charts
-            setTimeout(() => drawStatisticsCharts(patients), 100);
-        }
-
-        function updatePatientList(patients) {
-            const patientList = document.getElementById('patientList');
-            const patientCount = document.getElementById('patientCount');
-
-            // Update patient count
-            patientCount.innerHTML = `
-                Showing ${patients.length} patients. Click on a patient for detailed view.
-            `;
-
-            // Clear previous list
-            patientList.innerHTML = '';
-
-            // Populate patient list
-            patients.forEach(patient => {
-                const row = document.createElement('tr');
-                const fullName = `${patient.firstname} ${patient.middlename ? patient.middlename + ' ' : ''}${patient.surname}`;
-                const genderBadge = getGenderBadge(patient.sex);
-
-                row.innerHTML = `
-                    <td>${patient.patient_id}</td>
-                    <td class="font-medium">${fullName}</td>
-                    <td>${patient.age}</td>
-                    <td>${patient.address || 'N/A'}</td>
-                    <td>${genderBadge}</td>
-                    <td>${new Date(patient.created_at).toLocaleDateString()}</td>
-                `;
-                row.style.cursor = 'pointer';
-                row.onclick = () => viewPatientDetails(patient.patient_id);
-                patientList.appendChild(row);
-            });
-        }
-
-        function drawStatisticsCharts(patients) {
-            if (patients.length === 0) return;
-
-            // Gender distribution
-            const genderCounts = {
-                male: 0,
-                female: 0,
-                unknown: 0
-            };
-
-            patients.forEach(patient => {
-                const sex = patient.sex ? patient.sex.toUpperCase() : '';
-                if (sex === 'M' || sex === 'MALE') {
-                    genderCounts.male++;
-                } else if (sex === 'F' || sex === 'FEMALE') {
-                    genderCounts.female++;
-                } else {
-                    genderCounts.unknown++;
-                }
-            });
-
-            const genderChartData = [
-                ['Gender', 'Count'],
-                ['Male', genderCounts.male],
-                ['Female', genderCounts.female],
-                ['Unknown', genderCounts.unknown]
-            ];
-
-            // Age groups
-            const ageGroups = {
-                'Children (0-12)': 0,
-                'Youth (13-24)': 0,
-                'Adults (25+)': 0
-            };
-
-            patients.forEach(patient => {
-                const age = parseInt(patient.age) || 0;
-                if (age <= 12) {
-                    ageGroups['Children (0-12)']++;
-                } else if (age <= 24) {
-                    ageGroups['Youth (13-24)']++;
-                } else {
-                    ageGroups['Adults (25+)']++;
-                }
-            });
-
-            const ageChartData = [
-                ['Age Group', 'Count'],
-                ['Children (0-12)', ageGroups['Children (0-12)']],
-                ['Youth (13-24)', ageGroups['Youth (13-24)']],
-                ['Adults (25+)', ageGroups['Adults (25+)']]
-            ];
-
-            // Registration years
-            const yearCounts = {};
-            patients.forEach(patient => {
-                const year = new Date(patient.created_at).getFullYear();
-                yearCounts[year] = (yearCounts[year] || 0) + 1;
-            });
-
-            const yearChartData = [
-                ['Year', 'Count']
-            ];
-            Object.keys(yearCounts).sort().forEach(year => {
-                yearChartData.push([year.toString(), yearCounts[year]]);
-            });
-
-            // Draw charts
-            google.charts.setOnLoadCallback(() => {
-                // Gender chart
-                const genderDataTable = google.visualization.arrayToDataTable(genderChartData);
-                const genderOptions = {
-                    pieHole: 0.4,
-                    legend: {
-                        position: 'bottom'
-                    },
-                    colors: ['#3b82f6', '#ef4444', '#6b7280'],
-                    chartArea: {
-                        width: '90%',
-                        height: '80%'
-                    }
-                };
-                const genderChart = new google.visualization.PieChart(document.getElementById('modalGenderChart'));
-                genderChart.draw(genderDataTable, genderOptions);
-
-                // Age chart
-                const ageDataTable = google.visualization.arrayToDataTable(ageChartData);
-                const ageOptions = {
-                    legend: {
-                        position: 'none'
-                    },
-                    colors: ['#10b981', '#f59e0b', '#8b5cf6'],
-                    chartArea: {
-                        width: '80%',
-                        height: '80%'
-                    },
-                    bar: {
-                        groupWidth: '50%'
-                    }
-                };
-                const ageChart = new google.visualization.ColumnChart(document.getElementById('modalAgeChart'));
-                ageChart.draw(ageDataTable, ageOptions);
-
-                // Year chart
-                if (yearChartData.length > 1) {
-                    const yearDataTable = google.visualization.arrayToDataTable(yearChartData);
-                    const yearOptions = {
-                        legend: {
-                            position: 'none'
-                        },
-                        colors: ['#8b5cf6'],
-                        chartArea: {
-                            width: '80%',
-                            height: '80%'
-                        },
-                        hAxis: {
-                            title: 'Year'
-                        },
-                        vAxis: {
-                            title: 'Patients'
-                        }
-                    };
-                    const yearChart = new google.visualization.ColumnChart(document.getElementById('modalYearChart'));
-                    yearChart.draw(yearDataTable, yearOptions);
-                }
-            });
-        }
-
-        function switchTab(tabName) {
-            // Update tabs
-            document.querySelectorAll('.modal-tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.dataset.tab === tabName) {
-                    tab.classList.add('active');
-                }
-            });
-
-            // Update content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-                if (content.id === tabName + 'Tab') {
-                    content.classList.add('active');
-                }
-            });
-
-            // If switching to stats tab, draw charts
-            if (tabName === 'stats' && currentModalData.patients.length > 0) {
-                drawStatisticsCharts(currentModalData.patients);
-            }
-        }
-
-        function getGenderBadge(sex) {
-            const sexUpper = sex ? sex.toUpperCase() : '';
-            let badgeClass = '';
-            let badgeText = '';
-
-            if (sexUpper === 'M' || sexUpper === 'MALE') {
-                badgeClass = 'badge-male';
-                badgeText = 'Male';
-            } else if (sexUpper === 'F' || sexUpper === 'FEMALE') {
-                badgeClass = 'badge-female';
-                badgeText = 'Female';
-            } else {
-                badgeClass = 'badge-unknown';
-                badgeText = 'Unknown';
-            }
-
-            return `<span class="badge ${badgeClass}">${badgeText}</span>`;
-        }
-
-        function closeModal() {
-            document.getElementById('patientModal').style.display = 'none';
-        }
-
-        function searchPatients() {
-            const searchTerm = document.getElementById('patientSearch').value.toLowerCase();
-            const rows = document.querySelectorAll('#patientList tr');
-            let visibleCount = 0;
-
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                if (text.includes(searchTerm)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            // Update count
-            document.getElementById('patientCount').innerHTML = `
-                Showing ${visibleCount} of ${rows.length} patients. ${searchTerm ? '(Filtered)' : ''}
-            `;
-        }
-
-        function viewPatientDetails(patientId) {
-            alert(`Viewing details for patient ID: ${patientId}\n\nRedirecting to patient profile...`);
-            window.location.href = `/dentalemr_system/html/treatmentrecords/view_info.php?id=${patientId}&uid=<?php echo $userId; ?>`;
-        }
-
-        function viewVisitDetails(visitId) {
-            alert(`Viewing details for visit ID: ${visitId}\n\nThis would show visit-specific information.`);
-        }
-
-        function viewTreatmentDetails(treatmentId, treatmentName) {
-            alert(`Viewing details for treatment: ${treatmentName}\n\nTreatment ID: ${treatmentId}`);
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('patientModal');
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
-
-        // ========== GOOGLE CHARTS ==========
+        // Only load Google Charts and draw charts if we're online
         <?php if (!$isOfflineMode): ?>
             google.charts.load('current', {
                 packages: ['corechart', 'bar', 'line']
@@ -2218,7 +1299,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
             google.charts.setOnLoadCallback(drawCharts);
 
             function drawCharts() {
-                // 1. Donut Chart (Male and Female)
+                // Donut Chart (Male and Female)
                 var donutData = google.visualization.arrayToDataTable(<?php echo json_encode($donutData); ?>);
                 var donutOptions = {
                     pieHole: 0.45,
@@ -2229,30 +1310,15 @@ if (!$isOfflineMode && $conn && !$dbError) {
                         width: '85%',
                         height: '80%'
                     },
-                    colors: ['#4f46e5', '#ef4444', '#6b7280'],
+                    colors: ['#4f46e5', '#ef4444'],
                     animation: {
                         duration: 1000,
                         easing: 'out'
-                    },
-                    tooltip: {
-                        text: 'value'
                     }
                 };
+                new google.visualization.PieChart(document.getElementById('donutchart')).draw(donutData, donutOptions);
 
-                var donutChart = new google.visualization.PieChart(document.getElementById('donutchart'));
-                donutChart.draw(donutData, donutOptions);
-
-                // Add click event to donut chart
-                google.visualization.events.addListener(donutChart, 'select', function() {
-                    var selection = donutChart.getSelection();
-                    if (selection.length > 0) {
-                        var item = selection[0];
-                        var gender = donutData.getValue(item.row, 0);
-                        showGenderDetails(gender);
-                    }
-                });
-
-                // 2. Barangay Chart
+                // Barangay Chart
                 var rawBarangay = <?php echo json_encode($barangayData); ?>;
                 var barangayPieData = google.visualization.arrayToDataTable(rawBarangay);
                 var barangayPieOptions = {
@@ -2266,28 +1332,11 @@ if (!$isOfflineMode && $conn && !$dbError) {
                         duration: 1000,
                         easing: 'out'
                     },
-                    colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#14b8a6', '#f472b6', '#8b5cf6', '#06b6d4', '#db2777', '#84cc16'],
-                    tooltip: {
-                        text: 'value'
-                    }
+                    colors: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#14b8a6', '#f472b6', '#8b5cf6', '#06b6d4', '#db2777', '#84cc16']
                 };
+                new google.visualization.PieChart(document.getElementById('combochart_barangay')).draw(barangayPieData, barangayPieOptions);
 
-                var barangayChart = new google.visualization.PieChart(document.getElementById('combochart_barangay'));
-                barangayChart.draw(barangayPieData, barangayPieOptions);
-
-                // Add click event to barangay chart
-                google.visualization.events.addListener(barangayChart, 'select', function() {
-                    var selection = barangayChart.getSelection();
-                    if (selection.length > 0) {
-                        var item = selection[0];
-                        if (item.row > 0) {
-                            var barangay = barangayPieData.getValue(item.row, 0);
-                            showBarangayDetails(barangay);
-                        }
-                    }
-                });
-
-                // 3. Oral Examination Chart (Stacked Column Chart)
+                // Oral Examination Chart
                 let rawStack = <?php echo json_encode($stackData); ?>;
                 const selectedYear = document.getElementById("oralYearFilter")?.value || "";
                 let filteredStack = rawStack;
@@ -2305,7 +1354,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                     return row;
                 });
 
-                const stackDataTable = google.visualization.arrayToDataTable(filteredStack);
+                const stackData = google.visualization.arrayToDataTable(filteredStack);
                 const condColors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#14b8a6', '#f472b6', '#8b5cf6', '#06b6d4', '#f87171', '#84cc16', '#ec4899'];
                 const stackOptions = {
                     title: "Total Cases of Oral Examination",
@@ -2319,53 +1368,33 @@ if (!$isOfflineMode && $conn && !$dbError) {
                         height: '70%'
                     },
                     hAxis: {
-                        title: "Month",
-                        slantedText: true,
-                        slantedTextAngle: 45
+                        title: "Month"
                     },
                     vAxis: {
                         title: "Number of Cases"
                     },
-                    colors: condColors.slice(0, stackDataTable.getNumberOfColumns() - 1),
+                    colors: condColors.slice(0, stackData.getNumberOfColumns() - 1),
                     animation: {
                         startup: true,
                         duration: 1200,
                         easing: 'out'
-                    },
-                    tooltip: {
-                        text: 'value'
                     }
                 };
+                new google.visualization.ColumnChart(document.getElementById('oralChart')).draw(stackData, stackOptions);
 
-                var oralChart = new google.visualization.ColumnChart(document.getElementById('oralChart'));
-                oralChart.draw(stackDataTable, stackOptions);
-
-                // Add click event to oral health chart
-                google.visualization.events.addListener(oralChart, 'select', function() {
-                    var selection = oralChart.getSelection();
-                    if (selection.length > 0) {
-                        var item = selection[0];
-                        var columnIndex = item.column;
-                        if (columnIndex > 0) {
-                            var conditionName = stackDataTable.getColumnLabel(columnIndex);
-                            showConditionDetails(conditionName);
-                        }
-                    }
-                });
-
-                // 4. Most Common treatment Chart
+                // Most Common treatment Chart
                 var rawBar = <?php echo json_encode($barData); ?>;
-                var barDataTable = new google.visualization.DataTable();
-                barDataTable.addColumn('string', rawBar[0][0]);
-                barDataTable.addColumn('number', rawBar[0][1]);
-                barDataTable.addColumn({
+                var barData = new google.visualization.DataTable();
+                barData.addColumn('string', rawBar[0][0]);
+                barData.addColumn('number', rawBar[0][1]);
+                barData.addColumn({
                     type: 'string',
                     role: 'style'
                 });
 
                 var colors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#14b8a6', '#f472b6'];
                 for (var i = 1; i < rawBar.length; i++) {
-                    barDataTable.addRow([rawBar[i][0], rawBar[i][1], 'color: ' + colors[(i - 1) % colors.length]]);
+                    barData.addRow([rawBar[i][0], rawBar[i][1], 'color: ' + colors[(i - 1) % colors.length]]);
                 }
 
                 var barOptions = {
@@ -2380,31 +1409,12 @@ if (!$isOfflineMode && $conn && !$dbError) {
                         startup: true,
                         duration: 1000,
                         easing: 'out'
-                    },
-                    tooltip: {
-                        text: 'value'
-                    },
-                    hAxis: {
-                        slantedText: true,
-                        slantedTextAngle: 45
                     }
                 };
+                new google.visualization.ColumnChart(document.getElementById('barchart')).draw(barData, barOptions);
 
-                var barChart = new google.visualization.ColumnChart(document.getElementById('barchart'));
-                barChart.draw(barDataTable, barOptions);
-
-                // Add click event to treatment chart
-                google.visualization.events.addListener(barChart, 'select', function() {
-                    var selection = barChart.getSelection();
-                    if (selection.length > 0) {
-                        var item = selection[0];
-                        var treatmentName = barDataTable.getValue(item.row, 0);
-                        showTreatmentDetails(treatmentName);
-                    }
-                });
-
-                // 5. Line Chart
-                var lineDataTable = google.visualization.arrayToDataTable(<?php echo json_encode($lineData); ?>);
+                // Line Chart
+                var lineData = google.visualization.arrayToDataTable(<?php echo json_encode($lineData); ?>);
                 var lineOptions = {
                     legend: {
                         position: 'bottom'
@@ -2419,39 +1429,22 @@ if (!$isOfflineMode && $conn && !$dbError) {
                         duration: 1000,
                         easing: 'inAndOut'
                     },
-                    colors: ['#10b981'],
-                    tooltip: {
-                        text: 'value'
-                    },
-                    hAxis: {
-                        slantedText: true,
-                        slantedTextAngle: 45
-                    }
+                    colors: ['#10b981']
                 };
-
-                var lineChart = new google.visualization.LineChart(document.getElementById('linechart'));
-                lineChart.draw(lineDataTable, lineOptions);
-
-                // Add click event to line chart
-                google.visualization.events.addListener(lineChart, 'select', function() {
-                    var selection = lineChart.getSelection();
-                    if (selection.length > 0) {
-                        var item = selection[0];
-                        var month = lineDataTable.getValue(item.row, 0);
-                        showMonthDetails(month);
-                    }
-                });
+                new google.visualization.LineChart(document.getElementById('linechart')).draw(lineData, lineOptions);
             }
         <?php endif; ?>
 
-        // ========== INITIALIZATION ==========
+        // Enhanced offline functionality
         const isOfflineMode = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
 
+        // Show connection status
         document.addEventListener('DOMContentLoaded', function() {
             const connectionStatus = document.getElementById('connectionStatus');
             if (connectionStatus) {
                 connectionStatus.classList.remove('hidden');
 
+                // Update status based on actual connection
                 if (!navigator.onLine) {
                     connectionStatus.className = 'connection-status offline';
                     connectionStatus.innerHTML = '<i class="fas fa-wifi-slash"></i><span>Offline Mode</span>';
@@ -2461,6 +1454,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                 }
             }
 
+            // Update offline stats if in offline mode
             if (isOfflineMode) {
                 updateOfflineStats();
             }
@@ -2484,13 +1478,6 @@ if (!$isOfflineMode && $conn && !$dbError) {
                     }
                 }
                 updateCounter();
-            });
-
-            // Tab switching
-            document.querySelectorAll('.modal-tab').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    switchTab(tab.dataset.tab);
-                });
             });
 
             // Filter functionality (only in online mode)
@@ -2521,29 +1508,10 @@ if (!$isOfflineMode && $conn && !$dbError) {
                         }
                     });
                 }
-
-                // Show debug info on double-click of title
-                const title = document.querySelector('h1');
-                if (title) {
-                    let clickCount = 0;
-                    title.addEventListener('click', function() {
-                        clickCount++;
-                        if (clickCount === 2) {
-                            const debugInfo = document.getElementById('debugInfo');
-                            if (debugInfo) {
-                                debugInfo.classList.toggle('hidden');
-                                clickCount = 0;
-                            }
-                        }
-                        setTimeout(() => {
-                            clickCount = 0;
-                        }, 500);
-                    });
-                }
             <?php endif; ?>
         });
 
-        // ========== CONNECTION MONITORING ==========
+        // Connection monitoring
         window.addEventListener('online', function() {
             const connectionStatus = document.getElementById('connectionStatus');
             if (connectionStatus) {
@@ -2551,6 +1519,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                 connectionStatus.innerHTML = '<i class="fas fa-wifi"></i><span>Online</span>';
             }
 
+            // If we were in offline mode, offer to reload
             if (isOfflineMode) {
                 if (confirm('Internet connection restored. Would you like to reload the page in online mode?')) {
                     window.location.href = window.location.href.replace('offline=true', '');
@@ -2565,6 +1534,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                 connectionStatus.innerHTML = '<i class="fas fa-wifi-slash"></i><span>Offline Mode</span>';
             }
 
+            // If we're not already in offline mode, offer to switch
             if (!isOfflineMode && !window.location.href.includes('offline=true')) {
                 setTimeout(() => {
                     if (confirm('Internet connection lost. Switch to offline mode?')) {
@@ -2574,7 +1544,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
             }
         });
 
-        // ========== UTILITY FUNCTIONS ==========
+        // Offline data management functions
         async function updateOfflineStats() {
             if (typeof offlineStorage !== 'undefined') {
                 try {
@@ -2600,6 +1570,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                     const success = await offlineStorage.syncOfflineData();
                     if (success) {
                         alert('Data synced successfully!');
+                        // Reload to show updated data
                         window.location.reload();
                     } else {
                         alert('Some data failed to sync. Please try again.');
@@ -2615,16 +1586,18 @@ if (!$isOfflineMode && $conn && !$dbError) {
 
         function viewOfflinePatients() {
             alert('This would show a modal with locally stored patients. Implementation needed.');
+            // You can implement a modal to show offline patients
         }
 
         function changeYear() {
             let year = document.getElementById("yearFilter").value;
             const params = new URLSearchParams(window.location.search);
+            const uid = params.get("uid");
             params.set("year", year);
             window.location.href = "http://localhost/dentalemr_system/html/index.php?" + params.toString();
         }
 
-        // ========== INACTIVITY LOGOUT ==========
+        // Client-side 10-minute inactivity logout
         let inactivityTime = 1800000;
         let logoutTimer;
 

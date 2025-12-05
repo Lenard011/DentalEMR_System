@@ -501,7 +501,7 @@
                         <label for="email" class="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                             <i class="fas fa-envelope mr-2"></i>Email Address
                         </label>
-                        <input type="email" name="email" id="email" placeholder="you@example.com"
+                        <input type="email" name="email" id="email" placeholder=""
                             class="input-field bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 dark:bg-gray-700 dark:border-gray-600"
                             required>
                     </div>
@@ -514,9 +514,9 @@
                             <input type="password" name="password" id="password" placeholder="••••••••"
                                 class="input-field bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 pr-12"
                                 required>
-                            <span class="password-toggle absolute right-3 top-3 text-gray-500 dark:text-gray-400">
+                            <!-- <span class="password-toggle absolute right-3 top-3 text-gray-500 dark:text-gray-400">
                                 <i class="fas fa-eye"></i>
-                            </span>
+                            </span> -->
                         </div>
                     </div>
 
@@ -569,30 +569,31 @@
                 <div id="staffAlert" class="alert"></div>
 
                 <form class="space-y-6" id="staffForm">
-                    <input type="hidden" name="userType" value="Staff" />
+                    <!-- Changed to match PHP backend expectation -->
+                    <input type="hidden" name="user_type" value="Staff" />
 
                     <div>
-                        <label for="staffusername"
-                            class="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <i class="fas fa-user mr-2"></i>Username
+                        <label for="staffEmail" class="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="fas fa-envelope mr-2"></i>Email Address
                         </label>
-                        <input type="text" name="staffusername" id="staffusername"
+                        <input type="email" name="email" id="staffEmail"
                             class="input-field bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                            placeholder="Enter your username" required>
+                            placeholder="Enter your email" required>
                     </div>
 
                     <div>
-                        <label for="staffpassword"
+                        <label for="staffPassword"
                             class="block mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
                             <i class="fas fa-lock mr-2"></i>Password
                         </label>
                         <div class="relative">
-                            <input type="password" name="staffpassword" id="staffpassword" placeholder="••••••••"
+                            <input type="password" name="password" id="staffPassword" placeholder="••••••••"
                                 class="input-field bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white pr-12"
                                 required>
-                            <span class="password-toggle absolute right-3 top-3 text-gray-500 dark:text-gray-400">
+                            <!-- <span
+                                class="password-toggle absolute right-3 top-3 text-gray-500 dark:text-gray-400 cursor-pointer">
                                 <i class="fas fa-eye"></i>
-                            </span>
+                            </span> -->
                         </div>
                     </div>
 
@@ -605,12 +606,12 @@
 
                     <div class="flex justify-between w-full">
                         <button type="button" id="staffBackBtn"
-                            class="btn-secondary text-white font-medium rounded-lg text-sm px-6 py-3 flex items-center">
+                            class="btn-secondary text-white font-medium rounded-lg cursor-pointer text-sm px-6 py-3 flex items-center">
                             <i class="fas fa-arrow-left mr-2"></i>
                             <span>Back</span>
                         </button>
                         <button type="submit"
-                            class="btn-primary text-white font-medium rounded-lg text-sm px-6 py-3 text-center flex items-center">
+                            class="btn-primary text-white font-medium rounded-lg cursor-pointer text-sm px-6 py-3 text-center flex items-center">
                             <span>Login</span>
                             <i class="fas fa-sign-in-alt ml-2"></i>
                             <div class="loading-spinner ml-2"></div>
@@ -904,15 +905,15 @@
                         console.log('Staff login response:', data);
                         if (data.includes('Login successful') || data.includes('verification code has been sent')) {
                             // Extract user data from response
-                            const username = document.getElementById('staffusername').value;
+                            const email = document.getElementById('staffEmail').value;
                             const userMatch = data.match(/user_id=(\d+)/);
                             const nameMatch = data.match(/user_name=([^&]+)/);
 
                             const userData = {
-                                email: username,
+                                email: email,
                                 type: 'Staff',
                                 id: userMatch ? userMatch[1] : Date.now(),
-                                name: nameMatch ? decodeURIComponent(nameMatch[1]) : username
+                                name: nameMatch ? decodeURIComponent(nameMatch[1]) : email.split('@')[0]
                             };
 
                             // Register for offline access and show password modal
@@ -924,12 +925,19 @@
                                 proceedWithRedirect(data, 'Staff');
                             }
 
-                        } else if (data.includes('No login data') || data.includes('Login failed')) {
-                            showAlert(alertDiv, 'Invalid username or password. Please try again.', 'error');
-                        } else if (data.includes('Please fill in all fields')) {
-                            showAlert(alertDiv, 'Please fill in all fields.', 'error');
                         } else {
-                            showAlert(alertDiv, 'An unexpected error occurred. Please try again.', 'error');
+                            // Handle login errors
+                            if (data.includes('Email not found') || data.includes('No login data')) {
+                                showAlert(alertDiv, 'Invalid email or password. Please try again.', 'error');
+                            } else if (data.includes('Incorrect password') || data.includes('Login failed')) {
+                                showAlert(alertDiv, 'Incorrect password. Please try again.', 'error');
+                            } else if (data.includes('Please fill in all fields')) {
+                                showAlert(alertDiv, 'Please fill in all fields.', 'error');
+                            } else if (data.includes('Invalid user type')) {
+                                showAlert(alertDiv, 'Invalid user type selected.', 'error');
+                            } else {
+                                showAlert(alertDiv, 'An unexpected error occurred. Please try again.', 'error');
+                            }
                         }
                     })
                     .catch(error => {
@@ -1111,8 +1119,8 @@
                     };
                 } else if (userType === 'Staff') {
                     credentials = {
-                        username: document.getElementById('staffusername').value,
-                        password: document.getElementById('staffpassword').value
+                        email: document.getElementById('staffEmail').value, // Changed from staffusername
+                        password: document.getElementById('staffPassword').value // Changed from staffpassword
                     };
                 }
 
@@ -1125,6 +1133,7 @@
 
                 showToast('Login attempt saved. Will retry when you are back online.', 'info');
             }
+
 
             function proceedWithRedirect(data, userType) {
                 if (data.includes('verification code has been sent')) {

@@ -2,190 +2,82 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
-// Check if we're in offline mode
-$isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
+// REQUIRE userId parameter for each page
+// Example usage: dashboard.php?uid=5
+if (!isset($_GET['uid'])) {
+    echo "<script>
+        alert('Invalid session. Please log in again.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
 
-// Enhanced session validation with offline support
-if ($isOfflineMode) {
-    // Offline mode session validation
-    $isValidSession = false;
+$userId = intval($_GET['uid']);
 
-    // Check if we have offline session data
-    if (isset($_SESSION['offline_user'])) {
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    } else {
-        // Try to create offline session from localStorage data
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const checkOfflineSession = () => {
-                    try {
-                        // Check sessionStorage first
-                        const sessionData = sessionStorage.getItem('dentalemr_current_user');
-                        if (sessionData) {
-                            const user = JSON.parse(sessionData);
-                            if (user && user.isOffline) {
-                                console.log('Valid offline session detected:', user.email);
-                                return true;
-                            }
-                        }
-                        
-                        // Fallback: check localStorage for offline users
-                        const offlineUsers = localStorage.getItem('dentalemr_local_users');
-                        if (offlineUsers) {
-                            const users = JSON.parse(offlineUsers);
-                            if (users && users.length > 0) {
-                                console.log('Offline users found in localStorage');
-                                return true;
-                            }
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error checking offline session:', error);
-                        return false;
-                    }
-                };
-                
-                if (!checkOfflineSession()) {
-                    alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
-                }
-            });
-        </script>";
+// CHECK IF THIS USER IS REALLY LOGGED IN
+if (
+    !isset($_SESSION['active_sessions']) ||
+    !isset($_SESSION['active_sessions'][$userId])
+) {
+    echo "<script>
+        alert('Please log in first.');
+        window.location.href = '/dentalemr_system/html/login/login.html';
+    </script>";
+    exit;
+}
 
-        // Create offline session for this request
-        $_SESSION['offline_user'] = [
-            'id' => 'offline_user',
-            'name' => 'Offline User',
-            'email' => 'offline@dentalclinic.com',
-            'type' => 'Dentist',
-            'isOffline' => true
-        ];
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    }
-} else {
-    // Online mode - normal session validation
-    if (!isset($_GET['uid'])) {
-        echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/treatmentrecords.php?offline=true';
-            } else {
-                alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
-        </script>";
-        exit;
-    }
+// PER-USER INACTIVITY TIMEOUT
+$inactiveLimit = 600; // 10 minutes
 
-    $userId = intval($_GET['uid']);
-    $isValidSession = false;
+if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
+    $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
 
-    // CHECK IF THIS USER IS REALLY LOGGED IN
-    if (
-        isset($_SESSION['active_sessions']) &&
-        isset($_SESSION['active_sessions'][$userId])
-    ) {
-        $userSession = $_SESSION['active_sessions'][$userId];
+    if ((time() - $lastActivity) > $inactiveLimit) {
 
-        // Check basic required fields
-        if (isset($userSession['id']) && isset($userSession['type'])) {
-            $isValidSession = true;
-            // Update last activity
-            $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-            $loggedUser = $userSession;
+        // Log out ONLY this user (not everyone)
+        unset($_SESSION['active_sessions'][$userId]);
+
+        // If no one else is logged in, end session entirely
+        if (empty($_SESSION['active_sessions'])) {
+            session_unset();
+            session_destroy();
         }
-    }
 
-    if (!$isValidSession) {
         echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/treatmentrecords.php?offline=true';
-            } else {
-                alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
+            alert('You have been logged out due to inactivity.');
+            window.location.href = '/dentalemr_system/html/login/login.html';
         </script>";
         exit;
     }
 }
 
-// PER-USER INACTIVITY TIMEOUT (Online mode only)
-if (!$isOfflineMode) {
-    $inactiveLimit = 1800; // 10 minutes
-
-    if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
-        $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
-
-        if ((time() - $lastActivity) > $inactiveLimit) {
-            // Log out ONLY this user (not everyone)
-            unset($_SESSION['active_sessions'][$userId]);
-
-            // If no one else is logged in, end session entirely
-            if (empty($_SESSION['active_sessions'])) {
-                session_unset();
-                session_destroy();
-            }
-
-            echo "<script>
-                alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            </script>";
-            exit;
-        }
-    }
-
-    // Update last activity timestamp
-    $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-}
+// Update last activity timestamp
+$_SESSION['active_sessions'][$userId]['last_activity'] = time();
 
 // GET USER DATA FOR PAGE USE
-if ($isOfflineMode) {
-    $loggedUser = $_SESSION['offline_user'];
-} else {
-    $loggedUser = $_SESSION['active_sessions'][$userId];
+$loggedUser = $_SESSION['active_sessions'][$userId];
+
+// Store user session info safely
+$host = "localhost";
+$dbUser = "root";
+$dbPass = "";
+$dbName = "dentalemr_system";
+
+$conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Database connection only for online mode
-$conn = null;
-if (!$isOfflineMode) {
-    $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
-
-    $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
-    if ($conn->connect_error) {
-        // If database fails but browser is online, show error
-        if (!isset($_GET['offline'])) {
-            echo "<script>
-                if (navigator.onLine) {
-                    alert('Database connection failed. Please try again.');
-                    console.error('Database error: " . addslashes($conn->connect_error) . "');
-                } else {
-                    // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/treatmentrecords.php?offline=true';
-                }
-            </script>";
-            exit;
-        }
+// Fetch dentist name if user is a dentist
+if ($loggedUser['type'] === 'Dentist') {
+    $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
+    $stmt->bind_param("i", $loggedUser['id']);
+    $stmt->execute();
+    $stmt->bind_result($dentistName);
+    if ($stmt->fetch()) {
+        $loggedUser['name'] = $dentistName;
     }
-
-    // Fetch dentist name if user is a dentist (only in online mode)
-    if ($conn && !$conn->connect_error && $loggedUser['type'] === 'Dentist') {
-        $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
-        $stmt->bind_param("i", $loggedUser['id']);
-        $stmt->execute();
-        $stmt->bind_result($dentistName);
-        if ($stmt->fetch()) {
-            $loggedUser['name'] = $dentistName;
-        }
-        $stmt->close();
-    }
+    $stmt->close();
 }
 ?>
 <!doctype html>
@@ -195,84 +87,11 @@ if (!$isOfflineMode) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Treatment Records</title>
+    <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        .offline-indicator {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            animation: pulse 2s infinite;
-            font-size: 0.875rem;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.8;
-            }
-        }
-
-        .offline-card {
-            border-left: 4px solid #f59e0b;
-            background: #fffbeb;
-        }
-
-        #syncToast {
-            transition: all 0.3s ease;
-        }
-
-        /* Sync notification styles */
-        .sync-notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            max-width: 350px;
-        }
-
-        .sync-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-        }
-
-        .sync-warning {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-        }
-
-        .sync-error {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
-
-        .sync-info {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-        }
-    </style>
 </head>
 
 <body>
-    <!-- Add connection status indicator -->
-    <div id="connectionStatus" class="hidden fixed top-4 right-4 z-60"></div>
-
-    <!-- Sync toast notification -->
-    <div id="syncToast" class="hidden fixed top-4 right-4 z-60"></div>
-
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
         <nav
             class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
@@ -301,12 +120,7 @@ if (!$isOfflineMode) {
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
                             Clinic</span>
                     </a>
-                    <?php if ($isOfflineMode): ?>
-                        <div class="offline-indicator ml-3">
-                            <i class="fas fa-wifi-slash"></i>
-                            <span>Offline Mode</span>
-                        </div>
-                    <?php endif; ?>
+
                 </div>
                 <!-- UserProfile -->
                 <div class="flex items-center lg:order-2">
@@ -358,17 +172,17 @@ if (!$isOfflineMode) {
                                     profile</a>
                             </li>
                             <li>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId; ?>"
+                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
                             <li>
-                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId; ?>"
+                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $userId; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">History logs</a>
                             </li>
                             <li>
-                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId; ?>"
+                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
                             </li>
                         </ul>
@@ -407,8 +221,7 @@ if (!$isOfflineMode) {
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                    echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="../index.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -422,8 +235,7 @@ if (!$isOfflineMode) {
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="../addpatient.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -463,8 +275,7 @@ if (!$isOfflineMode) {
                                     Records</a>
                             </li>
                             <li>
-                                <a href="../addpatienttreatment/patienttreatment.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                                                            echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                                <a href="../addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -473,8 +284,7 @@ if (!$isOfflineMode) {
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="../reports/targetclientlist.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -489,8 +299,7 @@ if (!$isOfflineMode) {
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                            echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="../reports/mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -503,8 +312,7 @@ if (!$isOfflineMode) {
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="../reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -519,8 +327,7 @@ if (!$isOfflineMode) {
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../archived.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                        <a href="../archived.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -552,6 +359,7 @@ if (!$isOfflineMode) {
                 </ul>
             </div>
         </aside>
+
         <main class="p-4 md:ml-64 h-auto pt-20">
             <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 ">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
@@ -664,8 +472,7 @@ if (!$isOfflineMode) {
                                     <tr class="border-b dark:border-gray-700">
                                         <td
                                             class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            Loading ...
-                                        </td>
+                                            Loading ...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -681,468 +488,267 @@ if (!$isOfflineMode) {
 
     </div>
 
+    <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
-    <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
-    </script>
-
+    <!-- Client-side 10-minute inactivity logout -->
     <script>
-        // ========== ULTRA-FAST TABLE SYSTEM ==========
-        let allPatients = [];
-        let currentPage = 1;
-        const rowsPerPage = 20; // Increased for better UX
-        let isTableLoading = false;
-        let lastFetchTime = 0;
-        const CACHE_TTL = 15000; // 15 seconds cache (reduced)
+        let inactivityTime = 600000; // 10 minutes in ms
+        let logoutTimer;
 
-        // Initialize with immediate cached render
-        document.addEventListener("DOMContentLoaded", () => {
-            // 1. Try to load from cache immediately (0ms delay)
-            const cached = localStorage.getItem('dentalemr_cached_patients');
-            if (cached) {
-                try {
-                    const data = JSON.parse(cached);
-                    if (Array.isArray(data) && data.length > 0) {
-                        allPatients = data.map(p => ({
-                            ...p,
-                            isOffline: false
-                        }));
-                        renderPatients(); // Render immediately from cache
-                        console.log('Rendered from cache:', allPatients.length, 'patients');
-                    }
-                } catch (e) {
-                    console.warn('Cache parse error:', e);
-                }
-            }
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                alert("You've been logged out due to 10 minutes of inactivity.");
+                window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>&";
+            }, inactivityTime);
+        }
 
-            // 2. Start async fetch in background
-            setTimeout(() => loadPatients(1, true), 10); // 10ms delay
-
-            // 3. Setup search
-            const searchInput = document.getElementById("simple-search");
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    setTimeout(() => {
-                        currentPage = 1;
-                        renderPatients();
-                    }, 200);
-                });
-            }
-
-            // 4. Setup filters
-            setupAddressFilters();
-
-            // 5. Setup connection monitoring (non-blocking)
-            setTimeout(setupConnectionMonitoring, 100);
+        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
+            document.addEventListener(evt, resetTimer, false);
         });
 
-        // Optimized patient loading
-        async function loadPatients(page = 1, force = false) {
-            if (isTableLoading && !force) return;
+        resetTimer();
+    </script>
 
+    <!-- tabel fetch  -->
+    <script>
+        let allPatients = [];
+        let uniqueAddresses = new Set();
+        let currentPage = 1;
+        const rowsPerPage = 10;
+
+        // Fetch patients
+        async function loadPatients(page = 1) {
             currentPage = page;
-            isTableLoading = true;
+            try {
+                const response = await fetch("/DentalEMR_System/php/treatmentrecords/treatment.php");
+                const text = await response.text();
+                console.log("Raw response:", text);
 
-            const now = Date.now();
+                const data = JSON.parse(text);
+                if (!Array.isArray(data)) throw new Error("Invalid data format");
+                allPatients = data;
 
-            // Only fetch from server if cache is stale or force refresh
-            if (force || (now - lastFetchTime > CACHE_TTL) || allPatients.length === 0) {
-                try {
-                    // Show minimal loading indicator
-                    const tbody = document.getElementById("patients-body");
-                    if (tbody && tbody.children.length <= 1) {
-                        tbody.innerHTML = `
-                <tr>
-                    <td colspan="6" class="text-center py-3">
-                        <div class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-600 border-r-transparent"></div>
-                        <span class="ml-2 text-sm">Loading...</span>
-                    </div>
-                </td>
-                </tr>`;
-                    }
-
-                    // Fetch with timeout
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-                    const url = `/DentalEMR_System/php/treatmentrecords/treatment.php?page=${page}&limit=100&_=${Date.now()}`;
-                    const response = await fetch(url, {
-                        signal: controller.signal,
-                        headers: {
-                            'Cache-Control': 'no-cache, no-store, must-revalidate',
-                            'Pragma': 'no-cache'
-                        }
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                    const data = await response.json();
-
-                    if (data.patients && Array.isArray(data.patients)) {
-                        // Update cache
-                        allPatients = data.patients.map(p => ({
-                            ...p,
-                            isOffline: false
-                        }));
-                        lastFetchTime = Date.now();
-
-                        // Store in localStorage for offline use
-                        localStorage.setItem('dentalemr_cached_patients', JSON.stringify(data.patients));
-
-                        // Update filters if needed
-                        updateAddressFilters();
-
-                        // Render immediately
-                        renderPatients();
-
-                        console.log('Loaded from server:', allPatients.length, 'patients');
-                    }
-
-                } catch (error) {
-                    console.error('Load error:', error);
-                    // If we have cached data, keep showing it
-                    if (allPatients.length === 0) {
-                        const tbody = document.getElementById("patients-body");
-                        if (tbody) {
-                            tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center py-6 text-gray-500">
-                            Unable to load data. ${navigator.onLine ? 'Please try again.' : 'You are offline.'}
-                        </td>
-                    </tr>`;
-                        }
-                    }
-                } finally {
-                    isTableLoading = false;
+                const addresses = [...new Set(data.map(p => p.address || ""))];
+                if (JSON.stringify([...uniqueAddresses]) !== JSON.stringify(addresses)) {
+                    uniqueAddresses = new Set(addresses);
+                    renderAddressFilters(addresses);
                 }
-            } else {
-                // Use cached data
+
                 renderPatients();
-                isTableLoading = false;
+            } catch (error) {
+                console.error("Error loading patients:", error);
+                const tbody = document.getElementById("patients-body");
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-red-500">
+            Error loading patient data.
+        </td></tr>`;
             }
         }
 
-        // Optimized render function
         function renderPatients() {
             const tbody = document.getElementById("patients-body");
-            if (!tbody || allPatients.length === 0) return;
+            const searchInput = (document.getElementById("simple-search").value || "").toLowerCase();
+            const selectedAddresses = Array.from(document.querySelectorAll('#filterDropdown input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
 
-            // Get search term
-            const searchInput = document.getElementById("simple-search");
-            const searchTerm = (searchInput?.value || "").toLowerCase().trim();
-
-            // Get active filters
-            const addressFilter = document.querySelectorAll('#filterDropdown input[type="checkbox"]:checked');
-            const selectedAddresses = Array.from(addressFilter).map(cb => cb.value);
-
-            // Fast filtering
             const filtered = allPatients.filter(patient => {
-                // Search filter
-                if (searchTerm) {
-                    const fullname = (patient.fullname || "").toLowerCase();
-                    const address = (patient.address || "").toLowerCase();
-                    if (!fullname.includes(searchTerm) && !address.includes(searchTerm)) {
-                        return false;
-                    }
-                }
-
-                // Address filter
-                if (selectedAddresses.length > 0) {
-                    const patientAddress = patient.address || "";
-                    if (!selectedAddresses.includes(patientAddress)) {
-                        return false;
-                    }
-                }
-
-                return true;
+                const name = (patient.fullname || "").toLowerCase();
+                const address = patient.address || "";
+                const matchesSearch = name.includes(searchInput);
+                const matchesAddress = selectedAddresses.length === 0 || selectedAddresses.includes(address);
+                return matchesSearch && matchesAddress;
             });
 
-            // Calculate pagination
             const total = filtered.length;
             const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
             const startIndex = (currentPage - 1) * rowsPerPage;
             const endIndex = Math.min(startIndex + rowsPerPage, total);
             const paginated = filtered.slice(startIndex, endIndex);
 
-            // Fast DOM update using document fragment
+            tbody.innerHTML = "";
             if (paginated.length === 0) {
-                tbody.innerHTML = `
-        <tr>
-            <td colspan="6" class="text-center py-6 text-gray-500">
-                No patients found
-            </td>
-        </tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-gray-500">No patient records found.</td></tr>`;
             } else {
-                const fragment = document.createDocumentFragment();
-
                 paginated.forEach((patient, index) => {
-                    const rowNum = startIndex + index + 1;
-                    const uid = <?php echo $isOfflineMode ? "'offline'" : "$userId"; ?>;
-                    const offlineParam = <?php echo $isOfflineMode ? "'&offline=true'" : "''"; ?>;
-
-                    const tr = document.createElement('tr');
-                    tr.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700';
-                    tr.innerHTML = `
-                <td class="px-4 py-3 text-center">${rowNum}</td>
-                <td class="px-4 py-3 text-center">${escapeHtml(patient.fullname || "—")}</td>
-                <td class="px-4 py-3 text-center">${escapeHtml(patient.sex || "—")}</td>
-                <td class="px-4 py-3 text-center">${escapeHtml(patient.age || "—")}</td>
-                <td class="px-4 py-3 text-center">${escapeHtml(patient.address || "—")}</td>
-                <td class="py-3 text-center">
-                    <button onclick="window.location.href='view_info.php?uid=${uid}&id=${patient.patient_id}<?php echo $isOfflineMode ? '&offline=true' : ''; ?>'"
-                        class="text-white bg-blue-600 cursor-pointer hover:bg-blue-700 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 transition-colors duration-200">
-                        View
-                    </button>
-                    <button onclick="archivePatient(${patient.patient_id})"
-                        class="text-white bg-red-600 cursor-pointer hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-1.5 transition-colors duration-200">
-                        Archive
-                    </button>
-                </td>
-            `;
-                    fragment.appendChild(tr);
+                    const rowNumber = startIndex + index + 1;
+                    const row = `
+                <tr class="border-b border-gray-200 dark:border-gray-700">
+                    <th scope="row" class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                        ${rowNumber}
+                    </th>
+                    <td class="px-4 py-3 font-medium text-gray-700  text-center">${patient.fullname || "—"}</td>
+                    <td class="px-4 py-3 font-medium text-gray-700 text-center">${patient.sex || "—"}</td>
+                    <td class="px-4 py-3 font-medium text-gray-700 text-center">${patient.age || "—"}</td>
+                    <td class="px-4 py-3 font-medium text-gray-700 text-center">${patient.address || "—"}</td>
+                    <td class="py-3 flex justify-center gap-2">
+                        <button type="button" onclick="window.location.href='view_info.php?uid=<?php echo $userId; ?>&id=${patient.patient_id}'"
+                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-1.5">
+                            View
+                        </button>
+                        <button type="button" onclick="archivePatient(${patient.patient_id})"
+                            class="text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-1.5">
+                            Archive
+                        </button>
+                    </td>
+                </tr>`;
+                    tbody.insertAdjacentHTML("beforeend", row);
                 });
-
-                tbody.innerHTML = '';
-                tbody.appendChild(fragment);
             }
 
-            // Update pagination
-            renderPagination(total, totalPages);
+            renderPagination(total, rowsPerPage, currentPage);
         }
 
-        // Simplified pagination
-        function renderPagination(total, totalPages) {
-            const nav = document.getElementById("paginationNav");
-            if (!nav) return;
+        function renderPagination(total, limitVal, page) {
+            const paginationNav = document.getElementById("paginationNav");
+            const totalPages = Math.max(1, Math.ceil(total / limitVal));
+            const start = (page - 1) * limitVal + 1;
+            const end = Math.min(page * limitVal, total);
 
-            const start = Math.max(1, (currentPage - 1) * rowsPerPage + 1);
-            const end = Math.min(currentPage * rowsPerPage, total);
-
-            let pagesHtml = '';
-            const maxVisiblePages = 5;
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-            if (endPage - startPage + 1 < maxVisiblePages) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
-            }
-
-            // Previous button
-            if (currentPage > 1) {
-                pagesHtml += `<li><a href="#" onclick="loadPatients(${currentPage - 1}); return false;" class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100">Previous</a></li>`;
-            }
-
-            // Page numbers
-            for (let i = startPage; i <= endPage; i++) {
-                if (i === currentPage) {
-                    pagesHtml += `<li><span class="flex items-center justify-center text-sm py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300">${i}</span></li>`;
-                } else {
-                    pagesHtml += `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100">${i}</a></li>`;
-                }
-            }
-
-            // Next button
-            if (currentPage < totalPages) {
-                pagesHtml += `<li><a href="#" onclick="loadPatients(${currentPage + 1}); return false;" class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100">Next</a></li>`;
-            }
-
-            nav.innerHTML = `
-    <div class="flex flex-col md:flex-row justify-between items-center w-full">
-        <span class="text-sm text-gray-500 mb-2 md:mb-0">
-            Showing <span class="font-semibold">${start}-${end}</span> of <span class="font-semibold">${total}</span>
+            const showingText = `
+        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+        Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
+        of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
         </span>
-        <ul class="inline-flex -space-x-px">${pagesHtml}</ul>
-    </div>`;
+    `;
+
+            let pagesHTML = "";
+            for (let i = 1; i <= totalPages; i++) {
+                pagesHTML += (i === page) ?
+                    `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300">${i}</span></li>` :
+                    `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">${i}</a></li>`;
+            }
+
+            paginationNav.innerHTML = `
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 w-full">
+            ${showingText}
+            <ul class="inline-flex -space-x-px">${pagesHTML}</ul>
+        </div>
+    `;
         }
 
-        // Setup address filters
-        function setupAddressFilters() {
+        function renderAddressFilters(addresses) {
             const filterList = document.querySelector('#filterDropdown ul');
-            if (!filterList) return;
+            filterList.innerHTML = "";
+            addresses.forEach(address => {
+                const safeAddress = address || "(Unknown)";
+                const li = document.createElement("li");
+                li.className = "flex items-center";
+                li.innerHTML = `
+            <input id="filter-${safeAddress}" type="checkbox" value="${safeAddress}"
+                class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600">
+            <label for="filter-${safeAddress}" class="ml-2 text-sm font-medium text-gray-900">${safeAddress}</label>
+        `;
+                filterList.appendChild(li);
+            });
 
-            // Use event delegation
-            filterList.addEventListener('change', (e) => {
-                if (e.target.type === 'checkbox') {
+            filterList.querySelectorAll("input[type='checkbox']").forEach(cb => {
+                cb.addEventListener("change", () => {
                     currentPage = 1;
                     renderPatients();
-                }
+                });
             });
         }
 
-        // Update address filters
-        function updateAddressFilters() {
-            const filterList = document.querySelector('#filterDropdown ul');
-            if (!filterList || allPatients.length === 0) return;
-
-            const addresses = [...new Set(allPatients.map(p => p.address).filter(Boolean))].sort();
-
-            let html = '';
-            addresses.forEach(addr => {
-                const safeId = 'addr-' + (addr || 'unknown').replace(/\s+/g, '-').toLowerCase();
-                html += `
-        <li class="flex items-center">
-            <input id="${safeId}" type="checkbox" value="${escapeHtml(addr)}"
-                class="w-4 h-4 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
-            <label for="${safeId}" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer">${escapeHtml(addr)}</label>
-        </li>`;
+        document.addEventListener("DOMContentLoaded", () => {
+            loadPatients();
+            document.getElementById("simple-search").addEventListener("input", () => {
+                currentPage = 1;
+                renderPatients();
             });
-
-            filterList.innerHTML = html;
-        }
-
-        // Optimized archive function
-        async function archivePatient(patientId) {
-            if (!confirm("Archive this patient and all related records?")) return;
-
-            const patient = allPatients.find(p => p.patient_id == patientId);
-            const patientData = patient || {
-                patient_id: patientId,
-                fullname: 'Unknown',
-                address: 'Unknown'
-            };
-
-            const isOnline = navigator.onLine && !<?php echo $isOfflineMode ? 'true' : 'false'; ?>;
-
-            try {
-                if (isOnline) {
-                    // Fast online archive with timeout
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-                    const formData = new FormData();
-                    formData.append("archive_id", patientId);
-
-                    const response = await fetch("/dentalemr_system/php/treatmentrecords/treatment.php", {
-                        method: "POST",
-                        body: formData,
-                        signal: controller.signal
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        showNotification("Archived successfully", 'success');
-                        // Remove from local data immediately
-                        allPatients = allPatients.filter(p => p.patient_id != patientId);
-                        localStorage.setItem('dentalemr_cached_patients', JSON.stringify(allPatients));
-                        renderPatients();
-                    } else {
-                        throw new Error(result.message || 'Archive failed');
-                    }
-                } else {
-                    // Save for offline sync
-                    const archives = JSON.parse(localStorage.getItem('dentalemr_offline_archives') || '[]');
-                    archives.push({
-                        id: 'archive_' + Date.now(),
-                        patientId: patientId,
-                        patientData: patientData,
-                        timestamp: Date.now(),
-                        synced: false,
-                        attempts: 0
-                    });
-                    localStorage.setItem('dentalemr_offline_archives', JSON.stringify(archives));
-
-                    showNotification("Saved for sync when online", 'info');
-                    allPatients = allPatients.filter(p => p.patient_id != patientId);
-                    renderPatients();
-                }
-            } catch (error) {
-                console.error('Archive error:', error);
-                showNotification("Archive failed: " + error.message, 'error');
-            }
-        }
-
-        // Connection monitoring
-        function setupConnectionMonitoring() {
-            window.addEventListener('online', () => {
-                const indicator = document.getElementById('connectionStatus');
-                if (indicator) {
-                    indicator.innerHTML = `
-            <div class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-pulse">
-                <i class="fas fa-wifi mr-2"></i>
-                <span>Online - Syncing...</span>
-            </div>`;
-                    indicator.classList.remove('hidden');
-                    setTimeout(() => indicator.classList.add('hidden'), 2000);
-                }
-                // Trigger background sync
-                setTimeout(() => loadPatients(currentPage, true), 1000);
-            });
-
-            window.addEventListener('offline', () => {
-                const indicator = document.getElementById('connectionStatus');
-                if (indicator) {
-                    indicator.innerHTML = `
-            <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                <i class="fas fa-wifi-slash mr-2"></i>
-                <span>Offline Mode</span>
-            </div>`;
-                    indicator.classList.remove('hidden');
-                }
-            });
-
-            // Initial state
-            if (!navigator.onLine) {
-                window.dispatchEvent(new Event('offline'));
-            }
-        }
-
-        // Notification helper
-        function showNotification(message, type = 'info') {
-            const toast = document.getElementById('syncToast');
-            if (!toast) return;
-
-            const colors = {
-                success: 'bg-green-500',
-                error: 'bg-red-500',
-                warning: 'bg-yellow-500',
-                info: 'bg-blue-500'
-            };
-
-            toast.innerHTML = `
-    <div class="${colors[type] || 'bg-blue-500'} text-white px-4 py-2 rounded-lg shadow-lg flex items-center animate-fade-in">
-        <span>${message}</span>
-    </div>`;
-            toast.classList.remove('hidden');
-
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
-        }
-
-        // Utility function
-        function escapeHtml(str) {
-            if (!str) return '';
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
-        }
-
-        // Global functions
-        window.archivePatient = archivePatient;
-        window.loadPatients = loadPatients;
-
-        // Add CSS for animations
-        const style = document.createElement('style');
-        style.textContent = `
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-}
-`;
-        document.head.appendChild(style);
+        });
     </script>
 
+    <!-- Archive  -->
+    <script>
+        async function archivePatient(patientId) {
+            if (!confirm("Are you sure you want to archive this patient and all related records?")) return;
+
+            const API = "/dentalemr_system/php/treatmentrecords/treatment.php"; // ✅ make sure folder name is correct
+
+            try {
+                const formData = new FormData();
+                formData.append("archive_id", patientId);
+
+                const response = await fetch(API, {
+                    method: "POST",
+                    body: formData
+                });
+                const text = await response.text(); // read raw first
+                console.log("Server response:", text); // ✅ debug output
+
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    alert("Server returned invalid JSON. Check PHP error logs.");
+                    console.error("Raw server response:", text);
+                    return;
+                }
+
+                if (response.ok && data.success) {
+                    alert(data.message || "Patient archived successfully!");
+                    loadPatients(currentPage);
+                } else {
+                    alert(data.message || "Failed to archive patient.");
+                }
+            } catch (err) {
+                console.error("Network error while archiving:", err);
+                alert("Network error while archiving.");
+            }
+        }
+    </script>
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+
+    <script>
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - START ==========
+
+        function setupTreatmentRecordsOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
+
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - Viewing cached data</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupTreatmentRecordsOffline();
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for treatment records');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+        });
+
+        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - END ==========
+    </script>
 </body>
 
 </html>

@@ -1279,6 +1279,7 @@ if ($loggedUser['type'] === 'Dentist') {
             location.href = ("treatmentrecords.php?uid=<?php echo $userId; ?>");
         }
     </script>
+
     <script>
         const params = new URLSearchParams(window.location.search);
         const patientId = params.get('id');
@@ -2147,53 +2148,351 @@ if ($loggedUser['type'] === 'Dentist') {
     <!-- Load offline storage -->
     <script src="/dentalemr_system/js/offline-storage.js"></script>
 
+    <!-- Offline/Online Sync Handler -->
     <script>
-        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - START ==========
+        // Global offline sync manager
+        class OfflineSyncManager {
+            constructor() {
+                this.offlineActions = JSON.parse(localStorage.getItem('offline_actions') || '[]');
+                this.isOnline = navigator.onLine;
+                this.syncInterval = null;
 
-        function setupTreatmentRecordsOffline() {
-            const statusElement = document.getElementById('connectionStatus');
-            if (!statusElement) {
-                const newStatus = document.createElement('div');
-                newStatus.id = 'connectionStatus';
-                newStatus.className = 'hidden fixed top-4 right-4 z-50';
-                document.body.appendChild(newStatus);
+                this.init();
             }
 
-            function updateStatus() {
-                const indicator = document.getElementById('connectionStatus');
-                if (!navigator.onLine) {
-                    indicator.innerHTML = `
-        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-          <i class="fas fa-wifi-slash mr-2"></i>
-          <span>Offline Mode - Viewing cached data</span>
-        </div>
-      `;
-                    indicator.classList.remove('hidden');
-                } else {
-                    indicator.classList.add('hidden');
+            init() {
+                // Listen for online/offline events
+                window.addEventListener('online', () => this.handleOnline());
+                window.addEventListener('offline', () => this.handleOffline());
+
+                // Start periodic sync
+                this.startSyncInterval();
+
+                // Try to sync immediately if online
+                if (this.isOnline) {
+                    setTimeout(() => this.syncOfflineActions(), 1000);
                 }
             }
 
-            window.addEventListener('online', updateStatus);
-            window.addEventListener('offline', updateStatus);
-            updateStatus();
+            handleOnline() {
+                this.isOnline = true;
+                console.log('Device is online, syncing...');
+                this.syncOfflineActions();
+                this.startSyncInterval();
+            }
+
+            handleOffline() {
+                this.isOnline = false;
+                console.log('Device is offline');
+                this.stopSyncInterval();
+            }
+
+            startSyncInterval() {
+                if (this.syncInterval) clearInterval(this.syncInterval);
+                this.syncInterval = setInterval(() => this.syncOfflineActions(), 30000); // Every 30 seconds
+            }
+
+            stopSyncInterval() {
+                if (this.syncInterval) {
+                    clearInterval(this.syncInterval);
+                    this.syncInterval = null;
+                }
+            }
+
+            addOfflineAction(action, data) {
+                const actionData = {
+                    id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+                    action: action,
+                    data: data,
+                    timestamp: new Date().toISOString(),
+                    patient_id: data.patient_id || data.id || null
+                };
+
+                this.offlineActions.push(actionData);
+                this.saveToStorage();
+
+                console.log('Action saved for offline sync:', actionData);
+
+                // Try to sync immediately if online
+                if (this.isOnline) {
+                    setTimeout(() => this.syncOfflineActions(), 500);
+                }
+
+                return actionData.id;
+            }
+
+            removeOfflineAction(actionId) {
+                this.offlineActions = this.offlineActions.filter(action => action.id !== actionId);
+                this.saveToStorage();
+            }
+
+            saveToStorage() {
+                try {
+                    localStorage.setItem('offline_actions', JSON.stringify(this.offlineActions));
+                } catch (e) {
+                    console.error('Failed to save offline actions:', e);
+                }
+            }
+
+            async syncOfflineActions() {
+                if (!this.isOnline || this.offlineActions.length === 0) {
+                    return;
+                }
+
+                console.log(`Syncing ${this.offlineActions.length} offline actions...`);
+
+                // Group actions by type for batch processing
+                const archiveActions = this.offlineActions.filter(a => a.action === 'archive_patient');
+
+                // Process archive actions
+                if (archiveActions.length > 0) {
+                    await this.syncArchiveActions(archiveActions);
+                }
+
+                // Process other action types as needed
+            }
+
+            async syncArchiveActions(archiveActions) {
+                const patientIds = archiveActions.map(action => action.data.patient_id || action.data.id);
+
+                try {
+                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            sync_offline_archives: '1',
+                            archive_ids: JSON.stringify(patientIds)
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        console.log('Offline archive sync successful:', result);
+
+                        // Remove successfully synced actions
+                        archiveActions.forEach(action => {
+                            this.removeOfflineAction(action.id);
+                        });
+
+                        // Show success message
+                        if (result.synced_count > 0) {
+                            showNotice(`Synced ${result.synced_count} archived patients from offline mode`, 'green');
+                        }
+
+                        // Refresh the patient list if on treatment records page
+                        if (window.location.pathname.includes('treatmentrecords.php')) {
+                            setTimeout(() => {
+                                if (typeof window.loadPatients === 'function') {
+                                    window.loadPatients();
+                                }
+                            }, 1000);
+                        }
+                    } else {
+                        console.error('Offline archive sync failed:', result);
+                    }
+                } catch (error) {
+                    console.error('Failed to sync offline archives:', error);
+                }
+            }
+
+            // Add this to your existing archive function
+            async archivePatientWithOfflineSupport(patientId, patientName) {
+                if (!this.isOnline) {
+                    // Store for offline sync
+                    const actionId = this.addOfflineAction('archive_patient', {
+                        patient_id: patientId,
+                        patient_name: patientName,
+                        id: patientId
+                    });
+
+                    // Remove from local display immediately for better UX
+                    showNotice(`Patient "${patientName}" marked for archive (offline). Will sync when online.`, 'orange');
+
+                    // Return a promise that resolves immediately for offline
+                    return Promise.resolve({
+                        success: true,
+                        offline: true,
+                        actionId: actionId,
+                        message: 'Patient marked for archive (offline)'
+                    });
+                }
+
+                // Online: proceed with normal archive
+                try {
+                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            archive_id: patientId
+                        })
+                    });
+
+                    return await response.json();
+                } catch (error) {
+                    console.error('Archive request failed:', error);
+
+                    // Fallback to offline mode if request fails
+                    const actionId = this.addOfflineAction('archive_patient', {
+                        patient_id: patientId,
+                        patient_name: patientName,
+                        id: patientId
+                    });
+
+                    return {
+                        success: true,
+                        offline: true,
+                        actionId: actionId,
+                        message: 'Archive failed, saved for offline sync'
+                    };
+                }
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            setupTreatmentRecordsOffline();
+        // Initialize offline sync manager
+        const offlineSync = new OfflineSyncManager();
 
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/dentalemr_system/sw.js')
-                    .then(function(registration) {
-                        console.log('SW registered for treatment records');
-                    })
-                    .catch(function(error) {
-                        console.log('SW registration failed:', error);
-                    });
+        // Add to window for global access
+        window.offlineSync = offlineSync;
+
+        // Enhanced notification function with better styling
+        function showNotice(message, color = "blue") {
+            const notice = document.getElementById("notice");
+            if (!notice) return;
+
+            // Map color names to actual colors
+            const colorMap = {
+                'blue': '#3b82f6',
+                'green': '#10b981',
+                'red': '#ef4444',
+                'orange': '#f59e0b',
+                'yellow': '#fbbf24'
+            };
+
+            const bgColor = colorMap[color] || color;
+
+            notice.textContent = message;
+            notice.style.background = bgColor;
+            notice.style.display = "block";
+            notice.style.opacity = "1";
+            notice.style.position = "fixed";
+            notice.style.top = "14px";
+            notice.style.right = "14px";
+            notice.style.padding = "12px 16px";
+            notice.style.borderRadius = "8px";
+            notice.style.color = "white";
+            notice.style.fontWeight = "500";
+            notice.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+            notice.style.zIndex = "9999";
+            notice.style.maxWidth = "350px";
+            notice.style.wordBreak = "break-word";
+
+            setTimeout(() => {
+                notice.style.transition = "opacity 0.6s ease";
+                notice.style.opacity = "0";
+                setTimeout(() => {
+                    notice.style.display = "none";
+                    notice.style.transition = "";
+                }, 600);
+            }, 5000);
+        }
+
+        // Enhanced fetch with offline fallback
+        async function fetchWithOfflineFallback(url, options = {}) {
+            if (!navigator.onLine) {
+                // Check if we have offline data
+                const cachedData = localStorage.getItem(`cache_${url}`);
+                if (cachedData) {
+                    return JSON.parse(cachedData);
+                }
+
+                throw new Error('You are offline and no cached data is available');
             }
-        });
 
-        // ========== OFFLINE SUPPORT FOR TREATMENT RECORDS - END ==========
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+
+                // Cache successful responses
+                if (response.ok && options.method === 'GET') {
+                    try {
+                        localStorage.setItem(`cache_${url}`, JSON.stringify(data));
+                    } catch (e) {
+                        console.warn('Could not cache data, storage might be full');
+                    }
+                }
+
+                return data;
+            } catch (error) {
+                console.error('Fetch failed:', error);
+
+                // Try to return cached data as fallback
+                const cachedData = localStorage.getItem(`cache_${url}`);
+                if (cachedData) {
+                    console.log('Returning cached data as fallback');
+                    return JSON.parse(cachedData);
+                }
+
+                throw error;
+            }
+        }
+
+        // Monitor network status with visual indicator
+        function setupNetworkStatusIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'network-status';
+            indicator.style.position = 'fixed';
+            indicator.style.bottom = '10px';
+            indicator.style.right = '10px';
+            indicator.style.width = '12px';
+            indicator.style.height = '12px';
+            indicator.style.borderRadius = '50%';
+            indicator.style.zIndex = '9998';
+            indicator.style.transition = 'all 0.3s ease';
+
+            document.body.appendChild(indicator);
+
+            function updateIndicator() {
+                if (navigator.onLine) {
+                    indicator.style.backgroundColor = '#10b981';
+                    indicator.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
+                    indicator.title = 'Online';
+                } else {
+                    indicator.style.backgroundColor = '#ef4444';
+                    indicator.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.5)';
+                    indicator.title = 'Offline';
+                }
+            }
+
+            updateIndicator();
+            window.addEventListener('online', updateIndicator);
+            window.addEventListener('offline', updateIndicator);
+        }
+
+        // Call setup on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNetworkStatusIndicator();
+
+            // Override the original archive function to use offline support
+            if (typeof window.archivePatient === 'function') {
+                const originalArchive = window.archivePatient;
+                window.archivePatient = async function(patientId, patientName) {
+                    return await offlineSync.archivePatientWithOfflineSupport(patientId, patientName);
+                };
+            }
+
+            // Check for pending offline actions on page load
+            setTimeout(() => {
+                if (offlineSync.offlineActions.length > 0 && navigator.onLine) {
+                    showNotice(`You have ${offlineSync.offlineActions.length} pending offline actions. Syncing...`, 'yellow');
+                    offlineSync.syncOfflineActions();
+                }
+            }, 2000);
+        });
     </script>
 </body>
 

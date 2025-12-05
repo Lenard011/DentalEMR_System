@@ -53,7 +53,7 @@ if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
 
         echo "<script>
             alert('You have been logged out due to inactivity.');
-            window.location.href = '/dentalemr_system/html/login/logout.php';
+            window.location.href = '/dentalemr_system/html/login/login.html';
         </script>";
         exit;
     }
@@ -124,9 +124,6 @@ $displayEmail = htmlspecialchars(
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>MHO Dental Clinic - Manage Users</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -439,7 +436,6 @@ $displayEmail = htmlspecialchars(
                                         <th class="px-4 py-3 text-center">Email</th>
                                         <th class="px-4 py-3 text-center">Created At</th>
                                         <th class="px-4 py-3 text-center">Updated At</th>
-                                        <th class="px-4 py-3 text-center">Email Status</th>
                                         <th class="px-4 py-3 text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -509,13 +505,13 @@ $displayEmail = htmlspecialchars(
 
     <!-- Enhanced Client-side inactivity logout -->
     <script>
-        let inactivityTime = 1800000; // 10 minutes in ms
+        let inactivityTime = 600000; // 10 minutes in ms
         let logoutTimer;
 
         function resetTimer() {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
-                if (confirm("You've been inactive for 30 minutes. Would you like to stay logged in?")) {
+                if (confirm("You've been inactive for 10 minutes. Would you like to stay logged in?")) {
                     resetTimer();
                 } else {
                     window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
@@ -533,95 +529,49 @@ $displayEmail = htmlspecialchars(
     <!-- Enhanced Staff Management Script -->
     <script>
         let staffData = [];
-        const currentUserId = <?php echo $userId; ?>;
 
         function loadStaffList() {
-            // ADD CACHE BUSTER TO URL
-            const cacheBuster = '?_=' + new Date().getTime();
-            fetch("/dentalemr_system/php/manageusers/get_staff.php" + cacheBuster)
+            fetch("/dentalemr_system/php/manageusers/get_staff.php")
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Network response was not ok: ' + response.status);
+                        throw new Error('Network response was not ok');
                     }
                     return response.json();
                 })
-                .then(responseData => {
-                    console.log('Full API Response:', responseData);
-
-                    // Check if we have the new response structure
-                    let data = responseData;
-                    if (responseData.data) {
-                        data = responseData.data;
-                        console.log('Debug Info:', responseData.debug);
-                    }
-
-                    if (responseData.error) {
-                        throw new Error(responseData.error);
-                    }
-
-                    if (!Array.isArray(data)) {
-                        console.error('Expected array but got:', typeof data);
-                        data = [];
-                    }
-
-                    // FILTER OUT THE GHOST RECORD
-                    const filteredData = data.filter(row => {
-                        // Filter out the specific ghost record
-                        const isGhostRecord = row.email === 'jayjaypanganiban40@gmail.com' ||
-                            (row.name === 'Jay Jay Panganiban' && row.username === 'jayjay');
-
-                        if (isGhostRecord) {
-                            console.warn('Filtered out ghost record:', row);
-                            return false;
-                        }
-                        return true;
-                    });
-
-                    staffData = filteredData;
-
-                    // Also log what's in the database for comparison
-                    console.log('Database Records:', data);
-                    console.log('Filtered Records:', staffData);
-
+                .then(data => {
+                    staffData = Array.isArray(data) ? data : [];
                     renderStaffTable(staffData);
                 })
                 .catch(error => {
                     console.error('Error loading staff list:', error);
                     document.getElementById("staffBody").innerHTML = `
-                <tr>
-                    <td colspan="7" class="p-4 text-center text-red-600">
-                        Error loading staff list. Please refresh the page.<br>
-                        <small>${error.message}</small>
-                    </td>
-                </tr>`;
+                    <tr>
+                        <td colspan="6" class="p-4 text-center text-red-600">
+                            Error loading staff list. Please try again.
+                        </td>
+                    </tr>`;
                 });
         }
 
         function renderStaffTable(data) {
             const tbody = document.getElementById("staffBody");
-            if (!tbody) {
-                console.error('Staff body element not found');
-                return;
-            }
+            if (!tbody) return;
 
             tbody.innerHTML = "";
 
             if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="p-4 text-center text-gray-500 dark:text-gray-300">
-                    No staff accounts found.
-                </td>
-            </tr>`;
+                <tr>
+                    <td colspan="6" class="p-4 text-center text-gray-500 dark:text-gray-300">
+                        No staff accounts found.
+                    </td>
+                </tr>`;
                 return;
             }
 
             const fragment = document.createDocumentFragment();
 
-            data.forEach((row, index) => {
-                // Log each row being rendered
-                console.log(`Rendering row ${index}:`, row);
-
+            data.forEach(row => {
                 const tr = document.createElement("tr");
                 tr.className = "border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700";
 
@@ -629,91 +579,27 @@ $displayEmail = htmlspecialchars(
                 const name = escapeHtml(row.name || 'N/A');
                 const username = escapeHtml(row.username || 'N/A');
                 const email = escapeHtml(row.email || 'N/A');
-                const created = escapeHtml(formatDateTime(row.created_at) || 'N/A');
-                const updated = escapeHtml(formatDateTime(row.updated_at) || 'N/A');
-
-                // Email status indicator
-                let emailStatus = '';
-                const emailSent = parseInt(row.welcome_email_sent) || 0;
-                const emailSentAt = row.email_sent_at;
-
-                if (emailSent === 1) {
-                    emailStatus = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                    <i class="fas fa-check-circle"></i> Sent
-                </span>`;
-                } else if (emailSentAt) {
-                    emailStatus = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300">
-                    <i class="fas fa-exclamation-triangle"></i> Failed
-                </span>`;
-                } else {
-                    emailStatus = `<span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                    <i class="fas fa-info-circle"></i> Pending
-                </span>`;
-                }
+                const created = escapeHtml(row.created_at || 'N/A');
+                const updated = escapeHtml(row.updated_at || 'N/A');
 
                 tr.innerHTML = `
-            <td class="px-4 py-3 text-center text-gray-900 dark:text-white">${name}</td>
-            <td class="px-4 py-3 text-center">${username}</td>
-            <td class="px-4 py-3 text-center">${email}</td>
-            <td class="px-4 py-3 text-center">${created}</td>
-            <td class="px-4 py-3 text-center">${updated}</td>
-            <td class="px-4 py-3 text-center">${emailStatus}</td>
-            <td class="px-4 py-3 text-center">
-                <div class="flex justify-center space-x-2">
-                    <button onclick="deleteStaff(${row.id}, '${escapeSingleQuotes(name)}')" 
+                <td class="px-4 py-3 text-center text-gray-900 dark:text-white">${name}</td>
+                <td class="px-4 py-3 text-center">${username}</td>
+                <td class="px-4 py-3 text-center">${email}</td>
+                <td class="px-4 py-3 text-center">${created}</td>
+                <td class="px-4 py-3 text-center">${updated}</td>
+                <td class="px-4 py-3 text-center">
+                    <a href="/dentalemr_system/php/manageusers/delete_staff.php?id=${row.id}&uid=<?php echo $userId; ?>"
+                        onclick="return confirm('Are you sure you want to delete ${name}? This action cannot be undone.')"
                         class="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded-sm cursor-pointer text-sm transition-colors duration-200">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-            </td>`;
+                        Delete
+                    </a>
+                </td>`;
 
                 fragment.appendChild(tr);
             });
 
             tbody.appendChild(fragment);
-        }
-
-        // Delete function
-        function deleteStaff(staffId, staffName) {
-            if (!confirm(`Are you sure you want to delete "${staffName}"? This action cannot be undone.`)) {
-                return;
-            }
-
-            // Add cache buster to delete URL too
-            const cacheBuster = '&_=' + new Date().getTime();
-            window.location.href = `/dentalemr_system/php/manageusers/delete_staff.php?id=${staffId}&uid=${currentUserId}${cacheBuster}`;
-        }
-
-        // Add resend credentials function
-        function resendCredentials(staffId, email) {
-            if (!confirm(`Resend credentials email to ${email}?`)) {
-                return;
-            }
-
-            // Show loading state
-            const button = event.target.closest('button');
-            const originalHtml = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-            button.disabled = true;
-
-            fetch(`/dentalemr_system/php/manageusers/resend_credentials.php?id=${staffId}&uid=${currentUserId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('✓ Credentials email resent successfully!');
-                        loadStaffList(); // Reload to update status
-                    } else {
-                        alert('✗ Failed to resend email: ' + (data.error || 'Unknown error'));
-                        button.innerHTML = originalHtml;
-                        button.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('✗ Failed to resend email. Please try again.');
-                    button.innerHTML = originalHtml;
-                    button.disabled = false;
-                });
         }
 
         // Form validation
@@ -741,26 +627,22 @@ $displayEmail = htmlspecialchars(
 
         // Live search with debounce
         let searchTimeout;
-        const searchInput = document.getElementById("simple-search");
-        if (searchInput) {
-            searchInput.addEventListener("input", function(e) {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    const term = e.target.value.toLowerCase().trim();
-                    const filtered = staffData.filter(row =>
-                        (row.name?.toLowerCase().includes(term) ||
-                            row.username?.toLowerCase().includes(term) ||
-                            row.email?.toLowerCase().includes(term))
-                    );
-                    renderStaffTable(filtered);
-                }, 300);
-            });
-        }
+        document.getElementById("simple-search")?.addEventListener("input", function(e) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const term = e.target.value.toLowerCase().trim();
+                const filtered = staffData.filter(row =>
+                    (row.name?.toLowerCase().includes(term) ||
+                        row.username?.toLowerCase().includes(term) ||
+                        row.email?.toLowerCase().includes(term))
+                );
+                renderStaffTable(filtered);
+            }, 300);
+        });
 
         // Utility function to escape HTML
         function escapeHtml(unsafe) {
-            if (unsafe === null || unsafe === undefined) return '';
-            return String(unsafe)
+            return unsafe
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
@@ -768,36 +650,62 @@ $displayEmail = htmlspecialchars(
                 .replace(/'/g, "&#039;");
         }
 
-        // Utility to escape single quotes for JavaScript strings
-        function escapeSingleQuotes(str) {
-            return String(str).replace(/'/g, "\\'");
-        }
-
-        // Format date-time for display
-        function formatDateTime(dateTimeStr) {
-            if (!dateTimeStr) return '';
-            try {
-                const date = new Date(dateTimeStr);
-                return date.toLocaleString('en-PH', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } catch (e) {
-                return dateTimeStr;
-            }
-        }
-
         // Initialize on load
         document.addEventListener("DOMContentLoaded", () => {
-            console.log('Current User ID:', currentUserId); // Debug log
             loadStaffList();
-
-            // Refresh staff list every 30 seconds to catch updates
-            setInterval(loadStaffList, 30000);
         });
+    </script>
+
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+
+    <script>
+        // ========== OFFLINE SUPPORT FOR MANAGE USERS - START ==========
+
+        function setupManageUsersOffline() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (!statusElement) {
+                const newStatus = document.createElement('div');
+                newStatus.id = 'connectionStatus';
+                newStatus.className = 'hidden fixed top-4 right-4 z-50';
+                document.body.appendChild(newStatus);
+            }
+
+            function updateStatus() {
+                const indicator = document.getElementById('connectionStatus');
+                if (!navigator.onLine) {
+                    indicator.innerHTML = `
+        <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
+          <i class="fas fa-wifi-slash mr-2"></i>
+          <span>Offline Mode - User management disabled</span>
+        </div>
+      `;
+                    indicator.classList.remove('hidden');
+                } else {
+                    indicator.classList.add('hidden');
+                }
+            }
+
+            window.addEventListener('online', updateStatus);
+            window.addEventListener('offline', updateStatus);
+            updateStatus();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupManageUsersOffline();
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered for manage users');
+                    })
+                    .catch(function(error) {
+                        console.log('SW registration failed:', error);
+                    });
+            }
+        });
+
+        // ========== OFFLINE SUPPORT FOR MANAGE USERS - END ==========
     </script>
 </body>
 

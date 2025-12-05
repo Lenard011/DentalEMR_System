@@ -41,7 +41,7 @@ try {
 
     $patient_id = (int) $_GET['patient_id'];
 
-    // NEW: Fetch patient information
+    // Fetch patient information
     $stmtPatient = $db->prepare("
         SELECT 
             patient_id,
@@ -68,28 +68,14 @@ try {
         throw new Exception('Patient not found for ID ' . $patient_id);
     }
 
-    // Optional: filter by visit_id
-    $filter_visit_id = isset($_GET['visit_id']) ? (int) $_GET['visit_id'] : null;
-
-    // Fetch visits
-    if ($filter_visit_id) {
-        $stmt = $db->prepare("
-            SELECT visit_id, patient_id, visit_date, visit_number
-            FROM visits
-            WHERE patient_id = ? AND visit_id = ?
-            ORDER BY visit_number ASC
-        ");
-        $stmt->execute([$patient_id, $filter_visit_id]);
-    } else {
-        $stmt = $db->prepare("
-            SELECT visit_id, patient_id, visit_date, visit_number
-            FROM visits
-            WHERE patient_id = ?
-            ORDER BY visit_number ASC
-        ");
-        $stmt->execute([$patient_id]);
-    }
-
+    // Fetch ALL visits for this patient
+    $stmt = $db->prepare("
+        SELECT visit_id, patient_id, visit_date, visit_number
+        FROM visits
+        WHERE patient_id = ?
+        ORDER BY visit_number ASC
+    ");
+    $stmt->execute([$patient_id]);
     $visits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // If no visits, still return patient info
@@ -108,60 +94,78 @@ try {
     foreach ($visits as $v) {
         $visit_id = $v['visit_id'];
 
-        // Fetch conditions (with correct color source)
+        // Fetch conditions for this visit
         $stmtCond = $db->prepare("
             SELECT 
                 vc.id,
                 vc.tooth_id,
+                vc.condition_id,
+                vc.box_key,
+                vc.color,
+                vc.case_type,
                 t.fdi_number,
                 t.type AS tooth_type,
                 t.location AS tooth_location,
-                c.condition_id,
-                -- auto-adjust code casing using tooth type or condition flag
-                CASE
-                    WHEN t.type = 'temporary' OR c.is_permanent = 0 THEN LOWER(c.code)
-                    ELSE UPPER(c.code)
-                END AS condition_code,
+                c.code AS condition_code,
                 c.description AS condition_description,
-                c.is_permanent,
-                vc.box_key,
-                vc.color,
-                vc.case_type
+                c.is_permanent
             FROM visittoothcondition vc
-            LEFT JOIN teeth t ON vc.tooth_id = t.tooth_id
-            LEFT JOIN conditions c ON vc.condition_id = c.condition_id
+            INNER JOIN teeth t ON vc.tooth_id = t.tooth_id
+            INNER JOIN conditions c ON vc.condition_id = c.condition_id
             WHERE vc.visit_id = ?
-
+            ORDER BY vc.id
         ");
         $stmtCond->execute([$visit_id]);
         $conditions = $stmtCond->fetchAll(PDO::FETCH_ASSOC);
 
-        // 💉 Fetch treatments (ignore color)
+        // Fetch treatments for this visit
         $stmtTreat = $db->prepare("
             SELECT 
                 vt.id,
                 vt.tooth_id,
+                vt.treatment_id,
+                vt.box_key,
+                vt.color,
+                vt.case_type,
                 t.fdi_number,
                 t.type AS tooth_type,
                 t.location AS tooth_location,
-                tr.treatment_id,
                 tr.code AS treatment_code,
-                tr.description AS treatment_description,
-                vt.box_key,
-                vt.color,
-                vt.case_type
+                tr.description AS treatment_description
             FROM visittoothtreatment vt
-            LEFT JOIN teeth t ON vt.tooth_id = t.tooth_id
-            LEFT JOIN treatments tr ON vt.treatment_id = tr.treatment_id
+            INNER JOIN teeth t ON vt.tooth_id = t.tooth_id
+            INNER JOIN treatments tr ON vt.treatment_id = tr.treatment_id
             WHERE vt.visit_id = ?
+            ORDER BY vt.id
         ");
         $stmtTreat->execute([$visit_id]);
         $treatments = $stmtTreat->fetchAll(PDO::FETCH_ASSOC);
 
-        // 🧩 Combine all visit data
+        // Process condition codes based on case_type
+        foreach ($conditions as &$condition) {
+            if ($condition['condition_code']) {
+                if (
+                    $condition['case_type'] === 'temporary' ||
+                    ($condition['tooth_type'] === 'temporary' && $condition['is_permanent'] == 0)
+                ) {
+                    $condition['condition_code'] = strtolower($condition['condition_code']);
+                } else {
+                    $condition['condition_code'] = strtoupper($condition['condition_code']);
+                }
+            }
+        }
+
+        // Process treatment codes to uppercase
+        foreach ($treatments as &$treatment) {
+            if ($treatment['treatment_code']) {
+                $treatment['treatment_code'] = strtoupper($treatment['treatment_code']);
+            }
+        }
+
+        // Combine all visit data
         $output[] = [
             'visit_id'      => $visit_id,
-            'visit_number'  => $v['visit_number'],
+            'visit_number'  => (int)$v['visit_number'],
             'visit_label'   => 'Year ' . romanNumeral($v['visit_number']),
             'visit_date'    => $v['visit_date'],
             'conditions'    => $conditions,
@@ -175,7 +179,7 @@ try {
         'patient_id' => $patient_id,
         'patient' => $patient,
         'visits' => $output
-    ]);
+    ], JSON_PRETTY_PRINT);
     exit;
 } catch (Exception $e) {
     http_response_code(400);
