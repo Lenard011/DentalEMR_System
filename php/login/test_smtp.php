@@ -66,3 +66,4 @@ if ($emailResult['success']) {
         'debug_mode' => true
     ]);
 }
+?>

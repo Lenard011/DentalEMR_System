@@ -157,8 +157,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
                         ? "/dentalemr_system/html/index.php?uid={$userId}"
                         : "/dentalemr_system/html/a_staff/addpatient.php?uid={$userId}";
 
-                    // echo "Login successful&user_id=" . $userId . "&user_name=" . urlencode($userName) . "&redirect=" . urlencode($redirect);
-                    echo "<script> alert('Verified successfully!'); window.location.href='{$redirect}'; </script>";
+                        // echo "Login successful&user_id=" . $userId . "&user_name=" . urlencode($userName) . "&redirect=" . urlencode($redirect);
+                        echo "<script> alert('Verified successfully!'); window.location.href='{$redirect}'; </script>";
 
                     // Clean up
                     unset($_SESSION['pending_user']);
@@ -571,28 +571,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
                     <p class="font-semibold text-gray-900 dark:text-white text-[13px]">
                         <?php echo htmlspecialchars($userEmail); ?>
                     </p>
-                    <!-- Debug mode display (only shows if email sending failed) -->
-                    <?php if (isset($_SESSION['debug_mfa_code']) && isset($_SESSION['pending_user']['email_sent']) && !$_SESSION['pending_user']['email_sent']): ?>
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2 mb-3">
-                            <div class="flex items-start">
-                                <i class="fas fa-exclamation-triangle text-yellow-600 mt-1 mr-2"></i>
-                                <div class="text-yellow-800 text-sm">
-                                    <p class="font-medium mb-1">⚠️ Email Sending Issue Detected</p>
-                                    <p class="mb-1">We generated a verification code but couldn't send it via email.</p>
-                                    <div class="mt-2 p-2 bg-white rounded border border-yellow-300">
-                                        <p class="text-xs text-yellow-700 mb-1">Your verification code is:</p>
-                                        <div class="text-center">
-                                            <code class="font-mono text-lg font-bold text-blue-600 bg-gray-100 px-3 py-1 rounded">
-                                                <?php echo htmlspecialchars($_SESSION['debug_mfa_code']); ?>
-                                            </code>
-                                        </div>
-                                        <p class="text-xs text-yellow-600 mt-1 text-center">(Use this code to verify)</p>
-                                    </div>
-                                    <p class="text-xs mt-2">To fix email issues, check your SMTP configuration in config.php</p>
-                                </div>
-                            </div>
-                        </div>
-                    <?php endif; ?>
                     <div id="countdown" class="countdown-timer text-[13px]">
                         Code expires in: <span id="timer" class="text-[13px]">05:00</span>
                     </div>

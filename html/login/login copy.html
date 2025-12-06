@@ -381,93 +381,6 @@
                 opacity: 0;
             }
         }
-
-        .floating-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .shape {
-            position: absolute;
-            opacity: 0.15;
-            animation: float 25s infinite linear;
-            filter: blur(1px);
-        }
-
-        .shape-1 {
-            top: 10%;
-            left: 10%;
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-            animation-delay: 0s;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
-        }
-
-        .shape-2 {
-            top: 60%;
-            right: 10%;
-            width: 180px;
-            height: 180px;
-            background: linear-gradient(135deg, #10b981, #3b82f6);
-            border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
-            animation-delay: -8s;
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-        }
-
-        .shape-3 {
-            bottom: 20%;
-            left: 20%;
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, #8b5cf6, #10b981);
-            border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%;
-            animation-delay: -15s;
-            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
-        }
-
-        .shape-4 {
-            top: 20%;
-            right: 20%;
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #3b82f6, #10b981);
-            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-            animation-delay: -5s;
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0) rotate(0deg) scale(1);
-            }
-
-            25% {
-                transform: translateY(-20px) rotate(90deg) scale(1.05);
-            }
-
-            50% {
-                transform: translateY(0) rotate(180deg) scale(1);
-            }
-
-            75% {
-                transform: translateY(20px) rotate(270deg) scale(0.95);
-            }
-        }
-
-        .dark .shape {
-            opacity: 0.08;
-            filter: blur(2px);
-        }
     </style>
 </head>
 
@@ -477,14 +390,7 @@
         <div class="shape shape-1"></div>
         <div class="shape shape-2"></div>
         <div class="shape shape-3"></div>
-        <div class="shape shape-4"></div>
     </div>
-    <!-- Floating Background Shapes -->
-    <!-- <div class="floating-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
-    </div> -->
 
     <!-- Toast Notifications -->
     <div id="toast" class="toast">
@@ -921,43 +827,43 @@
                     method: 'POST',
                     body: formData
                 })
-                    .then(response => response.json())
+                    .then(response => response.text())
                     .then(data => {
                         console.log('Login response:', data);
-
-                        if (data.status === 'success' || data.status === 'mfa_required') {
+                        if (data.includes('Login successful') || data.includes('verification code has been sent')) {
                             // Extract user data from response
                             const email = document.getElementById('email').value;
+                            const userMatch = data.match(/user_id=(\d+)/);
+                            const nameMatch = data.match(/user_name=([^&]+)/);
 
                             const userData = {
                                 email: email,
                                 type: 'Dentist',
-                                id: data.user_id || Date.now(),
-                                name: data.user_name ? decodeURIComponent(data.user_name) : email.split('@')[0]
+                                id: userMatch ? userMatch[1] : Date.now(),
+                                name: nameMatch ? decodeURIComponent(nameMatch[1]) : email.split('@')[0]
                             };
 
                             // Register for offline access and show password modal
                             const offlinePassword = simpleOfflineAuth.registerUserForOffline(userData);
-                            if (offlinePassword && data.status === 'success') {
+                            if (offlinePassword) {
                                 showOfflineAccessInfo(offlinePassword, userData, data);
                             } else {
                                 // Fallback: proceed without offline registration
                                 proceedWithRedirect(data, 'Dentist');
                             }
+
                         } else {
                             // Handle login errors
-                            if (data.details === 'email_not_found') {
+                            if (data.includes('Email not found')) {
                                 showAlert(alertDiv, 'Email not found. Please check and try again.', 'error');
-                            } else if (data.details === 'incorrect_password') {
+                            } else if (data.includes('Incorrect password')) {
                                 showAlert(alertDiv, 'Incorrect password. Please try again.', 'error');
-                            } else if (data.details === 'missing_fields') {
+                            } else if (data.includes('Please fill in all fields')) {
                                 showAlert(alertDiv, 'Please fill in all fields.', 'error');
-                            } else if (data.details === 'invalid_user_type') {
+                            } else if (data.includes('Invalid user type')) {
                                 showAlert(alertDiv, 'Invalid user type selected.', 'error');
-                            } else if (data.details === 'email_failed') {
-                                showAlert(alertDiv, 'Could not send verification code. Please contact support.', 'error');
                             } else {
-                                showAlert(alertDiv, data.message || 'An unexpected error occurred. Please try again.', 'error');
+                                showAlert(alertDiv, 'An unexpected error occurred. Please try again.', 'error');
                             }
                         }
                     })
@@ -990,47 +896,47 @@
                 submitBtn.disabled = true;
                 alertDiv.style.display = 'none';
 
-                fetch('/dentalemr_system/php/login/staff_login.php', { // Make sure this also returns JSON
+                fetch('/dentalemr_system/php/login/staff_login.php', {
                     method: 'POST',
                     body: formData
                 })
-                    .then(response => response.json())
+                    .then(response => response.text())
                     .then(data => {
                         console.log('Staff login response:', data);
-
-                        if (data.status === 'success' || data.status === 'mfa_required') {
+                        if (data.includes('Login successful') || data.includes('verification code has been sent')) {
                             // Extract user data from response
                             const email = document.getElementById('staffEmail').value;
+                            const userMatch = data.match(/user_id=(\d+)/);
+                            const nameMatch = data.match(/user_name=([^&]+)/);
 
                             const userData = {
                                 email: email,
                                 type: 'Staff',
-                                id: data.user_id || Date.now(),
-                                name: data.user_name ? decodeURIComponent(data.user_name) : email.split('@')[0]
+                                id: userMatch ? userMatch[1] : Date.now(),
+                                name: nameMatch ? decodeURIComponent(nameMatch[1]) : email.split('@')[0]
                             };
 
                             // Register for offline access and show password modal
                             const offlinePassword = simpleOfflineAuth.registerUserForOffline(userData);
-                            if (offlinePassword && data.status === 'success') {
+                            if (offlinePassword) {
                                 showOfflineAccessInfo(offlinePassword, userData, data);
                             } else {
                                 // Fallback: proceed without offline registration
                                 proceedWithRedirect(data, 'Staff');
                             }
+
                         } else {
                             // Handle login errors
-                            if (data.details === 'email_not_found' || data.message?.includes('No login data')) {
+                            if (data.includes('Email not found') || data.includes('No login data')) {
                                 showAlert(alertDiv, 'Invalid email or password. Please try again.', 'error');
-                            } else if (data.details === 'incorrect_password' || data.message?.includes('Login failed')) {
+                            } else if (data.includes('Incorrect password') || data.includes('Login failed')) {
                                 showAlert(alertDiv, 'Incorrect password. Please try again.', 'error');
-                            } else if (data.details === 'missing_fields') {
+                            } else if (data.includes('Please fill in all fields')) {
                                 showAlert(alertDiv, 'Please fill in all fields.', 'error');
-                            } else if (data.details === 'invalid_user_type') {
+                            } else if (data.includes('Invalid user type')) {
                                 showAlert(alertDiv, 'Invalid user type selected.', 'error');
-                            } else if (data.details === 'email_failed') {
-                                showAlert(alertDiv, 'Could not send verification code. Please contact support.', 'error');
                             } else {
-                                showAlert(alertDiv, data.message || 'An unexpected error occurred. Please try again.', 'error');
+                                showAlert(alertDiv, 'An unexpected error occurred. Please try again.', 'error');
                             }
                         }
                     })
@@ -1230,22 +1136,25 @@
 
 
             function proceedWithRedirect(data, userType) {
-                if (data.status === 'mfa_required') {
+                if (data.includes('verification code has been sent')) {
                     setTimeout(() => {
-                        window.location.href = data.redirect || '/dentalemr_system/php/login/verify_mfa.php';
+                        window.location.href = '/dentalemr_system/php/login/verify_mfa.php';
                     }, 1500);
-                } else if (data.status === 'success') {
+                } else {
+                    const uidMatch = data.match(/uid=(\d+)/);
                     setTimeout(() => {
-                        if (data.redirect) {
-                            window.location.href = data.redirect;
-                        } else if (userType === 'Dentist') {
-                            window.location.href = data.user_id ?
-                                `/dentalemr_system/html/index.php?uid=${data.user_id}` :
-                                '/dentalemr_system/html/index.php';
+                        if (uidMatch) {
+                            if (userType === 'Dentist') {
+                                window.location.href = `/dentalemr_system/html/index.php?uid=${uidMatch[1]}`;
+                            } else {
+                                window.location.href = `/dentalemr_system/html/a_staff/addpatient.php?uid=${uidMatch[1]}`;
+                            }
                         } else {
-                            window.location.href = data.user_id ?
-                                `/dentalemr_system/html/a_staff/addpatient.php?uid=${data.user_id}` :
-                                '/dentalemr_system/html/a_staff/addpatient.php';
+                            if (userType === 'Dentist') {
+                                window.location.href = '/dentalemr_system/html/index.php';
+                            } else {
+                                window.location.href = '/dentalemr_system/html/a_staff/addpatient.php';
+                            }
                         }
                     }, 1500);
                 }

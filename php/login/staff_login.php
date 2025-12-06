@@ -1,33 +1,29 @@
 <?php
 session_start();
 require_once 'db_connect.php';
+require_once 'EmailHelper.php';
 date_default_timezone_set('Asia/Manila');
-require_once '../../vendor/autoload.php';
 
 // Include the activity logger
-require_once '..//manageusers/activity_logger.php';
+require_once '../manageusers/activity_logger.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = trim($_POST['password'] ?? '');
     $userType = trim($_POST['user_type'] ?? '');
 
-    if (empty($email) || empty($password) || empty($userType)) {
-        echo "<script>alert('Please fill in all fields.'); window.location.href='/dentalemr_system/html/login/login.html';</script>";
-        exit;
-    }
+    // Force user type to be Staff for this endpoint
+    $userType = 'Staff';
+    $table = 'staff';
 
-    $table = match ($userType) {
-        'Dentist' => 'dentist',
-        'Staff'   => 'staff',
-        default   => null
-    };
-
-    if (!$table) {
-        echo "<script>alert('Invalid user type.'); window.location.href='/dentalemr_system/html/login/login.html';</script>";
+    if (empty($email) || empty($password)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Please fill in all fields.',
+            'details' => 'missing_fields'
+        ]);
         exit;
     }
 
@@ -37,26 +33,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$user) {
-        // Log failed login attempt
-        logActivity($pdo, 0, 'Unknown User', 'Failed Login', 'System', "Failed login attempt with email: {$email}", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
-        echo "<script>alert('Email not found. Please check and try again.'); window.location.href='/dentalemr_system/html/login/login.html';</script>";
+        logActivity($pdo, 0, 'Unknown User', 'Failed Login', 'System', "Failed staff login attempt with email: {$email}", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Email not found. Please check and try again.',
+            'details' => 'email_not_found'
+        ]);
         exit;
     }
 
     // Check password
     if (!password_verify($password . $user['salt'], $user['password_hash'])) {
-        // Log failed login attempt
-        logActivity($pdo, $user['id'], $user['name'], 'Failed Login', 'System', "Failed password attempt for user: {$user['name']}", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
-        echo "<script>alert('Incorrect password. Please try again.'); window.location.href='/dentalemr_system/html/login/login.html';</script>";
+        logActivity($pdo, $user['id'], $user['name'], 'Failed Login', 'System', "Failed password attempt for staff: {$user['name']}", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Incorrect password. Please try again.',
+            'details' => 'incorrect_password'
+        ]);
         exit;
     }
 
-    // Check if user already verified for current period (resets at 11:59 PM)
+    // Check if user already verified for current period
     $currentTime = date('H:i:s');
-    $resetTime = '23:59:00'; // 11:59 PM
+    $resetTime = DAILY_VERIFICATION_RESET;
 
-    // If current time is before 11:59 PM, check for today's verification
-    // If current time is after 11:59 PM, consider it as next day
     if ($currentTime < $resetTime) {
         $checkDate = date('Y-m-d');
     } else {
@@ -78,12 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $alreadyVerified = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($alreadyVerified) {
-        // User already verified for current period - skip MFA and log them in directly
         if (!isset($_SESSION['active_sessions'])) {
             $_SESSION['active_sessions'] = [];
         }
 
-        // Get user name from database
         $userName = $user['name'] ?? $user['email'] ?? 'Unknown User';
 
         $_SESSION['active_sessions'][$user['id']] = [
@@ -106,36 +104,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'check_date' => $checkDate
         ]);
 
-        // Log the login
-        logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Daily verification bypass - already verified for current period", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
+        logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Staff daily verification bypass", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
 
-        // ========== OFFLINE ACCESS REGISTRATION - START ==========
-        // Add user data for offline access
-        $_SESSION['user_data'] = [
-            'id' => $user['id'],
-            'email' => $user['email'],
-            'name' => $userName,
-            'type' => $userType
-        ];
-
-        // Return user data in response for JavaScript to capture
-        $redirect = $userType === 'Dentist'
-            ? "/dentalemr_system/html/index.php?uid={$user['id']}"
-            : "/dentalemr_system/html/a_staff/addpatient.php?uid={$user['id']}";
-
-        echo "Login successful&user_id=" . $user['id'] . "&user_name=" . urlencode($userName) . "&redirect=" . urlencode($redirect);
-        // ========== OFFLINE ACCESS REGISTRATION - END ==========
-
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Login successful! Welcome back.',
+            'user_id' => $user['id'],
+            'user_name' => urlencode($userName),
+            'user_type' => $userType,
+            'redirect' => "/dentalemr_system/html/a_staff/addpatient.php?uid={$user['id']}"
+        ]);
         exit;
     }
 
-    // User needs MFA verification (first login of the period)
-    // Clean expired MFA codes
+    // User needs MFA verification
     $pdo->prepare("DELETE FROM mfa_codes WHERE expires_at <= NOW() OR used = 1")->execute();
 
-    // Generate new MFA code
     $mfaCode = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-    $expiresAt = date('Y-m-d H:i:s', time() + 300);
+    $expiresAt = date('Y-m-d H:i:s', time() + MFA_CODE_EXPIRY);
 
     $insert = $pdo->prepare("
         INSERT INTO mfa_codes (user_id, user_type, code, expires_at, used, created_at, sent_at)
@@ -148,61 +134,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'expires' => $expiresAt
     ]);
 
-    // Send MFA code via email
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'lenardovinci64@gmail.com';
-        $mail->Password = 'gvce aguf zgwa mgpp';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
+    // Store in session for fallback
+    $_SESSION['debug_mfa_code'] = $mfaCode;
+    $_SESSION['mfa_code_generated_at'] = time();
 
-        $mail->setFrom('lenardovinci64@gmail.com', 'Dental Record System');
-        $mail->addAddress($user['email'], $user['name']);
-        $mail->isHTML(true);
-        $mail->Subject = 'Your Daily Verification Code';
-        $mail->Body = "
-            <p>Dear <strong>{$user['name']}</strong>,</p>
-            <p>Your verification code is:</p>
-            <h2 style='letter-spacing:3px;color:#2563EB;'>{$mfaCode}</h2>
-            <p>This code will expire in 5 minutes.</p>
-            <p><em>Note: You only need to verify once daily (resets at 11:59 PM).</em></p>
-            <br><p>Best regards,<br>Dental Record System</p>
-        ";
-        $mail->send();
+    // Send email with MFA code
+    $emailHelper = new EmailHelper(DEBUG_MODE);
+    $emailResult = $emailHelper->sendMFACode($user['email'], $user['name'], $mfaCode);
 
-        // Log successful login attempt and MFA sent
-        logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Daily MFA code sent to {$user['email']}", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
-    } catch (Exception $e) {
-        // Log email sending failure
-        logActivity($pdo, $user['id'], $user['name'], 'Email Failed', 'System', "Failed to send MFA code to {$user['email']}", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
-
-        error_log('Mail error: ' . $mail->ErrorInfo);
-        echo "<script>alert('Could not send verification code. Please contact support.'); window.location.href='/dentalemr_system/html/login/login.html';</script>";
-        exit;
+    // Log email attempt
+    if ($emailResult['success']) {
+        logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Staff MFA code sent to {$user['email']}", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
+    } else {
+        logActivity($pdo, $user['id'], $user['name'], 'Login', 'System', "Staff MFA code generated but email failed", $_SERVER['REMOTE_ADDR'], $_SERVER['HTTP_USER_AGENT']);
+        error_log("Staff email sending failed for {$user['email']}: " . $emailResult['error']);
     }
 
     $_SESSION['pending_user'] = [
         'id'    => $user['id'],
         'type'  => $userType,
-        'email' => $user['email']
-    ];
-
-    // ========== OFFLINE ACCESS REGISTRATION FOR MFA FLOW - START ==========
-    // Store user data for potential offline registration after MFA verification
-    $_SESSION['pending_offline_user'] = [
-        'id' => $user['id'],
         'email' => $user['email'],
-        'name' => $user['name'] ?? $user['email'],
-        'type' => $userType
+        'name'  => $user['name'],
+        'email_sent' => $emailResult['success']
     ];
-    // ========== OFFLINE ACCESS REGISTRATION FOR MFA FLOW - END ==========
 
-    echo "<script>alert('Login successful! A verification code has been sent to your email.'); window.location.href='verify_mfa.php';</script>";
+    if ($emailResult['success']) {
+        echo json_encode([
+            'status' => 'mfa_required',
+            'message' => 'Login successful! A verification code has been sent to your email.',
+            'user_id' => $user['id'],
+            'user_name' => urlencode($user['name']),
+            'redirect' => '/dentalemr_system/php/login/verify_mfa.php',
+            'email_sent' => true
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'mfa_required',
+            'message' => 'Login successful! Please check your email for the verification code.',
+            'user_id' => $user['id'],
+            'user_name' => urlencode($user['name']),
+            'redirect' => '/dentalemr_system/php/login/verify_mfa.php',
+            'email_sent' => false
+        ]);
+    }
     exit;
 } else {
-    header('Location: /dentalemr_system/html/login/login.html');
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Invalid request method.',
+        'details' => 'invalid_method'
+    ]);
     exit;
 }
