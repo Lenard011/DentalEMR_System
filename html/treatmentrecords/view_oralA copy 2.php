@@ -1258,39 +1258,709 @@ if ($loggedUser['type'] === 'Dentist') {
         <!-- SCRIPTS SECTION -->
         <script>
             // ==============================================
-            // GLOBAL VARIABLES
+            // MODAL JAVASCRIPT - COMPLETE WORKING VERSION
             // ==============================================
+
+            // Global variables for modal
             let modalTeethData = [];
             let modalSelectedColor = '';
             let modalSelectedCondition = '';
             let modalSelectedCase = 'upper';
-            let modalHasUnsavedChanges = false;
+            let modalHasUnsavedChanges = false; // Track if there are unsaved changes
             const modalHistoryStack = [];
             const modalRedoStack = [];
-            const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
-            let currentPatientId = null;
-            let currentYear = 1;
 
-            // ==============================================
-            // UTILITY FUNCTIONS
-            // ==============================================
-
-            function romanNumeral(num) {
-                const map = {
-                    1: 'I',
-                    2: 'II',
-                    3: 'III',
-                    4: 'IV',
-                    5: 'V',
-                    6: 'VI',
-                    7: 'VII',
-                    8: 'VIII',
-                    9: 'IX',
-                    10: 'X'
-                };
-                return map[num] || String(num);
+            // Load teeth data for modal
+            async function loadModalTeethData() {
+                try {
+                    const response = await fetch('/dentalemr_system/php/treatmentrecords/get_teeth.php');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && !data.error) {
+                            modalTeethData = data;
+                            console.log('Loaded teeth data for modal:', modalTeethData.length, 'records');
+                            return true;
+                        }
+                    }
+                    console.warn('Could not load teeth mapping for modal');
+                    modalTeethData = [];
+                    return false;
+                } catch (error) {
+                    console.warn('Could not load teeth mapping for modal:', error);
+                    modalTeethData = [];
+                    return false;
+                }
             }
 
+            // Get tooth ID by FDI number
+            function getToothIdByFDI(fdiNumber) {
+                if (!modalTeethData || modalTeethData.length === 0) {
+                    console.warn('No teeth data loaded for FDI:', fdiNumber);
+                    return fdiNumber; // Return FDI as fallback
+                }
+
+                fdiNumber = parseInt(fdiNumber);
+                const tooth = modalTeethData.find(t => parseInt(t.fdi_number) === fdiNumber);
+
+                if (tooth) {
+                    return parseInt(tooth.tooth_id);
+                }
+
+                console.warn(`No tooth_id found for FDI: ${fdiNumber}`);
+                return fdiNumber; // Return FDI as fallback
+            }
+
+            // Initialize modal grid
+            function initModalGrid() {
+                const modal = document.getElementById('ohcModalA');
+                if (!modal) {
+                    console.error('Modal element not found');
+                    return;
+                }
+
+                const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
+
+                // Get patient ID from URL and set it in the form
+                const urlParams = new URLSearchParams(window.location.search);
+                const patientId = urlParams.get('id');
+                if (patientId) {
+                    const patientIdInput = modal.querySelector('#patient_id');
+                    if (patientIdInput) {
+                        patientIdInput.value = patientId;
+                    }
+                }
+
+                // Get DOM elements
+                const blueSelect = modal.querySelector('#blueSelect');
+                const redSelect = modal.querySelector('#redSelect');
+                const upperCaseChk = modal.querySelector('#upperCaseChk');
+                const lowerCaseChk = modal.querySelector('#lowerCaseChk');
+                const treatmentSelect = modal.querySelector('#treatmentSelect');
+                const undoBtn = modal.querySelector('#undoBtn');
+                const redoBtn = modal.querySelector('#redoBtn');
+                const clearAllBtn = modal.querySelector('#clearAll');
+
+                // Event listeners for color/case selection
+                blueSelect?.addEventListener('change', () => {
+                    const val = blueSelect.value;
+                    if (!val) return;
+                    modalSelectedCondition = val;
+                    modalSelectedColor = 'blue';
+                    if (redSelect) redSelect.value = '';
+                });
+
+                redSelect?.addEventListener('change', () => {
+                    const val = redSelect.value;
+                    if (!val) return;
+                    modalSelectedCondition = val;
+                    modalSelectedColor = 'red';
+                    if (blueSelect) blueSelect.value = '';
+                });
+
+                upperCaseChk?.addEventListener('change', () => {
+                    modalSelectedCase = 'upper';
+                    if (upperCaseChk) upperCaseChk.checked = true;
+                    if (lowerCaseChk) lowerCaseChk.checked = false;
+                });
+
+                lowerCaseChk?.addEventListener('change', () => {
+                    modalSelectedCase = 'lower';
+                    if (lowerCaseChk) lowerCaseChk.checked = true;
+                    if (upperCaseChk) upperCaseChk.checked = false;
+                });
+
+                // Format condition text based on case
+                function formatCondition(cond, textCase) {
+                    if (!cond) return '';
+                    if (cond.toLowerCase() === '✓') return '✓';
+                    return textCase === 'upper' ? cond.toUpperCase() : cond.toLowerCase();
+                }
+
+                // Apply change to element
+                function applyChange(key, color, cond, textCase, saveHistory = true, isTreatment = false) {
+                    const el = modal.querySelector(`[data-key="${key}"]`);
+                    if (!el) {
+                        console.warn('Element not found for key:', key);
+                        return;
+                    }
+
+                    const textSpan = el.querySelector('span');
+
+                    // Mark as unsaved change
+                    modalHasUnsavedChanges = true;
+
+                    // Save to history if needed
+                    if (saveHistory) {
+                        modalHistoryStack.push({
+                            key: key,
+                            isTreatment: isTreatment,
+                            prevColor: el.dataset.color || '',
+                            prevCondition: el.dataset.condition || '',
+                            prevTreatment: el.dataset.treatment || '',
+                            prevTextContent: textSpan ? textSpan.textContent : el.textContent,
+                            prevCase: el.dataset.case || 'upper',
+                            newColor: color,
+                            newCondition: isTreatment ? '' : cond,
+                            newTreatment: isTreatment ? cond : '',
+                            newCase: textCase
+                        });
+                        modalRedoStack.length = 0;
+                        updateModalButtonStates();
+                    }
+
+                    if (isTreatment) {
+                        // Handle treatment boxes
+                        el.dataset.treatment = cond || '';
+                        el.dataset.condition = '';
+                        el.dataset.color = '';
+                        el.dataset.case = '';
+                        el.textContent = cond || '';
+                        el.style.backgroundColor = '#fff';
+                        el.style.color = '#000';
+                        el.style.fontWeight = 'bold';
+                    } else {
+                        // Handle condition boxes and tooth parts
+                        el.dataset.condition = cond || '';
+                        el.dataset.color = color || '';
+                        el.dataset.case = textCase || 'upper';
+                        el.dataset.treatment = '';
+
+                        const displayText = formatCondition(cond, textCase);
+
+                        if (textSpan) {
+                            textSpan.textContent = displayText;
+                        } else {
+                            el.textContent = displayText;
+                        }
+
+                        if (cond && cond.toLowerCase() === '✓') {
+                            el.style.backgroundColor = '#fff';
+                            if (textSpan) {
+                                textSpan.style.color = '#000';
+                            } else {
+                                el.style.color = '#000';
+                            }
+                        } else {
+                            el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
+                            if (textSpan) {
+                                textSpan.style.color = '#fff';
+                            } else {
+                                el.style.color = '#fff';
+                            }
+                        }
+
+                        if (textSpan) {
+                            textSpan.style.fontWeight = 'bold';
+                            textSpan.style.fontSize = '10px';
+                        } else {
+                            el.style.fontWeight = 'bold';
+                        }
+                    }
+                }
+
+                // Update undo/redo button states
+                function updateModalButtonStates() {
+                    if (undoBtn) {
+                        undoBtn.disabled = modalHistoryStack.length === 0;
+                        undoBtn.style.opacity = modalHistoryStack.length === 0 ? '0.5' : '1';
+                    }
+                    if (redoBtn) {
+                        redoBtn.disabled = modalRedoStack.length === 0;
+                        redoBtn.style.opacity = modalRedoStack.length === 0 ? '0.5' : '1';
+                    }
+                }
+
+                // Undo functionality
+                undoBtn?.addEventListener('click', () => {
+                    if (!modalHistoryStack.length) return;
+                    const last = modalHistoryStack.pop();
+                    modalRedoStack.push({
+                        ...last
+                    });
+
+                    const el = modal.querySelector(`[data-key="${last.key}"]`);
+                    if (el) {
+                        const textSpan = el.querySelector('span');
+
+                        if (last.isTreatment) {
+                            el.dataset.treatment = last.prevTreatment || '';
+                            el.textContent = last.prevTreatment || '';
+                            el.style.backgroundColor = '#fff';
+                            el.style.color = '#000';
+                        } else {
+                            el.dataset.condition = last.prevCondition || '';
+                            el.dataset.color = last.prevColor || '';
+                            el.dataset.case = last.prevCase || 'upper';
+
+                            if (textSpan) {
+                                textSpan.textContent = last.prevTextContent || '';
+                            } else {
+                                el.textContent = last.prevTextContent || '';
+                            }
+
+                            if (last.prevCondition && last.prevCondition.toLowerCase() === '✓') {
+                                el.style.backgroundColor = '#fff';
+                                if (textSpan) {
+                                    textSpan.style.color = '#000';
+                                } else {
+                                    el.style.color = '#000';
+                                }
+                            } else {
+                                el.style.backgroundColor = last.prevColor === 'blue' ? '#1e40af' : last.prevColor === 'red' ? '#b91c1c' : '#fff';
+                                if (textSpan) {
+                                    textSpan.style.color = last.prevColor ? '#fff' : '#000';
+                                } else {
+                                    el.style.color = last.prevColor ? '#fff' : '#000';
+                                }
+                            }
+                        }
+                    }
+                    updateModalButtonStates();
+                });
+
+                // Redo functionality
+                redoBtn?.addEventListener('click', () => {
+                    if (!modalRedoStack.length) return;
+                    const last = modalRedoStack.pop();
+                    modalHistoryStack.push({
+                        ...last
+                    });
+                    applyChange(
+                        last.key,
+                        last.newColor || '',
+                        last.isTreatment ? last.newTreatment || '' : last.newCondition || '',
+                        last.newCase || 'upper',
+                        false,
+                        last.isTreatment
+                    );
+                    updateModalButtonStates();
+                });
+
+                // Clear all functionality
+                clearAllBtn?.addEventListener('click', () => {
+                    if (!confirm('Are you sure you want to clear all changes?')) return;
+
+                    modal.querySelectorAll('.part, .treatment-box, .treatment1-box, .condition-box, .condition1-box').forEach(el => {
+                        el.dataset.color = '';
+                        el.dataset.condition = '';
+                        el.dataset.treatment = '';
+                        el.dataset.case = '';
+                        el.textContent = '';
+                        el.style.backgroundColor = '#fff';
+                        el.style.color = '#000';
+                        el.style.fontWeight = 'normal';
+
+                        const textSpan = el.querySelector('span');
+                        if (textSpan) {
+                            textSpan.textContent = '';
+                            textSpan.style.color = '';
+                        }
+                    });
+
+                    modalHistoryStack.length = 0;
+                    modalRedoStack.length = 0;
+                    modalHasUnsavedChanges = false;
+                    updateModalButtonStates();
+                });
+
+                // Create tooth part
+                function createPart(toothId, partName, fdiNumber) {
+                    const part = document.createElement('div');
+                    part.className = 'part part-' + partName;
+                    const key = `${toothId}-${partName}`;
+                    part.dataset.key = key;
+
+                    // Get tooth_id
+                    const toothIdNum = getToothIdByFDI(fdiNumber);
+                    part.dataset.toothid = toothIdNum;
+                    part.dataset.fdinumber = fdiNumber;
+
+                    // Create span for text
+                    const textSpan = document.createElement('span');
+                    part.appendChild(textSpan);
+
+                    // Click event
+                    part.addEventListener('click', () => {
+                        if (!modalSelectedCondition) {
+                            alert('Please select a condition first');
+                            return;
+                        }
+                        applyChange(key, modalSelectedColor, modalSelectedCondition, modalSelectedCase, true, false);
+                    });
+
+                    return part;
+                }
+
+                // Create tooth container
+                function createTooth(id, label, position = 'bottom') {
+                    const container = document.createElement('div');
+                    container.className = 'tooth-container';
+
+                    const toothLabel = document.createElement('div');
+                    toothLabel.className = `tooth-label label-${position}`;
+                    toothLabel.textContent = label;
+
+                    const tooth = document.createElement('div');
+                    tooth.className = 'tooth';
+                    tooth.id = id;
+
+                    // Get tooth_id
+                    const toothId = getToothIdByFDI(label);
+                    tooth.dataset.toothId = toothId;
+                    tooth.dataset.fdinumber = label;
+
+                    // Create parts
+                    teethParts.forEach(p => {
+                        tooth.appendChild(createPart(id, p, label));
+                    });
+
+                    // Tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = `Tooth ${label}`;
+                    tooth.appendChild(tooltip);
+
+                    // Add to container
+                    if (position === 'top') {
+                        container.appendChild(toothLabel);
+                        container.appendChild(tooth);
+                    } else {
+                        container.appendChild(tooth);
+                        container.appendChild(toothLabel);
+                    }
+
+                    return container;
+                }
+
+                // Create boxes
+                function createBox(id, row, kind) {
+                    const box = document.createElement('div');
+                    const key = `R${row}-${id}`;
+                    box.dataset.key = key;
+
+                    // FDI mapping for boxes
+                    const fdiMap = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+                    const fdiNumber = fdiMap[id];
+
+                    // Get tooth_id
+                    const toothId = getToothIdByFDI(fdiNumber);
+                    box.dataset.toothid = toothId;
+                    box.dataset.fdinumber = fdiNumber;
+
+                    // Basic styling
+                    box.style.display = 'flex';
+                    box.style.alignItems = 'center';
+                    box.style.justifyContent = 'center';
+                    box.style.fontSize = '0.9rem';
+                    box.style.fontWeight = 'bold';
+                    box.style.cursor = 'pointer';
+                    box.style.userSelect = 'none';
+                    box.style.border = '1px solid #ccc';
+                    box.style.borderRadius = '4px';
+                    box.style.width = '2rem';
+                    box.style.height = '2rem';
+                    box.style.backgroundColor = '#fff';
+                    box.style.color = '#000';
+
+                    if (kind === 'treatment') {
+                        box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
+
+                        box.addEventListener('click', () => {
+                            const selectedTreat = treatmentSelect?.value || '';
+                            if (!selectedTreat) {
+                                alert('Please select a treatment first');
+                                return;
+                            }
+                            applyChange(key, '', selectedTreat, 'upper', true, true);
+                        });
+                    } else {
+                        box.className = (row === 3) ? 'condition1-box' : 'condition-box';
+
+                        box.addEventListener('click', () => {
+                            if (!modalSelectedCondition) {
+                                alert('Please select a condition first');
+                                return;
+                            }
+                            applyChange(key, modalSelectedColor, modalSelectedCondition, modalSelectedCase, true, false);
+                        });
+                    }
+
+                    return box;
+                }
+
+                // Load teeth grid
+                function loadTeethGrid() {
+                    const permTop = modal.querySelector('#permanentGridtop1');
+                    const permBot = modal.querySelector('#permanentGridbot1');
+                    const tempTop = modal.querySelector('#temporaryGridtop1');
+                    const tempBot = modal.querySelector('#temporaryGridbot1');
+
+                    // Clear existing
+                    [permTop, permBot, tempTop, tempBot].forEach(container => {
+                        if (container) container.innerHTML = '';
+                    });
+
+                    const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
+                    const permB = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
+                    const tempT = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+                    const tempB = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
+
+                    permT.forEach(n => permTop.appendChild(createTooth(`P-${n}`, n, 'top')));
+                    permB.forEach(n => permBot.appendChild(createTooth(`P-${n}`, n, 'bottom')));
+                    tempT.forEach(n => tempTop.appendChild(createTooth(`T-${n}`, n, 'top')));
+                    tempB.forEach(n => tempBot.appendChild(createTooth(`T-${n}`, n, 'bottom')));
+                }
+
+                // Load boxes
+                function loadModalBoxes() {
+                    const row1 = modal.querySelector('#treatRow11');
+                    const row2 = modal.querySelector('#treatRow21');
+                    const row3 = modal.querySelector('#treatRow31');
+                    const row4 = modal.querySelector('#treatRow41');
+
+                    // Clear existing
+                    [row1, row2, row3, row4].forEach(row => {
+                        if (row) row.innerHTML = '';
+                    });
+
+                    for (let i = 0; i < 16; i++) {
+                        row1.appendChild(createBox(i, 1, 'treatment'));
+                        row2.appendChild(createBox(i, 2, 'condition'));
+                        row3.appendChild(createBox(i, 3, 'condition'));
+                        row4.appendChild(createBox(i, 4, 'treatment'));
+                    }
+                }
+
+                // Initialize modal
+                loadTeethGrid();
+                loadModalBoxes();
+                updateModalButtonStates();
+
+                // Mark modal as loaded
+                modal.dataset.loaded = 'true';
+            }
+
+            // Open modal
+            window.openOHCModalA = function() {
+                const modal = document.getElementById('ohcModalA');
+                if (!modal) {
+                    console.error('Modal element not found');
+                    return;
+                }
+
+                // Reset unsaved changes flag
+                modalHasUnsavedChanges = false;
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+
+                // Load teeth data and initialize grid
+                if (!modal.dataset.loaded) {
+                    loadModalTeethData().then(() => {
+                        initModalGrid();
+                    });
+                }
+            };
+
+            // Close modal - FIXED VERSION
+            window.closeOHCModalA = function() {
+                const modal = document.getElementById('ohcModalA');
+                if (!modal) return;
+
+                // Check for unsaved changes using our flag
+                if (modalHasUnsavedChanges) {
+                    if (!confirm('You have unsaved changes. Are you sure you want to close?')) {
+                        return;
+                    }
+                }
+
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+
+                // Clear modal state when closing
+                modalHasUnsavedChanges = false;
+            };
+
+            // Detect case type
+            function detectCaseType(condCode, datasetCase = '') {
+                if (datasetCase === 'temporary' || datasetCase === 'lower') return 'temporary';
+                if (datasetCase === 'permanent' || datasetCase === 'upper') return 'permanent';
+
+                if (condCode && condCode !== '✓') {
+                    if (condCode === condCode.toLowerCase()) return 'temporary';
+                    if (condCode === condCode.toUpperCase()) return 'permanent';
+                }
+                return 'permanent';
+            }
+
+            // Save function - FIXED VERSION
+            window.saveOHCA = async function() {
+                const modal = document.getElementById('ohcModalA');
+                if (!modal) {
+                    alert('Modal not found');
+                    return;
+                }
+
+                const patient_id = modal.querySelector("#patient_id")?.value || '';
+                const visit_id = modal.querySelector("#visit_id")?.value || 0;
+
+                if (!patient_id) {
+                    alert('Patient ID is required');
+                    return;
+                }
+
+                const items = [];
+
+                // Process tooth parts
+                modal.querySelectorAll(".part").forEach(part => {
+                    const condCode = part.dataset.condition;
+                    if (!condCode) return;
+
+                    const toothElement = part.closest(".tooth");
+                    if (!toothElement) return;
+
+                    const tooth_id = toothElement.dataset.toothId;
+                    const fdiNumber = toothElement.dataset.fdinumber;
+
+                    if (!tooth_id) {
+                        console.error('Missing tooth_id for part:', part.dataset.key, 'FDI:', fdiNumber);
+                        return;
+                    }
+
+                    const color = part.dataset.color || '';
+                    const caseType = detectCaseType(condCode, part.dataset.case);
+
+                    items.push({
+                        type: "condition",
+                        tooth_id: tooth_id,
+                        condition_code: condCode,
+                        box_key: part.dataset.key,
+                        color: color,
+                        case_type: caseType
+                    });
+                });
+
+                // Process condition/treatment boxes
+                modal.querySelectorAll(".condition1-box, .condition-box, .treatment1-box, .treatment-box").forEach(box => {
+                    const treatCode = box.dataset.treatment;
+                    const condCode = box.dataset.condition;
+                    if (!treatCode && !condCode) return;
+
+                    const tooth_id = box.dataset.toothid;
+                    const fdiNumber = box.dataset.fdinumber;
+
+                    if (!tooth_id) {
+                        console.error('Missing tooth_id for box:', box.dataset.key, 'FDI:', fdiNumber);
+                        return;
+                    }
+
+                    const color = box.dataset.color || '';
+                    let caseType = 'permanent';
+
+                    if (treatCode) {
+                        items.push({
+                            type: "treatment",
+                            tooth_id: tooth_id,
+                            treatment_code: treatCode,
+                            box_key: box.dataset.key,
+                            color: color,
+                            case_type: caseType
+                        });
+                    } else {
+                        caseType = detectCaseType(condCode, box.dataset.case);
+                        items.push({
+                            type: "condition",
+                            tooth_id: tooth_id,
+                            condition_code: condCode,
+                            box_key: box.dataset.key,
+                            color: color,
+                            case_type: caseType
+                        });
+                    }
+                });
+
+                if (items.length === 0) {
+                    alert('No data to save');
+                    return;
+                }
+
+                console.log("Saving items:", items);
+
+                const payload = {
+                    action: "save",
+                    patient_id: patient_id,
+                    visit_id: visit_id,
+                    oral_data: items
+                };
+
+                try {
+                    const res = await fetch("/dentalemr_system/php/treatmentrecords/oral_condition_api.php", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+
+                    const result = await res.json();
+                    console.log("Save response:", result);
+
+                    if (result.success) {
+                        alert("Oral Health Condition saved successfully!");
+
+                        // Clear modal data
+                        modal.querySelectorAll('.part, .treatment-box, .treatment1-box, .condition-box, .condition1-box').forEach(el => {
+                            el.dataset.color = '';
+                            el.dataset.condition = '';
+                            el.dataset.treatment = '';
+                            el.dataset.case = '';
+                            el.textContent = '';
+                            el.style.backgroundColor = '#fff';
+                            el.style.color = '#000';
+
+                            const textSpan = el.querySelector('span');
+                            if (textSpan) textSpan.textContent = '';
+                        });
+
+                        // Clear history and reset unsaved changes flag
+                        modalHistoryStack.length = 0;
+                        modalRedoStack.length = 0;
+                        modalHasUnsavedChanges = false;
+
+                        // Update button states
+                        const undoBtn = modal.querySelector('#undoBtn');
+                        const redoBtn = modal.querySelector('#redoBtn');
+                        if (undoBtn) undoBtn.disabled = true;
+                        if (redoBtn) redoBtn.disabled = true;
+
+                        // Close modal
+                        closeOHCModalA();
+
+                        // Refresh the current view
+                        const params = new URLSearchParams(window.location.search);
+                        const patientId = params.get("id");
+                        const currentYear = getCurrentActiveYear();
+
+                        if (typeof loadVisitData === 'function') {
+                            setTimeout(() => {
+                                loadVisitData(patientId, currentYear);
+                            }, 500);
+                        }
+
+                    } else {
+                        alert("Error: " + (result.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Save error:', error);
+                    alert("Failed to save data: " + error.message);
+                }
+            };
+
+            // Helper function to get current active year
             function getCurrentActiveYear() {
                 const activeButton = document.querySelector('#yearButtons button[style*="background-color: rgb(29, 78, 216)"]');
                 if (activeButton) {
@@ -1313,65 +1983,83 @@ if ($loggedUser['type'] === 'Dentist') {
                         return romanMap[romanNum] || 1;
                     }
                 }
-                return currentYear;
-            }
-
-            function highlightActiveButton(yearNumber) {
-                const buttons = document.querySelectorAll("#yearButtons button");
-                buttons.forEach((btn, index) => {
-                    if (index + 1 === yearNumber) {
-                        btn.style.backgroundColor = "#1d4ed8";
-                        btn.style.color = "#ffffff";
-                        btn.style.fontWeight = "bold";
-                    } else {
-                        btn.style.backgroundColor = "#ffffff";
-                        btn.style.color = "#000000";
-                        btn.style.fontWeight = "normal";
-                    }
-                });
+                return 1;
             }
 
             // ==============================================
-            // DATA LOADING FUNCTIONS
+            // MAIN PAGE JAVASCRIPT - FIXED FETCHING
             // ==============================================
 
-            async function loadModalTeethData() {
-                try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/get_teeth.php');
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data && !data.error) {
-                            modalTeethData = data;
-                            console.log('Loaded teeth data:', modalTeethData.length, 'records');
-                            return true;
-                        }
-                    }
-                    modalTeethData = [];
-                    return false;
-                } catch (error) {
-                    modalTeethData = [];
-                    return false;
-                }
-            }
+            // Navigation functions
+            window.backmain = function() {
+                location.href = "treatmentrecords.php?uid=<?php echo $userId; ?>";
+            };
 
-            function getToothIdByFDI(fdiNumber) {
-                if (!modalTeethData || modalTeethData.length === 0) {
-                    return fdiNumber;
+            window.next = function() {
+                const params = new URLSearchParams(window.location.search);
+                const patientId = params.get("id");
+
+                if (!patientId) {
+                    alert("Missing patient ID.");
+                    return;
                 }
 
-                fdiNumber = parseInt(fdiNumber);
-                const tooth = modalTeethData.find(t => parseInt(t.fdi_number) === fdiNumber);
+                window.location.href = `view_oralB.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+            };
 
-                if (tooth) {
-                    return parseInt(tooth.tooth_id);
+            window.back = function() {
+                const params = new URLSearchParams(window.location.search);
+                const patientId = params.get("id");
+
+                if (!patientId) {
+                    alert("Missing patient ID.");
+                    return;
                 }
 
-                return fdiNumber;
-            }
+                window.location.href = `view_oral.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+            };
 
-            // ==============================================
-            // MAIN PAGE FUNCTIONS
-            // ==============================================
+            // Initialize navigation links
+            document.addEventListener('DOMContentLoaded', () => {
+                const params = new URLSearchParams(window.location.search);
+                const patientId = params.get('id');
+
+                // Patient info link
+                const patientInfoLink = document.getElementById("patientInfoLink");
+                if (patientInfoLink && patientId) {
+                    patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+                } else if (patientInfoLink) {
+                    patientInfoLink.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        alert("Please select a patient first.");
+                    });
+                }
+
+                // Services rendered link
+                const servicesRenderedLink = document.getElementById("servicesRenderedLink");
+                if (servicesRenderedLink && patientId) {
+                    servicesRenderedLink.href = `view_record.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+                } else if (servicesRenderedLink) {
+                    servicesRenderedLink.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        alert("Please select a patient first.");
+                    });
+                }
+
+                // Print link
+                const printdLink = document.getElementById("printdLink");
+                if (printdLink && patientId) {
+                    printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+                } else if (printdLink) {
+                    printdLink.addEventListener("click", (e) => {
+                        e.preventDefault();
+                        alert("Please select a patient first.");
+                    });
+                }
+            });
+
+            // Teeth structure for main page
+            const teethParts = ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'center'];
 
             function createPart(toothId, partName) {
                 const part = document.createElement('div');
@@ -1438,10 +2126,6 @@ if ($loggedUser['type'] === 'Dentist') {
                 const tempTop = document.getElementById('temporaryGridtop');
                 const tempBot = document.getElementById('temporaryGridbot');
 
-                [permTop, permBot, tempTop, tempBot].forEach(container => {
-                    if (container) container.innerHTML = '';
-                });
-
                 const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
                 const permB = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
                 const tempT = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
@@ -1467,56 +2151,103 @@ if ($loggedUser['type'] === 'Dentist') {
                 }
             }
 
-            function clearAllTeeth() {
-                document.querySelectorAll(".part, .treatment-box, .treatment1-box, .condition-box, .condition1-box").forEach(el => {
-                    el.style.backgroundColor = "";
-                    el.style.color = "";
-                    el.style.fontWeight = "";
+            // Initialize main page
+            loadGrid();
+            loadBoxes();
 
-                    const textSpan = el.querySelector('span');
-                    if (textSpan) {
-                        textSpan.textContent = "";
-                        textSpan.style.color = "";
-                        textSpan.style.fontWeight = "";
-                        textSpan.style.fontSize = "";
+            // Fetch data functions
+            document.addEventListener("DOMContentLoaded", () => {
+                const params = new URLSearchParams(window.location.search);
+                const patientId = params.get("id");
+
+                if (!patientId) {
+                    console.error("No patient ID found in URL");
+                    alert("Missing patient ID");
+                    return;
+                }
+
+                console.log("Loading data for patient ID:", patientId);
+
+                // Default to Year I
+                highlightActiveButton(1);
+                loadVisitData(patientId, 1);
+
+                // Year button functions
+                window.year1 = () => {
+                    highlightActiveButton(1);
+                    loadVisitData(patientId, 1);
+                };
+                window.year2 = () => {
+                    highlightActiveButton(2);
+                    loadVisitData(patientId, 2);
+                };
+                window.year3 = () => {
+                    highlightActiveButton(3);
+                    loadVisitData(patientId, 3);
+                };
+                window.year4 = () => {
+                    highlightActiveButton(4);
+                    loadVisitData(patientId, 4);
+                };
+                window.year5 = () => {
+                    highlightActiveButton(5);
+                    loadVisitData(patientId, 5);
+                };
+            });
+
+            function highlightActiveButton(yearNumber) {
+                const buttons = document.querySelectorAll("#yearButtons button");
+                buttons.forEach((btn, index) => {
+                    if (index + 1 === yearNumber) {
+                        btn.style.backgroundColor = "#1d4ed8";
+                        btn.style.color = "#ffffff";
+                        btn.style.fontWeight = "bold";
                     } else {
-                        el.textContent = "";
+                        btn.style.backgroundColor = "#ffffff";
+                        btn.style.color = "#000000";
+                        btn.style.fontWeight = "normal";
                     }
                 });
             }
 
-            // ==============================================
-            // DATA FETCHING AND DISPLAY
-            // ==============================================
+            function romanNumeral(num) {
+                const map = {
+                    1: 'I',
+                    2: 'II',
+                    3: 'III',
+                    4: 'IV',
+                    5: 'V',
+                    6: 'VI',
+                    7: 'VII',
+                    8: 'VIII',
+                    9: 'IX',
+                    10: 'X'
+                };
+                return map[num] || String(num);
+            }
 
             async function loadVisitData(patientId, visitNumber) {
                 try {
-                    console.log(`Loading data for patient ${patientId}, visit ${visitNumber}`);
+                    console.log(`Fetching data for patient ${patientId}, visit ${visitNumber}`);
 
-                    currentPatientId = patientId;
-                    currentYear = visitNumber;
-
-                    // Clear and show loading
-                    clearAllTeeth();
-                    document.getElementById("yeardate").textContent = `Year ${romanNumeral(visitNumber)} - Loading...`;
-
-                    // Fetch with cache busting
-                    const timestamp = new Date().getTime();
-                    const apiUrl = `/dentalemr_system/php/treatmentrecords/fetch_oral_condition.php?patient_id=${patientId}&_=${timestamp}`;
+                    // Use the correct API endpoint
+                    const apiUrl = `/dentalemr_system/php/treatmentrecords/fetch_oral_condition.php?patient_id=${patientId}`;
+                    console.log("API URL:", apiUrl);
 
                     const res = await fetch(apiUrl);
 
                     if (!res.ok) {
-                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                        throw new Error(`HTTP error! status: ${res.status}`);
                     }
 
                     const data = await res.json();
+                    console.log("API Response:", data);
 
                     if (!data.success) {
                         throw new Error(data.error || "Failed to load data");
                     }
 
-                    // Update patient name
+                    // Display patient name
                     if (data.patient) {
                         const {
                             firstname,
@@ -1529,30 +2260,36 @@ if ($loggedUser['type'] === 'Dentist') {
                     }
 
                     if (!data.visits || data.visits.length === 0) {
-                        document.getElementById("yeardate").textContent = `Year ${romanNumeral(visitNumber)} - No records`;
+                        console.log("No visits found for this patient");
+                        document.getElementById("yeardate").textContent = `Year ${romanNumeral(visitNumber)} - No records found`;
+                        clearAllTeeth();
                         return;
                     }
 
-                    // Find the specific visit
+                    // Find visit by visit_number
                     const visit = data.visits.find(v => parseInt(v.visit_number) === parseInt(visitNumber));
 
                     if (!visit) {
-                        document.getElementById("yeardate").textContent = `Year ${romanNumeral(visitNumber)} - No records`;
+                        console.log(`No visit found for number: ${visitNumber}`);
+                        document.getElementById("yeardate").textContent = `Year ${romanNumeral(visitNumber)} - No records found`;
+                        clearAllTeeth();
                         return;
                     }
 
-                    // Update display date
-                    const visitDate = visit.visit_date ?
-                        new Date(visit.visit_date).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        }) : 'No date';
-
+                    // Display year/date
+                    const visitDate = visit.visit_date ? new Date(visit.visit_date).toLocaleDateString() : 'No date';
                     document.getElementById("yeardate").textContent =
                         `${visit.visit_label || 'Year ' + romanNumeral(visitNumber)} — ${visitDate}`;
 
-                    console.log(`Found visit: ${visit.visit_id}, Conditions: ${visit.conditions?.length || 0}, Treatments: ${visit.treatments?.length || 0}`);
+                    console.log(`Visit data for Year ${visitNumber}:`, {
+                        visit_id: visit.visit_id,
+                        visit_date: visit.visit_date,
+                        conditionsCount: visit.conditions?.length || 0,
+                        treatmentsCount: visit.treatments?.length || 0
+                    });
+
+                    // Clear existing data first
+                    clearAllTeeth();
 
                     // Apply conditions
                     if (visit.conditions && visit.conditions.length > 0) {
@@ -1561,17 +2298,23 @@ if ($loggedUser['type'] === 'Dentist') {
 
                             const el = document.querySelector(`[data-key='${c.box_key}']`);
                             if (!el) {
-                                console.warn(`Element not found for key: ${c.box_key}`);
+                                console.log(`Element not found for key: ${c.box_key}`);
                                 return;
                             }
 
-                            // Set color based on condition
+                            // Determine color
                             let backgroundColor = "#ffffff";
-                            if (c.color === 'red') backgroundColor = '#b91c1c';
-                            else if (c.color === 'blue') backgroundColor = '#1e40af';
-                            else if (c.condition_code?.toLowerCase() === 'm') backgroundColor = '#ef4444';
-                            else if (c.condition_code && c.condition_code !== '✓') backgroundColor = '#3b82f6';
+                            if (c.color === 'red') {
+                                backgroundColor = '#b91c1c';
+                            } else if (c.color === 'blue') {
+                                backgroundColor = '#1e40af';
+                            } else if (c.condition_code && c.condition_code.toLowerCase() === 'm') {
+                                backgroundColor = '#ef4444';
+                            } else if (c.condition_code && c.condition_code !== '✓') {
+                                backgroundColor = '#3b82f6';
+                            }
 
+                            // Set background color
                             el.style.backgroundColor = backgroundColor;
 
                             // Set text
@@ -1598,7 +2341,7 @@ if ($loggedUser['type'] === 'Dentist') {
 
                             const el = document.querySelector(`[data-key='${t.box_key}']`);
                             if (!el) {
-                                console.warn(`Element not found for key: ${t.box_key}`);
+                                console.log(`Element not found for key: ${t.box_key}`);
                                 return;
                             }
 
@@ -1607,770 +2350,32 @@ if ($loggedUser['type'] === 'Dentist') {
                             el.style.backgroundColor = "#ffffff";
                             el.style.color = "#000000";
                             el.style.fontWeight = "bold";
-                            el.style.fontSize = "12px";
                         });
                     }
-
-                    console.log("Data loading completed successfully");
 
                 } catch (err) {
                     console.error("Error loading visit data:", err);
-                    document.getElementById("yeardate").textContent = `Year ${romanNumeral(visitNumber)} - Error`;
-                    alert("Failed to load data: " + err.message);
+                    alert("Failed to load visit data: " + err.message);
                 }
             }
 
-            // ==============================================
-            // MODAL FUNCTIONS
-            // ==============================================
+            function clearAllTeeth() {
+                document.querySelectorAll(".part, .treatment-box, .treatment1-box, .condition-box, .condition1-box").forEach(el => {
+                    el.style.backgroundColor = "";
+                    el.style.color = "";
+                    el.style.fontWeight = "";
 
-            function formatCondition(cond, textCase) {
-                if (!cond) return '';
-                if (cond.toLowerCase() === '✓') return '✓';
-                return textCase === 'upper' ? cond.toUpperCase() : cond.toLowerCase();
-            }
-
-            function detectCaseType(condCode, datasetCase = '') {
-                if (datasetCase === 'temporary' || datasetCase === 'lower') return 'temporary';
-                if (datasetCase === 'permanent' || datasetCase === 'upper') return 'permanent';
-
-                if (condCode && condCode !== '✓') {
-                    if (condCode === condCode.toLowerCase()) return 'temporary';
-                    if (condCode === condCode.toUpperCase()) return 'permanent';
-                }
-                return 'permanent';
-            }
-
-            function applyChange(key, color, cond, textCase, saveHistory = true, isTreatment = false) {
-                const modal = document.getElementById('ohcModalA');
-                const el = modal.querySelector(`[data-key="${key}"]`);
-                if (!el) return;
-
-                const textSpan = el.querySelector('span');
-
-                // Mark as unsaved
-                modalHasUnsavedChanges = true;
-
-                // Save history
-                if (saveHistory) {
-                    modalHistoryStack.push({
-                        key: key,
-                        isTreatment: isTreatment,
-                        prevColor: el.dataset.color || '',
-                        prevCondition: el.dataset.condition || '',
-                        prevTreatment: el.dataset.treatment || '',
-                        prevTextContent: textSpan ? textSpan.textContent : el.textContent,
-                        prevCase: el.dataset.case || 'upper',
-                        newColor: color,
-                        newCondition: isTreatment ? '' : cond,
-                        newTreatment: isTreatment ? cond : '',
-                        newCase: textCase
-                    });
-                    modalRedoStack.length = 0;
-                    updateModalButtonStates();
-                }
-
-                if (isTreatment) {
-                    el.dataset.treatment = cond || '';
-                    el.dataset.condition = '';
-                    el.dataset.color = '';
-                    el.dataset.case = '';
-                    el.textContent = cond || '';
-                    el.style.backgroundColor = '#fff';
-                    el.style.color = '#000';
-                    el.style.fontWeight = 'bold';
-                } else {
-                    el.dataset.condition = cond || '';
-                    el.dataset.color = color || '';
-                    el.dataset.case = textCase || 'upper';
-                    el.dataset.treatment = '';
-
-                    const displayText = formatCondition(cond, textCase);
-
+                    const textSpan = el.querySelector('span');
                     if (textSpan) {
-                        textSpan.textContent = displayText;
+                        textSpan.textContent = "";
+                        textSpan.style.color = "";
+                        textSpan.style.fontWeight = "";
+                        textSpan.style.fontSize = "";
                     } else {
-                        el.textContent = displayText;
+                        el.textContent = "";
                     }
-
-                    if (cond && cond.toLowerCase() === '✓') {
-                        el.style.backgroundColor = '#fff';
-                        if (textSpan) {
-                            textSpan.style.color = '#000';
-                        } else {
-                            el.style.color = '#000';
-                        }
-                    } else {
-                        el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
-                        if (textSpan) {
-                            textSpan.style.color = '#fff';
-                        } else {
-                            el.style.color = '#fff';
-                        }
-                    }
-
-                    if (textSpan) {
-                        textSpan.style.fontWeight = 'bold';
-                        textSpan.style.fontSize = '10px';
-                    } else {
-                        el.style.fontWeight = 'bold';
-                    }
-                }
+                });
             }
-
-            function updateModalButtonStates() {
-                const modal = document.getElementById('ohcModalA');
-                const undoBtn = modal.querySelector('#undoBtn');
-                const redoBtn = modal.querySelector('#redoBtn');
-
-                if (undoBtn) {
-                    undoBtn.disabled = modalHistoryStack.length === 0;
-                    undoBtn.style.opacity = modalHistoryStack.length === 0 ? '0.5' : '1';
-                }
-                if (redoBtn) {
-                    redoBtn.disabled = modalRedoStack.length === 0;
-                    redoBtn.style.opacity = modalRedoStack.length === 0 ? '0.5' : '1';
-                }
-            }
-
-            // ==============================================
-            // MODAL INITIALIZATION
-            // ==============================================
-
-            function initModalGrid() {
-                const modal = document.getElementById('ohcModalA');
-                if (!modal) return;
-
-                // Set patient ID
-                const patientIdInput = modal.querySelector('#patient_id');
-                if (patientIdInput && currentPatientId) {
-                    patientIdInput.value = currentPatientId;
-                }
-
-                // Get modal elements
-                const blueSelect = modal.querySelector('#blueSelect');
-                const redSelect = modal.querySelector('#redSelect');
-                const upperCaseChk = modal.querySelector('#upperCaseChk');
-                const lowerCaseChk = modal.querySelector('#lowerCaseChk');
-                const treatmentSelect = modal.querySelector('#treatmentSelect');
-                const undoBtn = modal.querySelector('#undoBtn');
-                const redoBtn = modal.querySelector('#redoBtn');
-                const clearAllBtn = modal.querySelector('#clearAll');
-
-                // Event listeners
-                blueSelect?.addEventListener('change', () => {
-                    const val = blueSelect.value;
-                    if (!val) return;
-                    modalSelectedCondition = val;
-                    modalSelectedColor = 'blue';
-                    if (redSelect) redSelect.value = '';
-                });
-
-                redSelect?.addEventListener('change', () => {
-                    const val = redSelect.value;
-                    if (!val) return;
-                    modalSelectedCondition = val;
-                    modalSelectedColor = 'red';
-                    if (blueSelect) blueSelect.value = '';
-                });
-
-                upperCaseChk?.addEventListener('change', () => {
-                    modalSelectedCase = 'upper';
-                    if (upperCaseChk) upperCaseChk.checked = true;
-                    if (lowerCaseChk) lowerCaseChk.checked = false;
-                });
-
-                lowerCaseChk?.addEventListener('change', () => {
-                    modalSelectedCase = 'lower';
-                    if (lowerCaseChk) lowerCaseChk.checked = true;
-                    if (upperCaseChk) upperCaseChk.checked = false;
-                });
-
-                // Undo/Redo functionality
-                undoBtn?.addEventListener('click', () => {
-                    if (!modalHistoryStack.length) return;
-                    const last = modalHistoryStack.pop();
-                    modalRedoStack.push({
-                        ...last
-                    });
-
-                    const el = modal.querySelector(`[data-key="${last.key}"]`);
-                    if (el) {
-                        const textSpan = el.querySelector('span');
-
-                        if (last.isTreatment) {
-                            el.dataset.treatment = last.prevTreatment || '';
-                            el.textContent = last.prevTreatment || '';
-                            el.style.backgroundColor = '#fff';
-                            el.style.color = '#000';
-                        } else {
-                            el.dataset.condition = last.prevCondition || '';
-                            el.dataset.color = last.prevColor || '';
-                            el.dataset.case = last.prevCase || 'upper';
-
-                            if (textSpan) {
-                                textSpan.textContent = last.prevTextContent || '';
-                            } else {
-                                el.textContent = last.prevTextContent || '';
-                            }
-
-                            if (last.prevCondition && last.prevCondition.toLowerCase() === '✓') {
-                                el.style.backgroundColor = '#fff';
-                                if (textSpan) {
-                                    textSpan.style.color = '#000';
-                                } else {
-                                    el.style.color = '#000';
-                                }
-                            } else {
-                                el.style.backgroundColor = last.prevColor === 'blue' ? '#1e40af' : last.prevColor === 'red' ? '#b91c1c' : '#fff';
-                                if (textSpan) {
-                                    textSpan.style.color = last.prevColor ? '#fff' : '#000';
-                                } else {
-                                    el.style.color = last.prevColor ? '#fff' : '#000';
-                                }
-                            }
-                        }
-                    }
-                    updateModalButtonStates();
-                });
-
-                redoBtn?.addEventListener('click', () => {
-                    if (!modalRedoStack.length) return;
-                    const last = modalRedoStack.pop();
-                    modalHistoryStack.push({
-                        ...last
-                    });
-                    applyChange(
-                        last.key,
-                        last.newColor || '',
-                        last.isTreatment ? last.newTreatment || '' : last.newCondition || '',
-                        last.newCase || 'upper',
-                        false,
-                        last.isTreatment
-                    );
-                    updateModalButtonStates();
-                });
-
-                clearAllBtn?.addEventListener('click', () => {
-                    if (!confirm('Clear all changes?')) return;
-
-                    modal.querySelectorAll('.part, .treatment-box, .treatment1-box, .condition-box, .condition1-box').forEach(el => {
-                        el.dataset.color = '';
-                        el.dataset.condition = '';
-                        el.dataset.treatment = '';
-                        el.dataset.case = '';
-                        el.textContent = '';
-                        el.style.backgroundColor = '#fff';
-                        el.style.color = '#000';
-                        el.style.fontWeight = 'normal';
-
-                        const textSpan = el.querySelector('span');
-                        if (textSpan) {
-                            textSpan.textContent = '';
-                            textSpan.style.color = '';
-                        }
-                    });
-
-                    modalHistoryStack.length = 0;
-                    modalRedoStack.length = 0;
-                    modalHasUnsavedChanges = false;
-                    updateModalButtonStates();
-                });
-
-                // Create modal elements
-                function createModalPart(toothId, partName, fdiNumber) {
-                    const part = document.createElement('div');
-                    part.className = 'part part-' + partName;
-                    const key = `${toothId}-${partName}`;
-                    part.dataset.key = key;
-
-                    const toothIdNum = getToothIdByFDI(fdiNumber);
-                    part.dataset.toothid = toothIdNum;
-                    part.dataset.fdinumber = fdiNumber;
-
-                    const textSpan = document.createElement('span');
-                    part.appendChild(textSpan);
-
-                    part.addEventListener('click', () => {
-                        if (!modalSelectedCondition) {
-                            alert('Select a condition first');
-                            return;
-                        }
-                        applyChange(key, modalSelectedColor, modalSelectedCondition, modalSelectedCase, true, false);
-                    });
-
-                    return part;
-                }
-
-                function createModalTooth(id, label, position = 'bottom') {
-                    const container = document.createElement('div');
-                    container.className = 'tooth-container';
-
-                    const toothLabel = document.createElement('div');
-                    toothLabel.className = `tooth-label label-${position}`;
-                    toothLabel.textContent = label;
-
-                    const tooth = document.createElement('div');
-                    tooth.className = 'tooth';
-                    tooth.id = id;
-
-                    const toothId = getToothIdByFDI(label);
-                    tooth.dataset.toothId = toothId;
-                    tooth.dataset.fdinumber = label;
-
-                    teethParts.forEach(p => {
-                        tooth.appendChild(createModalPart(id, p, label));
-                    });
-
-                    const tooltip = document.createElement('div');
-                    tooltip.className = 'tooltip';
-                    tooltip.textContent = `Tooth ${label}`;
-                    tooth.appendChild(tooltip);
-
-                    if (position === 'top') {
-                        container.appendChild(toothLabel);
-                        container.appendChild(tooth);
-                    } else {
-                        container.appendChild(tooth);
-                        container.appendChild(toothLabel);
-                    }
-
-                    return container;
-                }
-
-                function createModalBox(id, row, kind) {
-                    const box = document.createElement('div');
-                    const key = `R${row}-${id}`;
-                    box.dataset.key = key;
-
-                    const fdiMap = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
-                    const fdiNumber = fdiMap[id];
-                    const toothId = getToothIdByFDI(fdiNumber);
-
-                    box.dataset.toothid = toothId;
-                    box.dataset.fdinumber = fdiNumber;
-
-                    box.style.display = 'flex';
-                    box.style.alignItems = 'center';
-                    box.style.justifyContent = 'center';
-                    box.style.fontSize = '0.9rem';
-                    box.style.fontWeight = 'bold';
-                    box.style.cursor = 'pointer';
-                    box.style.userSelect = 'none';
-                    box.style.border = '1px solid #ccc';
-                    box.style.borderRadius = '4px';
-                    box.style.width = '2rem';
-                    box.style.height = '2rem';
-                    box.style.backgroundColor = '#fff';
-                    box.style.color = '#000';
-
-                    if (kind === 'treatment') {
-                        box.className = (row === 4) ? 'treatment1-box' : 'treatment-box';
-
-                        box.addEventListener('click', () => {
-                            const selectedTreat = treatmentSelect?.value || '';
-                            if (!selectedTreat) {
-                                alert('Select a treatment first');
-                                return;
-                            }
-                            applyChange(key, '', selectedTreat, 'upper', true, true);
-                        });
-                    } else {
-                        box.className = (row === 3) ? 'condition1-box' : 'condition-box';
-
-                        box.addEventListener('click', () => {
-                            if (!modalSelectedCondition) {
-                                alert('Select a condition first');
-                                return;
-                            }
-                            applyChange(key, modalSelectedColor, modalSelectedCondition, modalSelectedCase, true, false);
-                        });
-                    }
-
-                    return box;
-                }
-
-                // Load modal grid
-                function loadModalTeethGrid() {
-                    const permTop = modal.querySelector('#permanentGridtop1');
-                    const permBot = modal.querySelector('#permanentGridbot1');
-                    const tempTop = modal.querySelector('#temporaryGridtop1');
-                    const tempBot = modal.querySelector('#temporaryGridbot1');
-
-                    [permTop, permBot, tempTop, tempBot].forEach(container => {
-                        if (container) container.innerHTML = '';
-                    });
-
-                    const permT = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
-                    const permB = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
-                    const tempT = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
-                    const tempB = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
-
-                    permT.forEach(n => permTop.appendChild(createModalTooth(`P-${n}`, n, 'top')));
-                    permB.forEach(n => permBot.appendChild(createModalTooth(`P-${n}`, n, 'bottom')));
-                    tempT.forEach(n => tempTop.appendChild(createModalTooth(`T-${n}`, n, 'top')));
-                    tempB.forEach(n => tempBot.appendChild(createModalTooth(`T-${n}`, n, 'bottom')));
-                }
-
-                function loadModalBoxes() {
-                    const row1 = modal.querySelector('#treatRow11');
-                    const row2 = modal.querySelector('#treatRow21');
-                    const row3 = modal.querySelector('#treatRow31');
-                    const row4 = modal.querySelector('#treatRow41');
-
-                    [row1, row2, row3, row4].forEach(row => {
-                        if (row) row.innerHTML = '';
-                    });
-
-                    for (let i = 0; i < 16; i++) {
-                        row1.appendChild(createModalBox(i, 1, 'treatment'));
-                        row2.appendChild(createModalBox(i, 2, 'condition'));
-                        row3.appendChild(createModalBox(i, 3, 'condition'));
-                        row4.appendChild(createModalBox(i, 4, 'treatment'));
-                    }
-                }
-
-                // Initialize modal
-                loadModalTeethGrid();
-                loadModalBoxes();
-                updateModalButtonStates();
-                modal.dataset.loaded = 'true';
-            }
-
-            // ==============================================
-            // MODAL CONTROL FUNCTIONS
-            // ==============================================
-
-            window.openOHCModalA = function() {
-                const modal = document.getElementById('ohcModalA');
-                if (!modal) return;
-
-                // Reset state
-                modalHasUnsavedChanges = false;
-
-                // Show modal
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-
-                // Initialize if not loaded
-                if (!modal.dataset.loaded) {
-                    loadModalTeethData().then(() => {
-                        initModalGrid();
-                    });
-                } else {
-                    // Reset selections
-                    const blueSelect = modal.querySelector('#blueSelect');
-                    const redSelect = modal.querySelector('#redSelect');
-                    const treatmentSelect = modal.querySelector('#treatmentSelect');
-                    if (blueSelect) blueSelect.value = '';
-                    if (redSelect) redSelect.value = '';
-                    if (treatmentSelect) treatmentSelect.value = '';
-
-                    modalSelectedColor = '';
-                    modalSelectedCondition = '';
-                    modalSelectedCase = 'upper';
-                }
-            };
-
-            window.closeOHCModalA = function() {
-                const modal = document.getElementById('ohcModalA');
-                if (!modal) return;
-
-                if (modalHasUnsavedChanges) {
-                    if (!confirm('You have unsaved changes. Are you sure you want to close?')) {
-                        return;
-                    }
-                }
-
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            };
-
-            // ==============================================
-            // SAVE FUNCTION - COMPLETE FIXED VERSION
-            // ==============================================
-
-            window.saveOHCA = async function() {
-                const modal = document.getElementById('ohcModalA');
-                if (!modal) return;
-
-                const patient_id = modal.querySelector("#patient_id")?.value || '';
-                const visit_id = modal.querySelector("#visit_id")?.value || 0;
-
-                if (!patient_id) {
-                    alert('Patient ID required');
-                    return;
-                }
-
-                const items = [];
-
-                // Process parts
-                modal.querySelectorAll(".part").forEach(part => {
-                    const condCode = part.dataset.condition;
-                    if (!condCode) return;
-
-                    const toothElement = part.closest(".tooth");
-                    if (!toothElement) return;
-
-                    const tooth_id = toothElement.dataset.toothId;
-                    if (!tooth_id) return;
-
-                    const color = part.dataset.color || '';
-                    const caseType = detectCaseType(condCode, part.dataset.case);
-
-                    items.push({
-                        type: "condition",
-                        tooth_id: tooth_id,
-                        condition_code: condCode,
-                        box_key: part.dataset.key,
-                        color: color,
-                        case_type: caseType
-                    });
-                });
-
-                // Process boxes
-                modal.querySelectorAll(".condition1-box, .condition-box, .treatment1-box, .treatment-box").forEach(box => {
-                    const treatCode = box.dataset.treatment;
-                    const condCode = box.dataset.condition;
-                    if (!treatCode && !condCode) return;
-
-                    const tooth_id = box.dataset.toothid;
-                    if (!tooth_id) return;
-
-                    const color = box.dataset.color || '';
-
-                    if (treatCode) {
-                        items.push({
-                            type: "treatment",
-                            tooth_id: tooth_id,
-                            treatment_code: treatCode,
-                            box_key: box.dataset.key,
-                            color: color,
-                            case_type: 'permanent'
-                        });
-                    } else {
-                        const caseType = detectCaseType(condCode, box.dataset.case);
-                        items.push({
-                            type: "condition",
-                            tooth_id: tooth_id,
-                            condition_code: condCode,
-                            box_key: box.dataset.key,
-                            color: color,
-                            case_type: caseType
-                        });
-                    }
-                });
-
-                if (items.length === 0) {
-                    alert('No data to save');
-                    return;
-                }
-
-                const payload = {
-                    action: "save",
-                    patient_id: patient_id,
-                    visit_id: visit_id,
-                    oral_data: items
-                };
-
-                try {
-                    // Show loading
-                    const saveBtn = modal.querySelector('button[onclick="saveOHCA()"]');
-                    const originalText = saveBtn.textContent;
-                    saveBtn.textContent = 'Saving...';
-                    saveBtn.disabled = true;
-
-                    console.log("Saving data:", payload);
-
-                    const res = await fetch("/dentalemr_system/php/treatmentrecords/oral_condition_api.php", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const result = await res.json();
-                    console.log("Save response:", result);
-
-                    if (result.success) {
-                        alert("Oral Health Condition saved successfully!");
-
-                        // Clear modal completely
-                        modal.querySelectorAll('.part, .treatment-box, .treatment1-box, .condition-box, .condition1-box').forEach(el => {
-                            el.dataset.color = '';
-                            el.dataset.condition = '';
-                            el.dataset.treatment = '';
-                            el.dataset.case = '';
-                            el.textContent = '';
-                            el.style.backgroundColor = '#fff';
-                            el.style.color = '#000';
-
-                            const textSpan = el.querySelector('span');
-                            if (textSpan) textSpan.textContent = '';
-                        });
-
-                        // Reset all selections
-                        const blueSelect = modal.querySelector('#blueSelect');
-                        const redSelect = modal.querySelector('#redSelect');
-                        const treatmentSelect = modal.querySelector('#treatmentSelect');
-                        if (blueSelect) blueSelect.value = '';
-                        if (redSelect) redSelect.value = '';
-                        if (treatmentSelect) treatmentSelect.value = '';
-
-                        // Reset state
-                        modalHistoryStack.length = 0;
-                        modalRedoStack.length = 0;
-                        modalHasUnsavedChanges = false;
-                        modalSelectedColor = '';
-                        modalSelectedCondition = '';
-                        modalSelectedCase = 'upper';
-
-                        updateModalButtonStates();
-
-                        // Close modal
-                        closeOHCModalA();
-
-                        // FORCE REFRESH MAIN PAGE DATA
-                        console.log("Refreshing main page data...");
-
-                        // Get current year
-                        const activeYear = getCurrentActiveYear();
-                        console.log("Active year to refresh:", activeYear);
-
-                        // Clear current display
-                        clearAllTeeth();
-
-                        // Short delay to ensure database is updated
-                        setTimeout(() => {
-                            if (currentPatientId) {
-                                console.log(`Loading fresh data for patient ${currentPatientId}, year ${activeYear}`);
-                                // Force fresh fetch with cache busting
-                                loadVisitData(currentPatientId, activeYear);
-                            }
-                        }, 300);
-
-                    } else {
-                        alert("Save failed: " + (result.error || 'Unknown error'));
-                    }
-                } catch (error) {
-                    console.error('Save error:', error);
-                    alert("Save failed: " + error.message);
-                } finally {
-                    // Restore button
-                    const saveBtn = modal.querySelector('button[onclick="saveOHCA()"]');
-                    if (saveBtn) {
-                        saveBtn.textContent = 'Save';
-                        saveBtn.disabled = false;
-                    }
-                }
-            };
-
-            // ==============================================
-            // NAVIGATION FUNCTIONS
-            // ==============================================
-
-            window.backmain = function() {
-                location.href = "treatmentrecords.php?uid=<?php echo $userId; ?>";
-            };
-
-            window.next = function() {
-                const patientId = new URLSearchParams(window.location.search).get("id");
-                if (!patientId) {
-                    alert("Missing patient ID.");
-                    return;
-                }
-                window.location.href = `view_oralB.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-            };
-
-            window.back = function() {
-                const patientId = new URLSearchParams(window.location.search).get("id");
-                if (!patientId) {
-                    alert("Missing patient ID.");
-                    return;
-                }
-                window.location.href = `view_oral.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-            };
-
-            // Year button functions
-            window.year1 = () => {
-                highlightActiveButton(1);
-                loadVisitData(currentPatientId, 1);
-            };
-            window.year2 = () => {
-                highlightActiveButton(2);
-                loadVisitData(currentPatientId, 2);
-            };
-            window.year3 = () => {
-                highlightActiveButton(3);
-                loadVisitData(currentPatientId, 3);
-            };
-            window.year4 = () => {
-                highlightActiveButton(4);
-                loadVisitData(currentPatientId, 4);
-            };
-            window.year5 = () => {
-                highlightActiveButton(5);
-                loadVisitData(currentPatientId, 5);
-            };
-
-            // ==============================================
-            // INITIALIZATION
-            // ==============================================
-
-            document.addEventListener("DOMContentLoaded", () => {
-                // Get patient ID from URL
-                const params = new URLSearchParams(window.location.search);
-                const patientId = params.get("id");
-
-                if (!patientId) {
-                    alert("Missing patient ID");
-                    return;
-                }
-
-                currentPatientId = patientId;
-
-                // Initialize main page
-                loadGrid();
-                loadBoxes();
-
-                // Set up year buttons
-                highlightActiveButton(1);
-
-                // Load initial data
-                loadVisitData(patientId, 1);
-
-                // Set up navigation links
-                const patientInfoLink = document.getElementById("patientInfoLink");
-                const servicesRenderedLink = document.getElementById("servicesRenderedLink");
-                const printdLink = document.getElementById("printdLink");
-
-                if (patientInfoLink) {
-                    patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-                }
-                if (servicesRenderedLink) {
-                    servicesRenderedLink.href = `view_record.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-                }
-                if (printdLink) {
-                    printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-                }
-
-                console.log("Page initialized for patient:", patientId);
-            });
-
-            // ==============================================
-            // DEBUG HELPER (Optional)
-            // ==============================================
-
-            window.debugState = function() {
-                console.log("=== DEBUG STATE ===");
-                console.log("Current Patient ID:", currentPatientId);
-                console.log("Current Year:", currentYear);
-                console.log("Modal Has Unsaved Changes:", modalHasUnsavedChanges);
-                console.log("Modal History Stack:", modalHistoryStack.length);
-                console.log("Modal Redo Stack:", modalRedoStack.length);
-                console.log("=== END DEBUG ===");
-            };
         </script>
     </div>
 

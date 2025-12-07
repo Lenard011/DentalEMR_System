@@ -2602,6 +2602,7 @@ if (!$isOfflineMode) {
 
         }
     </script>
+    
     <script>
         function toggleHospitalization(checkbox) {
             const fields = [

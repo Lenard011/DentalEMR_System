@@ -1,0 +1,1156 @@
+2025-12-07 11:07:36 - Received save request: {"action":"save","patient_id":"2","visit_id":"0","oral_data":[{"type":"condition","tooth_id":"18","condition_code":"D","box_key":"P-18-center","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"48","condition_code":"D","box_key":"T-48-center","color":"blue","case_type":"permanent"},{"type":"treatment","tooth_id":"18","treatment_code":"FG","box_key":"R1-0","color":"","case_type":"permanent"},{"type":"condition","tooth_id":"18","condition_code":"D","box_key":"R2-0","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"18","condition_code":"D","box_key":"R3-0","color":"blue","case_type":"permanent"},{"type":"treatment","tooth_id":"18","treatment_code":"FG","box_key":"R4-0","color":"","case_type":"permanent"}]}
+2025-12-07 11:07:36 - Parsed input: Array
+(
+    [action] => save
+    [patient_id] => 2
+    [visit_id] => 0
+    [oral_data] => Array
+        (
+            [0] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 18
+                    [condition_code] => D
+                    [box_key] => P-18-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [1] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 48
+                    [condition_code] => D
+                    [box_key] => T-48-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [2] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 18
+                    [treatment_code] => FG
+                    [box_key] => R1-0
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+            [3] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 18
+                    [condition_code] => D
+                    [box_key] => R2-0
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [4] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 18
+                    [condition_code] => D
+                    [box_key] => R3-0
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [5] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 18
+                    [treatment_code] => FG
+                    [box_key] => R4-0
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+        )
+
+)
+
+2025-12-07 11:07:36 - Starting transaction
+2025-12-07 11:07:36 - Created new visit_id: 11 for patient: 2
+2025-12-07 11:07:36 - Processing item 0: Array
+(
+    [type] => condition
+    [tooth_id] => 18
+    [condition_code] => D
+    [box_key] => P-18-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:07:36 - Resolving tooth_id for: '18'
+2025-12-07 11:07:36 - Found tooth by tooth_id: 18 => 18
+2025-12-07 11:07:36 - Item details: type=condition, tooth=18, box=P-18-center
+2025-12-07 11:07:36 - Processing condition: 'D', caseType: permanent
+2025-12-07 11:07:36 - Looking for condition: 'D', caseType: permanent, isPermanent: 1
+2025-12-07 11:07:36 - Found condition_id: 2 for 'D' in column code
+2025-12-07 11:07:36 - Inserting condition: visit_id=11, tooth_id=18, condition_id=2, box_key='P-18-center', color='blue', case_type='permanent'
+2025-12-07 11:07:36 - Condition inserted successfully
+2025-12-07 11:07:36 - Processing item 1: Array
+(
+    [type] => condition
+    [tooth_id] => 48
+    [condition_code] => D
+    [box_key] => T-48-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:07:36 - Resolving tooth_id for: '48'
+2025-12-07 11:07:36 - Found tooth by tooth_id: 48 => 48
+2025-12-07 11:07:36 - Item details: type=condition, tooth=48, box=T-48-center
+2025-12-07 11:07:36 - Processing condition: 'D', caseType: permanent
+2025-12-07 11:07:36 - Looking for condition: 'D', caseType: permanent, isPermanent: 1
+2025-12-07 11:07:36 - Found condition_id: 2 for 'D' in column code
+2025-12-07 11:07:36 - Inserting condition: visit_id=11, tooth_id=48, condition_id=2, box_key='T-48-center', color='blue', case_type='permanent'
+2025-12-07 11:07:36 - Condition inserted successfully
+2025-12-07 11:07:36 - Processing item 2: Array
+(
+    [type] => treatment
+    [tooth_id] => 18
+    [treatment_code] => FG
+    [box_key] => R1-0
+    [color] => 
+    [case_type] => permanent
+)
+
+2025-12-07 11:07:36 - Resolving tooth_id for: '18'
+2025-12-07 11:07:36 - Found tooth by tooth_id: 18 => 18
+2025-12-07 11:07:36 - Item details: type=treatment, tooth=18, box=R1-0
+2025-12-07 11:07:36 - Processing treatment: 'FG'
+2025-12-07 11:07:36 - Looking for treatment: 'FG'
+2025-12-07 11:07:36 - Found treatment_id: 9 for 'FG'
+2025-12-07 11:07:36 - Inserting treatment: visit_id=11, tooth_id=18, treatment_id=9, box_key='R1-0', color='', case_type='permanent'
+2025-12-07 11:07:36 - Treatment inserted successfully
+2025-12-07 11:07:36 - Processing item 3: Array
+(
+    [type] => condition
+    [tooth_id] => 18
+    [condition_code] => D
+    [box_key] => R2-0
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:07:36 - Resolving tooth_id for: '18'
+2025-12-07 11:07:36 - Found tooth by tooth_id: 18 => 18
+2025-12-07 11:07:36 - Item details: type=condition, tooth=18, box=R2-0
+2025-12-07 11:07:36 - Processing condition: 'D', caseType: permanent
+2025-12-07 11:07:36 - Looking for condition: 'D', caseType: permanent, isPermanent: 1
+2025-12-07 11:07:36 - Found condition_id: 2 for 'D' in column code
+2025-12-07 11:07:36 - Inserting condition: visit_id=11, tooth_id=18, condition_id=2, box_key='R2-0', color='blue', case_type='permanent'
+2025-12-07 11:07:36 - Condition inserted successfully
+2025-12-07 11:07:36 - Processing item 4: Array
+(
+    [type] => condition
+    [tooth_id] => 18
+    [condition_code] => D
+    [box_key] => R3-0
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:07:36 - Resolving tooth_id for: '18'
+2025-12-07 11:07:36 - Found tooth by tooth_id: 18 => 18
+2025-12-07 11:07:36 - Item details: type=condition, tooth=18, box=R3-0
+2025-12-07 11:07:36 - Processing condition: 'D', caseType: permanent
+2025-12-07 11:07:36 - Looking for condition: 'D', caseType: permanent, isPermanent: 1
+2025-12-07 11:07:36 - Found condition_id: 2 for 'D' in column code
+2025-12-07 11:07:36 - Inserting condition: visit_id=11, tooth_id=18, condition_id=2, box_key='R3-0', color='blue', case_type='permanent'
+2025-12-07 11:07:36 - Condition inserted successfully
+2025-12-07 11:07:36 - Processing item 5: Array
+(
+    [type] => treatment
+    [tooth_id] => 18
+    [treatment_code] => FG
+    [box_key] => R4-0
+    [color] => 
+    [case_type] => permanent
+)
+
+2025-12-07 11:07:36 - Resolving tooth_id for: '18'
+2025-12-07 11:07:36 - Found tooth by tooth_id: 18 => 18
+2025-12-07 11:07:36 - Item details: type=treatment, tooth=18, box=R4-0
+2025-12-07 11:07:36 - Processing treatment: 'FG'
+2025-12-07 11:07:36 - Looking for treatment: 'FG'
+2025-12-07 11:07:36 - Found treatment_id: 9 for 'FG'
+2025-12-07 11:07:36 - Inserting treatment: visit_id=11, tooth_id=18, treatment_id=9, box_key='R4-0', color='', case_type='permanent'
+2025-12-07 11:07:36 - Treatment inserted successfully
+2025-12-07 11:07:36 - Transaction committed successfully. Inserted: 6 items
+2025-12-07 11:07:36 - Sending response: {"success":true,"visit_id":"11","inserted":6,"warnings":[]}
+2025-12-07 11:09:43 - Received save request: {"action":"save","patient_id":"2","visit_id":"0","oral_data":[{"type":"condition","tooth_id":"62","condition_code":"M","box_key":"P-62-center","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"63","condition_code":"M","box_key":"P-63-center","color":"blue","case_type":"temporary"},{"type":"condition","tooth_id":"22","condition_code":"M","box_key":"P-22-center","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"23","condition_code":"M","box_key":"P-23-center","color":"blue","case_type":"temporary"},{"type":"condition","tooth_id":"32","condition_code":"M","box_key":"T-32-center","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"33","condition_code":"M","box_key":"T-33-center","color":"blue","case_type":"temporary"},{"type":"condition","tooth_id":"72","condition_code":"M","box_key":"T-72-center","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"73","condition_code":"M","box_key":"T-73-center","color":"blue","case_type":"temporary"},{"type":"treatment","tooth_id":"22","treatment_code":"FG","box_key":"R1-9","color":"","case_type":"permanent"},{"type":"condition","tooth_id":"22","condition_code":"M","box_key":"R2-9","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"23","condition_code":"M","box_key":"R2-10","color":"blue","case_type":"temporary"},{"type":"condition","tooth_id":"22","condition_code":"M","box_key":"R3-9","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"23","condition_code":"M","box_key":"R3-10","color":"blue","case_type":"temporary"},{"type":"treatment","tooth_id":"22","treatment_code":"FG","box_key":"R4-9","color":"","case_type":"permanent"}]}
+2025-12-07 11:09:43 - Parsed input: Array
+(
+    [action] => save
+    [patient_id] => 2
+    [visit_id] => 0
+    [oral_data] => Array
+        (
+            [0] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 62
+                    [condition_code] => M
+                    [box_key] => P-62-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [1] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 63
+                    [condition_code] => M
+                    [box_key] => P-63-center
+                    [color] => blue
+                    [case_type] => temporary
+                )
+
+            [2] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 22
+                    [condition_code] => M
+                    [box_key] => P-22-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [3] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 23
+                    [condition_code] => M
+                    [box_key] => P-23-center
+                    [color] => blue
+                    [case_type] => temporary
+                )
+
+            [4] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 32
+                    [condition_code] => M
+                    [box_key] => T-32-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [5] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 33
+                    [condition_code] => M
+                    [box_key] => T-33-center
+                    [color] => blue
+                    [case_type] => temporary
+                )
+
+            [6] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 72
+                    [condition_code] => M
+                    [box_key] => T-72-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [7] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 73
+                    [condition_code] => M
+                    [box_key] => T-73-center
+                    [color] => blue
+                    [case_type] => temporary
+                )
+
+            [8] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 22
+                    [treatment_code] => FG
+                    [box_key] => R1-9
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+            [9] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 22
+                    [condition_code] => M
+                    [box_key] => R2-9
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [10] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 23
+                    [condition_code] => M
+                    [box_key] => R2-10
+                    [color] => blue
+                    [case_type] => temporary
+                )
+
+            [11] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 22
+                    [condition_code] => M
+                    [box_key] => R3-9
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [12] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 23
+                    [condition_code] => M
+                    [box_key] => R3-10
+                    [color] => blue
+                    [case_type] => temporary
+                )
+
+            [13] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 22
+                    [treatment_code] => FG
+                    [box_key] => R4-9
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+        )
+
+)
+
+2025-12-07 11:09:43 - Starting transaction
+2025-12-07 11:09:43 - Created new visit_id: 12 for patient: 2
+2025-12-07 11:09:43 - Processing item 0: Array
+(
+    [type] => condition
+    [tooth_id] => 62
+    [condition_code] => M
+    [box_key] => P-62-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '62'
+2025-12-07 11:09:43 - Found tooth by FDI: 62 => 39
+2025-12-07 11:09:43 - Item details: type=condition, tooth=39, box=P-62-center
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: permanent
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: permanent, isPermanent: 1
+2025-12-07 11:09:43 - Found condition_id: 6 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=39, condition_id=6, box_key='P-62-center', color='blue', case_type='permanent'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 1: Array
+(
+    [type] => condition
+    [tooth_id] => 63
+    [condition_code] => M
+    [box_key] => P-63-center
+    [color] => blue
+    [case_type] => temporary
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '63'
+2025-12-07 11:09:43 - Found tooth by FDI: 63 => 40
+2025-12-07 11:09:43 - Item details: type=condition, tooth=40, box=P-63-center
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: temporary
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: temporary, isPermanent: 0
+2025-12-07 11:09:43 - Found condition_id: 7 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=40, condition_id=7, box_key='P-63-center', color='blue', case_type='temporary'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 2: Array
+(
+    [type] => condition
+    [tooth_id] => 22
+    [condition_code] => M
+    [box_key] => P-22-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '22'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 22 => 22
+2025-12-07 11:09:43 - Item details: type=condition, tooth=22, box=P-22-center
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: permanent
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: permanent, isPermanent: 1
+2025-12-07 11:09:43 - Found condition_id: 6 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=22, condition_id=6, box_key='P-22-center', color='blue', case_type='permanent'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 3: Array
+(
+    [type] => condition
+    [tooth_id] => 23
+    [condition_code] => M
+    [box_key] => P-23-center
+    [color] => blue
+    [case_type] => temporary
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '23'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 23 => 23
+2025-12-07 11:09:43 - Item details: type=condition, tooth=23, box=P-23-center
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: temporary
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: temporary, isPermanent: 0
+2025-12-07 11:09:43 - Found condition_id: 7 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=23, condition_id=7, box_key='P-23-center', color='blue', case_type='temporary'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 4: Array
+(
+    [type] => condition
+    [tooth_id] => 32
+    [condition_code] => M
+    [box_key] => T-32-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '32'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 32 => 32
+2025-12-07 11:09:43 - Item details: type=condition, tooth=32, box=T-32-center
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: permanent
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: permanent, isPermanent: 1
+2025-12-07 11:09:43 - Found condition_id: 6 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=32, condition_id=6, box_key='T-32-center', color='blue', case_type='permanent'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 5: Array
+(
+    [type] => condition
+    [tooth_id] => 33
+    [condition_code] => M
+    [box_key] => T-33-center
+    [color] => blue
+    [case_type] => temporary
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '33'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 33 => 33
+2025-12-07 11:09:43 - Item details: type=condition, tooth=33, box=T-33-center
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: temporary
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: temporary, isPermanent: 0
+2025-12-07 11:09:43 - Found condition_id: 7 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=33, condition_id=7, box_key='T-33-center', color='blue', case_type='temporary'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 6: Array
+(
+    [type] => condition
+    [tooth_id] => 72
+    [condition_code] => M
+    [box_key] => T-72-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '72'
+2025-12-07 11:09:43 - Found tooth by FDI: 72 => 44
+2025-12-07 11:09:43 - Item details: type=condition, tooth=44, box=T-72-center
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: permanent
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: permanent, isPermanent: 1
+2025-12-07 11:09:43 - Found condition_id: 6 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=44, condition_id=6, box_key='T-72-center', color='blue', case_type='permanent'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 7: Array
+(
+    [type] => condition
+    [tooth_id] => 73
+    [condition_code] => M
+    [box_key] => T-73-center
+    [color] => blue
+    [case_type] => temporary
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '73'
+2025-12-07 11:09:43 - Found tooth by FDI: 73 => 45
+2025-12-07 11:09:43 - Item details: type=condition, tooth=45, box=T-73-center
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: temporary
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: temporary, isPermanent: 0
+2025-12-07 11:09:43 - Found condition_id: 7 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=45, condition_id=7, box_key='T-73-center', color='blue', case_type='temporary'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 8: Array
+(
+    [type] => treatment
+    [tooth_id] => 22
+    [treatment_code] => FG
+    [box_key] => R1-9
+    [color] => 
+    [case_type] => permanent
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '22'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 22 => 22
+2025-12-07 11:09:43 - Item details: type=treatment, tooth=22, box=R1-9
+2025-12-07 11:09:43 - Processing treatment: 'FG'
+2025-12-07 11:09:43 - Looking for treatment: 'FG'
+2025-12-07 11:09:43 - Found treatment_id: 9 for 'FG'
+2025-12-07 11:09:43 - Inserting treatment: visit_id=12, tooth_id=22, treatment_id=9, box_key='R1-9', color='', case_type='permanent'
+2025-12-07 11:09:43 - Treatment inserted successfully
+2025-12-07 11:09:43 - Processing item 9: Array
+(
+    [type] => condition
+    [tooth_id] => 22
+    [condition_code] => M
+    [box_key] => R2-9
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '22'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 22 => 22
+2025-12-07 11:09:43 - Item details: type=condition, tooth=22, box=R2-9
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: permanent
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: permanent, isPermanent: 1
+2025-12-07 11:09:43 - Found condition_id: 6 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=22, condition_id=6, box_key='R2-9', color='blue', case_type='permanent'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 10: Array
+(
+    [type] => condition
+    [tooth_id] => 23
+    [condition_code] => M
+    [box_key] => R2-10
+    [color] => blue
+    [case_type] => temporary
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '23'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 23 => 23
+2025-12-07 11:09:43 - Item details: type=condition, tooth=23, box=R2-10
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: temporary
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: temporary, isPermanent: 0
+2025-12-07 11:09:43 - Found condition_id: 7 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=23, condition_id=7, box_key='R2-10', color='blue', case_type='temporary'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 11: Array
+(
+    [type] => condition
+    [tooth_id] => 22
+    [condition_code] => M
+    [box_key] => R3-9
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '22'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 22 => 22
+2025-12-07 11:09:43 - Item details: type=condition, tooth=22, box=R3-9
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: permanent
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: permanent, isPermanent: 1
+2025-12-07 11:09:43 - Found condition_id: 6 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=22, condition_id=6, box_key='R3-9', color='blue', case_type='permanent'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 12: Array
+(
+    [type] => condition
+    [tooth_id] => 23
+    [condition_code] => M
+    [box_key] => R3-10
+    [color] => blue
+    [case_type] => temporary
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '23'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 23 => 23
+2025-12-07 11:09:43 - Item details: type=condition, tooth=23, box=R3-10
+2025-12-07 11:09:43 - Processing condition: 'M', caseType: temporary
+2025-12-07 11:09:43 - Looking for condition: 'M', caseType: temporary, isPermanent: 0
+2025-12-07 11:09:43 - Found condition_id: 7 for 'M' in column code
+2025-12-07 11:09:43 - Inserting condition: visit_id=12, tooth_id=23, condition_id=7, box_key='R3-10', color='blue', case_type='temporary'
+2025-12-07 11:09:43 - Condition inserted successfully
+2025-12-07 11:09:43 - Processing item 13: Array
+(
+    [type] => treatment
+    [tooth_id] => 22
+    [treatment_code] => FG
+    [box_key] => R4-9
+    [color] => 
+    [case_type] => permanent
+)
+
+2025-12-07 11:09:43 - Resolving tooth_id for: '22'
+2025-12-07 11:09:43 - Found tooth by tooth_id: 22 => 22
+2025-12-07 11:09:43 - Item details: type=treatment, tooth=22, box=R4-9
+2025-12-07 11:09:43 - Processing treatment: 'FG'
+2025-12-07 11:09:43 - Looking for treatment: 'FG'
+2025-12-07 11:09:43 - Found treatment_id: 9 for 'FG'
+2025-12-07 11:09:43 - Inserting treatment: visit_id=12, tooth_id=22, treatment_id=9, box_key='R4-9', color='', case_type='permanent'
+2025-12-07 11:09:43 - Treatment inserted successfully
+2025-12-07 11:09:43 - Transaction committed successfully. Inserted: 14 items
+2025-12-07 11:09:43 - Sending response: {"success":true,"visit_id":"12","inserted":14,"warnings":[]}
+2025-12-07 14:02:42 - Received save request: {"action":"save","patient_id":"2","visit_id":"0","oral_data":[{"type":"condition","tooth_id":"53","condition_code":"DX","box_key":"P-53-center","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"13","condition_code":"DX","box_key":"P-13-center","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"43","condition_code":"DX","box_key":"T-43-center","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"83","condition_code":"DX","box_key":"T-83-center","color":"blue","case_type":"permanent"},{"type":"treatment","tooth_id":"13","treatment_code":"FG","box_key":"R1-5","color":"","case_type":"permanent"},{"type":"condition","tooth_id":"13","condition_code":"DX","box_key":"R2-5","color":"blue","case_type":"permanent"},{"type":"condition","tooth_id":"13","condition_code":"DX","box_key":"R3-5","color":"blue","case_type":"permanent"},{"type":"treatment","tooth_id":"13","treatment_code":"FG","box_key":"R4-5","color":"","case_type":"permanent"}]}
+2025-12-07 14:02:42 - Parsed input: Array
+(
+    [action] => save
+    [patient_id] => 2
+    [visit_id] => 0
+    [oral_data] => Array
+        (
+            [0] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 53
+                    [condition_code] => DX
+                    [box_key] => P-53-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [1] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 13
+                    [condition_code] => DX
+                    [box_key] => P-13-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [2] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 43
+                    [condition_code] => DX
+                    [box_key] => T-43-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [3] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 83
+                    [condition_code] => DX
+                    [box_key] => T-83-center
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [4] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 13
+                    [treatment_code] => FG
+                    [box_key] => R1-5
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+            [5] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 13
+                    [condition_code] => DX
+                    [box_key] => R2-5
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [6] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 13
+                    [condition_code] => DX
+                    [box_key] => R3-5
+                    [color] => blue
+                    [case_type] => permanent
+                )
+
+            [7] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 13
+                    [treatment_code] => FG
+                    [box_key] => R4-5
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+        )
+
+)
+
+2025-12-07 14:02:42 - Starting transaction
+2025-12-07 14:02:42 - Created new visit_id: 13 for patient: 2
+2025-12-07 14:02:42 - Processing item 0: Array
+(
+    [type] => condition
+    [tooth_id] => 53
+    [condition_code] => DX
+    [box_key] => P-53-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 14:02:42 - Resolving tooth_id for: '53'
+2025-12-07 14:02:42 - Found tooth by FDI: 53 => 35
+2025-12-07 14:02:42 - Item details: type=condition, tooth=35, box=P-53-center
+2025-12-07 14:02:42 - Processing condition: 'DX', caseType: permanent
+2025-12-07 14:02:42 - Looking for condition: 'DX', caseType: permanent, isPermanent: 1
+2025-12-07 14:02:42 - Found condition_id: 8 for 'DX' in column code
+2025-12-07 14:02:42 - Inserting condition: visit_id=13, tooth_id=35, condition_id=8, box_key='P-53-center', color='blue', case_type='permanent'
+2025-12-07 14:02:42 - Condition inserted successfully
+2025-12-07 14:02:42 - Processing item 1: Array
+(
+    [type] => condition
+    [tooth_id] => 13
+    [condition_code] => DX
+    [box_key] => P-13-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 14:02:42 - Resolving tooth_id for: '13'
+2025-12-07 14:02:42 - Found tooth by tooth_id: 13 => 13
+2025-12-07 14:02:42 - Item details: type=condition, tooth=13, box=P-13-center
+2025-12-07 14:02:42 - Processing condition: 'DX', caseType: permanent
+2025-12-07 14:02:42 - Looking for condition: 'DX', caseType: permanent, isPermanent: 1
+2025-12-07 14:02:42 - Found condition_id: 8 for 'DX' in column code
+2025-12-07 14:02:42 - Inserting condition: visit_id=13, tooth_id=13, condition_id=8, box_key='P-13-center', color='blue', case_type='permanent'
+2025-12-07 14:02:42 - Condition inserted successfully
+2025-12-07 14:02:42 - Processing item 2: Array
+(
+    [type] => condition
+    [tooth_id] => 43
+    [condition_code] => DX
+    [box_key] => T-43-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 14:02:42 - Resolving tooth_id for: '43'
+2025-12-07 14:02:42 - Found tooth by tooth_id: 43 => 43
+2025-12-07 14:02:42 - Item details: type=condition, tooth=43, box=T-43-center
+2025-12-07 14:02:42 - Processing condition: 'DX', caseType: permanent
+2025-12-07 14:02:42 - Looking for condition: 'DX', caseType: permanent, isPermanent: 1
+2025-12-07 14:02:42 - Found condition_id: 8 for 'DX' in column code
+2025-12-07 14:02:42 - Inserting condition: visit_id=13, tooth_id=43, condition_id=8, box_key='T-43-center', color='blue', case_type='permanent'
+2025-12-07 14:02:42 - Condition inserted successfully
+2025-12-07 14:02:42 - Processing item 3: Array
+(
+    [type] => condition
+    [tooth_id] => 83
+    [condition_code] => DX
+    [box_key] => T-83-center
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 14:02:42 - Resolving tooth_id for: '83'
+2025-12-07 14:02:42 - Found tooth by FDI: 83 => 50
+2025-12-07 14:02:42 - Item details: type=condition, tooth=50, box=T-83-center
+2025-12-07 14:02:42 - Processing condition: 'DX', caseType: permanent
+2025-12-07 14:02:42 - Looking for condition: 'DX', caseType: permanent, isPermanent: 1
+2025-12-07 14:02:42 - Found condition_id: 8 for 'DX' in column code
+2025-12-07 14:02:42 - Inserting condition: visit_id=13, tooth_id=50, condition_id=8, box_key='T-83-center', color='blue', case_type='permanent'
+2025-12-07 14:02:42 - Condition inserted successfully
+2025-12-07 14:02:42 - Processing item 4: Array
+(
+    [type] => treatment
+    [tooth_id] => 13
+    [treatment_code] => FG
+    [box_key] => R1-5
+    [color] => 
+    [case_type] => permanent
+)
+
+2025-12-07 14:02:42 - Resolving tooth_id for: '13'
+2025-12-07 14:02:42 - Found tooth by tooth_id: 13 => 13
+2025-12-07 14:02:42 - Item details: type=treatment, tooth=13, box=R1-5
+2025-12-07 14:02:42 - Processing treatment: 'FG'
+2025-12-07 14:02:42 - Looking for treatment: 'FG'
+2025-12-07 14:02:42 - Found treatment_id: 9 for 'FG'
+2025-12-07 14:02:42 - Inserting treatment: visit_id=13, tooth_id=13, treatment_id=9, box_key='R1-5', color='', case_type='permanent'
+2025-12-07 14:02:42 - Treatment inserted successfully
+2025-12-07 14:02:42 - Processing item 5: Array
+(
+    [type] => condition
+    [tooth_id] => 13
+    [condition_code] => DX
+    [box_key] => R2-5
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 14:02:42 - Resolving tooth_id for: '13'
+2025-12-07 14:02:42 - Found tooth by tooth_id: 13 => 13
+2025-12-07 14:02:42 - Item details: type=condition, tooth=13, box=R2-5
+2025-12-07 14:02:42 - Processing condition: 'DX', caseType: permanent
+2025-12-07 14:02:42 - Looking for condition: 'DX', caseType: permanent, isPermanent: 1
+2025-12-07 14:02:42 - Found condition_id: 8 for 'DX' in column code
+2025-12-07 14:02:42 - Inserting condition: visit_id=13, tooth_id=13, condition_id=8, box_key='R2-5', color='blue', case_type='permanent'
+2025-12-07 14:02:42 - Condition inserted successfully
+2025-12-07 14:02:42 - Processing item 6: Array
+(
+    [type] => condition
+    [tooth_id] => 13
+    [condition_code] => DX
+    [box_key] => R3-5
+    [color] => blue
+    [case_type] => permanent
+)
+
+2025-12-07 14:02:42 - Resolving tooth_id for: '13'
+2025-12-07 14:02:42 - Found tooth by tooth_id: 13 => 13
+2025-12-07 14:02:42 - Item details: type=condition, tooth=13, box=R3-5
+2025-12-07 14:02:42 - Processing condition: 'DX', caseType: permanent
+2025-12-07 14:02:42 - Looking for condition: 'DX', caseType: permanent, isPermanent: 1
+2025-12-07 14:02:42 - Found condition_id: 8 for 'DX' in column code
+2025-12-07 14:02:42 - Inserting condition: visit_id=13, tooth_id=13, condition_id=8, box_key='R3-5', color='blue', case_type='permanent'
+2025-12-07 14:02:42 - Condition inserted successfully
+2025-12-07 14:02:42 - Processing item 7: Array
+(
+    [type] => treatment
+    [tooth_id] => 13
+    [treatment_code] => FG
+    [box_key] => R4-5
+    [color] => 
+    [case_type] => permanent
+)
+
+2025-12-07 14:02:42 - Resolving tooth_id for: '13'
+2025-12-07 14:02:42 - Found tooth by tooth_id: 13 => 13
+2025-12-07 14:02:42 - Item details: type=treatment, tooth=13, box=R4-5
+2025-12-07 14:02:42 - Processing treatment: 'FG'
+2025-12-07 14:02:42 - Looking for treatment: 'FG'
+2025-12-07 14:02:42 - Found treatment_id: 9 for 'FG'
+2025-12-07 14:02:42 - Inserting treatment: visit_id=13, tooth_id=13, treatment_id=9, box_key='R4-5', color='', case_type='permanent'
+2025-12-07 14:02:42 - Treatment inserted successfully
+2025-12-07 14:02:42 - Transaction committed successfully. Inserted: 8 items
+2025-12-07 14:02:42 - Sending response: {"success":true,"visit_id":"13","inserted":8,"warnings":[]}
+2025-12-07 15:01:00 - Received save request: {"action":"save","patient_id":"2","visit_id":"0","oral_data":[{"type":"condition","tooth_id":"18","condition_code":"S","box_key":"P-18-center","color":"red","case_type":"permanent"},{"type":"condition","tooth_id":"17","condition_code":"S","box_key":"P-17-bottom-right","color":"red","case_type":"temporary"},{"type":"condition","tooth_id":"17","condition_code":"S","box_key":"P-17-center","color":"red","case_type":"temporary"},{"type":"condition","tooth_id":"48","condition_code":"S","box_key":"T-48-center","color":"red","case_type":"permanent"},{"type":"condition","tooth_id":"47","condition_code":"S","box_key":"T-47-center","color":"red","case_type":"temporary"},{"type":"treatment","tooth_id":"18","treatment_code":"O","box_key":"R1-0","color":"","case_type":"permanent"},{"type":"condition","tooth_id":"18","condition_code":"S","box_key":"R2-0","color":"red","case_type":"permanent"},{"type":"condition","tooth_id":"17","condition_code":"S","box_key":"R2-1","color":"red","case_type":"temporary"},{"type":"condition","tooth_id":"18","condition_code":"S","box_key":"R3-0","color":"red","case_type":"permanent"},{"type":"condition","tooth_id":"17","condition_code":"S","box_key":"R3-1","color":"red","case_type":"temporary"},{"type":"treatment","tooth_id":"18","treatment_code":"O","box_key":"R4-0","color":"","case_type":"permanent"}]}
+2025-12-07 15:01:00 - Parsed input: Array
+(
+    [action] => save
+    [patient_id] => 2
+    [visit_id] => 0
+    [oral_data] => Array
+        (
+            [0] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 18
+                    [condition_code] => S
+                    [box_key] => P-18-center
+                    [color] => red
+                    [case_type] => permanent
+                )
+
+            [1] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 17
+                    [condition_code] => S
+                    [box_key] => P-17-bottom-right
+                    [color] => red
+                    [case_type] => temporary
+                )
+
+            [2] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 17
+                    [condition_code] => S
+                    [box_key] => P-17-center
+                    [color] => red
+                    [case_type] => temporary
+                )
+
+            [3] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 48
+                    [condition_code] => S
+                    [box_key] => T-48-center
+                    [color] => red
+                    [case_type] => permanent
+                )
+
+            [4] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 47
+                    [condition_code] => S
+                    [box_key] => T-47-center
+                    [color] => red
+                    [case_type] => temporary
+                )
+
+            [5] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 18
+                    [treatment_code] => O
+                    [box_key] => R1-0
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+            [6] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 18
+                    [condition_code] => S
+                    [box_key] => R2-0
+                    [color] => red
+                    [case_type] => permanent
+                )
+
+            [7] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 17
+                    [condition_code] => S
+                    [box_key] => R2-1
+                    [color] => red
+                    [case_type] => temporary
+                )
+
+            [8] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 18
+                    [condition_code] => S
+                    [box_key] => R3-0
+                    [color] => red
+                    [case_type] => permanent
+                )
+
+            [9] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 17
+                    [condition_code] => S
+                    [box_key] => R3-1
+                    [color] => red
+                    [case_type] => temporary
+                )
+
+            [10] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 18
+                    [treatment_code] => O
+                    [box_key] => R4-0
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+        )
+
+)
+
+2025-12-07 15:01:00 - Starting transaction
+2025-12-07 15:01:00 - Created new visit_id: 14 for patient: 2
+2025-12-07 15:01:00 - Processing item 0: Array
+(
+    [type] => condition
+    [tooth_id] => 18
+    [condition_code] => S
+    [box_key] => P-18-center
+    [color] => red
+    [case_type] => permanent
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '18'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 18 => 18
+2025-12-07 15:01:00 - Item details: type=condition, tooth=18, box=P-18-center
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: permanent
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: permanent, isPermanent: 1
+2025-12-07 15:01:00 - Found condition_id: 12 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=18, condition_id=12, box_key='P-18-center', color='red', case_type='permanent'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 1: Array
+(
+    [type] => condition
+    [tooth_id] => 17
+    [condition_code] => S
+    [box_key] => P-17-bottom-right
+    [color] => red
+    [case_type] => temporary
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '17'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 17 => 17
+2025-12-07 15:01:00 - Item details: type=condition, tooth=17, box=P-17-bottom-right
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: temporary
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: temporary, isPermanent: 0
+2025-12-07 15:01:00 - Found condition_id: 13 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=17, condition_id=13, box_key='P-17-bottom-right', color='red', case_type='temporary'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 2: Array
+(
+    [type] => condition
+    [tooth_id] => 17
+    [condition_code] => S
+    [box_key] => P-17-center
+    [color] => red
+    [case_type] => temporary
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '17'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 17 => 17
+2025-12-07 15:01:00 - Item details: type=condition, tooth=17, box=P-17-center
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: temporary
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: temporary, isPermanent: 0
+2025-12-07 15:01:00 - Found condition_id: 13 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=17, condition_id=13, box_key='P-17-center', color='red', case_type='temporary'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 3: Array
+(
+    [type] => condition
+    [tooth_id] => 48
+    [condition_code] => S
+    [box_key] => T-48-center
+    [color] => red
+    [case_type] => permanent
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '48'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 48 => 48
+2025-12-07 15:01:00 - Item details: type=condition, tooth=48, box=T-48-center
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: permanent
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: permanent, isPermanent: 1
+2025-12-07 15:01:00 - Found condition_id: 12 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=48, condition_id=12, box_key='T-48-center', color='red', case_type='permanent'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 4: Array
+(
+    [type] => condition
+    [tooth_id] => 47
+    [condition_code] => S
+    [box_key] => T-47-center
+    [color] => red
+    [case_type] => temporary
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '47'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 47 => 47
+2025-12-07 15:01:00 - Item details: type=condition, tooth=47, box=T-47-center
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: temporary
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: temporary, isPermanent: 0
+2025-12-07 15:01:00 - Found condition_id: 13 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=47, condition_id=13, box_key='T-47-center', color='red', case_type='temporary'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 5: Array
+(
+    [type] => treatment
+    [tooth_id] => 18
+    [treatment_code] => O
+    [box_key] => R1-0
+    [color] => 
+    [case_type] => permanent
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '18'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 18 => 18
+2025-12-07 15:01:00 - Item details: type=treatment, tooth=18, box=R1-0
+2025-12-07 15:01:00 - Processing treatment: 'O'
+2025-12-07 15:01:00 - Looking for treatment: 'O'
+2025-12-07 15:01:00 - Found treatment_id: 14 for 'O'
+2025-12-07 15:01:00 - Inserting treatment: visit_id=14, tooth_id=18, treatment_id=14, box_key='R1-0', color='', case_type='permanent'
+2025-12-07 15:01:00 - Treatment inserted successfully
+2025-12-07 15:01:00 - Processing item 6: Array
+(
+    [type] => condition
+    [tooth_id] => 18
+    [condition_code] => S
+    [box_key] => R2-0
+    [color] => red
+    [case_type] => permanent
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '18'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 18 => 18
+2025-12-07 15:01:00 - Item details: type=condition, tooth=18, box=R2-0
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: permanent
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: permanent, isPermanent: 1
+2025-12-07 15:01:00 - Found condition_id: 12 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=18, condition_id=12, box_key='R2-0', color='red', case_type='permanent'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 7: Array
+(
+    [type] => condition
+    [tooth_id] => 17
+    [condition_code] => S
+    [box_key] => R2-1
+    [color] => red
+    [case_type] => temporary
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '17'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 17 => 17
+2025-12-07 15:01:00 - Item details: type=condition, tooth=17, box=R2-1
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: temporary
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: temporary, isPermanent: 0
+2025-12-07 15:01:00 - Found condition_id: 13 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=17, condition_id=13, box_key='R2-1', color='red', case_type='temporary'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 8: Array
+(
+    [type] => condition
+    [tooth_id] => 18
+    [condition_code] => S
+    [box_key] => R3-0
+    [color] => red
+    [case_type] => permanent
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '18'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 18 => 18
+2025-12-07 15:01:00 - Item details: type=condition, tooth=18, box=R3-0
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: permanent
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: permanent, isPermanent: 1
+2025-12-07 15:01:00 - Found condition_id: 12 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=18, condition_id=12, box_key='R3-0', color='red', case_type='permanent'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 9: Array
+(
+    [type] => condition
+    [tooth_id] => 17
+    [condition_code] => S
+    [box_key] => R3-1
+    [color] => red
+    [case_type] => temporary
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '17'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 17 => 17
+2025-12-07 15:01:00 - Item details: type=condition, tooth=17, box=R3-1
+2025-12-07 15:01:00 - Processing condition: 'S', caseType: temporary
+2025-12-07 15:01:00 - Looking for condition: 'S', caseType: temporary, isPermanent: 0
+2025-12-07 15:01:00 - Found condition_id: 13 for 'S' in column code
+2025-12-07 15:01:00 - Inserting condition: visit_id=14, tooth_id=17, condition_id=13, box_key='R3-1', color='red', case_type='temporary'
+2025-12-07 15:01:00 - Condition inserted successfully
+2025-12-07 15:01:00 - Processing item 10: Array
+(
+    [type] => treatment
+    [tooth_id] => 18
+    [treatment_code] => O
+    [box_key] => R4-0
+    [color] => 
+    [case_type] => permanent
+)
+
+2025-12-07 15:01:00 - Resolving tooth_id for: '18'
+2025-12-07 15:01:00 - Found tooth by tooth_id: 18 => 18
+2025-12-07 15:01:00 - Item details: type=treatment, tooth=18, box=R4-0
+2025-12-07 15:01:00 - Processing treatment: 'O'
+2025-12-07 15:01:00 - Looking for treatment: 'O'
+2025-12-07 15:01:00 - Found treatment_id: 14 for 'O'
+2025-12-07 15:01:00 - Inserting treatment: visit_id=14, tooth_id=18, treatment_id=14, box_key='R4-0', color='', case_type='permanent'
+2025-12-07 15:01:00 - Treatment inserted successfully
+2025-12-07 15:01:00 - Transaction committed successfully. Inserted: 11 items
+2025-12-07 15:01:00 - Sending response: {"success":true,"visit_id":"14","inserted":11,"warnings":[]}

@@ -6,7 +6,6 @@ date_default_timezone_set('Asia/Manila');
 
 // Include the activity logger
 require_once '../manageusers/activity_logger.php';
-
 header('Content-Type: application/json');
 
 // Test email configuration on first load (for debugging)
