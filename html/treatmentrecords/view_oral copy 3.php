@@ -453,25 +453,15 @@ $conn->close();
                     <p id="patientName" class="italic text-base sm:text-lg font-medium text-gray-900 dark:text-white">
                         Loading ...
                     </p>
-                    <div class="flex flex-row items-center gap-2 w-full sm:w-auto">
-                        <!-- Refresh Button -->
-                        <button type="button" id="refreshBtn" onclick="refreshRecords()"
-                            class="text-gray-700 cursor-pointer flex flex-row items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600">
-                            <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
-                            </svg>
-                            Refresh Records
-                        </button>
-
-                        <button type="button" id="addOHCbtn" onclick="openOHCModal()"
-                            class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
-                            <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path clip-rule="evenodd" fill-rule="evenodd"
-                                    d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
-                            </svg>
-                            Add Oral Health Record
-                        </button>
-                    </div>
+                    <button type="button" id="addOHCbtn" onclick="openOHCModal()"
+                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
+                        <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path clip-rule="evenodd" fill-rule="evenodd"
+                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+                        </svg>
+                        Add Oral Health Record
+                    </button>
                 </div>
 
                 <!-- Oral Examination Section -->
@@ -484,52 +474,20 @@ $conn->close();
                     <div class="mb-4">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                             <label for="dataSelect" class="text-sm sm:text-base text-gray-900 dark:text-white">Select Examination Date:</label>
-                            <div class="flex items-center gap-2">
-                                <select id="dataSelect"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-sm w-full sm:w-64 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                    onchange="loadSelectedRecord()">
-                                    <option value="" selected disabled>Loading records...</option>
-                                </select>
-                            </div>
+                            <select id="dataSelect"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-sm w-full sm:w-48 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                onchange="loadSelectedRecord()">
+                                <option value="" selected disabled>Loading records...</option>
+                            </select>
                         </div>
                     </div>
 
-                    <!-- Status Messages -->
+                    <!-- Status Message -->
                     <div id="loadingStatus" class="mb-4 text-center text-sm text-gray-600 dark:text-gray-400 hidden">
-                        <div class="flex items-center justify-center space-x-2">
-                            <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            <span class="text-blue-600 dark:text-blue-400">Loading oral health records...</span>
-                        </div>
+                        Loading data...
                     </div>
-
-                    <div id="saveSuccessMessage" class="mb-4 p-3 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-green-900/20 dark:text-green-400 hidden" role="alert">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                            </svg>
-                            <span id="successMessageText"></span>
-                        </div>
-                    </div>
-
                     <div id="noRecordsMessage" class="mb-4 text-center text-gray-600 dark:text-gray-400 hidden">
-                        <div class="text-center py-8">
-                            <div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900">
-                                <svg class="w-8 h-8 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Oral Health Records</h3>
-                            <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                                No oral health examination records have been created for <span id="patientNamePlaceholder">this patient</span> yet.
-                            </p>
-                            <button onclick="openOHCModal()"
-                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200">
-                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                Create First Oral Health Record
-                            </button>
-                        </div>
+                        No oral health records found for this patient.
                     </div>
 
                     <!-- Oral Data Container -->
@@ -748,31 +706,22 @@ $conn->close();
     <!-- Notice Element for Offline Sync -->
     <div id="notice" style="display: none;"></div>
 
-    <!-- fetch records -->
-    <script>
+   <script>
         // Global variables
         let oralRecords = [];
         let currentPatientId = <?php echo $patientId; ?>;
         let currentUserId = <?php echo $userId; ?>;
         let patientName = '';
-        let isSaving = false;
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM Content Loaded - Starting initialization');
-            try {
-                initializePage();
-            } catch (error) {
-                console.error('Error during initialization:', error);
-                showAlert('Failed to initialize page. Please refresh.', 'error');
-            }
+            initializePage();
         });
 
         function initializePage() {
             console.log('Initializing page with Patient ID:', currentPatientId, 'User ID:', currentUserId);
-
+            
             if (!currentPatientId || currentPatientId <= 0) {
-                console.error('Invalid patient ID:', currentPatientId);
                 showAlert('Missing patient ID. Please select a patient first.', 'error');
                 if (currentUserId) {
                     setTimeout(() => {
@@ -793,42 +742,35 @@ $conn->close();
         }
 
         function updateNavigationLinks() {
-            try {
-                // Set patient info link
-                const patientInfoLink = document.getElementById("patientInfoLink");
-                if (patientInfoLink && currentPatientId && currentUserId) {
-                    patientInfoLink.href = `view_info.php?uid=${currentUserId}&id=${currentPatientId}`;
-                }
+            // Set patient info link
+            const patientInfoLink = document.getElementById("patientInfoLink");
+            if (patientInfoLink && currentPatientId && currentUserId) {
+                patientInfoLink.href = `view_info.php?uid=${currentUserId}&id=${currentPatientId}`;
+            }
 
-                // Set services rendered link
-                const servicesRenderedLink = document.getElementById("servicesRenderedLink");
-                if (servicesRenderedLink && currentPatientId && currentUserId) {
-                    servicesRenderedLink.href = `view_record.php?uid=${currentUserId}&id=${currentPatientId}`;
-                }
+            // Set services rendered link
+            const servicesRenderedLink = document.getElementById("servicesRenderedLink");
+            if (servicesRenderedLink && currentPatientId && currentUserId) {
+                servicesRenderedLink.href = `view_record.php?uid=${currentUserId}&id=${currentPatientId}`;
+            }
 
-                // Set print link
-                const printdLink = document.getElementById("printdLink");
-                if (printdLink && currentPatientId && currentUserId) {
-                    printdLink.href = `print.php?uid=${currentUserId}&id=${currentPatientId}`;
-                }
-            } catch (error) {
-                console.error('Error updating navigation links:', error);
+            // Set print link
+            const printdLink = document.getElementById("printdLink");
+            if (printdLink && currentPatientId && currentUserId) {
+                printdLink.href = `print.php?uid=${currentUserId}&id=${currentPatientId}`;
             }
         }
 
         async function loadPatientInfo() {
             try {
-                console.log('Loading patient info for ID:', currentPatientId);
-                const response = await fetch(`/dentalemr_system/php/patients/get_patient.php?id=${currentPatientId}&cache=${Date.now()}`);
+                const response = await fetch(`/dentalemr_system/php/patients/get_patient.php?id=${currentPatientId}`);
 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('Patient info response:', result);
 
                     if (result.success && result.data) {
                         const patient = result.data;
                         patientName = `${patient.firstname} ${patient.middlename ? patient.middlename + '. ' : ''}${patient.surname}`;
-                        console.log('Patient name loaded:', patientName);
 
                         // Update patient name display
                         const patientNameElement = document.getElementById("patientName");
@@ -836,17 +778,7 @@ $conn->close();
                             patientNameElement.textContent = patientName;
                             patientNameElement.classList.remove('italic');
                         }
-
-                        // Update placeholder in no records message
-                        const patientNamePlaceholder = document.getElementById("patientNamePlaceholder");
-                        if (patientNamePlaceholder) {
-                            patientNamePlaceholder.textContent = patientName;
-                        }
-                    } else {
-                        console.warn('Patient info not found or error:', result.message);
                     }
-                } else {
-                    console.warn('Failed to fetch patient info:', response.status);
                 }
             } catch (error) {
                 console.warn('Could not load patient info:', error);
@@ -858,50 +790,12 @@ $conn->close();
             }
         }
 
-        function refreshRecords() {
-            console.log('Refreshing records...');
-            showLoading(true);
-
-            // Clear any existing records
-            oralRecords = [];
-
-            // Clear dropdown
-            const dateSelect = document.getElementById("dataSelect");
-            if (dateSelect) {
-                dateSelect.innerHTML = '<option value="" selected disabled>Loading...</option>';
-                dateSelect.disabled = true;
-            }
-
-            // Clear container
-            const oralDataContainer = document.getElementById("oralDataContainer");
-            if (oralDataContainer) {
-                oralDataContainer.innerHTML = '';
-            }
-
-            // Hide no records message
-            const noRecordsMessage = document.getElementById("noRecordsMessage");
-            if (noRecordsMessage) {
-                noRecordsMessage.classList.add('hidden');
-            }
-
-            // Load fresh data
-            loadPatientOralRecords();
-
-            // Show success message
-            setTimeout(() => {
-                showSaveSuccess('Records refreshed successfully!');
-            }, 500);
-        }
-
         async function loadPatientOralRecords() {
             const dateSelect = document.getElementById("dataSelect");
             const loadingStatus = document.getElementById("loadingStatus");
             const noRecordsMessage = document.getElementById("noRecordsMessage");
 
-            console.log('loadPatientOralRecords called with patient ID:', currentPatientId);
-
             if (!currentPatientId || currentPatientId <= 0) {
-                console.error('Invalid patient ID in loadPatientOralRecords');
                 showNoRecordsMessage();
                 return;
             }
@@ -915,65 +809,42 @@ $conn->close();
                     dateSelect.disabled = true;
                 }
 
-                // Hide no records message while loading
-                if (noRecordsMessage) {
-                    noRecordsMessage.classList.add('hidden');
-                }
-
-                // Fetch data from API with cache busting
-                const apiUrl = `/dentalemr_system/php/treatmentrecords/view_oral_api.php?id=${currentPatientId}&t=${Date.now()}`;
-                console.log('Fetching from API:', apiUrl);
-
-                const response = await fetch(apiUrl, {
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    },
-                    cache: 'no-store'
-                });
-
-                console.log('API Response status:', response.status);
+                // Fetch data from API
+                const apiUrl = `/dentalemr_system/php/treatmentrecords/view_oral_api.php?id=${currentPatientId}`;
+                console.log('Fetching records from:', apiUrl);
+                const response = await fetch(apiUrl);
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const result = await response.json();
-                console.log('API Response data:', result);
+                console.log('Records loaded:', result);
 
                 // Hide loading
                 showLoading(false);
 
                 // Check if we have data
                 if (!result.success) {
-                    console.log('API returned unsuccessful:', result.message);
-
                     // If it's a "no records found" message
                     if (result.message && result.message.includes('No records')) {
                         showNoRecordsMessage();
                     } else {
-                        showAlert('Error loading records: ' + (result.message || 'Unknown error'), 'error');
-                        showNoRecordsMessage();
+                        showAlert('Error: ' + (result.message || 'Unknown error'), 'error');
                     }
                     return;
                 }
 
                 const data = result.data || [];
-                console.log('Data received:', data);
 
                 if (!Array.isArray(data)) {
-                    console.error('Invalid data format:', data);
                     throw new Error('Invalid data format received from server');
                 }
 
                 if (data.length === 0) {
-                    console.log('No records found for patient');
                     showNoRecordsMessage();
                     return;
                 }
-
-                console.log('Records found:', data.length);
 
                 // Store records globally
                 oralRecords = data;
@@ -983,29 +854,14 @@ $conn->close();
 
                 // Load first record by default (newest first)
                 if (data.length > 0 && data[0].id) {
-                    console.log('Loading first record with ID:', data[0].id);
                     await loadOralRecord(data[0].id);
-                } else {
-                    console.warn('First record has no ID');
                 }
 
             } catch (error) {
                 console.error('Error loading oral records:', error);
                 showLoading(false);
-                showAlert('Failed to load records: ' + error.message, 'error');
+                showAlert('Failed to load records. Please try again.', 'error');
                 showNoRecordsMessage();
-
-                // Try to show cached data if available
-                try {
-                    const cachedData = localStorage.getItem(`oral_records_${currentPatientId}`);
-                    if (cachedData) {
-                        const records = JSON.parse(cachedData);
-                        console.log('Using cached data:', records);
-                        populateDateDropdown(records);
-                    }
-                } catch (cacheError) {
-                    console.error('Cache error:', cacheError);
-                }
             }
         }
 
@@ -1013,25 +869,17 @@ $conn->close();
             const dateSelect = document.getElementById("dataSelect");
             const noRecordsMessage = document.getElementById("noRecordsMessage");
 
-            console.log('populateDateDropdown called with', records.length, 'records');
-
-            if (!dateSelect) {
-                console.error('dateSelect element not found');
-                return;
-            }
+            if (!dateSelect) return;
 
             // Clear existing options
             dateSelect.innerHTML = '';
 
             if (!Array.isArray(records) || records.length === 0) {
-                console.log('No records to populate');
                 if (noRecordsMessage) noRecordsMessage.classList.remove('hidden');
                 dateSelect.disabled = true;
                 dateSelect.innerHTML = '<option value="" selected disabled>No records available</option>';
                 return;
             }
-
-            console.log('Populating dropdown with', records.length, 'records');
 
             // Hide no records message
             if (noRecordsMessage) noRecordsMessage.classList.add('hidden');
@@ -1054,12 +902,19 @@ $conn->close();
                         minute: '2-digit'
                     });
                 } catch (e) {
-                    console.warn('Error formatting date:', e);
+                    // Keep default date
                 }
 
                 // Add record number for clarity (Record #1 is newest)
                 const recordNumber = index + 1;
                 option.textContent = `Record #${recordNumber} - ${formattedDate}`;
+
+                // Store full record data for offline use
+                try {
+                    option.dataset.record = JSON.stringify(record);
+                } catch (e) {
+                    // Ignore cache errors
+                }
 
                 // Select first item by default (newest)
                 if (index === 0) {
@@ -1069,14 +924,48 @@ $conn->close();
                 dateSelect.appendChild(option);
             });
 
-            console.log('Dropdown populated successfully');
+            // Cache the data for offline use
+            try {
+                localStorage.setItem(`oral_records_${currentPatientId}`, JSON.stringify(records));
+            } catch (e) {
+                // Ignore cache errors
+            }
+        }
+
+        async function loadSelectedRecord() {
+            const dateSelect = document.getElementById("dataSelect");
+            const selectedValue = dateSelect.value;
+
+            if (!selectedValue) {
+                return;
+            }
+
+            // Show loading for record
+            const loadingStatus = document.getElementById("loadingStatus");
+            if (loadingStatus) loadingStatus.classList.remove('hidden');
+
+            // Try to get data from the option's dataset first (for offline use)
+            const selectedOption = dateSelect.options[dateSelect.selectedIndex];
+            const cachedRecord = selectedOption.dataset.record;
+
+            if (cachedRecord) {
+                try {
+                    const recordData = JSON.parse(cachedRecord);
+                    displayOralRecord(recordData);
+                    if (loadingStatus) loadingStatus.classList.add('hidden');
+                    return;
+                } catch (e) {
+                    // Continue to fetch from server
+                }
+            }
+
+            // Otherwise fetch from server
+            await loadOralRecord(selectedValue);
         }
 
         async function loadOralRecord(recordId) {
             const loadingStatus = document.getElementById("loadingStatus");
             const oralDataContainer = document.getElementById("oralDataContainer");
-
-            console.log('loadOralRecord called with ID:', recordId);
 
             try {
                 if (loadingStatus) loadingStatus.classList.remove('hidden');
@@ -1084,26 +973,19 @@ $conn->close();
                 // Clear previous data
                 if (oralDataContainer) oralDataContainer.innerHTML = '';
 
-                const response = await fetch(`/dentalemr_system/php/treatmentrecords/view_oral_api.php?record=${recordId}&t=${Date.now()}`, {
-                    cache: 'no-store'
-                });
-
-                console.log('Record fetch response status:', response.status);
+                const response = await fetch(`/dentalemr_system/php/treatmentrecords/view_oral_api.php?record=${recordId}`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const result = await response.json();
-                console.log('Record fetch result:', result);
 
                 if (!result.success) {
                     throw new Error(result.message || 'Failed to load record');
                 }
 
                 const recordData = result.data;
-                console.log('Record data loaded:', recordData);
-
                 displayOralRecord(recordData);
 
                 if (loadingStatus) loadingStatus.classList.add('hidden');
@@ -1115,10 +997,10 @@ $conn->close();
                 // Show error to user
                 if (oralDataContainer) {
                     oralDataContainer.innerHTML = `
-                <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-                    <span class="font-medium">Error!</span> Unable to load oral health record: ${error.message}
-                </div>
-                `;
+                    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+                        <span class="font-medium">Error!</span> Unable to load oral health record.
+                    </div>
+                    `;
                 }
             }
         }
@@ -1126,10 +1008,7 @@ $conn->close();
         function displayOralRecord(record) {
             const oralDataContainer = document.getElementById("oralDataContainer");
 
-            console.log('displayOralRecord called with:', record);
-
             if (!record || !oralDataContainer) {
-                console.error('No record or container found');
                 return;
             }
 
@@ -1145,7 +1024,7 @@ $conn->close();
                     minute: '2-digit'
                 });
             } catch (e) {
-                console.warn('Error formatting display date:', e);
+                // Keep default date
             }
 
             // Function to check if a condition is present
@@ -1175,7 +1054,7 @@ $conn->close();
             const othersValue = record.others || '';
             const othersPresent = othersValue && othersValue.trim() !== '';
 
-            // Create HTML for oral conditions - FULL TEMPLATE
+            // Create HTML for oral conditions - FIXED TEMPLATE LITERAL
             const conditionsHTML = `
             <div class="p-4 bg-white rounded-lg shadow dark:border dark:bg-gray-800 dark:border-gray-700 mb-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
@@ -1309,7 +1188,6 @@ $conn->close();
 
             // Display the record
             oralDataContainer.innerHTML = conditionsHTML;
-            console.log('Record displayed successfully');
         }
 
         function showNoRecordsMessage() {
@@ -1317,17 +1195,28 @@ $conn->close();
             const oralDataContainer = document.getElementById("oralDataContainer");
             const dateSelect = document.getElementById("dataSelect");
 
-            console.log('showNoRecordsMessage called');
-
             if (noRecordsMessage) {
                 noRecordsMessage.classList.remove('hidden');
-
-                // Set patient name if available
-                const patientNameSpan = noRecordsMessage.querySelector('#patientNamePlaceholder') ||
-                    noRecordsMessage.querySelector('.patient-name-placeholder');
-                if (patientNameSpan && patientName) {
-                    patientNameSpan.textContent = patientName;
-                }
+                noRecordsMessage.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900">
+                        <svg class="w-8 h-8 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Oral Health Records</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                        No oral health examination records have been created for ${patientName || 'this patient'} yet.
+                    </p>
+                    <button onclick="openOHCModal()" 
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Create First Oral Health Record
+                    </button>
+                </div>
+                `;
             }
 
             if (oralDataContainer) oralDataContainer.innerHTML = '';
@@ -1339,17 +1228,15 @@ $conn->close();
 
         function showLoading(show) {
             const loadingStatus = document.getElementById("loadingStatus");
-            console.log('showLoading called with:', show);
-
             if (loadingStatus) {
                 if (show) {
                     loadingStatus.classList.remove('hidden');
                     loadingStatus.innerHTML = `
-                <div class="flex items-center justify-center space-x-2">
-                    <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span class="text-blue-600 dark:text-blue-400">Loading oral health records...</span>
-                </div>
-                `;
+                    <div class="flex items-center justify-center space-x-2">
+                        <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-blue-600 dark:text-blue-400">Loading oral health records...</span>
+                    </div>
+                    `;
                 } else {
                     loadingStatus.classList.add('hidden');
                 }
@@ -1357,18 +1244,16 @@ $conn->close();
         }
 
         function showAlert(message, type = 'error') {
-            console.log('showAlert:', message, type);
-
             const alertDiv = document.createElement('div');
             alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${type === 'error' ? 'bg-red-100 border border-red-300 text-red-800' : 'bg-blue-100 border border-blue-300 text-blue-800'}`;
             alertDiv.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                </svg>
-                <span>${message}</span>
-            </div>
-        `;
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>${message}</span>
+                </div>
+            `;
             document.body.appendChild(alertDiv);
 
             setTimeout(() => {
@@ -1376,57 +1261,33 @@ $conn->close();
             }, 5000);
         }
 
-        function showSaveSuccess(message) {
-            const saveSuccessMessage = document.getElementById("saveSuccessMessage");
-            const successMessageText = document.getElementById("successMessageText");
-
-            if (saveSuccessMessage && successMessageText) {
-                successMessageText.textContent = message;
-                saveSuccessMessage.classList.remove('hidden');
-
-                setTimeout(() => {
-                    saveSuccessMessage.classList.add('hidden');
-                }, 5000);
-            }
-        }
-
-        // Make functions globally available
-        window.refreshRecords = refreshRecords;
-        window.loadSelectedRecord = loadSelectedRecord;
-        window.openOHCModal = openOHCModal;
-        window.closeOHCModal = closeOHCModal;
-        window.next = navigateToNext;
-        window.backmain = backmain;
-        window.saveOHC = saveOHC;
-
-        // Add these placeholder functions
-        function loadSelectedRecord() {
-            const dateSelect = document.getElementById("dataSelect");
-            const selectedValue = dateSelect.value;
-
-            if (selectedValue) {
-                console.log('Loading selected record:', selectedValue);
-                loadOralRecord(selectedValue);
-            }
-        }
-
         function navigateToNext() {
-            if (currentPatientId && currentUserId) {
-                window.location.href = `view_oralA.php?uid=${currentUserId}&id=${currentPatientId}`;
+            if (!currentPatientId || !currentUserId) {
+                showAlert('Missing patient or user ID.', 'error');
+                return;
             }
+
+            window.location.href = `view_record.php?uid=${currentUserId}&id=${currentPatientId}`;
         }
-        
+
         function backmain() {
             if (currentUserId) {
                 window.location.href = `treatmentrecords.php?uid=${currentUserId}`;
             }
         }
 
+        // OHC modal functions
         function openOHCModal() {
             const modal = document.getElementById('ohcModal');
             if (modal) {
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
+
+                // Set patient ID in form
+                const patientIdInput = document.querySelector('#ohcForm #patient_id');
+                if (patientIdInput && currentPatientId) {
+                    patientIdInput.value = currentPatientId;
+                }
             }
         }
 
@@ -1435,11 +1296,40 @@ $conn->close();
             if (modal) {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
+                
+                // Reset form
+                const form = document.getElementById('ohcForm');
+                if (form) {
+                    form.reset();
+                    // Reset the check fields to empty
+                    const checkFields = [
+                        "orally_fit_child", "dental_caries", "gingivitis",
+                        "periodontal_disease", "debris", "calculus",
+                        "abnormal_growth", "cleft_palate", "others"
+                    ];
+                    checkFields.forEach(id => {
+                        const el = form.querySelector(`#${id}`);
+                        if (el) el.value = '';
+                    });
+                    // Reset calculated fields
+                    const calcFields = ["perm_total_dmf", "temp_total_df"];
+                    calcFields.forEach(id => {
+                        const el = form.querySelector(`#${id}`);
+                        if (el) el.value = '0';
+                    });
+                }
             }
         }
 
-        // Inactivity timer (keep your existing code)
-        let inactivityTime = 600000;
+        // Make functions available globally
+        window.loadSelectedRecord = loadSelectedRecord;
+        window.openOHCModal = openOHCModal;
+        window.closeOHCModal = closeOHCModal;
+        window.next = navigateToNext;
+        window.backmain = backmain;
+
+        // Client-side 10-minute inactivity logout
+        let inactivityTime = 600000; // 10 minutes in ms
         let logoutTimer;
 
         function resetTimer() {
@@ -1467,12 +1357,12 @@ $conn->close();
             if (el.type === "text" && el.hasAttribute('readonly') && el.onclick) {
                 return el.value?.trim() || "";
             }
-
+            
             // For number fields
             if (el.type === "number") {
                 return el.value || "0";
             }
-
+            
             return el.value?.trim() || "";
         }
 
@@ -1498,7 +1388,7 @@ $conn->close();
 
         async function saveOHC() {
             console.log('Saving OHC data...');
-
+            
             const form = document.getElementById("ohcForm");
             const patient_id = form.querySelector("#patient_id")?.value;
 
@@ -1510,7 +1400,7 @@ $conn->close();
             // Prepare form data
             const formData = new FormData();
             formData.append('patient_id', patient_id);
-
+            
             // Collect all form values
             const fields = [
                 'orally_fit_child', 'dental_caries', 'gingivitis', 'periodontal_disease',
@@ -1545,7 +1435,7 @@ $conn->close();
                 } catch (parseError) {
                     console.error("JSON Parse Error:", parseError);
                     console.error("Raw response text:", text);
-
+                    
                     // Check if the response contains HTML or PHP errors
                     if (text.includes('<') || text.includes('PHP') || text.includes('Error')) {
                         alert("Server returned an error page. Please check server logs.");
