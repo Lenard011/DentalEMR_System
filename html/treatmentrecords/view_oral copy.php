@@ -80,22 +80,6 @@ if ($loggedUser['type'] === 'Dentist') {
     $stmt->close();
 }
 
-// Get patient ID from URL
-$patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-// Verify patient exists
-if ($patientId > 0) {
-    $stmt = $conn->prepare("SELECT patient_id, firstname, middlename, surname FROM patients WHERE patient_id = ?");
-    $stmt->bind_param("i", $patientId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    if ($result->num_rows === 0) {
-        $patientId = 0; // Reset if patient doesn't exist
-    }
-    $stmt->close();
-}
-
-$conn->close();
 ?>
 <!doctype html>
 <html>
@@ -103,7 +87,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Treatment Records - Oral Health</title>
+    <title>Patient Treatment Records</title>
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -460,7 +444,7 @@ $conn->close();
                             <path clip-rule="evenodd" fill-rule="evenodd"
                                 d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
                         </svg>
-                        Add Oral Health Record
+                        Add
                     </button>
                 </div>
 
@@ -472,27 +456,265 @@ $conn->close();
 
                     <!-- Date Selector -->
                     <div class="mb-4">
-                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                            <label for="dataSelect" class="text-sm sm:text-base text-gray-900 dark:text-white">Select Examination Date:</label>
+                        <form class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                            <label for="dataSelect" class="text-sm sm:text-base text-gray-900 dark:text-white">Date:</label>
                             <select id="dataSelect"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-sm w-full sm:w-48 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                onchange="loadSelectedRecord()">
-                                <option value="" selected disabled>Loading records...</option>
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs sm:text-sm rounded-sm w-full sm:w-40 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                                <option selected>Loading...</option>
                             </select>
-                        </div>
-                    </div>
-
-                    <!-- Status Message -->
-                    <div id="loadingStatus" class="mb-4 text-center text-sm text-gray-600 dark:text-gray-400 hidden">
-                        Loading data...
-                    </div>
-                    <div id="noRecordsMessage" class="mb-4 text-center text-gray-600 dark:text-gray-400 hidden">
-                        No oral health records found for this patient.
+                        </form>
                     </div>
 
                     <!-- Oral Data Container -->
                     <div id="oralDataContainer" class="space-y-4">
-                        <!-- Data will be loaded here -->
+                        <!-- Section A: Oral Conditions -->
+                        <div class="p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                            <div class="items-center justify-between flex flex-row mb-3">
+                                <p class="text-base font-normal text-gray-950 dark:text-white">A.</p>
+                            </div>
+
+                            <!-- Oral Conditions Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                                <!-- Orally Fit Child -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Orally Fit Child (OFC)</li>
+                                    </ul>
+                                    <p id="orally_fit_child" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Dental Caries -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Dental Caries</li>
+                                    </ul>
+                                    <p id="dental_caries" class="text-xs font-normal text-green-600 dark:text-white">
+                                        Present
+                                    </p>
+                                </div>
+
+                                <!-- Gingivitis -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Gingivitis</li>
+                                    </ul>
+                                    <p id="gingivitis" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Periodontal Disease -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Periodontal Disease</li>
+                                    </ul>
+                                    <p id="periodontal_disease" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Debris -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Debris</li>
+                                    </ul>
+                                    <p id="debris" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Calculus -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Calculus</li>
+                                    </ul>
+                                    <p id="calculus" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Abnormal Growth -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Abnormal Growth</li>
+                                    </ul>
+                                    <p id="abnormal_growth" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Cleft Lip / Palate -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Cleft Lip / Palate</li>
+                                    </ul>
+                                    <p id="cleft_palate" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+
+                                <!-- Others -->
+                                <div class="text-center">
+                                    <ul class="text-sm text-gray-900 dark:text-gray-400">
+                                        <li>Others</li>
+                                    </ul>
+                                    <p id="others" class="text-xs font-normal text-red-600 dark:text-white">
+                                        Absent
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section B: Tooth Statistics -->
+                        <div class="p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-950 dark:border-gray-950">
+                            <div class="items-center justify-between flex flex-row mb-4">
+                                <p class="text-base font-normal text-gray-950 dark:text-white">B.</p>
+                            </div>
+
+                            <!-- Permanent Teeth Section -->
+                            <div class="mb-6">
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4 text-center">Permanent Teeth</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <!-- Total DMF Teeth -->
+                                    <div class="flex flex-col items-center p-3 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                        <div class="w-12 h-12 rounded-full mb-2 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                alt="Tooth" class="w-8 h-8">
+                                        </div>
+                                        <p class="text-xs text-center font-medium dark:text-white mb-1">Total DMF Teeth</p>
+                                        <p id="perm_total_dmf" class="text-lg font-bold dark:text-white">5</p>
+                                    </div>
+
+                                    <!-- Teeth Present & Sound Teeth -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Perm. Teeth Present</p>
+                                                <p id="perm_teeth_present" class="text-sm font-bold dark:text-white">0</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Perm. Sound Teeth</p>
+                                                <p id="perm_sound_teeth" class="text-sm font-bold dark:text-white">0</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Decayed & Missing Teeth -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Decayed teeth (D)</p>
+                                                <p id="perm_decayed_teeth_d" class="text-sm font-bold dark:text-white">3</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Missing teeth (M)</p>
+                                                <p id="perm_missing_teeth_m" class="text-sm font-bold dark:text-white">2</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filled Teeth -->
+                                    <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                        <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                alt="Tooth" class="w-6 h-6">
+                                        </div>
+                                        <div>
+                                            <p class="text-xs font-medium dark:text-white">Filled Teeth</p>
+                                            <p id="perm_filled_teeth_f" class="text-sm font-bold dark:text-white">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="h-px my-6 bg-gray-200 border-0 dark:bg-gray-700">
+
+                            <!-- Temporary Teeth Section -->
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4 text-center">Temporary Teeth</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <!-- Total df Teeth -->
+                                    <div class="flex flex-col items-center p-3 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                        <div class="w-12 h-12 rounded-full mb-2 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                            <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                alt="Tooth" class="w-8 h-8">
+                                        </div>
+                                        <p class="text-xs text-center font-medium dark:text-white mb-1">Total df Teeth</p>
+                                        <p id="temp_total_df" class="text-lg font-bold dark:text-white">0</p>
+                                    </div>
+
+                                    <!-- Teeth Present & Sound Teeth -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Temp. Teeth Present</p>
+                                                <p id="temp_teeth_present" class="text-sm font-bold dark:text-white">0</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Temp. Sound Teeth</p>
+                                                <p id="temp_sound_teeth" class="text-sm font-bold dark:text-white">0</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Decayed & Filled Teeth -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Decayed teeth (d)</p>
+                                                <p id="temp_decayed_teeth_d" class="text-sm font-bold dark:text-white">0</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center p-2 bg-white rounded-lg shadow dark:border shadow-stone-400 dark:bg-gray-950">
+                                            <div class="w-10 h-10 rounded-full mr-3 shadow-stone-300 shadow border-gray-400 dark:bg-blue-300 flex items-center justify-center">
+                                                <img src="/dentalemr_system/img/pngtree-tooth-icon-with-a-light-blue-color-over-white-vector-png-image_12290095.png"
+                                                    alt="Tooth" class="w-6 h-6">
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium dark:text-white">Filled teeth (f)</p>
+                                                <p id="temp_filled_teeth_f" class="text-sm font-bold dark:text-white">0</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -519,7 +741,7 @@ $conn->close();
                     </button>
                 </div>
                 <form id="ohcForm" class="space-y-4">
-                    <input type="hidden" name="patient_id" id="patient_id" value="<?php echo $patientId; ?>">
+                    <input type="hidden" name="patient_id" id="patient_id" value="">
 
                     <div class="grid gap-2 mb-4">
                         <div class="mb-3">
@@ -702,710 +924,8 @@ $conn->close();
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
-
-    <!-- Notice Element for Offline Sync -->
-    <div id="notice" style="display: none;"></div>
-
+    <!-- Client-side 10-minute inactivity logout -->
     <script>
-        // Global variables
-        let oralRecords = [];
-        let currentPatientId = <?php echo $patientId; ?>;
-        let currentUserId = <?php echo $userId; ?>;
-        let patientName = '';
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            initializePage();
-        });
-
-        function initializePage() {
-            if (!currentPatientId || currentPatientId <= 0) {
-                showAlert('Missing patient ID. Please select a patient first.', 'error');
-                if (currentUserId) {
-                    setTimeout(() => {
-                        window.location.href = `treatmentrecords.php?uid=${currentUserId}`;
-                    }, 2000);
-                }
-                return;
-            }
-
-            // Set navigation links
-            updateNavigationLinks();
-
-            // Load patient name first
-            loadPatientInfo();
-
-            // Load oral records
-            loadPatientOralRecords();
-        }
-
-        function updateNavigationLinks() {
-            // Set patient info link
-            const patientInfoLink = document.getElementById("patientInfoLink");
-            if (patientInfoLink && currentPatientId && currentUserId) {
-                patientInfoLink.href = `view_info.php?uid=${currentUserId}&id=${currentPatientId}`;
-            }
-
-            // Set services rendered link
-            const servicesRenderedLink = document.getElementById("servicesRenderedLink");
-            if (servicesRenderedLink && currentPatientId && currentUserId) {
-                servicesRenderedLink.href = `view_record.php?uid=${currentUserId}&id=${currentPatientId}`;
-            }
-
-            // Set print link
-            const printdLink = document.getElementById("printdLink");
-            if (printdLink && currentPatientId && currentUserId) {
-                printdLink.href = `print.php?uid=${currentUserId}&id=${currentPatientId}`;
-            }
-        }
-
-        async function loadPatientInfo() {
-            try {
-                const response = await fetch(`/dentalemr_system/php/patients/get_patient.php?id=${currentPatientId}`);
-
-                if (response.ok) {
-                    const result = await response.json();
-
-                    if (result.success && result.data) {
-                        const patient = result.data;
-                        patientName = `${patient.firstname} ${patient.middlename ? patient.middlename + '. ' : ''}${patient.surname}`;
-
-                        // Update patient name display
-                        const patientNameElement = document.getElementById("patientName");
-                        if (patientNameElement) {
-                            patientNameElement.textContent = patientName;
-                            patientNameElement.classList.remove('italic');
-                        }
-                    }
-                }
-            } catch (error) {
-                console.warn('Could not load patient info:', error);
-                const patientNameElement = document.getElementById("patientName");
-                if (patientNameElement) {
-                    patientNameElement.textContent = 'Patient ID: ' + currentPatientId;
-                    patientNameElement.classList.remove('italic');
-                }
-            }
-        }
-
-        async function loadPatientOralRecords() {
-            const dateSelect = document.getElementById("dataSelect");
-            const loadingStatus = document.getElementById("loadingStatus");
-            const noRecordsMessage = document.getElementById("noRecordsMessage");
-
-            if (!currentPatientId || currentPatientId <= 0) {
-                showNoRecordsMessage();
-                return;
-            }
-
-            try {
-                // Show loading state
-                showLoading(true);
-
-                if (dateSelect) {
-                    dateSelect.innerHTML = '<option value="" selected disabled>Loading records...</option>';
-                    dateSelect.disabled = true;
-                }
-
-                // Fetch data from API
-                const apiUrl = `/dentalemr_system/php/treatmentrecords/view_oral_api.php?id=${currentPatientId}`;
-                const response = await fetch(apiUrl);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-
-                // Hide loading
-                showLoading(false);
-
-                // Check if we have data
-                if (!result.success) {
-                    // If it's a "no records found" message
-                    if (result.message && result.message.includes('No records')) {
-                        showNoRecordsMessage();
-                    } else {
-                        showAlert('Error: ' + (result.message || 'Unknown error'), 'error');
-                    }
-                    return;
-                }
-
-                const data = result.data || [];
-
-                if (!Array.isArray(data)) {
-                    throw new Error('Invalid data format received from server');
-                }
-
-                if (data.length === 0) {
-                    showNoRecordsMessage();
-                    return;
-                }
-
-                // Store records globally
-                oralRecords = data;
-
-                // Populate date dropdown
-                populateDateDropdown(data);
-
-                // Load first record by default
-                if (data.length > 0 && data[0].id) {
-                    await loadOralRecord(data[0].id);
-                }
-
-            } catch (error) {
-                console.error('Error loading oral records:', error);
-                showLoading(false);
-                showAlert('Failed to load records. Please try again.', 'error');
-                showNoRecordsMessage();
-            }
-        }
-
-        function populateDateDropdown(records) {
-            const dateSelect = document.getElementById("dataSelect");
-            const noRecordsMessage = document.getElementById("noRecordsMessage");
-
-            if (!dateSelect) return;
-
-            // Clear existing options
-            dateSelect.innerHTML = '';
-
-            if (!Array.isArray(records) || records.length === 0) {
-                if (noRecordsMessage) noRecordsMessage.classList.remove('hidden');
-                dateSelect.disabled = true;
-                dateSelect.innerHTML = '<option value="" selected disabled>No records available</option>';
-                return;
-            }
-
-            // Hide no records message
-            if (noRecordsMessage) noRecordsMessage.classList.add('hidden');
-            dateSelect.disabled = false;
-
-            // Add options for each record
-            records.forEach((record, index) => {
-                const option = document.createElement('option');
-                option.value = record.id;
-
-                // Format date nicely
-                let formattedDate = 'Date not available';
-                try {
-                    const date = record.created_at ? new Date(record.created_at) : new Date();
-                    formattedDate = date.toLocaleDateString('en-PH', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                } catch (e) {
-                    // Keep default date
-                }
-
-                // Add record number for clarity
-                const recordNumber = records.length - index;
-                option.textContent = `Record #${recordNumber} - ${formattedDate}`;
-
-                // Store full record data for offline use
-                try {
-                    option.dataset.record = JSON.stringify(record);
-                } catch (e) {
-                    // Ignore cache errors
-                }
-
-                // Select first item by default
-                if (index === 0) {
-                    option.selected = true;
-                }
-
-                dateSelect.appendChild(option);
-            });
-
-            // Cache the data for offline use
-            try {
-                localStorage.setItem(`oral_records_${currentPatientId}`, JSON.stringify(records));
-            } catch (e) {
-                // Ignore cache errors
-            }
-        }
-
-        async function loadSelectedRecord() {
-            const dateSelect = document.getElementById("dataSelect");
-            const selectedValue = dateSelect.value;
-
-            if (!selectedValue) {
-                return;
-            }
-
-            // Show loading for record
-            const loadingStatus = document.getElementById("loadingStatus");
-            if (loadingStatus) loadingStatus.classList.remove('hidden');
-
-            // Try to get data from the option's dataset first (for offline use)
-            const selectedOption = dateSelect.options[dateSelect.selectedIndex];
-            const cachedRecord = selectedOption.dataset.record;
-
-            if (cachedRecord) {
-                try {
-                    const recordData = JSON.parse(cachedRecord);
-                    displayOralRecord(recordData);
-                    if (loadingStatus) loadingStatus.classList.add('hidden');
-                    return;
-                } catch (e) {
-                    // Continue to fetch from server
-                }
-            }
-
-            // Otherwise fetch from server
-            await loadOralRecord(selectedValue);
-        }
-
-        async function loadOralRecord(recordId) {
-            const loadingStatus = document.getElementById("loadingStatus");
-            const oralDataContainer = document.getElementById("oralDataContainer");
-
-            try {
-                if (loadingStatus) loadingStatus.classList.remove('hidden');
-
-                // Clear previous data
-                if (oralDataContainer) oralDataContainer.innerHTML = '';
-
-                const response = await fetch(`/dentalemr_system/php/treatmentrecords/view_oral_api.php?record=${recordId}`);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-
-                if (!result.success) {
-                    throw new Error(result.message || 'Failed to load record');
-                }
-
-                const recordData = result.data;
-                displayOralRecord(recordData);
-
-                if (loadingStatus) loadingStatus.classList.add('hidden');
-
-            } catch (error) {
-                console.error('Error loading oral record:', error);
-                if (loadingStatus) loadingStatus.classList.add('hidden');
-
-                // Show error to user
-                if (oralDataContainer) {
-                    oralDataContainer.innerHTML = `
-                    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-                        <span class="font-medium">Error!</span> Unable to load oral health record.
-                    </div>
-                `;
-                }
-            }
-        }
-
-        function displayOralRecord(record) {
-            const oralDataContainer = document.getElementById("oralDataContainer");
-
-            if (!record || !oralDataContainer) {
-                return;
-            }
-
-            // Format date for display
-            let displayDate = 'Date not available';
-            try {
-                const date = record.created_at ? new Date(record.created_at) : new Date();
-                displayDate = date.toLocaleDateString('en-PH', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            } catch (e) {
-                // Keep default date
-            }
-
-            // Function to check if a condition is present
-            const isPresent = (value) => {
-                if (value === null || value === undefined) return false;
-
-                // Try boolean field first (ending with _bool)
-                if (typeof value === 'boolean') return value;
-
-                // Try regular field
-                const strValue = String(value).trim().toLowerCase();
-                return ['✓', '√', '1', 'true', 'yes', 'present', 'checked', 'on'].includes(strValue);
-            };
-
-            // Function to get display text and color
-            const getConditionDisplay = (value, boolValue = null) => {
-                const present = boolValue !== null ? boolValue : isPresent(value);
-                return {
-                    text: present ? 'Present ✓' : 'Absent ✗',
-                    colorClass: present ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400',
-                    bgColor: present ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20',
-                    borderColor: present ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800'
-                };
-            };
-
-            // Handle "others" field specially
-            const othersValue = record.others || '';
-            const othersPresent = othersValue && othersValue.trim() !== '';
-
-            // Create HTML for oral conditions - FIXED TEMPLATE LITERAL
-            const conditionsHTML = `
-            <div class="p-4 bg-white rounded-lg shadow dark:border dark:bg-gray-800 dark:border-gray-700 mb-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Oral Health Examination</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">${displayDate}</p>
-                    </div>
-                    <div class="flex flex-col items-end gap-1">
-                        <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
-                            Record ID: ${record.id || ''}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="mb-6">
-                    <h4 class="text-md font-medium text-gray-900 dark:text-white mb-3">A. Oral Conditions</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        ${[
-                            { key: 'orally_fit_child', label: 'Orally Fit Child (OFC)' },
-                            { key: 'dental_caries', label: 'Dental Caries' },
-                            { key: 'gingivitis', label: 'Gingivitis' },
-                            { key: 'periodontal_disease', label: 'Periodontal Disease' },
-                            { key: 'debris', label: 'Debris' },
-                            { key: 'calculus', label: 'Calculus' },
-                            { key: 'abnormal_growth', label: 'Abnormal Growth' },
-                            { key: 'cleft_palate', label: 'Cleft Lip/Palate' }
-                        ].map(item => {
-                            const display = getConditionDisplay(
-                                record[item.key], 
-                                record[item.key + '_bool']
-                            );
-                            return `<div class="flex items-center justify-between p-3 ${display.bgColor} rounded-lg border ${display.borderColor}">
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">${item.label}</span>
-                                <span class="text-sm font-semibold ${display.colorClass}">${display.text}</span>
-                            </div>`;
-                        }).join('')}
-                        
-                        <!-- Special handling for Others field -->
-                        <div class="flex flex-col p-3 ${othersPresent ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'} rounded-lg">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Other Conditions</span>
-                                <span class="text-sm font-semibold ${othersPresent ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">
-                                    ${othersPresent ? 'Present ✓' : 'Absent ✗'}
-                                </span>
-                            </div>
-                            ${othersPresent ? `
-                                <div class="mt-2 p-2 bg-white dark:bg-gray-800 rounded border">
-                                    <p class="text-sm text-gray-600 dark:text-gray-300">${othersValue}</p>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Permanent Teeth -->
-                    <div class="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <h4 class="text-md font-medium text-blue-800 dark:text-blue-300 mb-4">Permanent Teeth</h4>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Teeth Present:</span>
-                                <span class="text-lg font-bold text-blue-700 dark:text-blue-300">${record.perm_teeth_present || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Sound Teeth:</span>
-                                <span class="text-lg font-bold text-blue-700 dark:text-blue-300">${record.perm_sound_teeth || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Decayed (D):</span>
-                                <span class="text-lg font-bold text-blue-700 dark:text-blue-300">${record.perm_decayed_teeth_d || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Missing (M):</span>
-                                <span class="text-lg font-bold text-blue-700 dark:text-blue-300">${record.perm_missing_teeth_m || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Filled (F):</span>
-                                <span class="text-lg font-bold text-blue-700 dark:text-blue-300">${record.perm_filled_teeth_f || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center pt-3 border-t border-blue-200 dark:border-blue-700">
-                                <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Total DMF:</span>
-                                <span class="text-xl font-bold text-blue-800 dark:text-blue-400">${record.perm_total_dmf || 0}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Temporary Teeth -->
-                    <div class="p-4 bg-green-50 dark:bg-green-900/10 rounded-lg border border-green-200 dark:border-green-800">
-                        <h4 class="text-md font-medium text-green-800 dark:text-green-300 mb-4">Temporary Teeth</h4>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Teeth Present:</span>
-                                <span class="text-lg font-bold text-green-700 dark:text-green-300">${record.temp_teeth_present || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Sound Teeth:</span>
-                                <span class="text-lg font-bold text-green-700 dark:text-green-300">${record.temp_sound_teeth || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Decayed (d):</span>
-                                <span class="text-lg font-bold text-green-700 dark:text-green-300">${record.temp_decayed_teeth_d || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-gray-700 dark:text-gray-300">Filled (f):</span>
-                                <span class="text-lg font-bold text-green-700 dark:text-green-300">${record.temp_filled_teeth_f || 0}</span>
-                            </div>
-                            <div class="flex justify-between items-center pt-3 border-t border-green-200 dark:border-green-700">
-                                <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Total df:</span>
-                                <span class="text-xl font-bold text-green-800 dark:text-green-400">${record.temp_total_df || 0}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Summary -->
-                <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                    <h4 class="text-md font-medium text-gray-900 dark:text-white mb-2">Summary</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div class="text-center p-3 bg-white dark:bg-gray-800 rounded border">
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Total Permanent DMF</p>
-                            <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">${record.perm_total_dmf || 0}</p>
-                        </div>
-                        <div class="text-center p-3 bg-white dark:bg-gray-800 rounded border">
-                            <p class="text-sm text-gray-600 dark:text-gray-400">Total Temporary df</p>
-                            <p class="text-2xl font-bold text-green-600 dark:text-green-400">${record.temp_total_df || 0}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-            // Display the record
-            oralDataContainer.innerHTML = conditionsHTML;
-        }
-
-        function showNoRecordsMessage() {
-            const noRecordsMessage = document.getElementById("noRecordsMessage");
-            const oralDataContainer = document.getElementById("oralDataContainer");
-            const dateSelect = document.getElementById("dataSelect");
-
-            if (noRecordsMessage) {
-                noRecordsMessage.classList.remove('hidden');
-                noRecordsMessage.innerHTML = `
-                <div class="text-center py-8">
-                    <div class="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900">
-                        <svg class="w-8 h-8 text-blue-600 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Oral Health Records</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
-                        No oral health examination records have been created for ${patientName || 'this patient'} yet.
-                    </p>
-                    <button onclick="openOHCModal()" 
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        Create First Oral Health Record
-                    </button>
-                </div>
-            `;
-            }
-
-            if (oralDataContainer) oralDataContainer.innerHTML = '';
-            if (dateSelect) {
-                dateSelect.innerHTML = '<option value="" selected disabled>No records available</option>';
-                dateSelect.disabled = true;
-            }
-        }
-
-        function showNoRecordsMessage() {
-            const noRecordsMessage = document.getElementById("noRecordsMessage");
-            const oralDataContainer = document.getElementById("oralDataContainer");
-            const dateSelect = document.getElementById("dataSelect");
-
-            if (noRecordsMessage) {
-                noRecordsMessage.classList.remove('hidden');
-                noRecordsMessage.innerHTML = ` <
-        div class = "text-center py-8" >
-        <
-        div class = "inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-blue-100 dark:bg-blue-900" >
-        <
-        svg class = "w-8 h-8 text-blue-600 dark:text-blue-300"
-        fill = "none"
-        stroke = "currentColor"
-        viewBox = "0 0 24 24" >
-            <
-            path stroke - linecap = "round"
-        stroke - linejoin = "round"
-        stroke - width = "2"
-        d = "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" > < /path> <
-            /svg> <
-            /div> <
-            h3 class = "text-lg font-semibold text-gray-900 dark:text-white mb-2" > No Oral Health Records < /h3> <
-            p class = "text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto" >
-            No oral health examination records have been created
-        for $ {
-            patientName || 'this patient'
-        }
-        yet. <
-            /p> <
-            button onclick = "openOHCModal()"
-        class = "inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200" >
-        <
-        svg class = "w-5 h-5 mr-2"
-        fill = "currentColor"
-        viewBox = "0 0 20 20" >
-            <
-            path fill - rule = "evenodd"
-        d = "M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-        clip - rule = "evenodd" > < /path> <
-            /svg>
-        Create First Oral Health Record
-            <
-            /button> <
-            /div>
-        `;
-            }
-
-            if (oralDataContainer) oralDataContainer.innerHTML = '';
-            if (dateSelect) {
-                dateSelect.innerHTML = '<option value="" selected disabled>No records available</option>';
-                dateSelect.disabled = true;
-            }
-        }
-
-        function showLoading(show) {
-            const loadingStatus = document.getElementById("loadingStatus");
-            if (loadingStatus) {
-                if (show) {
-                    loadingStatus.classList.remove('hidden');
-                    loadingStatus.innerHTML = ` <
-        div class = "flex items-center justify-center space-x-2" >
-        <
-        div class = "w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" > < /div> <
-        span class = "text-blue-600 dark:text-blue-400" > Loading oral health records... < /span> <
-            /div>
-        `;
-                } else {
-                    loadingStatus.classList.add('hidden');
-                }
-            }
-        }
-
-        function showAlert(message, type = 'error') {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `
-        fixed top - 4 right - 4 z - 50 p - 4 rounded - lg shadow - lg $ {
-            type === 'error' ? 'bg-red-100 border border-red-300 text-red-800' : 'bg-blue-100 border border-blue-300 text-blue-800'
-        }
-        `;
-            alertDiv.innerHTML = ` <
-        div class = "flex items-center" >
-        <
-        svg class = "w-5 h-5 mr-2"
-        fill = "currentColor"
-        viewBox = "0 0 20 20" >
-            <
-            path fill - rule = "evenodd"
-        d = "M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-        clip - rule = "evenodd" > < /path> <
-            /svg> <
-            span > $ {
-                message
-            } < /span> <
-            /div>
-        `;
-            document.body.appendChild(alertDiv);
-
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
-        }
-
-        function navigateToNext() {
-            if (!currentPatientId || !currentUserId) {
-                showAlert('Missing patient or user ID.', 'error');
-                return;
-            }
-
-            window.location.href = `view_oralA.php?uid=${currentUserId}&id=${currentPatientId}`;
-        }
-
-        function backmain() {
-            if (currentUserId) {
-                window.location.href = `
-        treatmentrecords.php ? uid = $ {
-            currentUserId
-        }
-        `;
-            }
-        }
-
-        // OHC modal functions
-        function openOHCModal() {
-            const modal = document.getElementById('ohcModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-
-                // Set patient ID in form
-                const patientIdInput = document.querySelector('#ohcForm #patient_id');
-                if (patientIdInput && currentPatientId) {
-                    patientIdInput.value = currentPatientId;
-                }
-            }
-        }
-
-        function closeOHCModal() {
-            const modal = document.getElementById('ohcModal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-
-                // Reset form
-                const form = document.getElementById('ohcForm');
-                if (form) {
-                    form.reset();
-                    // Reset the check fields to empty
-                    const checkFields = [
-                        "orally_fit_child", "dental_caries", "gingivitis",
-                        "periodontal_disease", "debris", "calculus",
-                        "abnormal_growth", "cleft_palate", "others"
-                    ];
-                    checkFields.forEach(id => {
-                        const el = form.querySelector(`
-        #$ {
-            id
-        }
-        `);
-                        if (el) el.value = '';
-                    });
-                    // Reset calculated fields
-                    const calcFields = ["perm_total_dmf", "temp_total_df"];
-                    calcFields.forEach(id => {
-                        const el = form.querySelector(`
-        #$ {
-            id
-        }
-        `);
-                        if (el) el.value = '0';
-                    });
-                }
-            }
-        }
-
-        // Make functions available globally
-        window.loadSelectedRecord = loadSelectedRecord;
-        window.openOHCModal = openOHCModal;
-        window.closeOHCModal = closeOHCModal;
-        window.next = navigateToNext;
-        window.backmain = backmain;
-
-        // Client-side 10-minute inactivity logout
         let inactivityTime = 600000; // 10 minutes in ms
         let logoutTimer;
 
@@ -1413,7 +933,7 @@ $conn->close();
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php?uid=" + currentUserId;
+                window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
             }, inactivityTime);
         }
 
@@ -1422,6 +942,220 @@ $conn->close();
         });
 
         resetTimer();
+    </script>
+
+    <script>
+        function backmain() {
+            location.href = ("treatmentrecords.php?uid=<?php echo $userId; ?>");
+        }
+    </script>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const patientId = params.get('id');
+
+        const patientInfoLink = document.getElementById("patientInfoLink");
+        if (patientInfoLink && patientId) {
+            patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+        } else {
+            patientInfoLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+
+        const servicesRenderedLink = document.getElementById("servicesRenderedLink");
+        if (servicesRenderedLink && patientId) {
+            servicesRenderedLink.href = `view_record.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            servicesRenderedLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+
+        function next() {
+            // Get patient ID from URL
+            const params = new URLSearchParams(window.location.search);
+            const patientId = params.get("id");
+
+            if (!patientId) {
+                alert("Missing patient ID.");
+                return;
+            }
+
+            // Navigate to view_oralA.php while keeping patient ID in the URL
+            window.location.href = `view_oralA.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+        }
+        const printdLink = document.getElementById("printdLink");
+        if (printdLink && patientId) {
+            printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            printdLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+    </script>
+
+    <script>
+        (() => {
+            const params = new URLSearchParams(window.location.search);
+            const patientId = params.get("id");
+            const nameEl = document.getElementById("patientName");
+            const dateSelect = document.getElementById("dataSelect");
+
+            if (!patientId) {
+                nameEl.textContent = "Unknown Patient";
+                return;
+            }
+
+            const baseAPI = `/dentalemr_system/php/treatmentrecords/view_oral.php`;
+
+            // --- Utility functions ---
+
+            const setCondition = (id, value) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                const val = String(value || "").trim().toLowerCase();
+                const presentValues = ["✓", "√", "1", "yes", "true", "present", "checked", "on"];
+                const absentValues = ["x", "✗", "×", "no", "false", "0", "absent", ""];
+                const isPresent = presentValues.includes(val) && !absentValues.includes(val);
+
+                el.textContent = isPresent ? "Present" : "Absent";
+                el.classList.toggle("text-green-600", isPresent);
+                el.classList.toggle("text-red-600", !isPresent);
+            };
+
+            const setValue = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value ?? "0";
+            };
+
+            const renderOralData = (d) => {
+                if (!d) return;
+
+                // Section A
+                [
+                    "orally_fit_child", "dental_caries", "gingivitis", "periodontal_disease",
+                    "debris", "calculus", "abnormal_growth", "cleft_palate", "others"
+                ].forEach(key => setCondition(key, d[key]));
+
+                // Section B
+                [
+                    "perm_total_dmf", "perm_teeth_present", "perm_sound_teeth",
+                    "perm_decayed_teeth_d", "perm_missing_teeth_m", "perm_filled_teeth_f",
+                    "temp_total_df", "temp_teeth_present", "temp_sound_teeth",
+                    "temp_decayed_teeth_d", "temp_filled_teeth_f"
+                ].forEach(key => setValue(key, d[key]));
+            };
+
+            const loadRecordById = async (recordId) => {
+                try {
+                    const res = await fetch(`${baseAPI}?record=${encodeURIComponent(recordId)}`);
+                    const data = await res.json();
+
+                    if (!data || data.error || !data.id) {
+                        console.warn("Record not found for selected date.");
+                        return;
+                    }
+                    renderOralData(data);
+                } catch (err) {
+                    console.error("Error loading specific record:", err);
+                }
+            };
+
+            // --- Load all available records for this patient ---
+            const loadAllPatientData = async () => {
+                try {
+                    const res = await fetch(`${baseAPI}?id=${encodeURIComponent(patientId)}`);
+                    const data = await res.json();
+
+                    if (!data || data.message) {
+                        nameEl.textContent = data?.patient_name ?? "Unknown Patient";
+                        if (data?.message) alert(data.message);
+                        return;
+                    }
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        nameEl.textContent = "Unknown Patient";
+                        return;
+                    }
+
+                    const patientName = data[0].patient_name || "Unknown Patient";
+                    nameEl.textContent = patientName;
+
+                    // Populate dropdown with dates
+                    dateSelect.innerHTML = "";
+                    data.forEach((rec, i) => {
+                        const opt = document.createElement("option");
+                        opt.value = rec.id;
+                        opt.textContent = new Date(rec.created_at).toLocaleDateString();
+                        if (i === 0) opt.selected = true;
+                        dateSelect.appendChild(opt);
+                    });
+
+                    // Render first record
+                    renderOralData(data[0]);
+
+                    // Listen for date change → fetch from backend
+                    dateSelect.addEventListener("change", (e) => {
+                        const selectedId = e.target.value;
+                        if (selectedId) loadRecordById(selectedId);
+                    });
+                } catch (err) {
+                    console.error("Error loading patient data:", err);
+                    nameEl.textContent = "Unknown Patient";
+                }
+            };
+
+            // --- Initialize ---
+            loadAllPatientData();
+        })();
+    </script>
+
+    <script>
+        // Function to open the OHC Modal
+        function openOHCModal() {
+            const modal = document.getElementById('ohcModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            // Get patient_id from URL (accept both ?patient_id= or ?id=)
+            const urlParams = new URLSearchParams(window.location.search);
+            const patientId = urlParams.get('patient_id') || urlParams.get('id');
+
+            const input = document.querySelector('#ohcForm #patient_id');
+            if (input && patientId) {
+                input.value = patientId;
+                console.log("Patient ID set to:", patientId);
+            } else {
+                console.warn("Patient ID not found in URL");
+            }
+        }
+
+        // Function to close the OHC Modal
+        function closeOHCModal() {
+            const modal = document.getElementById('ohcModal');
+            if (!modal) return;
+
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // Close modal when clicking outside the modal content
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('ohcModal');
+            if (!modal) return;
+
+            const content = modal.querySelector('.bg-white, .dark\\:bg-gray-800');
+            if (e.target === modal) {
+                closeOHCModal();
+            }
+        });
     </script>
 
     <script>
@@ -1509,14 +1243,13 @@ $conn->close();
                 if (result.success) {
                     alert(result.message);
                     closeOHCModal();
-                    // Reload the page to show new record
                     location.reload();
                 } else {
                     alert((result.message || "Error saving data."));
                 }
             } catch (err) {
                 console.error("Error:", err);
-                alert("Failed to save data. Please check your connection.");
+                alert("Failed to save data.");
             }
         }
 
@@ -1541,9 +1274,355 @@ $conn->close();
                 const el = form.querySelector(`#${id}`);
                 if (el) el.addEventListener("input", calcTotals);
             });
+        });
+    </script>
+    <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    
+    <!-- Offline/Online Sync Handler -->
+    <script>
+        // Global offline sync manager
+        class OfflineSyncManager {
+            constructor() {
+                this.offlineActions = JSON.parse(localStorage.getItem('offline_actions') || '[]');
+                this.isOnline = navigator.onLine;
+                this.syncInterval = null;
 
-            // Make saveOHC globally available
-            window.saveOHC = saveOHC;
+                this.init();
+            }
+
+            init() {
+                // Listen for online/offline events
+                window.addEventListener('online', () => this.handleOnline());
+                window.addEventListener('offline', () => this.handleOffline());
+
+                // Start periodic sync
+                this.startSyncInterval();
+
+                // Try to sync immediately if online
+                if (this.isOnline) {
+                    setTimeout(() => this.syncOfflineActions(), 1000);
+                }
+            }
+
+            handleOnline() {
+                this.isOnline = true;
+                console.log('Device is online, syncing...');
+                this.syncOfflineActions();
+                this.startSyncInterval();
+            }
+
+            handleOffline() {
+                this.isOnline = false;
+                console.log('Device is offline');
+                this.stopSyncInterval();
+            }
+
+            startSyncInterval() {
+                if (this.syncInterval) clearInterval(this.syncInterval);
+                this.syncInterval = setInterval(() => this.syncOfflineActions(), 30000); // Every 30 seconds
+            }
+
+            stopSyncInterval() {
+                if (this.syncInterval) {
+                    clearInterval(this.syncInterval);
+                    this.syncInterval = null;
+                }
+            }
+
+            addOfflineAction(action, data) {
+                const actionData = {
+                    id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+                    action: action,
+                    data: data,
+                    timestamp: new Date().toISOString(),
+                    patient_id: data.patient_id || data.id || null
+                };
+
+                this.offlineActions.push(actionData);
+                this.saveToStorage();
+
+                console.log('Action saved for offline sync:', actionData);
+
+                // Try to sync immediately if online
+                if (this.isOnline) {
+                    setTimeout(() => this.syncOfflineActions(), 500);
+                }
+
+                return actionData.id;
+            }
+
+            removeOfflineAction(actionId) {
+                this.offlineActions = this.offlineActions.filter(action => action.id !== actionId);
+                this.saveToStorage();
+            }
+
+            saveToStorage() {
+                try {
+                    localStorage.setItem('offline_actions', JSON.stringify(this.offlineActions));
+                } catch (e) {
+                    console.error('Failed to save offline actions:', e);
+                }
+            }
+
+            async syncOfflineActions() {
+                if (!this.isOnline || this.offlineActions.length === 0) {
+                    return;
+                }
+
+                console.log(`Syncing ${this.offlineActions.length} offline actions...`);
+
+                // Group actions by type for batch processing
+                const archiveActions = this.offlineActions.filter(a => a.action === 'archive_patient');
+
+                // Process archive actions
+                if (archiveActions.length > 0) {
+                    await this.syncArchiveActions(archiveActions);
+                }
+
+                // Process other action types as needed
+            }
+
+            async syncArchiveActions(archiveActions) {
+                const patientIds = archiveActions.map(action => action.data.patient_id || action.data.id);
+
+                try {
+                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            sync_offline_archives: '1',
+                            archive_ids: JSON.stringify(patientIds)
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        console.log('Offline archive sync successful:', result);
+
+                        // Remove successfully synced actions
+                        archiveActions.forEach(action => {
+                            this.removeOfflineAction(action.id);
+                        });
+
+                        // Show success message
+                        if (result.synced_count > 0) {
+                            showNotice(`Synced ${result.synced_count} archived patients from offline mode`, 'green');
+                        }
+
+                        // Refresh the patient list if on treatment records page
+                        if (window.location.pathname.includes('treatmentrecords.php')) {
+                            setTimeout(() => {
+                                if (typeof window.loadPatients === 'function') {
+                                    window.loadPatients();
+                                }
+                            }, 1000);
+                        }
+                    } else {
+                        console.error('Offline archive sync failed:', result);
+                    }
+                } catch (error) {
+                    console.error('Failed to sync offline archives:', error);
+                }
+            }
+
+            // Add this to your existing archive function
+            async archivePatientWithOfflineSupport(patientId, patientName) {
+                if (!this.isOnline) {
+                    // Store for offline sync
+                    const actionId = this.addOfflineAction('archive_patient', {
+                        patient_id: patientId,
+                        patient_name: patientName,
+                        id: patientId
+                    });
+
+                    // Remove from local display immediately for better UX
+                    showNotice(`Patient "${patientName}" marked for archive (offline). Will sync when online.`, 'orange');
+
+                    // Return a promise that resolves immediately for offline
+                    return Promise.resolve({
+                        success: true,
+                        offline: true,
+                        actionId: actionId,
+                        message: 'Patient marked for archive (offline)'
+                    });
+                }
+
+                // Online: proceed with normal archive
+                try {
+                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            archive_id: patientId
+                        })
+                    });
+
+                    return await response.json();
+                } catch (error) {
+                    console.error('Archive request failed:', error);
+
+                    // Fallback to offline mode if request fails
+                    const actionId = this.addOfflineAction('archive_patient', {
+                        patient_id: patientId,
+                        patient_name: patientName,
+                        id: patientId
+                    });
+
+                    return {
+                        success: true,
+                        offline: true,
+                        actionId: actionId,
+                        message: 'Archive failed, saved for offline sync'
+                    };
+                }
+            }
+        }
+
+        // Initialize offline sync manager
+        const offlineSync = new OfflineSyncManager();
+
+        // Add to window for global access
+        window.offlineSync = offlineSync;
+
+        // Enhanced notification function with better styling
+        function showNotice(message, color = "blue") {
+            const notice = document.getElementById("notice");
+            if (!notice) return;
+
+            // Map color names to actual colors
+            const colorMap = {
+                'blue': '#3b82f6',
+                'green': '#10b981',
+                'red': '#ef4444',
+                'orange': '#f59e0b',
+                'yellow': '#fbbf24'
+            };
+
+            const bgColor = colorMap[color] || color;
+
+            notice.textContent = message;
+            notice.style.background = bgColor;
+            notice.style.display = "block";
+            notice.style.opacity = "1";
+            notice.style.position = "fixed";
+            notice.style.top = "14px";
+            notice.style.right = "14px";
+            notice.style.padding = "12px 16px";
+            notice.style.borderRadius = "8px";
+            notice.style.color = "white";
+            notice.style.fontWeight = "500";
+            notice.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+            notice.style.zIndex = "9999";
+            notice.style.maxWidth = "350px";
+            notice.style.wordBreak = "break-word";
+
+            setTimeout(() => {
+                notice.style.transition = "opacity 0.6s ease";
+                notice.style.opacity = "0";
+                setTimeout(() => {
+                    notice.style.display = "none";
+                    notice.style.transition = "";
+                }, 600);
+            }, 5000);
+        }
+
+        // Enhanced fetch with offline fallback
+        async function fetchWithOfflineFallback(url, options = {}) {
+            if (!navigator.onLine) {
+                // Check if we have offline data
+                const cachedData = localStorage.getItem(`cache_${url}`);
+                if (cachedData) {
+                    return JSON.parse(cachedData);
+                }
+
+                throw new Error('You are offline and no cached data is available');
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+
+                // Cache successful responses
+                if (response.ok && options.method === 'GET') {
+                    try {
+                        localStorage.setItem(`cache_${url}`, JSON.stringify(data));
+                    } catch (e) {
+                        console.warn('Could not cache data, storage might be full');
+                    }
+                }
+
+                return data;
+            } catch (error) {
+                console.error('Fetch failed:', error);
+
+                // Try to return cached data as fallback
+                const cachedData = localStorage.getItem(`cache_${url}`);
+                if (cachedData) {
+                    console.log('Returning cached data as fallback');
+                    return JSON.parse(cachedData);
+                }
+
+                throw error;
+            }
+        }
+
+        // Monitor network status with visual indicator
+        function setupNetworkStatusIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'network-status';
+            indicator.style.position = 'fixed';
+            indicator.style.bottom = '10px';
+            indicator.style.right = '10px';
+            indicator.style.width = '12px';
+            indicator.style.height = '12px';
+            indicator.style.borderRadius = '50%';
+            indicator.style.zIndex = '9998';
+            indicator.style.transition = 'all 0.3s ease';
+
+            document.body.appendChild(indicator);
+
+            function updateIndicator() {
+                if (navigator.onLine) {
+                    indicator.style.backgroundColor = '#10b981';
+                    indicator.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
+                    indicator.title = 'Online';
+                } else {
+                    indicator.style.backgroundColor = '#ef4444';
+                    indicator.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.5)';
+                    indicator.title = 'Offline';
+                }
+            }
+
+            updateIndicator();
+            window.addEventListener('online', updateIndicator);
+            window.addEventListener('offline', updateIndicator);
+        }
+
+        // Call setup on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNetworkStatusIndicator();
+
+            // Override the original archive function to use offline support
+            if (typeof window.archivePatient === 'function') {
+                const originalArchive = window.archivePatient;
+                window.archivePatient = async function(patientId, patientName) {
+                    return await offlineSync.archivePatientWithOfflineSupport(patientId, patientName);
+                };
+            }
+
+            // Check for pending offline actions on page load
+            setTimeout(() => {
+                if (offlineSync.offlineActions.length > 0 && navigator.onLine) {
+                    showNotice(`You have ${offlineSync.offlineActions.length} pending offline actions. Syncing...`, 'yellow');
+                    offlineSync.syncOfflineActions();
+                }
+            }, 2000);
         });
     </script>
 </body>
