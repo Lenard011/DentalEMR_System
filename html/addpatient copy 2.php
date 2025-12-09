@@ -283,15 +283,6 @@ if (!$isOfflineMode) {
     <!-- Add sync toast -->
     <div id="syncToast" class="hidden fixed top-4 right-4 z-60 transition-all duration-300"></div>
     </div>
-    <!-- Add offline sync indicator -->
-    <div id="offlineSyncIndicator" class="hidden fixed top-20 right-4 z-50">
-        <div class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
-            <div class="flex items-center">
-                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                <span>Syncing offline data...</span>
-            </div>
-        </div>
-    </div>
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
         <nav
             class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
@@ -1382,17 +1373,20 @@ if (!$isOfflineMode) {
         }
     </script>
 
+    <!-- ShowPregnant Input -->
+    <script></script>
+
     <!-- Table  -->
     <script>
         const API_PATH = "../php/register_patient/getPatients.php";
+        // Table functionality - make loadPatients globally accessible
         let currentSearch = "";
         let currentPage = 1;
         let limit = 10;
         let selectedAddresses = [];
         let isTableLoading = false;
-        let isOfflineMode = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
 
-        // Enhanced debounce utility
+        // FIXED debounce utility
         function debounce(fn, delay = 300) {
             let t;
             return (...args) => {
@@ -1401,7 +1395,7 @@ if (!$isOfflineMode) {
             };
         }
 
-        // Helper functions
+        // render helper
         function showMessageInTable(html) {
             const tbody = document.getElementById("patientsBody");
             if (tbody) {
@@ -1409,6 +1403,7 @@ if (!$isOfflineMode) {
             }
         }
 
+        // escape HTML
         function escapeHtml(str) {
             if (str === null || str === undefined) return "";
             return String(str)
@@ -1419,104 +1414,20 @@ if (!$isOfflineMode) {
                 .replaceAll("'", "&#039;");
         }
 
-        // Get offline patients from localStorage
-        function getOfflinePatients() {
-            try {
-                return JSON.parse(localStorage.getItem('dentalemr_offline_patients') || '[]');
-            } catch (error) {
-                console.error('Error getting offline patients:', error);
-                return [];
-            }
-        }
-
-        // Get unsynced offline patients
-        function getUnsyncedOfflinePatients() {
-            const offlinePatients = getOfflinePatients();
-            return offlinePatients.filter(patient => !patient.synced);
-        }
-
-        // Merge online and offline patients with proper filtering
-        function mergePatients(onlinePatients, offlinePatients, searchTerm, addressFilter) {
-            const allPatients = [];
-
-            // Add online patients
-            onlinePatients.forEach(patient => {
-                allPatients.push({
-                    ...patient,
-                    source: 'online',
-                    isOffline: false
-                });
-            });
-
-            // Add offline patients
-            const unsyncedOffline = offlinePatients.filter(p => !p.synced);
-            unsyncedOffline.forEach(patient => {
-                const patientData = patient.data;
-                allPatients.push({
-                    patient_id: patient.id,
-                    surname: patientData.surname || '',
-                    firstname: patientData.firstname || '',
-                    middlename: patientData.middlename || '',
-                    sex: patientData.sex || '',
-                    age: patientData.age || '',
-                    address: patientData.address || '',
-                    source: 'offline',
-                    isOffline: true,
-                    offlineData: patient
-                });
-            });
-
-            // Apply search filter
-            let filteredPatients = allPatients;
-            if (searchTerm) {
-                const searchLower = searchTerm.toLowerCase();
-                filteredPatients = filteredPatients.filter(patient => {
-                    return (
-                        (patient.surname && patient.surname.toLowerCase().includes(searchLower)) ||
-                        (patient.firstname && patient.firstname.toLowerCase().includes(searchLower)) ||
-                        (patient.middlename && patient.middlename && patient.middlename.toLowerCase().includes(searchLower)) ||
-                        (patient.address && patient.address.toLowerCase().includes(searchLower))
-                    );
-                });
-            }
-
-            // Apply address filter
-            if (addressFilter.length > 0) {
-                filteredPatients = filteredPatients.filter(patient =>
-                    addressFilter.includes(patient.address)
-                );
-            }
-
-            return filteredPatients;
-        }
-
-        // Load patients with offline support
+        // load patients - MAKE THIS GLOBALLY ACCESSIBLE
         async function loadPatients(page = 1, forceRefresh = false) {
             if (isTableLoading) return;
+
             isTableLoading = true;
             currentPage = page;
+
+            // Add cache busting for force refresh
+            const cacheBuster = forceRefresh ? `&_t=${Date.now()}` : '';
+            const url = `${API_PATH}?page=${page}&limit=${limit}&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}${cacheBuster}`;
 
             try {
                 // Show loading state
                 showMessageInTable('<div class="flex justify-center items-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div><span class="ml-2">Loading patients...</span></div>');
-
-                // Get offline patients first
-                const offlinePatients = getOfflinePatients();
-                const unsyncedCount = offlinePatients.filter(p => !p.synced).length;
-
-                // If we're in offline mode, show offline patients only
-                if (isOfflineMode || !navigator.onLine) {
-                    const unsyncedPatients = offlinePatients.filter(p => !p.synced);
-                    const filteredPatients = mergePatients([], unsyncedPatients, currentSearch, selectedAddresses);
-
-                    displayPatients(filteredPatients, filteredPatients.length);
-                    isTableLoading = false;
-                    return;
-                }
-
-                // Online mode - fetch from server and merge with offline
-                const cacheBuster = forceRefresh ? `&_t=${Date.now()}` : '';
-                const url = `${API_PATH}?page=${page}&limit=${limit}&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}${cacheBuster}`;
 
                 const res = await fetch(url, {
                     cache: "no-store",
@@ -1526,190 +1437,60 @@ if (!$isOfflineMode) {
                 });
 
                 if (!res.ok) {
-                    throw new Error(`Server error: ${res.status}`);
+                    showMessageInTable("Server error: " + res.status);
+                    isTableLoading = false;
+                    return;
                 }
 
                 const data = await res.json();
+                const tbody = document.getElementById("patientsBody");
+                const paginationNav = document.getElementById("paginationNav");
 
-                // Merge online and offline patients
-                const allPatients = mergePatients(
-                    data.patients || [],
-                    offlinePatients,
-                    currentSearch,
-                    selectedAddresses
-                );
-
-                // Apply pagination
-                const startIndex = (page - 1) * limit;
-                const endIndex = startIndex + limit;
-                const paginatedPatients = allPatients.slice(startIndex, endIndex);
-
-                displayPatients(paginatedPatients, allPatients.length);
-
-                // Render filter addresses (only from online data in online mode)
-                if (data.addresses) {
-                    renderFilterAddresses(data.addresses);
+                if (!tbody) {
+                    isTableLoading = false;
+                    return;
                 }
+
+                if (!data.patients || data.patients.length === 0) {
+                    showMessageInTable("No patients found.");
+                    if (paginationNav) paginationNav.innerHTML = "";
+                    isTableLoading = false;
+                    return;
+                }
+
+                tbody.innerHTML = "";
+                data.patients.forEach((p, index) => {
+                    const displayId = (currentPage - 1) * limit + index + 1;
+                    tbody.insertAdjacentHTML("beforeend", `
+            <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700">
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${displayId}</td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.sex)}</td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(String(p.age))}</td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">${escapeHtml(p.address)}</td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    <button onclick="window.location.href='viewrecord.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
+                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>&id=${encodeURIComponent(p.patient_id)}'"
+                        class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
+                        View
+                    </button>
+                </td>
+            </tr>
+        `);
+                });
+
+                renderPagination(data.total, data.limit, data.page);
+                renderFilterAddresses(data.addresses);
 
             } catch (err) {
                 console.error("Error loading patients:", err);
-
-                // Fallback to offline data if online fetch fails
-                if (!navigator.onLine || err.message.includes('Failed to fetch')) {
-                    const offlinePatients = getOfflinePatients();
-                    const unsyncedPatients = offlinePatients.filter(p => !p.synced);
-                    const filteredPatients = mergePatients([], unsyncedPatients, currentSearch, selectedAddresses);
-
-                    displayPatients(filteredPatients, filteredPatients.length);
-
-                    // Show offline indicator
-                    showOfflineIndicator();
-                } else {
-                    showMessageInTable("Error loading data. Please try again.");
-                }
+                showMessageInTable("Error loading data. Please try again.");
             } finally {
                 isTableLoading = false;
             }
         }
 
-        // Display patients in table
-        function displayPatients(patients, totalCount) {
-            const tbody = document.getElementById("patientsBody");
-            const paginationNav = document.getElementById("paginationNav");
-
-            if (!tbody) {
-                isTableLoading = false;
-                return;
-            }
-
-            if (!patients || patients.length === 0) {
-                showMessageInTable(`
-                <div class="text-center py-8">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No patients found</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        ${navigator.onLine ? 'Get started by adding a new patient.' : 'You are offline. Patient data will be saved locally.'}
-                    </p>
-                </div>
-            `);
-                if (paginationNav) paginationNav.innerHTML = "";
-                return;
-            }
-
-            tbody.innerHTML = "";
-            patients.forEach((p, index) => {
-                const displayId = (currentPage - 1) * limit + index + 1;
-                const isOfflinePatient = p.isOffline || p.source === 'offline';
-                const offlineBadge = isOfflinePatient ?
-                    `<span class="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Offline</span>` : '';
-
-                tbody.insertAdjacentHTML("beforeend", `
-                <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${displayId}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        <div class="flex items-center justify-center">
-                            <span>${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</span>
-                            ${offlineBadge}
-                        </div>
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(p.sex)}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(String(p.age))}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(p.address)}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        <button onclick="${isOfflinePatient ? 
-                            `viewOfflinePatient('${p.patient_id}')` : 
-                            `window.location.href='viewrecord.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId; ?>&id=${encodeURIComponent(p.patient_id)}${isOfflineMode ? '&offline=true' : ''}'`}"
-                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
-                            View
-                        </button>
-                        ${isOfflinePatient ? `
-                        <button onclick="deleteOfflinePatient('${p.patient_id}')"
-                            class="ml-2 text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-2">
-                            Delete
-                        </button>` : ''}
-                    </td>
-                </tr>
-            `);
-            });
-
-            renderPagination(totalCount, limit, currentPage);
-        }
-
-        // View offline patient
-        function viewOfflinePatient(patientId) {
-            const offlinePatients = getOfflinePatients();
-            const patient = offlinePatients.find(p => p.id === patientId);
-
-            if (patient) {
-                // You can implement a modal to view offline patient details
-                alert(`Offline Patient\nName: ${patient.data.surname}, ${patient.data.firstname}\nAddress: ${patient.data.address}\nThis patient is stored locally and will be synced when online.`);
-            }
-        }
-
-        // Delete offline patient
-        function deleteOfflinePatient(patientId) {
-            if (confirm('Are you sure you want to delete this offline patient? This action cannot be undone.')) {
-                const offlinePatients = getOfflinePatients();
-                const updatedPatients = offlinePatients.filter(patient => patient.id !== patientId);
-                localStorage.setItem('dentalemr_offline_patients', JSON.stringify(updatedPatients));
-
-                // Reload table
-                loadPatients(currentPage, true);
-
-                // Show notification
-                showNotification('Offline patient deleted successfully', 'success');
-            }
-        }
-
-        // Show offline indicator
-        function showOfflineIndicator() {
-            const connectionStatus = document.getElementById('connectionStatus');
-            if (connectionStatus) {
-                connectionStatus.innerHTML = `
-                <div class="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                    <i class="fas fa-wifi-slash mr-2"></i>
-                    <span>Offline Mode - Showing locally stored patients</span>
-                </div>
-            `;
-                connectionStatus.classList.remove('hidden');
-
-                setTimeout(() => {
-                    connectionStatus.classList.add('hidden');
-                }, 5000);
-            }
-        }
-
-        // Show notification
-        function showNotification(message, type = 'info') {
-            const toast = document.getElementById('syncToast');
-            if (toast) {
-                const bgColor = type === 'success' ? 'bg-green-500' :
-                    type === 'error' ? 'bg-red-500' :
-                    type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
-                toast.innerHTML = `
-                <div class="${bgColor} text-white px-4 py-2 rounded-lg shadow-lg flex items-center">
-                    <span>${message}</span>
-                </div>
-            `;
-                toast.classList.remove('hidden');
-
-                setTimeout(() => {
-                    toast.classList.add('hidden');
-                }, 3000);
-            }
-        }
-
-        // Pagination renderer (unchanged)
+        // pagination renderer
         function renderPagination(total, limitVal, page) {
             const paginationNav = document.getElementById("paginationNav");
             if (!paginationNav) return;
@@ -1719,37 +1500,36 @@ if (!$isOfflineMode) {
             const end = Math.min(page * limitVal, total);
 
             const showingText = `
-            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
-                of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
-            </span>
-        `;
+    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+    Showing <span class="font-semibold text-gray-700 dark:text-white">${start}-${end}</span>
+    of <span class="font-semibold text-gray-700 dark:text-white">${total}</span>
+    </span>
+`;
 
             let pagesHTML = "";
             if (page > 1) {
                 pagesHTML += `<li><a href="#" onclick="loadPatients(${page - 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 ml-0 text-gray-500 bg-white rounded-l-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
-                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                </svg></a></li>`;
+        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg></a></li>`;
             }
-
             for (let i = 1; i <= totalPages; i++) {
                 pagesHTML += (i === page) ?
                     `<li><span class="flex items-center justify-center text-sm z-10 py-2 px-3 text-blue-600 bg-blue-50 border border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white">${i}</span></li>` :
-                    `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
+                    `<li><a href="#" onclick="loadPatients(${i}); return false;" class="flex items-center justify-center text-sm py-2 px-3 
+             text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">${i}</a></li>`;
             }
-
             if (page < totalPages) {
                 pagesHTML += `<li><a href="#" onclick="loadPatients(${page + 1}); return false;" class="flex items-center justify-center h-full py-1.5 px-2 leading-tight text-gray-500 bg-white rounded-r-sm border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"> 
-                <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                </svg></a></li>`;
+    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+    </svg></a></li>`;
             }
 
             paginationNav.innerHTML = `${showingText} <ul class="inline-flex -space-x-1px">${pagesHTML}</ul>`;
         }
 
-        // Filter addresses dropdown (unchanged)
+        // filter addresses dropdown
         function renderFilterAddresses(addresses) {
             const container = document.getElementById("filterAddresses");
             if (!container) return;
@@ -1758,13 +1538,14 @@ if (!$isOfflineMode) {
             addresses.forEach(addr => {
                 const checked = selectedAddresses.includes(addr) ? "checked" : "";
                 container.insertAdjacentHTML("beforeend", `
-                <li>
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" value="${escapeHtml(addr)}" ${checked} class="address-filter">
-                        <span class="text-gray-700 dark:text-gray-200">${escapeHtml(addr)}</span>
-                    </label>
-                </li>
-            `);
+        <li>
+            <label class="flex items-center space-x-2">
+            <input type="checkbox" value="${escapeHtml(addr)}" ${checked}
+                    class="address-filter">
+            <span class="text-gray-700 dark:text-gray-200">${escapeHtml(addr)}</span>
+            </label>
+        </li>
+    `);
             });
 
             document.querySelectorAll(".address-filter").forEach(cb => {
@@ -1773,6 +1554,92 @@ if (!$isOfflineMode) {
                     loadPatients(1);
                 });
             });
+        }
+
+        // Enhanced sync function that properly refreshes the table
+        function syncOfflineDataAndRefresh() {
+            if (!navigator.onLine) {
+                console.log('Still offline, cannot sync data');
+                return;
+            }
+
+            const offlinePatients = offlineStorage.getOfflinePatients();
+            const unsyncedPatients = offlinePatients.filter(patient => !patient.synced);
+
+            if (unsyncedPatients.length === 0) {
+                console.log('No unsynced patients found');
+                // Even if no unsynced patients, refresh the table to get latest data
+                loadPatients(1, true);
+                return;
+            }
+
+            console.log(`Syncing ${unsyncedPatients.length} offline patients...`);
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Process sync sequentially to avoid race conditions
+            const syncNextPatient = async (index) => {
+                if (index >= unsyncedPatients.length) {
+                    // All patients processed
+                    if (successCount > 0) {
+                        offlineStorage.showSyncNotification(`Successfully synced ${successCount} patient(s)`);
+                        // Force refresh the table after successful sync
+                        setTimeout(() => {
+                            loadPatients(1, true);
+                        }, 500);
+                    }
+                    if (errorCount > 0) {
+                        offlineStorage.showSyncNotification(`Failed to sync ${errorCount} patient(s)`, 'error');
+                    }
+                    return;
+                }
+
+                const patient = unsyncedPatients[index];
+                try {
+                    const formData = new FormData();
+
+                    Object.entries(patient.data).forEach(([key, value]) => {
+                        if (value !== null && value !== undefined) {
+                            formData.append(key, value);
+                        }
+                    });
+
+                    formData.append("patient", "1");
+                    formData.append("offline_sync", "true");
+
+                    const response = await fetch("/dentalemr_system/php/register_patient/addpatient.php", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === "success") {
+                        patient.synced = true;
+                        offlineStorage.removePatient(patient.id);
+                        successCount++;
+                        console.log('Successfully synced patient:', patient.id);
+                    } else {
+                        console.error('Failed to sync patient:', patient.id, result);
+                        errorCount++;
+                    }
+                } catch (error) {
+                    console.error('Error syncing patient:', patient.id, error);
+                    errorCount++;
+                }
+
+                // Process next patient
+                syncNextPatient(index + 1);
+            };
+
+            // Start syncing from the first patient
+            syncNextPatient(0);
+        }
+
+        // Replace the existing syncOfflineData function in offlineStorage
+        if (typeof offlineStorage !== 'undefined') {
+            offlineStorage.syncOfflineData = syncOfflineDataAndRefresh;
         }
 
         // Initialize table when page loads
@@ -1789,17 +1656,16 @@ if (!$isOfflineMode) {
             // Initial load
             loadPatients(1);
 
-            // Set up periodic refresh when online
+            // Set up periodic refresh when online (every 30 seconds)
             setInterval(() => {
                 if (navigator.onLine && !isTableLoading) {
                     loadPatients(currentPage, true);
                 }
             }, 30000);
 
-            // Listen for online/offline events
+            // Listen for online/offline events to refresh table
             window.addEventListener('online', function() {
                 console.log('Online - refreshing table data');
-                isOfflineMode = false;
                 // Small delay to ensure connection is stable
                 setTimeout(() => {
                     loadPatients(currentPage, true);
@@ -1807,16 +1673,15 @@ if (!$isOfflineMode) {
             });
 
             window.addEventListener('offline', function() {
-                console.log('Offline mode detected');
-                isOfflineMode = true;
-                loadPatients(currentPage, true);
+                console.log('Offline mode');
+                // You could show offline patients here if needed
             });
         });
 
-        // Make functions available globally
+        // Make loadPatients available globally for other scripts
         window.loadPatients = loadPatients;
-        window.getOfflinePatients = getOfflinePatients;
     </script>
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -2502,6 +2367,7 @@ if (!$isOfflineMode) {
             document.head.appendChild(style);
         });
     </script>
+
 
 </body>
 

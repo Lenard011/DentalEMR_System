@@ -350,29 +350,26 @@ if ($loggedUser['type'] === 'Dentist') {
     </aside>
 
     <main class="relative p-1.5 md:ml-64 h-auto pt-1">
-      <div class="relative flex items-center w-full mt-13 p-2">
+      <div class="relative flex items-center w-full  mt-13 p-2">
         <!-- Back Btn -->
         <button type="button" onclick="back()" class="cursor-pointer absolute left-2">
           <svg class="w-[35px] h-[35px] text-blue-800 dark:blue-white" aria-hidden="true"
             xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-              d="M5 12h14M5 12l4-4m-4 4 4 4" />
+              d="M5 12h14M    5 12l4-4m-4 4 4 4" />
           </svg>
         </button>
         <p class="mx-auto text-xl text-center font-semibold text-gray-900 dark:text-white">
           Patient Information
         </p>
       </div>
-
-      <!-- Patient Information Section -->
       <section class="relative bg-white dark:bg-gray-900 p-2 sm:p-2 rounded-lg mb-2">
-        <!-- Patient Name Display -->
         <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white mb-2">Loading ...</p>
-
-        <!-- Patient Info Card -->
-        <div class="relative mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+        <!-- Patient Info -->
+        <div
+          class="relative mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
           <div class="items-center justify-between flex flex-row mb-3">
-            <p class="text-base font-normal text-gray-950 dark:text-white ">Patient Details</p>
+            <p class="text-base font-normal text-gray-950 dark:text-white ">Patient Detatils</p>
             <button id="editBtn" type="button"
               class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 mr-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -385,14 +382,10 @@ if ($loggedUser['type'] === 'Dentist') {
               Edit
             </button>
           </div>
-
-          <!-- Patient Information Grid -->
           <div class="relative flex flex-col justify-center items-center px-5 gap-5 mb-3">
-            <!-- First Row -->
-            <div class="flex items-center justify-between p-2 max-w-5xl w-full">
-              <!-- Name -->
+            <div class="flex items-center justify-between p-2  max-w-5xl w-full">
               <div class="grid items-center justify-center grid-flow-col gap-1">
-                <div class="flex items-center w-12">
+                <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg class="w-6 h-6 text-blue-800 dark:text-white" aria-hidden="true"
                       xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -403,15 +396,14 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
                 <div>
                   <p id="patientName2" class="text-sm font-normal text-gray-950 dark:text-white"
-                    style="font-size:14.6px;">Loading ...</p>
+                    style="font-size:14.6px;">
+                    Loading ...</p>
                   <p class="text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Name</p>
                 </div>
               </div>
-
-              <!-- Gender -->
               <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                <div class="flex items-center w-12">
+                <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
                       class="w-6 h-6 text-blue-800 dark:text-white" viewBox="0 0 20 16">
@@ -422,15 +414,14 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
                 <div>
                   <p id="patientSex" class="text-sm font-normal text-gray-950 dark:text-white"
-                    style="font-size:14.6px;">Loading ...</p>
+                    style="font-size:14.6px;">
+                    Loading ...</p>
                   <p class="text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Gender</p>
                 </div>
               </div>
-
-              <!-- Age -->
               <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                <div class="flex items-center w-12">
+                <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
                       class="w-6 h-6 text-blue-800 dark:text-white" viewBox="0 0 18 15">
@@ -441,15 +432,14 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
                 <div>
                   <p id="patientAge" class="text-sm font-normal text-gray-950 dark:text-white"
-                    style="font-size:14.6px;">Loading ...</p>
+                    style="font-size:14.6px;">
+                    Loading ...</p>
                   <p class="text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Age</p>
                 </div>
               </div>
-
-              <!-- Date of Birth -->
               <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                <div class="flex items-center w-12">
+                <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor"
                       class="w-6 h-6 text-blue-800 dark:text-white" viewBox="-1 -3 16 22">
@@ -462,20 +452,18 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
                 <div>
                   <p id="patientDob" class="text-sm font-normal text-gray-950 dark:text-white"
-                    style="font-size:14.6px;">Loading ...</p>
+                    style="font-size:14.6px;">
+                    Loading ...</p>
                   <p class="text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Date of Birth</p>
                 </div>
               </div>
-
-              <!-- Occupation -->
               <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                <div class="flex items-center w-12">
+                <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                       class="w-6 h-6 text-blue-800 dark:text-white" viewBox="-1 -3 16 22">
-                      <path
-                        d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+                      <path d="M4 16s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-5.95a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
                       <path
                         d="M2 1a2 2 0 0 0-2 2v9.5A1.5 1.5 0 0 0 1.5 14h.653a5.4 5.4 0 0 1 1.066-2H1V3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9h-2.219c.554.654.89 1.373 1.066 2h.653a1.5 1.5 0 0 0 1.5-1.5V3a2 2 0 0 0-2-2z" />
                     </svg>
@@ -483,42 +471,39 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
                 <div>
                   <p id="patientOccupation" class="text-sm font-normal text-gray-950 dark:text-white"
-                    style="font-size:14.6px;">Loading ...</p>
+                    style="font-size:14.6px;">
+                    Loading ...</p>
                   <p class="text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Occupation</p>
                 </div>
               </div>
             </div>
-
-            <!-- Second Row -->
-            <div class="relative flex items-center justify-between p-2 max-w-5xl w-full">
-              <!-- Place of Birth -->
+            <div class="relative flex items-center justify-between  p-2   max-w-5xl w-full">
               <div class="grid items-center justify-center grid-flow-col gap-1">
-                <div class="flex items-center w-12">
+                <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
                       class="w-6 h-6 text-blue-800 dark:text-white" viewBox="-2 0 20 16">
                       <path
                         d="M12.166 8.94c-.524 1.062-1.234 2.12-1.96 3.07A32 32 0 0 1 8 14.58a32 32 0 0 1-2.206-2.57c-.726-.95-1.436-2.008-1.96-3.07C3.304 7.867 3 6.862 3 6a5 5 0 0 1 10 0c0 .862-.305 1.867-.834 2.94M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10" />
-                      <path
-                        d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+                      <path d="M8 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4m0 1a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
                     </svg>
                   </div>
                 </div>
                 <div>
                   <p id="patientBirthPlace" class="text-sm font-normal text-gray-950 dark:text-white"
-                    style="font-size:14.6px;">Loading ...</p>
+                    style="font-size:14.6px;">
+                    Loading ...</p>
                   <p class="text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Place of Birth</p>
                 </div>
               </div>
-
-              <!-- Address -->
               <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                <div class="flex items-center w-12">
+                <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor"
                       class="w-6 h-6 text-blue-800 dark:text-white" viewBox="-2 0 20 16">
+
                       <path fill-rule="evenodd"
                         d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.3 1.3 0 0 0-.37.265.3.3 0 0 0-.057.09V14l.002.008.016.033a.6.6 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.6.6 0 0 0 .146-.15l.015-.033L12 14v-.004a.3.3 0 0 0-.057-.09 1.3 1.3 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465s-2.462-.172-3.34-.465c-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411" />
                     </svg>
@@ -526,15 +511,14 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
                 <div>
                   <p id="patientAddress" class="text-sm font-normal text-gray-950 dark:text-white"
-                    style="font-size:14.6px;">Loading ...</p>
+                    style="font-size:14.6px;">
+                    Loading ...</p>
                   <p class="text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Address</p>
                 </div>
               </div>
-
-              <!-- Parent/Guardian -->
               <div class="relative grid items-center justify-center grid-flow-col gap-1">
-                <div class="flex items-center w-12">
+                <div class="flex items-center w-12 ">
                   <div class="rounded-full p-2.5 bg-gray-100 dark:bg-blue-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
                       class="w-6 h-6 text-blue-800 dark:text-white" viewBox="-2.5 0 20 16">
@@ -545,7 +529,8 @@ if ($loggedUser['type'] === 'Dentist') {
                 </div>
                 <div>
                   <p id="patientGuardian" class="relative text-sm font-normal text-gray-950 dark:text-white"
-                    style="font-size:14.6px;">Loading ...</p>
+                    style="font-size:14.6px;">
+                    Loading ...</p>
                   <p class="relative text-xs font-normal text-gray-950 dark:text-white" style="font-size:13px;">
                     Parent/Guardian</p>
                 </div>
@@ -553,7 +538,6 @@ if ($loggedUser['type'] === 'Dentist') {
             </div>
           </div>
         </div>
-
         <!-- Others Info (Membersip)-->
         <div
           class="mx-auto mb-5 max-w-screen-xl px-1.5 py-2 lg:px-1.5 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
@@ -893,35 +877,36 @@ if ($loggedUser['type'] === 'Dentist') {
 
               <!-- NHTS -->
               <div class="flex items-center mb-1">
-                <input type="checkbox" value="1" name="nhts_pr" id="nhts_pr" data-field="nhts_pr"
+                <input type="checkbox" value="1" name="nhts_pr" data-field="nhts_pr"
                   class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
                 <label class="ms-2 text-sm">NHTS-PR</label>
               </div>
 
               <!-- 4Ps -->
               <div class="flex items-center mb-1">
-                <input type="checkbox" value="1" name="four_ps" id="four_ps" data-field="four_ps"
+                <input type="checkbox" value="1" name="four_ps" data-field="four_ps"
                   class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
                 <label class="ms-2 text-sm">Pantawid Pamilyang Pilipino Program (4Ps)</label>
               </div>
 
               <!-- IP -->
               <div class="flex items-center mb-1">
-                <input type="checkbox" value="1" name="indigenous_people" id="indigenous_people" data-field="indigenous_people"
+                <input type="checkbox" value="1" name="indigenous_people" data-field="indigenous_people"
                   class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
                 <label class="ms-2 text-sm">Indigenous People (IP)</label>
               </div>
 
               <!-- PWD -->
               <div class="flex items-center mb-1">
-                <input type="checkbox" value="1" name="pwd" id="pwd" data-field="pwd"
+                <input type="checkbox" value="1" name="pwd" data-field="pwd"
                   class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
                 <label class="ms-2 text-sm">Person With Disabilities (PWDs)</label>
               </div>
 
               <!-- PhilHealth -->
               <div class="flex items-center mb-1">
-                <input type="checkbox" value="1" name="philhealth_flag" id="philhealth_flag" data-field="philhealth_flag"
+                <input type="checkbox" value="1" name="philhealth_flag" data-field="philhealth_flag"
+                  onchange="toggleInput(this, 'philhealth_number')"
                   class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
                 <div class="grid grid-cols-2 items-center gap-4">
                   <label class="ms-2 text-sm">PhilHealth (Indicate Number)</label>
@@ -932,8 +917,8 @@ if ($loggedUser['type'] === 'Dentist') {
 
               <!-- SSS -->
               <div class="flex items-center mb-1">
-                <input type="checkbox" value="1" name="sss_flag" id="sss_flag" data-field="sss_flag"
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <input type="checkbox" value="1" name="sss_flag" data-field="sss_flag"
+                  onchange="toggleInput(this, 'sss_number')" class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
                 <div class="grid grid-cols-2 items-center gap-4">
                   <label class="ms-2 text-sm">SSS (Indicate Number)</label>
                   <input type="text" id="sss_number" name="sss_number" disabled
@@ -943,8 +928,8 @@ if ($loggedUser['type'] === 'Dentist') {
 
               <!-- GSIS -->
               <div class="flex items-center mb-1">
-                <input type="checkbox" value="1" name="gsis_flag" id="gsis_flag" data-field="gsis_flag"
-                  class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
+                <input type="checkbox" value="1" name="gsis_flag" data-field="gsis_flag"
+                  onchange="toggleInput(this, 'gsis_number')" class="w-4 h-4 text-blue-600 border-gray-300 rounded-sm">
                 <div class="grid grid-cols-2 items-center gap-4">
                   <label class="ms-2 text-sm">GSIS (Indicate Number)</label>
                   <input type="text" id="gsis_number" name="gsis_number" disabled
@@ -1260,8 +1245,7 @@ if ($loggedUser['type'] === 'Dentist') {
             </form>
           </div>
         </div>
-
-        <!-- Notification Container -->
+        <!-- small notification container -->
         <div id="notice"
           style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
         </div>
@@ -1299,182 +1283,19 @@ if ($loggedUser['type'] === 'Dentist') {
     }
   </script>
 
-  <!-- COMBINED & IMPROVED PATIENT MANAGEMENT SCRIPT -->
+
+  <!-- edit/update patient details -->
   <script>
-    // ============================================================================
-    // UNIVERSAL BROWSER COMPATIBILITY LAYER (from first script)
-    // ============================================================================
-    (function() {
-      // Feature detection and polyfills
-      if (!window.Promise) {
-        console.warn('Promise not supported - loading polyfill');
-        var script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js';
-        document.head.appendChild(script);
-      }
-
-      if (!window.fetch) {
-        console.warn('fetch not supported - loading polyfill');
-        var script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/whatwg-fetch@3.6.2/dist/fetch.umd.min.js';
-        document.head.appendChild(script);
-      }
-
-      // Safe date parsing for all browsers
-      window.safeParseDate = function(dateString) {
-        if (!dateString) return null;
-
-        const formats = [
-          () => {
-            const date = new Date(dateString);
-            return !isNaN(date.getTime()) ? date : null;
-          },
-          () => {
-            const parts = dateString.split('-');
-            if (parts.length === 3) {
-              const date = new Date(parts[0], parts[1] - 1, parts[2]);
-              return !isNaN(date.getTime()) ? date : null;
-            }
-            return null;
-          },
-          () => {
-            const parts = dateString.split('/');
-            if (parts.length === 3) {
-              const date = new Date(parts[2], parts[1] - 1, parts[0]);
-              return !isNaN(date.getTime()) ? date : null;
-            }
-            return null;
-          }
-        ];
-
-        for (let format of formats) {
-          const result = format();
-          if (result) return result;
-        }
-
-        return null;
-      };
-
-      // Universal fetch wrapper with better error handling
-      const originalFetch = window.fetch;
-      window.fetch = function(url, options = {}) {
-        if (!options.method || options.method.toUpperCase() === 'GET') {
-          const separator = url.includes('?') ? '&' : '?';
-          url = url + separator + '_t=' + Date.now();
-        }
-
-        if (!options.headers) {
-          options.headers = {};
-        }
-
-        Object.assign(options.headers, {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        });
-
-        if (!options.credentials) {
-          options.credentials = 'include';
-        }
-
-        const timeout = 30000;
-
-        return Promise.race([
-          originalFetch.call(window, url, options),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Request timeout')), timeout)
-          )
-        ]).catch(error => {
-          console.error('Fetch error:', error);
-          throw error;
-        });
-      };
-
-      // Detect browser for specific fixes
-      window.getBrowserInfo = function() {
-        const ua = navigator.userAgent;
-        let browser = 'unknown';
-
-        if (ua.indexOf("Chrome") > -1) {
-          browser = 'chrome';
-        } else if (ua.indexOf("Firefox") > -1) {
-          browser = 'firefox';
-        } else if (ua.indexOf("Safari") > -1) {
-          browser = 'safari';
-        } else if (ua.indexOf("Edge") > -1 || ua.indexOf("Edg") > -1) {
-          browser = 'edge';
-        } else if (ua.indexOf("Trident") > -1) {
-          browser = 'ie';
-        }
-
-        return browser;
-      };
-
-      // Apply browser-specific fixes
-      document.addEventListener('DOMContentLoaded', function() {
-        const browser = window.getBrowserInfo();
-        console.log('Browser detected:', browser);
-
-        switch (browser) {
-          case 'ie':
-          case 'edge':
-            if (!window.console) window.console = {
-              log: function() {},
-              error: function() {}
-            };
-            break;
-          case 'safari':
-            const dateInputs = document.querySelectorAll('input[type="date"]');
-            dateInputs.forEach(input => {
-              input.addEventListener('focus', function() {
-                this.type = 'text';
-                this.type = 'date';
-              });
-            });
-            break;
-        }
-      });
-
-      // Fix for Date input in all browsers
-      document.addEventListener('DOMContentLoaded', function() {
-        const dateInputs = document.querySelectorAll('input[type="date"]');
-        dateInputs.forEach(input => {
-          if (input.value) {
-            const date = window.safeParseDate(input.value);
-            if (date) {
-              const yyyy = date.getFullYear();
-              const mm = String(date.getMonth() + 1).padStart(2, '0');
-              const dd = String(date.getDate()).padStart(2, '0');
-              input.value = `${yyyy}-${mm}-${dd}`;
-            }
-          }
-        });
-      });
-    })();
-
-    // ============================================================================
-    // MAIN PATIENT MANAGEMENT SCRIPT (COMPREHENSIVE FIX)
-    // ============================================================================
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const patientId = urlParams.get('id');
-      const userId = urlParams.get('uid');
       const wasUpdated = urlParams.get('updated');
 
-      console.log('URL Parameters:', {
-        patientId,
-        userId,
-        wasUpdated
-      });
-
-      // DOM Elements
       const notice = document.getElementById('notice');
       const editBtn = document.getElementById('editBtn');
       const modal = document.getElementById('editPatientModal');
       const form = document.getElementById('editPatientForm');
 
-      // Form fields
       const dobField = document.getElementById('editDob');
       const ageInput = document.getElementById('age');
       const sexInput = document.getElementById('editSex');
@@ -1486,74 +1307,114 @@ if ($loggedUser['type'] === 'Dentist') {
 
       let currentPatient = null;
 
-      // ============================================================================
-      // NOTIFICATION SYSTEM
-      // ============================================================================
       function showNotice(msg, color = 'blue') {
-        console.log('Notice:', msg, color);
-
-        let targetNotice = document.getElementById("notice");
-        if (!targetNotice) {
-          const newNotice = document.createElement('div');
-          newNotice.id = 'notice';
-          newNotice.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 6px;
-            color: white;
-            z-index: 9999;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-family: sans-serif;
-            font-size: 14px;
-            max-width: 300px;
-            word-wrap: break-word;
-            display: none;
-            background: ${color};
-          `;
-          document.body.appendChild(newNotice);
-          targetNotice = newNotice;
-        }
-
-        targetNotice.textContent = msg;
-        targetNotice.style.background = color;
-        targetNotice.style.display = 'block';
-        targetNotice.style.opacity = '1';
-
-        // Clear any existing timeout
-        if (targetNotice.timeoutId) {
-          clearTimeout(targetNotice.timeoutId);
-        }
-
-        targetNotice.timeoutId = setTimeout(() => {
-          targetNotice.style.opacity = '0';
-          setTimeout(() => {
-            targetNotice.style.display = 'none';
-          }, 300);
-        }, 3000);
+        if (!notice) return;
+        notice.textContent = msg;
+        notice.style.background = color;
+        notice.style.display = 'block';
+        notice.style.opacity = '1';
+        notice.style.transition = '';
+        setTimeout(() => {
+          notice.style.transition = 'opacity 0.6s';
+          notice.style.opacity = '0';
+          setTimeout(() => notice.style.display = 'none', 800);
+        }, 4000);
       }
 
-      // ============================================================================
-      // PATIENT DATA FUNCTIONS
-      // ============================================================================
+      async function loadPatient() {
+        if (!patientId) return;
+        try {
+          const res = await fetch(`../php/register_patient/get_patient.php?id=${encodeURIComponent(patientId)}`);
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error || 'Failed to fetch patient data.');
+          currentPatient = data.patient;
+
+          if (editBtn) editBtn.onclick = () => openModal(currentPatient);
+          if (wasUpdated === '1') showNotice('Patient updated successfully', 'blue');
+
+          updateDisplay(currentPatient);
+        } catch (err) {
+          console.error('Error loading patient:', err);
+          alert('Error loading patient details. Please try again.');
+        }
+      }
+
+      function updateDisplay(patient) {
+        const name = `${patient.surname}, ${patient.firstname} ${patient.middlename || ''}`.trim();
+        const ageText = patient.display_age || `${patient.age} years old`;
+
+        const fields = {
+          patientName: `${name}.`,
+          patientName2: `${name}.`,
+          patientDob: patient.date_of_birth || '',
+          patientSex: patient.sex || '',
+          patientAge: ageText,
+          patientBirthPlace: patient.place_of_birth || '',
+          patientOccupation: patient.occupation || '',
+          patientAddress: patient.address || '',
+          patientGuardian: patient.guardian || ''
+        };
+
+        for (const [id, value] of Object.entries(fields)) {
+          const el = document.getElementById(id);
+          if (el) el.textContent = value;
+        }
+      }
+
+      // --- Robust function to set Sex field ---
+      function setSexField(value) {
+        if (!sexInput) return;
+        const validValues = ['Male', 'Female'];
+        value = (value || '').trim();
+        value = value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+        sexInput.value = validValues.includes(value) ? value : '';
+      }
+
+      function openModal(patient) {
+        if (!patient || !form) return;
+
+        form.editPatientId.value = patient.patient_id ?? '';
+        form.editFirstname.value = patient.firstname ?? '';
+        form.editSurname.value = patient.surname ?? '';
+        form.editMiddlename.value = patient.middlename ?? '';
+        form.editDob.value = patient.date_of_birth ?? '';
+        form.editPob.value = patient.place_of_birth ?? '';
+        form.editOccupation.value = patient.occupation ?? '';
+        form.editAddress.value = patient.address ?? '';
+        form.editGuardian.value = patient.guardian ?? '';
+        ageInput.value = patient.age ?? '';
+
+        setSexField(patient.sex); // <-- ensures select matches stored DB value
+
+        handleMonthVisibility(parseInt(patient.age) || 0, parseInt(patient.agemonth) || 0);
+        togglePregnantSection();
+
+        if (patient.pregnant) {
+          pregnantRadios.forEach(r => r.checked = r.value.toLowerCase() === patient.pregnant.toLowerCase());
+        } else {
+          pregnantRadios.forEach(r => r.checked = r.value.toLowerCase() === 'no');
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      window.closeModal = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      };
+
       function handleMonthVisibility(years, months = 0) {
-        if (monthContainer && monthInput) {
-          if (years < 5) {
-            monthContainer.style.display = 'block';
-            monthContainer.classList.remove('hidden');
-            monthInput.value = years * 12 + months;
-          } else {
-            monthContainer.style.display = 'none';
-            monthContainer.classList.add('hidden');
-            monthInput.value = '';
-          }
+        if (years < 5) {
+          monthContainer.style.display = 'block';
+          monthInput.value = years * 12 + months;
+        } else {
+          monthContainer.style.display = 'none';
+          monthInput.value = '';
         }
       }
 
       function togglePregnantSection() {
-        if (!sexInput || !ageInput || !pregnantSection || !formContainer) return;
-
         const age = parseInt(ageInput.value, 10) || 0;
         const sex = sexInput.value;
         const showPregnant = sex === 'Female' && age >= 10 && age <= 49;
@@ -1569,577 +1430,59 @@ if ($loggedUser['type'] === 'Dentist') {
         });
       }
 
-      // ============================================================================
-      // LOAD PATIENT INFO - SINGLE RELIABLE ENDPOINT
-      // ============================================================================
-      async function loadPatient() {
-        try {
-          if (!patientId) {
-            showNotice("No patient selected.", "crimson");
-            return;
-          }
+      function updateFromDOB() {
+        const dob = new Date(dobField.value);
+        const today = new Date();
+        if (!dobField.value || isNaN(dob.getTime()) || dob > today) return;
 
-          console.log("Loading patient with ID:", patientId);
-
-          // SINGLE RELIABLE ENDPOINT - Use get_patient.php which you have
-          const endpoint = `/dentalemr_system/php/register_patient/get_patient.php?id=${patientId}`;
-          console.log("Using endpoint:", endpoint);
-
-          const res = await fetch(endpoint, {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-              'Cache-Control': 'no-cache'
-            }
-          });
-
-          console.log("Response status:", res.status, res.statusText);
-
-          if (!res.ok) {
-            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-          }
-
-          const responseText = await res.text();
-          console.log("Raw response:", responseText);
-
-          let result;
-          try {
-            result = JSON.parse(responseText);
-          } catch (jsonError) {
-            console.error('Invalid JSON response:', responseText.substring(0, 200));
-            throw new Error('Server returned invalid JSON');
-          }
-
-          if (!result.success || !result.patient) {
-            console.error('API returned error:', result.error || 'No patient data');
-            throw new Error(result.error || 'Patient not found');
-          }
-
-          const p = result.patient;
-          console.log("Patient data loaded:", p);
-          currentPatient = p;
-
-          if (editBtn) {
-            editBtn.onclick = () => openModal(currentPatient);
-            editBtn.disabled = false;
-          }
-
-          if (wasUpdated === '1') {
-            showNotice('Patient updated successfully', 'blue');
-          }
-
-          // Update display
-          updateDisplay(p);
-
-        } catch (err) {
-          console.error('Error loading patient:', err);
-
-          let errorMessage = "Failed to load patient info";
-          if (err.message.includes('NetworkError') || err.message.includes('Failed to fetch')) {
-            errorMessage = "Cannot connect to server. Please check your connection.";
-          } else if (err.message.includes('Patient not found')) {
-            errorMessage = "Patient not found. Please check the patient ID.";
-          }
-
-          showNotice(errorMessage, "crimson");
-
-          // Update display with error state
-          const fields = [
-            "patientName", "patientName2", "patientSex", "patientAge",
-            "patientDob", "patientOccupation", "patientBirthPlace",
-            "patientAddress", "patientGuardian"
-          ];
-
-          fields.forEach(fieldId => {
-            const element = document.getElementById(fieldId);
-            if (element) {
-              element.textContent = "Error loading";
-              element.style.color = "#dc2626";
-            }
-          });
-
-          // Disable edit button if no patient loaded
-          if (editBtn) {
-            editBtn.disabled = true;
-          }
+        let years = today.getFullYear() - dob.getFullYear();
+        let months = today.getMonth() - dob.getMonth();
+        if (today.getDate() < dob.getDate()) months--;
+        if (months < 0) {
+          years--;
+          months += 12;
         }
+
+        ageInput.value = Math.max(0, years);
+        handleMonthVisibility(Math.max(0, years), Math.max(0, months));
+        togglePregnantSection();
       }
 
-      function updateDisplay(patient) {
-        if (!patient) return;
-
-        console.log("Updating display with:", patient);
-
-        // Format name
-        let name = '';
-        if (patient.surname && patient.firstname) {
-          name = `${patient.surname}, ${patient.firstname} ${patient.middlename || ''}`.trim();
-        } else if (patient.firstname) {
-          name = patient.firstname;
-        } else {
-          name = 'Unknown Patient';
-        }
-
-        // Format age
-        let ageText = 'N/A';
-        if (patient.display_age) {
-          ageText = patient.display_age;
-        } else if (patient.age !== undefined && patient.age !== null) {
-          if (parseInt(patient.age) === 0 && patient.agemonth) {
-            ageText = `${patient.agemonth} months old`;
-          } else {
-            ageText = `${patient.age} years old`;
-          }
-        }
-
-        // Update all fields
-        const fields = {
-          patientName: `${name}.`,
-          patientName2: `${name}.`,
-          patientDob: patient.date_of_birth || 'N/A',
-          patientSex: patient.sex || 'N/A',
-          patientAge: ageText,
-          patientBirthPlace: patient.place_of_birth || 'N/A',
-          patientOccupation: patient.occupation || 'N/A',
-          patientAddress: patient.address || 'N/A',
-          patientGuardian: patient.guardian || 'N/A'
-        };
-
-        for (const [id, value] of Object.entries(fields)) {
-          const el = document.getElementById(id);
-          if (el) {
-            el.textContent = value;
-            // Remove error styling if it was there
-            el.style.color = '';
-            el.style.fontStyle = '';
-          }
-        }
-
-        console.log("Display updated successfully");
-      }
-
-      // ============================================================================
-      // MODAL FUNCTIONS
-      // ============================================================================
-      function openModal(patient) {
-        if (!patient || !form) {
-          showNotice("Cannot open edit form. Patient data missing.", "crimson");
-          return;
-        }
-
-        try {
-          console.log("Opening modal for patient:", patient);
-
-          // Fill form with patient data
-          const patientIdInput = form.querySelector('input[name="patient_id"]') || document.getElementById('editPatientId');
-          if (patientIdInput) {
-            patientIdInput.value = patient.patient_id || patientId || '';
-            console.log("Patient ID set to:", patientIdInput.value);
-          }
-
-          // Set form field values
-          const setFieldValue = (name, value) => {
-            const field = form.querySelector(`[name="${name}"]`);
-            if (field) {
-              field.value = value || '';
-              console.log(`Set ${name} to:`, value);
-            }
-          };
-
-          setFieldValue("firstname", patient.firstname);
-          setFieldValue("surname", patient.surname);
-          setFieldValue("middlename", patient.middlename);
-          setFieldValue("place_of_birth", patient.place_of_birth);
-          setFieldValue("occupation", patient.occupation);
-          setFieldValue("address", patient.address);
-          setFieldValue("guardian", patient.guardian);
-
-          // Set date of birth
-          if (dobField && patient.date_of_birth) {
-            // Format date for input[type="date"]
-            const dob = new Date(patient.date_of_birth);
-            if (!isNaN(dob.getTime())) {
-              const year = dob.getFullYear();
-              const month = String(dob.getMonth() + 1).padStart(2, '0');
-              const day = String(dob.getDate()).padStart(2, '0');
-              dobField.value = `${year}-${month}-${day}`;
-              console.log("DOB set to:", dobField.value);
-            }
-          }
-
-          // Set age
-          if (ageInput) {
-            ageInput.value = patient.age || '';
-            console.log("Age set to:", ageInput.value);
-          }
-
-          // Set sex
-          if (sexInput) {
-            const sexValue = patient.sex || '';
-            if (sexValue === 'Male' || sexValue === 'Female') {
-              sexInput.value = sexValue;
-              console.log("Sex set to:", sexInput.value);
-            } else {
-              sexInput.value = '';
-            }
-          }
-
-          // Handle month visibility
-          const years = parseInt(patient.age) || 0;
-          const months = parseInt(patient.agemonth) || 0;
-          handleMonthVisibility(years, months);
-          console.log("Month visibility handled. Years:", years, "Months:", months);
-
-          // Update pregnant section
-          togglePregnantSection();
-          console.log("Pregnant section toggled");
-
-          // Set pregnant status
-          if (patient.pregnant) {
-            pregnantRadios.forEach(r => {
-              if (r.value.toLowerCase() === patient.pregnant.toLowerCase()) {
-                r.checked = true;
-                console.log("Pregnant set to:", r.value);
-              }
-            });
-          } else {
-            pregnantRadios.forEach(r => {
-              if (r.value.toLowerCase() === 'no') {
-                r.checked = true;
-                console.log("Pregnant defaulted to: no");
-              }
-            });
-          }
-
-          // Show modal
-          modal.classList.remove('hidden');
-          modal.classList.add('flex');
-          console.log("Modal opened successfully");
-
-        } catch (error) {
-          console.error("Error opening modal:", error);
-          showNotice("Error opening edit form. Please try again.", "crimson");
-        }
-      }
-
-      window.closeModal = () => {
-        if (modal) {
-          modal.classList.add('hidden');
-          modal.classList.remove('flex');
-          console.log("Modal closed");
-        }
-      };
-
-      // ============================================================================
-      // FORM SUBMISSION HANDLER - FIXED VERSION
-      // ============================================================================
-      if (form) {
-        form.addEventListener('submit', async e => {
+      // --- Ensure sex always submits a valid value ---
+      form.addEventListener('submit', e => {
+        if (!sexInput.value) {
+          alert('Please select Male or Female.');
           e.preventDefault();
-
-          const submitBtn = e.target.querySelector('[type="submit"]');
-          const originalText = submitBtn.textContent;
-          submitBtn.textContent = "Saving...";
-          submitBtn.disabled = true;
-
-          console.log("Form submission started");
-
-          try {
-            // Get form data
-            const formData = new FormData(e.target);
-            const data = {};
-            formData.forEach((value, key) => {
-              // Skip empty values except for specific fields
-              if (value !== '' || key === 'age' || key === 'patient_id') {
-                data[key] = value;
-              }
-            });
-
-            console.log("Form data to be sent:", data);
-
-            // Get patient ID - check multiple sources
-            let pid = data['patient_id'] || patientId;
-
-            // Check for editPatientId field (from hidden input)
-            const editPatientIdField = document.getElementById('editPatientId');
-            if (!pid && editPatientIdField && editPatientIdField.value) {
-              pid = editPatientIdField.value;
-              data['patient_id'] = pid; // Ensure it's in the data
-            }
-
-            if (!pid) {
-              showNotice("No patient ID specified", "crimson");
-              submitBtn.textContent = originalText;
-              submitBtn.disabled = false;
-              return;
-            }
-
-            // Ensure patient_id is in the data
-            data['patient_id'] = pid;
-
-            // Add update_patient flag
-            data['update_patient'] = '1';
-
-            // Prepare URL with UID
-            const uidParam = userId ? `?uid=${userId}` : '';
-            const url = `/dentalemr_system/php/register_patient/update_patient.php${uidParam}`;
-
-            console.log("Submitting to:", url);
-            console.log("Data being sent:", JSON.stringify(data));
-
-            // Convert data to URLSearchParams
-            const params = new URLSearchParams();
-            for (const key in data) {
-              if (data[key] !== undefined && data[key] !== null) {
-                params.append(key, data[key]);
-              }
-            }
-
-            // Send the request with explicit JSON header
-            const result = await fetch(url, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json' // Explicitly ask for JSON
-              },
-              body: params
-            });
-
-            console.log("Response status:", result.status, result.statusText);
-            console.log("Response headers:", Object.fromEntries(result.headers.entries()));
-
-            // Get response text first
-            const responseText = await result.text();
-            console.log("Raw response (first 1000 chars):", responseText.substring(0, 1000));
-
-            // Try to parse as JSON
-            let jsonResult;
-            try {
-              jsonResult = JSON.parse(responseText);
-              console.log("Parsed JSON response:", jsonResult);
-            } catch (parseError) {
-              console.error("Failed to parse response as JSON:", parseError);
-
-              // Check if it's an HTML error page
-              if (responseText.includes('<html') || responseText.includes('<!DOCTYPE')) {
-                // Extract error message from HTML if possible
-                let errorMsg = "Server returned HTML instead of JSON. Check PHP errors.";
-
-                // Try to extract PHP error
-                const errorMatch = responseText.match(/<b>([^<]+)<\/b>/);
-                if (errorMatch) {
-                  errorMsg += " PHP Error: " + errorMatch[1];
-                }
-
-                showNotice(errorMsg, "crimson");
-              } else if (responseText.includes('success') || responseText.includes('Patient updated')) {
-                // It's not JSON but contains success text
-                showNotice("Patient updated successfully!", "green");
-                window.closeModal();
-                setTimeout(() => loadPatient(), 500);
-
-                // Update URL
-                const newUrl = new URL(window.location);
-                newUrl.searchParams.set('updated', '1');
-                window.history.replaceState({}, '', newUrl);
-              } else if (responseText.includes('Location:') || responseText.includes('window.location')) {
-                // It's a redirect
-                showNotice("Patient updated! Redirecting...", "blue");
-                setTimeout(() => {
-                  window.location.href = `/dentalemr_system/html/viewrecord.php?uid=${userId}&id=${pid}&updated=1`;
-                }, 1000);
-              } else {
-                // Unknown response
-                showNotice("Server returned unexpected response format", "orange");
-                console.error("Full response:", responseText);
-              }
-
-              submitBtn.textContent = originalText;
-              submitBtn.disabled = false;
-              return;
-            }
-
-            // Handle JSON response
-            if (jsonResult.success) {
-              showNotice(jsonResult.message || "Patient updated successfully!", "blue");
-
-              // Close modal
-              window.closeModal();
-
-              // Reload patient data
-              setTimeout(() => {
-                loadPatient();
-
-                // Also reload other sections if they exist
-                if (window.reloadPatientAdditionalInfo) {
-                  window.reloadPatientAdditionalInfo();
-                }
-              }, 500);
-
-              // Update URL to show success
-              const newUrl = new URL(window.location);
-              newUrl.searchParams.set('updated', '1');
-              window.history.replaceState({}, '', newUrl);
-
-              // If there's a redirect URL, follow it
-              if (jsonResult.redirect) {
-                setTimeout(() => {
-                  window.location.href = jsonResult.redirect;
-                }, 1500);
-              }
-            } else {
-              showNotice("Error: " + (jsonResult.error || jsonResult.message || "Update failed"), "crimson");
-            }
-
-          } catch (error) {
-            console.error('Save error:', error);
-            showNotice("Network error: " + error.message, "crimson");
-          } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-          }
-        });
-      }
-
-      // ============================================================================
-      // EVENT LISTENERS
-      // ============================================================================
-
-      // Age and DOB event listeners
-      if (dobField) {
-        dobField.addEventListener('change', function() {
-          console.log("DOB changed to:", this.value);
-          // We'll handle age calculation differently
-        });
-      }
-
-      if (ageInput) {
-        ageInput.addEventListener('input', () => {
-          console.log("Age changed to:", ageInput.value);
-          togglePregnantSection();
-          const years = parseInt(ageInput.value) || 0;
-          handleMonthVisibility(years);
-        });
-      }
-
-      if (sexInput) {
-        sexInput.addEventListener('change', function() {
-          console.log("Sex changed to:", this.value);
-          togglePregnantSection();
-        });
-      }
-
-      // Edit button event listener
-      if (editBtn) {
-        editBtn.addEventListener('click', function() {
-          console.log("Edit button clicked, currentPatient:", currentPatient);
-          if (currentPatient) {
-            openModal(currentPatient);
-          } else {
-            showNotice("Patient data not loaded yet. Please wait or refresh.", "orange");
-          }
-        });
-      }
-
-      // Ensure sex always submits a valid value
-      if (form) {
-        form.addEventListener('submit', e => {
-          if (sexInput && !sexInput.value) {
-            showNotice('Please select Male or Female.', "crimson");
-            e.preventDefault();
-          }
-        });
-      }
-
-      // ============================================================================
-      // INITIALIZATION
-      // ============================================================================
-
-      // Load patient data
-      if (patientId) {
-        console.log("Page initialized with patient ID:", patientId);
-
-        // Show loading state
-        const fields = [
-          "patientName", "patientName2", "patientSex", "patientAge",
-          "patientDob", "patientOccupation", "patientBirthPlace",
-          "patientAddress", "patientGuardian"
-        ];
-
-        fields.forEach(fieldId => {
-          const element = document.getElementById(fieldId);
-          if (element) {
-            element.textContent = "Loading...";
-            element.style.color = "";
-            element.style.fontStyle = "italic";
-          }
-        });
-
-        // Disable edit button while loading
-        if (editBtn) {
-          editBtn.disabled = true;
-        }
-
-        // Load patient after a short delay to ensure DOM is ready
-        setTimeout(() => {
-          loadPatient();
-        }, 100);
-
-      } else {
-        console.error("No patient ID found in URL");
-        showNotice("No patient selected. Please go back and select a patient.", "crimson");
-
-        // Update all fields to show error
-        const fields = [
-          "patientName", "patientName2", "patientSex", "patientAge",
-          "patientDob", "patientOccupation", "patientBirthPlace",
-          "patientAddress", "patientGuardian"
-        ];
-
-        fields.forEach(fieldId => {
-          const element = document.getElementById(fieldId);
-          if (element) {
-            element.textContent = "No patient selected";
-            element.style.color = "#dc2626";
-          }
-        });
-
-        // Disable edit button
-        if (editBtn) {
-          editBtn.disabled = true;
-        }
-      }
-
-      // Add offline detection
-      window.addEventListener('online', () => {
-        console.log("Browser is online");
-        if (patientId && !currentPatient) {
-          showNotice("Reconnecting...", "blue");
-          // Try to reload if we're online and haven't loaded patient
-          setTimeout(() => loadPatient(), 1000);
         }
       });
 
-      window.addEventListener('offline', () => {
-        console.log("Browser is offline");
-        showNotice("You are offline. Patient data cannot be loaded.", "orange");
+      dobField?.addEventListener('change', updateFromDOB);
+      ageInput?.addEventListener('input', () => {
+        togglePregnantSection();
+        handleMonthVisibility(parseInt(ageInput.value) || 0);
       });
+      sexInput?.addEventListener('change', togglePregnantSection);
 
-      // Log when DOM is fully loaded
-      console.log("Patient management script initialized");
+      loadPatient();
     });
   </script>
 
-
-  <!-- MEMBERSHIP, MEDICAL & DIETARY SCRIPT (FIXED VERSION) -->
+  <!-- membership, medical and dietary  -->
   <script>
-    // Global functions for membership, medical, and dietary sections
-    let patientDataLoaded = false;
+    /* -----------------------------------------------------------
+   Inject logged-in UID from PHP (required for history logging)
+------------------------------------------------------------*/
+    const loggedInUid = <?= json_encode($_GET['uid'] ?? 0) ?>;
 
     /* -----------------------------------------------------------
-       Helper functions for membership/medical/dietary
+       Wrapper: ALWAYS attach ?uid= to any fetch request
     ------------------------------------------------------------*/
+    function apiFetch(url, options = {}) {
+      const connector = url.includes("?") ? "&" : "?";
+      const finalUrl = `${url}${connector}uid=${loggedInUid}`;
+      return fetch(finalUrl, options);
+    }
+
     function toggleInput(checkbox, inputId) {
       const input = document.getElementById(inputId);
       if (!input) return;
@@ -2172,825 +1515,378 @@ if ($loggedUser['type'] === 'Dentist') {
       }
     }
 
-    function showModal(id) {
-      const modal = document.getElementById(id);
-      if (modal) {
-        modal.classList.remove("hidden");
-        modal.classList.add("flex");
+    function setPatientIdOnForms() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pid = urlParams.get('id');
+      if (!pid) return;
+      document.querySelectorAll("input[name=patient_id]").forEach(i => i.value = pid);
 
-        // Ensure patient ID is set in the form when modal opens
-        const urlParams = new URLSearchParams(window.location.search);
-        const patientId = urlParams.get('id');
-        if (patientId) {
-          const form = modal.querySelector('form');
-          if (form) {
-            const patientIdInput = form.querySelector('input[name="patient_id"]');
-            if (patientIdInput) {
-              patientIdInput.value = patientId;
-            } else {
-              // Create hidden input if it doesn't exist
-              const hiddenInput = document.createElement('input');
-              hiddenInput.type = 'hidden';
-              hiddenInput.name = 'patient_id';
-              hiddenInput.value = patientId;
-              form.appendChild(hiddenInput);
-            }
-          }
-        }
-      }
+      loadMemberships(pid);
+      loadMedicalHistory(pid);
+      loadDietaryHistory(pid);
+    }
+
+    function showModal(id) {
+      document.getElementById(id).classList.remove("hidden");
     }
 
     function hideModal(id) {
-      const modal = document.getElementById(id);
-      if (modal) {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-      }
+      document.getElementById(id).classList.add("hidden");
     }
 
-    /* -----------------------------------------------------------
-       Wrapper: ALWAYS attach ?uid= to any fetch request
-    ------------------------------------------------------------*/
-    function apiFetch(url, options = {}) {
-      const loggedInUid = <?= json_encode($_GET['uid'] ?? 0) ?>;
-      const connector = url.includes("?") ? "&" : "?";
-      const finalUrl = `${url}${connector}uid=${loggedInUid}`;
-      return fetch(finalUrl, options);
-    }
-
-    /* -----------------------------------------------------------
-       Unified showNotice function
-    ------------------------------------------------------------*/
+    /* ---------- Unified showNotice (matches vitals style) ---------- */
     function showNotice(message, success = true) {
       const notice = document.getElementById('notice');
-      if (!notice) {
-        // Create notice element if it doesn't exist
-        const newNotice = document.createElement('div');
-        newNotice.id = 'notice';
-        newNotice.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 6px;
-            color: white;
-            z-index: 9999;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            font-family: sans-serif;
-            font-size: 14px;
-            max-width: 300px;
-            word-wrap: break-word;
-            display: none;
-        `;
-        document.body.appendChild(newNotice);
-      }
+      if (!notice) return;
 
-      const targetNotice = document.getElementById("notice");
+      notice.textContent = message;
+      notice.style.background = success ? '#2563eb' : '#dc2626'; // blue for success, red for error
+      notice.style.color = 'white';
+      notice.style.display = 'block';
+      notice.style.opacity = '1';
+      notice.style.transition = 'opacity 0.6s';
 
-      if (targetNotice.timeoutId) {
-        clearTimeout(targetNotice.timeoutId);
-      }
-
-      targetNotice.textContent = message;
-      targetNotice.style.background = success ? '#2563eb' : '#dc2626';
-      targetNotice.style.display = "block";
-      targetNotice.style.opacity = "1";
-
-      targetNotice.timeoutId = setTimeout(() => {
-        targetNotice.style.opacity = "0";
+      // Fade out after 5 seconds
+      setTimeout(() => {
+        notice.style.opacity = '0';
         setTimeout(() => {
-          targetNotice.style.display = "none";
-        }, 300);
+          notice.style.display = 'none';
+        }, 1500);
       }, 3000);
     }
 
-    /* -----------------------------------------------------------
-       Get patient ID from URL - robust function
-    ------------------------------------------------------------*/
-    function getPatientId() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const patientId = urlParams.get('id');
-
-      // Also try to get from hidden input in edit form
-      if (!patientId || patientId === 'null' || patientId === 'undefined') {
-        const editFormPatientId = document.querySelector('#editPatientForm input[name="editPatientId"]')?.value;
-        if (editFormPatientId) return editFormPatientId;
-
-        const hiddenPatientId = document.querySelector('input[name="patient_id"]')?.value;
-        if (hiddenPatientId) return hiddenPatientId;
-      }
-
-      return patientId;
-    }
-
-    /* -----------------------------------------------------------
-       Load membership data
-    ------------------------------------------------------------*/
+    /* ---------- Load membership ---------- */
     async function loadMemberships(patientId) {
       try {
-        if (!patientId || patientId === '0' || patientId === 'null') {
-          console.warn("No valid patient ID for membership:", patientId);
-          return;
-        }
-
-        console.log("Loading memberships for patient ID:", patientId);
-        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}&_t=${Date.now()}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_membership&patient_id=${patientId}`);
         const json = await res.json();
         const membershipList = document.getElementById("membershipList");
-
-        if (!membershipList) {
-          console.error("membershipList element not found");
-          return;
-        }
-
         membershipList.innerHTML = "";
 
-        // Reset form
-        const membershipForm = document.getElementById("membershipForm");
-        if (membershipForm) {
-          // Set patient ID in form
-          const patientIdInput = membershipForm.querySelector('input[name="patient_id"]');
-          if (!patientIdInput) {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'patient_id';
-            hiddenInput.value = patientId;
-            membershipForm.appendChild(hiddenInput);
-          } else {
-            patientIdInput.value = patientId;
-          }
-
-          membershipForm.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-          membershipForm.querySelectorAll("input[type=text]").forEach(inp => {
-            inp.value = "";
-            inp.disabled = true;
-          });
-        }
+        document.querySelectorAll("#membershipForm input[type=checkbox]").forEach(cb => cb.checked = false);
+        document.querySelectorAll("#membershipForm input[type=text]").forEach(inp => {
+          inp.value = "";
+          inp.disabled = true;
+        });
 
         if (json.success && json.values) {
           const v = json.values;
+          document.querySelectorAll("#membershipForm input[type=checkbox]").forEach(cb => {
+            const name = cb.name;
+            const flag = v[name] ?? v[cb.getAttribute('data-field')] ?? 0;
+            cb.checked = (flag == 1 || flag === "1");
+          });
 
-          // Update checkboxes
-          if (membershipForm) {
-            document.querySelectorAll("#membershipForm input[type=checkbox]").forEach(cb => {
-              const name = cb.name;
-              const flag = v[name] ?? v[cb.getAttribute('data-field')] ?? 0;
-              cb.checked = (flag == 1 || flag === "1");
-
-              // Enable/disable corresponding inputs
-              if (cb.id === "philhealth_flag" && cb.checked) {
-                const el = document.getElementById("philhealth_number");
-                if (el) {
-                  el.disabled = false;
-                  el.value = v.philhealth_number || "";
-                }
-              }
-              if (cb.id === "sss_flag" && cb.checked) {
-                const el = document.getElementById("sss_number");
-                if (el) {
-                  el.disabled = false;
-                  el.value = v.sss_number || "";
-                }
-              }
-              if (cb.id === "gsis_flag" && cb.checked) {
-                const el = document.getElementById("gsis_number");
-                if (el) {
-                  el.disabled = false;
-                  el.value = v.gsis_number || "";
-                }
-              }
-            });
+          if (v.philhealth_flag == 1) {
+            const el = document.getElementById("philhealth_number");
+            if (el) {
+              el.disabled = false;
+              el.value = v.philhealth_number || "";
+            }
+          }
+          if (v.sss_flag == 1) {
+            const el = document.getElementById("sss_number");
+            if (el) {
+              el.disabled = false;
+              el.value = v.sss_number || "";
+            }
+          }
+          if (v.gsis_flag == 1) {
+            const el = document.getElementById("gsis_number");
+            if (el) {
+              el.disabled = false;
+              el.value = v.gsis_number || "";
+            }
           }
 
-          // Update list display
           (json.memberships || []).forEach(m => {
             const li = document.createElement("li");
-            li.className = "text-sm text-gray-700 dark:text-gray-300 mb-1";
-            li.textContent = "• " + m.label;
+            li.textContent = m.label;
             membershipList.appendChild(li);
           });
-
-          // If no memberships, show message
-          if (json.memberships.length === 0) {
-            const li = document.createElement("li");
-            li.className = "text-sm text-gray-500 italic";
-            li.textContent = "No membership information recorded";
-            membershipList.appendChild(li);
-          }
-
-          console.log("Memberships loaded:", json.memberships.length);
-        } else {
-          const li = document.createElement("li");
-          li.className = "text-sm text-gray-500 italic";
-          li.textContent = "No membership information recorded";
-          membershipList.appendChild(li);
         }
       } catch (err) {
-        console.error("loadMemberships error:", err);
-        const membershipList = document.getElementById("membershipList");
-        if (membershipList) {
-          membershipList.innerHTML = '<li class="text-sm text-red-500">Failed to load memberships</li>';
-        }
+        console.error("loadMemberships", err);
       }
     }
 
-    /* -----------------------------------------------------------
-       Load medical history
-    ------------------------------------------------------------*/
+    /* ---------- Load medical ---------- */
     async function loadMedicalHistory(patientId) {
       try {
-        if (!patientId || patientId === '0' || patientId === 'null') {
-          console.warn("No valid patient ID for medical history:", patientId);
-          return;
-        }
-
-        console.log("Loading medical history for patient ID:", patientId);
-        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}&_t=${Date.now()}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_medical&patient_id=${patientId}`);
         const json = await res.json();
         const medicalList = document.getElementById("medicalHistoryList");
-
-        if (!medicalList) {
-          console.error("medicalHistoryList element not found");
-          return;
-        }
-
         medicalList.innerHTML = "";
 
-        // Reset form
-        const medicalForm = document.getElementById("medicalForm");
-        if (medicalForm) {
-          // Set patient ID in form
-          const patientIdInput = medicalForm.querySelector('input[name="patient_id"]');
-          if (!patientIdInput) {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'patient_id';
-            hiddenInput.value = patientId;
-            medicalForm.appendChild(hiddenInput);
-          } else {
-            patientIdInput.value = patientId;
-          }
-
-          medicalForm.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-          medicalForm.querySelectorAll("input[type=text], input[type=date], textarea").forEach(inp => {
+        document.querySelectorAll("#medicalForm input[type=checkbox]").forEach(cb => cb.checked = false);
+        document.querySelectorAll("#medicalForm input[type=text], #medicalForm input[type=date], #medicalForm textarea")
+          .forEach(inp => {
             inp.value = "";
             inp.disabled = true;
           });
-        }
 
-        if (json.success && json.values) {
-          const v = json.values;
+        if (json.success) {
+          const v = json.values || {};
+          document.querySelectorAll("#medicalForm input[type=checkbox]").forEach(cb => {
+            const val = v[cb.name] ?? 0;
+            cb.checked = (val == 1 || val === "1");
+          });
 
-          // Update checkboxes and enable corresponding inputs
-          if (medicalForm) {
-            medicalForm.querySelectorAll("input[type=checkbox]").forEach(cb => {
-              const val = v[cb.name] ?? 0;
-              cb.checked = (val == 1 || val === "1");
-
-              // Enable corresponding inputs if checked
-              if (cb.checked) {
-                switch (cb.name) {
-                  case 'allergies_flag':
-                    const allergiesDetails = document.getElementById("allergies_details");
-                    if (allergiesDetails) {
-                      allergiesDetails.disabled = false;
-                      allergiesDetails.value = v.allergies_details || "";
-                    }
-                    break;
-                  case 'hepatitis_flag':
-                    const hepatitisDetails = document.getElementById("hepatitis_details");
-                    if (hepatitisDetails) {
-                      hepatitisDetails.disabled = false;
-                      hepatitisDetails.value = v.hepatitis_details || "";
-                    }
-                    break;
-                  case 'malignancy_flag':
-                    const malignancyDetails = document.getElementById("malignancy_details");
-                    if (malignancyDetails) {
-                      malignancyDetails.disabled = false;
-                      malignancyDetails.value = v.malignancy_details || "";
-                    }
-                    break;
-                  case 'prev_hospitalization_flag':
-                    const d = document.getElementById("last_admission_date");
-                    const c = document.getElementById("admission_cause");
-                    const s = document.getElementById("surgery_details");
-                    if (d) {
-                      d.disabled = false;
-                      d.value = v.last_admission_date || "";
-                    }
-                    if (c) {
-                      c.disabled = false;
-                      c.value = v.admission_cause || "";
-                    }
-                    if (s) {
-                      s.disabled = false;
-                      s.value = v.surgery_details || "";
-                    }
-                    break;
-                  case 'blood_transfusion_flag':
-                    const bloodTransfusion = document.getElementById("blood_transfusion_date");
-                    if (bloodTransfusion) {
-                      bloodTransfusion.disabled = false;
-                      bloodTransfusion.value = v.blood_transfusion || "";
-                    }
-                    break;
-                  case 'other_conditions_flag':
-                    const otherConditions = document.getElementById("other_conditions");
-                    if (otherConditions) {
-                      otherConditions.disabled = false;
-                      otherConditions.value = v.other_conditions || "";
-                    }
-                    break;
-                }
-              }
-            });
+          if (v.allergies_flag == 1) {
+            const el = document.getElementById("allergies_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.allergies_details || "";
+            }
+          }
+          if (v.hepatitis_flag == 1) {
+            const el = document.getElementById("hepatitis_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.hepatitis_details || "";
+            }
+          }
+          if (v.malignancy_flag == 1) {
+            const el = document.getElementById("malignancy_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.malignancy_details || "";
+            }
+          }
+          if (v.prev_hospitalization_flag == 1) {
+            const d = document.getElementById("last_admission_date");
+            const c = document.getElementById("admission_cause");
+            const s = document.getElementById("surgery_details");
+            if (d) {
+              d.disabled = false;
+              d.value = v.last_admission_date || "";
+            }
+            if (c) {
+              c.disabled = false;
+              c.value = v.admission_cause || "";
+            }
+            if (s) {
+              s.disabled = false;
+              s.value = v.surgery_details || "";
+            }
+          }
+          if (v.blood_transfusion_flag == 1) {
+            const b = document.getElementById("blood_transfusion_date");
+            if (b) {
+              b.disabled = false;
+              b.value = v.blood_transfusion || "";
+            }
+          }
+          if (v.other_conditions_flag == 1) {
+            const o = document.getElementById("other_conditions");
+            if (o) {
+              o.disabled = false;
+              o.value = v.other_conditions || "";
+            }
           }
 
-          // Update list display
           (json.medical || []).forEach(m => {
             const li = document.createElement("li");
-            li.className = "text-sm text-gray-700 dark:text-gray-300 mb-1";
-            li.textContent = "• " + m.label;
+            li.textContent = m.label;
             medicalList.appendChild(li);
           });
-
-          // If no medical history, show message
-          if (json.medical.length === 0) {
-            const li = document.createElement("li");
-            li.className = "text-sm text-gray-500 italic";
-            li.textContent = "No medical history recorded";
-            medicalList.appendChild(li);
-          }
-
-          console.log("Medical history loaded:", json.medical.length);
-        } else {
-          const li = document.createElement("li");
-          li.className = "text-sm text-gray-500 italic";
-          li.textContent = "No medical history recorded";
-          medicalList.appendChild(li);
         }
       } catch (err) {
-        console.error("loadMedicalHistory error:", err);
-        const medicalList = document.getElementById("medicalHistoryList");
-        if (medicalList) {
-          medicalList.innerHTML = '<li class="text-sm text-red-500">Failed to load medical history</li>';
-        }
+        console.error("loadMedicalHistory", err);
       }
     }
 
-    /* -----------------------------------------------------------
-       Load dietary history
-    ------------------------------------------------------------*/
+    /* ---------- Load dietary ---------- */
     async function loadDietaryHistory(patientId) {
       try {
-        if (!patientId || patientId === '0' || patientId === 'null') {
-          console.warn("No valid patient ID for dietary history:", patientId);
-          return;
-        }
-
-        console.log("Loading dietary history for patient ID:", patientId);
-        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}&_t=${Date.now()}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+        const res = await apiFetch(`../php/register_patient/patient_info.php?action=get_dietary&patient_id=${patientId}`);
         const json = await res.json();
         const dietaryList = document.getElementById("dietaryHistoryList");
-
-        if (!dietaryList) {
-          console.error("dietaryHistoryList element not found");
-          return;
-        }
-
         dietaryList.innerHTML = "";
 
-        // Reset form
-        const dietaryForm = document.getElementById("dietaryForm");
-        if (dietaryForm) {
-          // Set patient ID in form
-          const patientIdInput = dietaryForm.querySelector('input[name="patient_id"]');
-          if (!patientIdInput) {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'patient_id';
-            hiddenInput.value = patientId;
-            dietaryForm.appendChild(hiddenInput);
-          } else {
-            patientIdInput.value = patientId;
-          }
+        document.querySelectorAll("#dietaryForm input[type=checkbox]").forEach(cb => cb.checked = false);
+        document.querySelectorAll("#dietaryForm input[type=text]").forEach(inp => {
+          inp.value = "";
+          inp.disabled = true;
+        });
 
-          dietaryForm.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-          dietaryForm.querySelectorAll("input[type=text]").forEach(inp => {
-            inp.value = "";
-            inp.disabled = true;
+        if (json.success) {
+          const v = json.values || {};
+          document.querySelectorAll("#dietaryForm input[type=checkbox]").forEach(cb => {
+            const val = v[cb.name] ?? 0;
+            cb.checked = (val == 1 || val === "1");
           });
-        }
 
-        if (json.success && json.values) {
-          const v = json.values;
-
-          // Update checkboxes and enable corresponding inputs
-          if (dietaryForm) {
-            dietaryForm.querySelectorAll("input[type=checkbox]").forEach(cb => {
-              const val = v[cb.name] ?? 0;
-              cb.checked = (val == 1 || val === "1");
-
-              // Enable corresponding inputs if checked
-              if (cb.checked) {
-                switch (cb.name) {
-                  case 'sugar_flag':
-                    const sugarDetails = document.getElementById("sugar_details");
-                    if (sugarDetails) {
-                      sugarDetails.disabled = false;
-                      sugarDetails.value = v.sugar_details || "";
-                    }
-                    break;
-                  case 'alcohol_flag':
-                    const alcoholDetails = document.getElementById("alcohol_details");
-                    if (alcoholDetails) {
-                      alcoholDetails.disabled = false;
-                      alcoholDetails.value = v.alcohol_details || "";
-                    }
-                    break;
-                  case 'tobacco_flag':
-                    const tobaccoDetails = document.getElementById("tobacco_details");
-                    if (tobaccoDetails) {
-                      tobaccoDetails.disabled = false;
-                      tobaccoDetails.value = v.tobacco_details || "";
-                    }
-                    break;
-                  case 'betel_nut_flag':
-                    const betelNutDetails = document.getElementById("betel_nut_details");
-                    if (betelNutDetails) {
-                      betelNutDetails.disabled = false;
-                      betelNutDetails.value = v.betel_nut_details || "";
-                    }
-                    break;
-                }
-              }
-            });
+          if (v.sugar_flag == 1) {
+            const el = document.getElementById("sugar_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.sugar_details || "";
+            }
+          }
+          if (v.alcohol_flag == 1) {
+            const el = document.getElementById("alcohol_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.alcohol_details || "";
+            }
+          }
+          if (v.tobacco_flag == 1) {
+            const el = document.getElementById("tobacco_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.tobacco_details || "";
+            }
+          }
+          if (v.betel_nut_flag == 1) {
+            const el = document.getElementById("betel_nut_details");
+            if (el) {
+              el.disabled = false;
+              el.value = v.betel_nut_details || "";
+            }
           }
 
-          // Update list display
           (json.dietary || []).forEach(m => {
             const li = document.createElement("li");
-            li.className = "text-sm text-gray-700 dark:text-gray-300 mb-1";
-            li.textContent = "• " + m.label;
+            li.textContent = m.label;
             dietaryList.appendChild(li);
           });
-
-          // If no dietary history, show message
-          if (json.dietary.length === 0) {
-            const li = document.createElement("li");
-            li.className = "text-sm text-gray-500 italic";
-            li.textContent = "No dietary habits recorded";
-            dietaryList.appendChild(li);
-          }
-
-          console.log("Dietary history loaded:", json.dietary.length);
-        } else {
-          const li = document.createElement("li");
-          li.className = "text-sm text-gray-500 italic";
-          li.textContent = "No dietary habits recorded";
-          dietaryList.appendChild(li);
         }
       } catch (err) {
-        console.error("loadDietaryHistory error:", err);
-        const dietaryList = document.getElementById("dietaryHistoryList");
-        if (dietaryList) {
-          dietaryList.innerHTML = '<li class="text-sm text-red-500">Failed to load dietary history</li>';
-        }
+        console.error("loadDietaryHistory", err);
       }
     }
 
-    /* -----------------------------------------------------------
-       Load all patient additional info
-    ------------------------------------------------------------*/
-    function loadPatientAdditionalInfo() {
-      const patientId = getPatientId();
+    /* ---------- Submit handlers ---------- */
+    document.addEventListener("DOMContentLoaded", () => {
+      setPatientIdOnForms();
 
-      if (!patientId) {
-        console.warn("No patient ID found in URL or forms");
-        return;
-      }
-
-      // Set patient ID on all forms
-      document.querySelectorAll("input[name='patient_id']").forEach(input => {
-        input.value = patientId;
-      });
-
-      // Also create hidden inputs in modal forms if they don't exist
-      ['membershipForm', 'medicalForm', 'dietaryForm'].forEach(formId => {
-        const form = document.getElementById(formId);
-        if (form) {
-          let patientIdInput = form.querySelector('input[name="patient_id"]');
-          if (!patientIdInput) {
-            patientIdInput = document.createElement('input');
-            patientIdInput.type = 'hidden';
-            patientIdInput.name = 'patient_id';
-            patientIdInput.value = patientId;
-            form.appendChild(patientIdInput);
-          } else {
-            patientIdInput.value = patientId;
-          }
-        }
-      });
-
-      // Load all sections
-      loadMemberships(patientId);
-      loadMedicalHistory(patientId);
-      loadDietaryHistory(patientId);
-
-      patientDataLoaded = true;
-      console.log("Patient additional info loaded for ID:", patientId);
-    }
-
-    /* -----------------------------------------------------------
-       Initialize when DOM is ready
-    ------------------------------------------------------------*/
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log("DOM loaded, initializing patient additional info...");
-
-      // Set up modal event listeners
       document.getElementById("addBtn")?.addEventListener("click", () => showModal("membershipModal"));
       document.getElementById("cancelBtn")?.addEventListener("click", () => hideModal("membershipModal"));
-
       document.getElementById("addMedicalHistoryBtn")?.addEventListener("click", () => showModal("medicalModal"));
       document.getElementById("cancelMedicalBtn")?.addEventListener("click", () => hideModal("medicalModal"));
-
       document.getElementById("addDietaryHistoryBtn")?.addEventListener("click", () => showModal("dietaryModal"));
       document.getElementById("cancelDietaryBtn")?.addEventListener("click", () => hideModal("dietaryModal"));
 
-      // Set up checkbox event listeners
-      document.getElementById("philhealth_flag")?.addEventListener("change", function() {
-        toggleInput(this, "philhealth_number");
-      });
-
-      document.getElementById("sss_flag")?.addEventListener("change", function() {
-        toggleInput(this, "sss_number");
-      });
-
-      document.getElementById("gsis_flag")?.addEventListener("change", function() {
-        toggleInput(this, "gsis_number");
-      });
-
-      document.getElementById("allergies_flag")?.addEventListener("change", function() {
-        toggleInput(this, "allergies_details");
-      });
-
-      document.getElementById("hepatitis_flag")?.addEventListener("change", function() {
-        toggleInput(this, "hepatitis_details");
-      });
-
-      document.getElementById("malignancy_flag")?.addEventListener("change", function() {
-        toggleInput(this, "malignancy_details");
-      });
-
-      document.getElementById("prev_hospitalization_flag")?.addEventListener("change", function() {
-        toggleHospitalization(this);
-      });
-
-      document.getElementById("blood_transfusion_flag")?.addEventListener("change", function() {
-        toggleInput(this, "blood_transfusion_date");
-      });
-
-      document.getElementById("other_conditions_flag")?.addEventListener("change", function() {
-        toggleInput(this, "other_conditions");
-      });
-
-      document.getElementById("sugar_flag")?.addEventListener("change", function() {
-        toggleInput(this, "sugar_details");
-      });
-
-      document.getElementById("alcohol_flag")?.addEventListener("change", function() {
-        toggleInput(this, "alcohol_details");
-      });
-
-      document.getElementById("tobacco_flag")?.addEventListener("change", function() {
-        toggleInput(this, "tobacco_details");
-      });
-
-      document.getElementById("betel_nut_flag")?.addEventListener("change", function() {
-        toggleInput(this, "betel_nut_details");
-      });
-
-      // Form submission handlers - FIXED VERSION
+      /* --- Membership --- */
       const membershipForm = document.getElementById("membershipForm");
-      if (membershipForm) {
-        membershipForm.addEventListener("submit", async function(e) {
-          e.preventDefault();
+      membershipForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const fd = new FormData(form);
 
-          const submitBtn = this.querySelector('button[type="submit"]');
-          const originalText = submitBtn.textContent;
-          submitBtn.textContent = "Saving...";
-          submitBtn.disabled = true;
+        form.querySelectorAll("input[type=checkbox]").forEach(cb => fd.set(cb.name, cb.checked ? "1" : "0"));
+        form.querySelectorAll("input[type=text]").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
 
-          try {
-            const patientId = getPatientId();
+        const pidEl = document.getElementById("patient_id");
+        if (!pidEl || !pidEl.value) {
+          showNotice("No patient specified", false);
+          return;
+        }
+        fd.set("patient_id", pidEl.value);
+        fd.set("action", "save_membership");
 
-            if (!patientId) {
-              showNotice("No patient specified", false);
-              submitBtn.textContent = originalText;
-              submitBtn.disabled = false;
-              return;
-            }
+        try {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
+            method: "POST",
+            body: fd
+          });
+          const text = await r.text();
+          console.log("membership raw:", text);
+          const json = JSON.parse(text);
+          if (json.success) {
+            hideModal("membershipModal");
+            showNotice("Membership saved successfully!", true);
+            loadMemberships(pidEl.value);
+          } else showNotice("Error: " + (json.message || "Unknown"), false);
+        } catch (err) {
+          console.error(err);
+          showNotice("Request failed", false);
+        }
+      });
 
-            // Ensure patient ID is in form data
-            let formData = new FormData(this);
-
-            // Check if patient_id is in formData
-            if (!formData.get('patient_id')) {
-              formData.append('patient_id', patientId);
-            }
-
-            // Ensure checkbox values are '1' or '0'
-            this.querySelectorAll("input[type=checkbox]").forEach(cb => {
-              formData.set(cb.name, cb.checked ? "1" : "0");
-            });
-
-            // Ensure text inputs that are disabled are not sent
-            this.querySelectorAll("input[type=text][disabled]").forEach(inp => {
-              formData.set(inp.name, "");
-            });
-
-            formData.set("action", "save_membership");
-
-            console.log("Submitting membership form for patient:", patientId);
-            const response = await apiFetch("../php/register_patient/patient_info.php", {
-              method: "POST",
-              body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-              hideModal("membershipModal");
-              showNotice("Membership information saved successfully!", true);
-              loadMemberships(patientId);
-            } else {
-              showNotice("Error: " + (result.message || "Unknown error"), false);
-            }
-          } catch (error) {
-            console.error("Membership save error:", error);
-            showNotice("Failed to save membership information", false);
-          } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-          }
-        });
-      }
-
+      /* --- Medical --- */
       const medicalForm = document.getElementById("medicalForm");
-      if (medicalForm) {
-        medicalForm.addEventListener("submit", async function(e) {
-          e.preventDefault();
+      medicalForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const fd = new FormData(form);
 
-          const submitBtn = this.querySelector('button[type="submit"]');
-          const originalText = submitBtn.textContent;
-          submitBtn.textContent = "Saving...";
-          submitBtn.disabled = true;
+        form.querySelectorAll("input[type=checkbox]").forEach(cb => fd.set(cb.name, cb.checked ? "1" : "0"));
+        form.querySelectorAll("input[type=text], input[type=date], textarea").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
 
-          try {
-            const patientId = getPatientId();
+        const btd = document.getElementById("blood_transfusion_date");
+        if (btd) fd.set("blood_transfusion", btd.disabled ? "" : btd.value);
 
-            if (!patientId) {
-              showNotice("No patient specified", false);
-              submitBtn.textContent = originalText;
-              submitBtn.disabled = false;
-              return;
-            }
+        const pidEl = document.getElementById("patient_id");
+        if (!pidEl || !pidEl.value) {
+          showNotice("No patient specified", false);
+          return;
+        }
+        fd.set("patient_id", pidEl.value);
+        fd.set("action", "save_medical");
 
-            // Ensure patient ID is in form data
-            let formData = new FormData(this);
+        try {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
+            method: "POST",
+            body: fd
+          });
+          const text = await r.text();
+          console.log("medical raw:", text);
+          const json = JSON.parse(text);
+          if (json.success) {
+            hideModal("medicalModal");
+            showNotice("Medical history saved successfully!", true);
+            loadMedicalHistory(pidEl.value);
+          } else showNotice("Error: " + (json.message || "Unknown"), false);
+        } catch (err) {
+          console.error(err);
+          showNotice("Request failed", false);
+        }
+      });
 
-            // Check if patient_id is in formData
-            if (!formData.get('patient_id')) {
-              formData.append('patient_id', patientId);
-            }
-
-            // Ensure checkbox values are '1' or '0'
-            this.querySelectorAll("input[type=checkbox]").forEach(cb => {
-              formData.set(cb.name, cb.checked ? "1" : "0");
-            });
-
-            // Ensure disabled inputs are not sent
-            this.querySelectorAll("input[disabled], textarea[disabled]").forEach(inp => {
-              formData.set(inp.name, "");
-            });
-
-            formData.set("action", "save_medical");
-
-            console.log("Submitting medical form for patient:", patientId);
-            const response = await apiFetch("../php/register_patient/patient_info.php", {
-              method: "POST",
-              body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-              hideModal("medicalModal");
-              showNotice("Medical history saved successfully!", true);
-              loadMedicalHistory(patientId);
-            } else {
-              showNotice("Error: " + (result.message || "Unknown error"), false);
-            }
-          } catch (error) {
-            console.error("Medical save error:", error);
-            showNotice("Failed to save medical history", false);
-          } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-          }
-        });
-      }
-
+      /* --- Dietary --- */
       const dietaryForm = document.getElementById("dietaryForm");
-      if (dietaryForm) {
-        dietaryForm.addEventListener("submit", async function(e) {
-          e.preventDefault();
+      dietaryForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const fd = new FormData(form);
 
-          const submitBtn = this.querySelector('button[type="submit"]');
-          const originalText = submitBtn.textContent;
-          submitBtn.textContent = "Saving...";
-          submitBtn.disabled = true;
+        form.querySelectorAll("input[type=checkbox]").forEach(cb => fd.set(cb.name, cb.checked ? "1" : "0"));
+        form.querySelectorAll("input[type=text]").forEach(inp => fd.set(inp.name, inp.disabled ? "" : inp.value));
 
-          try {
-            const patientId = getPatientId();
+        const pidEl = document.getElementById("patient_id");
+        if (!pidEl || !pidEl.value) {
+          showNotice("No patient specified", false);
+          return;
+        }
+        fd.set("patient_id", pidEl.value);
+        fd.set("action", "save_dietary");
 
-            if (!patientId) {
-              showNotice("No patient specified", false);
-              submitBtn.textContent = originalText;
-              submitBtn.disabled = false;
-              return;
-            }
-
-            // Ensure patient ID is in form data
-            let formData = new FormData(this);
-
-            // Check if patient_id is in formData
-            if (!formData.get('patient_id')) {
-              formData.append('patient_id', patientId);
-            }
-
-            // Ensure checkbox values are '1' or '0'
-            this.querySelectorAll("input[type=checkbox]").forEach(cb => {
-              formData.set(cb.name, cb.checked ? "1" : "0");
-            });
-
-            // Ensure disabled inputs are not sent
-            this.querySelectorAll("input[type=text][disabled]").forEach(inp => {
-              formData.set(inp.name, "");
-            });
-
-            formData.set("action", "save_dietary");
-
-            console.log("Submitting dietary form for patient:", patientId);
-            const response = await apiFetch("../php/register_patient/patient_info.php", {
-              method: "POST",
-              body: formData
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-              hideModal("dietaryModal");
-              showNotice("Dietary habits saved successfully!", true);
-              loadDietaryHistory(patientId);
-            } else {
-              showNotice("Error: " + (result.message || "Unknown error"), false);
-            }
-          } catch (error) {
-            console.error("Dietary save error:", error);
-            showNotice("Failed to save dietary habits", false);
-          } finally {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-          }
-        });
-      }
-
-      // Load patient data after a short delay to ensure DOM is fully ready
-      setTimeout(loadPatientAdditionalInfo, 500);
-
-      // Also load when patient ID changes in URL (for SPA-like behavior)
-      window.addEventListener('popstate', loadPatientAdditionalInfo);
+        try {
+          const r = await apiFetch("../php/register_patient/patient_info.php", {
+            method: "POST",
+            body: fd
+          });
+          const text = await r.text();
+          console.log("dietary raw:", text);
+          const json = JSON.parse(text);
+          if (json.success) {
+            hideModal("dietaryModal");
+            showNotice("Dietary history saved successfully!", true);
+            loadDietaryHistory(pidEl.value);
+          } else showNotice("Error: " + (json.message || "Unknown"), false);
+        } catch (err) {
+          console.error(err);
+          showNotice("Request failed", false);
+        }
+      });
     });
-
-    // Global function to reload all patient data
-    window.reloadPatientAdditionalInfo = function() {
-      if (!patientDataLoaded) {
-        loadPatientAdditionalInfo();
-      }
-    };
   </script>
-
-  <!-- VITAL SIGNS SCRIPT (Enhanced from second script) -->
+  
+  <!-- vital signs  -->
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
       const addBtn = document.getElementById('addVitalbtn');
       const modal = document.getElementById('addVitalModal');
       const cancelBtn = document.getElementById('cancelVital');
@@ -3019,28 +1915,18 @@ if ($loggedUser['type'] === 'Dentist') {
         }, 5000);
       }
 
-      // Ensure patient_id is set from URL if missing
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlPatientId = urlParams.get('id');
-      if (patientInput && (!patientInput.value || patientInput.value.trim() === '')) {
-        patientInput.value = urlPatientId;
-      }
-
-      // Modal open/close
       addBtn.addEventListener('click', () => modal.classList.remove('hidden'));
       cancelBtn.addEventListener('click', () => {
         modal.classList.add('hidden');
         vitalForm.reset();
       });
 
-      // Save new vital signs
       vitalForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
         const formData = new FormData(vitalForm);
         const data = new URLSearchParams();
         data.append('action', 'save_vitals');
-        data.append('patient_id', patientInput.value);
+        data.append('patient_id', patientInput.value); // read from hidden input
         data.append('blood_pressure', formData.get('blood_pressure'));
         data.append('pulse_rate', formData.get('pulse_rate'));
         data.append('temperature', formData.get('temperature'));
@@ -3052,59 +1938,47 @@ if ($loggedUser['type'] === 'Dentist') {
             body: data
           });
           const result = await res.json();
-
           if (result.success) {
+            showNotice('Vital signs added successfully!', true);
             modal.classList.add('hidden');
             vitalForm.reset();
-            showNotice('Vital signs added successfully!', 'blue');
-            fetchVitals();
+            fetchVitals(); // refresh table
           } else {
-            showNotice('Failed to add vital signs: ' + result.message, 'red');
+            showNotice('Failed to add vital signs: ' + result.message, false);
           }
         } catch (err) {
-          console.error('Error saving vitals:', err);
-          showNotice('Error adding vital signs.', 'red');
+          console.error(err);
+          showNotice('Error adding vital signs.', false);
         }
       });
 
-      // Fetch and display vitals
       async function fetchVitals() {
-        if (!patientInput.value) return;
         try {
           const res = await fetch(`../php/register_patient/patient_info.php?action=get_vitals&patient_id=${patientInput.value}`);
           const data = await res.json();
+          if (!data.success) return;
 
-          bpTable.innerHTML = tempTable.innerHTML = pulseTable.innerHTML = weightTable.innerHTML = '';
-
-          if (!data.success || !Array.isArray(data.vitals) || data.vitals.length === 0) {
-            const emptyRow = `<tr><td colspan="2" class="text-center text-gray-400 py-2">No vital signs recorded.</td></tr>`;
-            bpTable.innerHTML = tempTable.innerHTML = pulseTable.innerHTML = weightTable.innerHTML = emptyRow;
-            return;
-          }
+          bpTable.innerHTML = '';
+          tempTable.innerHTML = '';
+          pulseTable.innerHTML = '';
+          weightTable.innerHTML = '';
 
           data.vitals.forEach(v => {
             const d = new Date(v.recorded_at);
-            const recorded = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            const recorded = d.getFullYear() + '-' +
+              String(d.getMonth() + 1).padStart(2, '0') + '-' +
+              String(d.getDate()).padStart(2, '0');
 
-            bpTable.innerHTML += `<tr class="flex items-center justify-between border-b w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                    <td class="px-3 py-1">${recorded}</td><td class="px-3 py-1 text-right">${v.blood_pressure}</td></tr>`;
-
-            tempTable.innerHTML += `<tr class="flex items-center justify-between border-b w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                    <td class="px-3 py-1">${recorded}</td><td class="px-3 py-1 text-right">${v.temperature}</td></tr>`;
-
-            pulseTable.innerHTML += `<tr class="flex items-center justify-between border-b w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                    <td class="px-3 py-1">${recorded}</td><td class="px-3 py-1 text-right">${v.pulse_rate}</td></tr>`;
-
-            weightTable.innerHTML += `<tr class="flex items-center justify-between border-b w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200">
-                    <td class="px-3 py-1">${recorded}</td><td class="px-3 py-1 text-right">${v.weight}</td></tr>`;
+            bpTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.blood_pressure}</td></tr>`;
+            tempTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.temperature}</td></tr>`;
+            pulseTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.pulse_rate}</td></tr>`;
+            weightTable.innerHTML += `<tr class="flex  items-center justify-between  border-b  w-full dark:bg-gray-800 dark:border-gray-700 border-gray-200"><td class="px-3 py-1 ">${recorded}</td><td class="px-3 py-1 text-right">${v.weight}</td></tr>`;
           });
         } catch (err) {
           console.error('Failed to fetch vitals:', err);
-          showNotice('Failed to load vital signs.', 'red');
         }
       }
 
-      // Fetch on page load
       fetchVitals();
     });
   </script>

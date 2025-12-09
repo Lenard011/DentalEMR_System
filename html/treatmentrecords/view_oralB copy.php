@@ -3,6 +3,7 @@ session_start();
 date_default_timezone_set('Asia/Manila');
 
 // REQUIRE userId parameter for each page
+// Example usage: dashboard.php?uid=5
 if (!isset($_GET['uid'])) {
     echo "<script>
         alert('Invalid session. Please log in again.');
@@ -26,14 +27,17 @@ if (
 }
 
 // PER-USER INACTIVITY TIMEOUT
-$inactiveLimit = 1800; // 30 minutes
+$inactiveLimit = 600; // 10 minutes
 
 if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
     $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
 
     if ((time() - $lastActivity) > $inactiveLimit) {
+
+        // Log out ONLY this user (not everyone)
         unset($_SESSION['active_sessions'][$userId]);
 
+        // If no one else is logged in, end session entirely
         if (empty($_SESSION['active_sessions'])) {
             session_unset();
             session_destroy();
@@ -76,9 +80,6 @@ if ($loggedUser['type'] === 'Dentist') {
     $stmt->close();
 }
 
-// Get patient ID from URL
-$patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
 ?>
 <!doctype html>
 <html>
@@ -87,7 +88,9 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Treatment Records</title>
+    <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
 </head>
 
 <body>
@@ -198,6 +201,7 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
         </nav>
 
         <!-- Sidebar -->
+
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -337,9 +341,24 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                                 <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
                             </svg>
 
+
                             <span class="ml-3">Archived</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="#"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="M4 4v15a1 1 0 0 0 1 1h15M8 16l2.5-5.5 3 3L17.273 7 20 9.667" />
+                            </svg>
+
+                            <span class="ml-3">Analytics</span>
+                        </a>
+                    </li>
+
                 </ul>
             </div>
         </aside>
@@ -425,7 +444,7 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                             <path clip-rule="evenodd" fill-rule="evenodd"
                                 d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
                         </svg>
-                        Add Treatment
+                        Add
                     </button>
                 </div>
 
@@ -590,7 +609,7 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl mx-4 max-h-[90vh] overflow-y-auto">
                 <div class="p-4 sm:p-6">
                     <div class="flex flex-row justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Treatment Record</h2>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Oral Health Condition</h2>
                         <button type="button" id="cancelMedicalBtn"
                             class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white text-xl"
                             onclick="closeSMC()">
@@ -599,17 +618,7 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                     </div>
 
                     <form id="ohcForm" class="space-y-4">
-                        <input type="hidden" name="patient_id" id="patient_id" value="<?php echo $patientId; ?>">
-
-                        <!-- Date Selection -->
-                        <div class="mb-4">
-                            <label for="treatmentDate" class="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                                Treatment Date
-                            </label>
-                            <input type="date" id="treatmentDate" name="treatment_date"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                value="<?php echo date('Y-m-d'); ?>">
-                        </div>
+                        <input type="hidden" name="patient_id" id="patient_id" value="">
 
                         <div>
                             <div class="mb-4">
@@ -629,28 +638,130 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                                     <!-- Top Teeth Row 1 -->
                                     <div class="grid grid-cols-5 sm:grid-cols-10 gap-2 mb-4">
                                         <!-- Teeth 55-65 -->
-                                        <?php
-                                        $teeth1 = [55, 54, 53, 52, 51, 61, 62, 63, 64, 65];
-                                        foreach ($teeth1 as $tooth): ?>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" data-tooth-id="<?php echo $tooth; ?>" readonly
-                                                    class="tooth-input bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 text-center cursor-pointer">
-                                                <label class="flex text-sm font-medium text-gray-900 dark:text-white"><?php echo $tooth; ?></label>
-                                            </div>
-                                        <?php endforeach; ?>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" data-tooth-id="55" readonly
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">55</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="54"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">54</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="53"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">53</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="52"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">52</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="51"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">51</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="61"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">61</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="62"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">62</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="63"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">63</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="64"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">64</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="65"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">65</label>
+                                        </div>
                                     </div>
                                     <!-- Top Teeth Row 2 -->
                                     <div class="grid grid-cols-5 sm:grid-cols-10 gap-2">
                                         <!-- Teeth 85-75 -->
-                                        <?php
-                                        $teeth2 = [85, 84, 83, 82, 81, 71, 72, 73, 74, 75];
-                                        foreach ($teeth2 as $tooth): ?>
-                                            <div class="flex flex-col items-center gap-2">
-                                                <input type="text" data-tooth-id="<?php echo $tooth; ?>" readonly
-                                                    class="tooth-input bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 text-center cursor-pointer">
-                                                <label class="flex text-sm font-medium text-gray-900 dark:text-white"><?php echo $tooth; ?></label>
-                                            </div>
-                                        <?php endforeach; ?>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="85"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"><label
+                                                for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">85</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="84"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">84</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="83"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">83</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="82"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">82</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="81"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">81</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="71"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">71</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="72"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">72</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="73"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">73</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="74"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">74</label>
+                                        </div>
+                                        <div class="flex flex-col items-center gap-2">
+                                            <input type="text" readonly data-tooth-id="75"
+                                                class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                            <label for="name"
+                                                class="flex text-sm font-medium text-gray-900 dark:text-white">75</label>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -685,14 +796,6 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                                             <p class="font-medium text-gray-900 dark:text-white">O - Others</p>
                                         </div>
                                     </div>
-
-                                    <!-- Instructions -->
-                                    <div class="bg-blue-50 dark:bg-blue-900 p-3 rounded-sm">
-                                        <p class="text-xs font-medium text-blue-900 dark:text-blue-100 mb-1">Instructions:</p>
-                                        <p class="text-xs text-blue-800 dark:text-blue-200">• Click on a tooth to apply selected treatment</p>
-                                        <p class="text-xs text-blue-800 dark:text-blue-200">• Double-click to remove treatment</p>
-                                        <p class="text-xs text-blue-800 dark:text-blue-200">• Select treatment from dropdown first</p>
-                                    </div>
                                 </div>
                             </div>
 
@@ -705,42 +808,212 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                                 <!-- Bottom Teeth Row 1 -->
                                 <div class="grid grid-cols-8 sm:grid-cols-16 gap-2 mb-4">
                                     <!-- Teeth 18-28 -->
-                                    <?php
-                                    $teeth3 = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
-                                    foreach ($teeth3 as $tooth): ?>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" data-tooth-id="<?php echo $tooth; ?>" readonly
-                                                class="tooth-input bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 text-center cursor-pointer">
-                                            <label class="flex text-sm font-medium text-gray-900 dark:text-white"><?php echo $tooth; ?></label>
-                                        </div>
-                                    <?php endforeach; ?>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="18"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">18</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="17"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">17</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="16"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">16</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="15"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">15</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="14"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">14</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="13"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">13</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="12"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">12</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="11"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">11</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="21"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">21</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="22"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">22</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="23"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">23</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="24"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">24</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="25"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">25</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="26"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">26</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="27"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">27</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="28"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">28</label>
+                                    </div>
                                 </div>
 
                                 <!-- Bottom Teeth Row 2 -->
                                 <div class="grid grid-cols-8 sm:grid-cols-16 gap-2">
                                     <!-- Teeth 48-38 -->
-                                    <?php
-                                    $teeth4 = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
-                                    foreach ($teeth4 as $tooth): ?>
-                                        <div class="flex flex-col items-center gap-2">
-                                            <input type="text" data-tooth-id="<?php echo $tooth; ?>" readonly
-                                                class="tooth-input bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 text-center cursor-pointer">
-                                            <label class="flex text-sm font-medium text-gray-900 dark:text-white"><?php echo $tooth; ?></label>
-                                        </div>
-                                    <?php endforeach; ?>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="48"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">48</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="47"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">47</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="46"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">46</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="45"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">45</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="44"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">44</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="43"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">43</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="42"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">42</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="41"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">41</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="31"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">31</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="32"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">32</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="33"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">33</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="34"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">34</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="35"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">35</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="36"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">36</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="37"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">37</label>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-2">
+                                        <input type="text" readonly data-tooth-id="38"
+                                            class="bg-gray-50 border border-gray-300 w-10 text-gray-900 text-xs rounded-sm focus:ring-primary-600 focus:border-primary-600 p-1 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        <label for="name"
+                                            class="flex text-sm font-medium text-gray-900 dark:text-white">38</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Save Button -->
                         <div class="flex justify-end gap-2 pt-4">
-                            <button type="button" onclick="closeSMC()"
-                                class="text-gray-700 cursor-pointer inline-flex items-center justify-center bg-gray-200 hover:bg-gray-300 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2 w-full sm:w-auto dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-800">
-                                Cancel
-                            </button>
-                            <button type="button" onclick="saveSMC()" id="saveSMCBtn"
+                            <button type="button" onclick="saveSMC()"
                                 class="text-white cursor-pointer inline-flex items-center justify-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 w-full sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                Save Treatment
+                                Save
                             </button>
                         </div>
                     </form>
@@ -750,21 +1023,22 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
         <!-- Notification -->
         <div id="notice"
-            style="position:fixed; top:14px; right:14px; display:none; padding:12px 16px; border-radius:8px; background:#3b82f6; color:white; z-index:9999; font-weight:500; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); max-width:350px; word-break:break-word;">
+            style="position:fixed; top:14px; right:14px; display:none; padding:10px 14px; border-radius:6px; background:blue; color:white; z-index:60">
         </div>
     </div>
 
+    <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="../js/tailwind.config.js"></script>
+    <!-- Client-side 10-minute inactivity logout -->
     <script>
-        // ==================== SESSION MANAGEMENT ====================
-        let inactivityTime = 1800000; // 30 minutes in ms
+        let inactivityTime = 600000; // 10 minutes in ms
         let logoutTimer;
 
         function resetTimer() {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
-                alert("You've been logged out due to 30 minutes of inactivity.");
+                alert("You've been logged out due to 10 minutes of inactivity.");
                 window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
             }, inactivityTime);
         }
@@ -774,187 +1048,91 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
         });
 
         resetTimer();
+    </script>
 
-        // ==================== NAVIGATION FUNCTIONS ====================
+    <script>
         function backmain() {
             location.href = ("treatmentrecords.php?uid=<?php echo $userId; ?>");
         }
+    </script>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const patientId = params.get('id');
+
+        const patientInfoLink = document.getElementById("patientInfoLink");
+        if (patientInfoLink && patientId) {
+            patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+        } else {
+            patientInfoLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
+
+        const servicesRenderedLink = document.getElementById("servicesRenderedLink");
+        if (servicesRenderedLink && patientId) {
+            servicesRenderedLink.href = `view_record.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            servicesRenderedLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
+        }
 
         function back() {
-            const patientId = <?php echo $patientId; ?>;
+            // Get patient ID from URL
+            const params = new URLSearchParams(window.location.search);
+            const patientId = params.get("id");
 
             if (!patientId) {
                 alert("Missing patient ID.");
                 return;
             }
+            // Navigate to view_oralA.php while keeping patient ID in the URL
             window.location.href = `view_oralA.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         }
-
-        // ==================== NOTIFICATION SYSTEM ====================
-        const notice = document.getElementById("notice");
-
-        function showNotice(message, color = "blue") {
-            if (!notice) return;
-
-            const colorMap = {
-                'blue': '#3b82f6',
-                'green': '#10b981',
-                'red': '#ef4444',
-                'orange': '#f59e0b',
-                'yellow': '#fbbf24'
-            };
-
-            const bgColor = colorMap[color] || color;
-
-            notice.textContent = message;
-            notice.style.background = bgColor;
-            notice.style.display = "block";
-            notice.style.opacity = "1";
-
-            setTimeout(() => {
-                notice.style.transition = "opacity 0.6s ease";
-                notice.style.opacity = "0";
-                setTimeout(() => {
-                    notice.style.display = "none";
-                    notice.style.transition = "";
-                }, 600);
-            }, 5000);
+        const printdLink = document.getElementById("printdLink");
+        if (printdLink && patientId) {
+            printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+        } else {
+            // Optional fallback: disable link if no patient selected
+            printdLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("Please select a patient first.");
+            });
         }
+    </script>
 
-        // ==================== PAGE INITIALIZATION ====================
+    <!-- table fetch  -->
+    <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const patientId = <?php echo $patientId; ?>;
+            const urlParams = new URLSearchParams(window.location.search);
+            const patientId = urlParams.get("id");
 
-            // Setup navigation links
-            const patientInfoLink = document.getElementById("patientInfoLink");
-            if (patientInfoLink && patientId) {
-                patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-            } else {
-                patientInfoLink.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    alert("Please select a patient first.");
-                });
-            }
-
-            const servicesRenderedLink = document.getElementById("servicesRenderedLink");
-            if (servicesRenderedLink && patientId) {
-                servicesRenderedLink.href = `view_record.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-            } else {
-                servicesRenderedLink.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    alert("Please select a patient first.");
-                });
-            }
-
-            const printdLink = document.getElementById("printdLink");
-            if (printdLink && patientId) {
-                printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-            } else {
-                printdLink.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    alert("Please select a patient first.");
-                });
-            }
-
-            // Load patient data and records
-            if (patientId) {
-                loadPatientData(patientId);
-            } else {
+            if (!patientId) {
                 console.error("No patient ID provided in URL");
-                showNotice("No patient selected. Please go back and select a patient.", "red");
-            }
-        });
-
-        // ==================== DATA LOADING FUNCTIONS ====================
-        function loadPatientData(patientId) {
-            console.log("Loading patient data for ID:", patientId);
-
-            const nameEl = document.getElementById("patientName");
-            if (nameEl) {
-                nameEl.textContent = "Loading...";
-            }
-
-            // Use relative path that matches your project structure
-            fetch(`../../php/treatmentrecords/get_treatment_history.php?patient_id=${patientId}&_=${Date.now()}`)
-                .then(response => {
-                    console.log("Response status:", response.status);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Patient data received:", data);
-
-                    if (data.error) {
-                        console.error("API Error:", data.error);
-                        showNotice("Error: " + data.error, "red");
-                        return;
-                    }
-
-                    if (!data.success) {
-                        console.error("API returned unsuccessful:", data);
-                        showNotice("Failed to load data: " + (data.message || "Unknown error"), "red");
-                        return;
-                    }
-
-                    // Set patient name
-                    const nameEl = document.getElementById("patientName");
-                    if (nameEl) {
-                        nameEl.textContent = data.patient_name || "Patient Name Not Found";
-                        if (data.using_history_table) {
-                            nameEl.title = "Using new treatment history system";
-                        }
-                    }
-
-                    // Populate tables
-                    if (data.records && data.records.length > 0) {
-                        console.log("Populating tables with", data.records.length, "records");
-                        populateTables(data.records);
-                        showNotice(`Loaded ${data.records.length} treatment records`, "green");
-                    } else {
-                        populateTables([]);
-                        showNotice("No treatment records found", "yellow");
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading data:', error);
-                    console.error('Error details:', error.message);
-                    showNotice("Failed to load patient data. Please check if the PHP file exists and the server is running.", "red");
-
-                    const nameEl = document.getElementById("patientName");
-                    if (nameEl) {
-                        nameEl.textContent = "Error loading data - Check Console";
-                    }
-
-                    // Show debug info
-                    console.log("Tried to fetch from: ../../php/treatmentrecords/get_treatment_history.php");
-                    console.log("Current page URL:", window.location.href);
-                });
-        }
-
-        // ==================== TABLE POPULATION ====================
-        function populateTables(records) {
-            console.log("Populating tables with", records.length, "records");
-
-            if (!records || records.length === 0) {
-                // Clear all tables
-                const tableIds = ['table-first', 'table-second', 'table-third', 'table-fourth'];
-                tableIds.forEach(tableId => {
-                    const tbody = document.querySelector(`#${tableId} tbody`);
-                    if (tbody) {
-                        tbody.innerHTML = `
-                    <tr>
-                        <td colspan="20" class="px-4 py-4 text-center font-medium text-gray-500 dark:text-gray-400">
-                            No treatment records found
-                        </td>
-                    </tr>
-                `;
-                    }
-                });
                 return;
             }
 
+            fetch(`/dentalemr_system/php/treatmentrecords/view_oralB.php?patient_id=${patientId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.records) data.records = [];
+
+                    // Set patient name
+                    const nameEl = document.getElementById("patientName");
+                    if (nameEl && data.patient_name) {
+                        nameEl.textContent = data.patient_name;
+                    }
+
+                    populateTables(data.records);
+                })
+                .catch(error => console.error('Error loading data:', error));
+        });
+
+        function populateTables(records) {
             const tableGroups = {
                 "table-first": [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
                 "table-second": [85, 84, 83, 82, 81, 71, 72, 73, 74, 75],
@@ -964,396 +1142,223 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
             // Group by date and FDI number
             const groupedByDate = {};
-
             records.forEach(row => {
-                let date;
-
-                if (row.treatment_date) {
-                    // New table format
-                    date = row.treatment_date;
-                } else if (row.created_at) {
-                    // Old table format
-                    const dateObj = new Date(row.created_at);
-                    date = isNaN(dateObj.getTime()) ?
-                        row.created_at.split(' ')[0] :
-                        dateObj.toISOString().split('T')[0];
-                } else {
-                    return; // Skip if no date
-                }
-
-                const formattedDate = new Date(date).toLocaleDateString('en-PH', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
-
-                if (!groupedByDate[formattedDate]) {
-                    groupedByDate[formattedDate] = {};
-                }
-
-                if (row.fdi_number) {
-                    groupedByDate[formattedDate][row.fdi_number] = row.treatment_code;
-                }
+                const date = new Date(row.created_at).toLocaleDateString();
+                if (!groupedByDate[date]) groupedByDate[date] = {};
+                groupedByDate[date][row.fdi_number] = row.treatment_code;
             });
 
-            console.log("Grouped data:", groupedByDate);
-
-            // Populate each table
             for (const [tableId, teeth] of Object.entries(tableGroups)) {
                 const tbody = document.querySelector(`#${tableId} tbody`);
-                if (!tbody) continue;
-
                 tbody.innerHTML = "";
 
-                const dates = Object.keys(groupedByDate).sort((a, b) => {
-                    try {
-                        return new Date(b) - new Date(a); // Newest first
-                    } catch {
-                        return b.localeCompare(a);
-                    }
-                });
-
-                if (dates.length === 0) {
+                for (const date of Object.keys(groupedByDate)) {
                     const tr = document.createElement("tr");
                     tr.classList.add("border-b", "border-gray-200", "dark:border-gray-700");
 
-                    const td = document.createElement("td");
-                    td.className = "px-4 py-4 text-center font-medium text-gray-500 dark:text-gray-400";
-                    td.colSpan = teeth.length + 1;
-                    td.textContent = "No treatment records";
-                    tr.appendChild(td);
-                    tbody.appendChild(tr);
-                } else {
-                    dates.forEach(date => {
-                        const tr = document.createElement("tr");
-                        tr.classList.add("border-b", "border-gray-200", "dark:border-gray-700");
+                    // Date cell
+                    const th = document.createElement("th");
+                    th.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
+                    th.textContent = date;
+                    tr.appendChild(th);
 
-                        // Date cell
-                        const th = document.createElement("th");
-                        th.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white whitespace-nowrap";
-                        th.textContent = date;
-                        tr.appendChild(th);
-
-                        // Tooth cells
-                        teeth.forEach(fdi => {
-                            const td = document.createElement("td");
-                            td.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
-                            const treatmentCode = groupedByDate[date][fdi];
-                            td.textContent = treatmentCode || "-";
-
-                            if (treatmentCode) {
-                                td.classList.add("font-semibold");
-                                // Color coding - FIXED: Split classes properly
-                                const colorClasses = {
-                                    'FV': ['text-blue-600', 'dark:text-blue-400'],
-                                    'FG': ['text-blue-500', 'dark:text-blue-300'],
-                                    'PFS': ['text-green-600', 'dark:text-green-400'],
-                                    'PF': ['text-purple-600', 'dark:text-purple-400'],
-                                    'TF': ['text-yellow-600', 'dark:text-yellow-400'],
-                                    'X': ['text-red-600', 'dark:text-red-400'],
-                                    'O': ['text-gray-600', 'dark:text-gray-400']
-                                };
-
-                                const classes = colorClasses[treatmentCode] || ['text-gray-900'];
-                                classes.forEach(cls => td.classList.add(cls));
-                            }
-
-                            tr.appendChild(td);
-                        });
-
-                        tbody.appendChild(tr);
+                    // Tooth cells (match FDI numbers)
+                    teeth.forEach(fdi => {
+                        const td = document.createElement("td");
+                        td.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
+                        td.textContent = groupedByDate[date][fdi] || "";
+                        tr.appendChild(td);
                     });
+
+                    tbody.appendChild(tr);
+                }
+
+                // If no records at all, show empty row
+                if (Object.keys(groupedByDate).length === 0) {
+                    const tr = document.createElement("tr");
+                    tr.classList.add("border-b", "border-gray-200", "dark:border-gray-700");
+
+                    const th = document.createElement("th");
+                    th.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
+                    th.textContent = "";
+                    tr.appendChild(th);
+
+                    teeth.forEach(() => {
+                        const td = document.createElement("td");
+                        td.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
+                        td.textContent = "";
+                        tr.appendChild(td);
+                    });
+
+                    tbody.appendChild(tr);
                 }
             }
         }
+    </script>
 
-        // ==================== MODAL FUNCTIONS ====================
+    <script>
+        const notice = document.getElementById("notice");
+
+        function showNotice(message, color = "blue") {
+            notice.textContent = message;
+            notice.style.background = color;
+            notice.style.display = "block";
+            notice.style.opacity = "1";
+
+            setTimeout(() => {
+                notice.style.transition = "opacity 0.6s";
+                notice.style.opacity = "0";
+                setTimeout(() => {
+                    notice.style.display = "none";
+                    notice.style.transition = "";
+                }, 1500);
+            }, 5000);
+        }
+
         let selectedTreatmentCode = null;
 
         // Treatment dropdown selection
         document.getElementById("selcttreatment").addEventListener("change", function() {
             selectedTreatmentCode = this.value;
-            if (selectedTreatmentCode) {
-                showNotice(`Selected: ${this.options[this.selectedIndex].text}`, "blue");
-            }
         });
 
+        // Initialize tooth click events
         function initSMCTreatmentClick() {
-            const toothInputs = document.querySelectorAll("#SMCModal .tooth-input");
-
+            const toothInputs = document.querySelectorAll("#SMCModal input[data-tooth-id]");
             toothInputs.forEach(input => {
-                // Clear existing event listeners by cloning
                 const newInput = input.cloneNode(true);
                 input.parentNode.replaceChild(newInput, input);
             });
 
-            document.querySelectorAll("#SMCModal .tooth-input").forEach(input => {
+            document.querySelectorAll("#SMCModal input[data-tooth-id]").forEach(input => {
                 input.addEventListener("click", () => {
-                    if (!selectedTreatmentCode) {
-                        showNotice("Please select a treatment first!", "red");
-                        return;
-                    }
-
-                    const treatmentText = document.querySelector(`#selcttreatment option[value="${selectedTreatmentCode}"]`).text;
+                    if (!selectedTreatmentCode) return showNotice("Please select a treatment first!", "red");
                     input.value = selectedTreatmentCode;
+                    input.dataset.treatmentId = selectedTreatmentCode;
                     input.style.backgroundColor = "#e5e7eb";
-                    input.title = treatmentText;
-
-                    // Visual feedback
-                    input.style.transform = "scale(1.1)";
-                    setTimeout(() => {
-                        input.style.transform = "scale(1)";
-                    }, 200);
                 });
 
                 input.addEventListener("dblclick", () => {
-                    if (input.value) {
-                        input.value = "";
-                        input.style.backgroundColor = "";
-                        input.title = "";
-
-                        // Visual feedback
-                        input.style.transform = "scale(0.95)";
-                        setTimeout(() => {
-                            input.style.transform = "scale(1)";
-                        }, 200);
-                    }
+                    input.value = "";
+                    delete input.dataset.treatmentId;
+                    input.style.backgroundColor = "white";
                 });
             });
         }
 
-        // Open modal and load treatments for selected date
+        // Open modal and load today's treatments
         document.getElementById("addSMC").addEventListener("click", async () => {
-            const patientId = <?php echo $patientId; ?>;
+            const patientId = new URLSearchParams(window.location.search).get("id");
             if (!patientId) return showNotice("No patient selected", "red");
 
-            // Get selected date
-            const datePicker = document.getElementById("treatmentDate");
-            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+            document.getElementById("patient_id").value = patientId;
+
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date().toISOString().split('T')[0];
 
             try {
-                const response = await fetch(`../../php/treatmentrecords/get_today_smc.php?patient_id=${patientId}&date=${selectedDate}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
+                const response = await fetch(`/dentalemr_system/php/treatmentrecords/get_today_smc.php?patient_id=${patientId}&date=${today}`);
                 const data = await response.json();
 
                 // Clear all previous inputs first
-                document.querySelectorAll("#SMCModal .tooth-input").forEach(input => {
+                document.querySelectorAll("#SMCModal input[data-tooth-id]").forEach(input => {
                     input.value = "";
-                    input.style.backgroundColor = "";
-                    input.title = "";
+                    delete input.dataset.treatmentId;
+                    input.style.backgroundColor = "white";
                 });
 
-                // Fill modal inputs with records for the selected date
+                // Fill modal inputs with today's records if available
                 if (data.records && data.records.length > 0) {
                     data.records.forEach(rec => {
-                        const input = document.querySelector(`#SMCModal .tooth-input[data-tooth-id='${rec.fdi_number}']`);
+                        const input = document.querySelector(`#SMCModal input[data-tooth-id='${rec.fdi_number}']`);
                         if (input) {
                             input.value = rec.treatment_code;
+                            input.dataset.treatmentId = rec.treatment_code;
                             input.style.backgroundColor = "#e5e7eb";
-                            input.title = getTreatmentName(rec.treatment_code);
                         }
                     });
-
-                    showNotice(`Loaded ${data.records.length} existing treatments for ${selectedDate}`, "blue");
-                } else {
-                    showNotice(`No existing treatments found for ${selectedDate}. You can add new ones.`, "yellow");
                 }
-
-                // Reset treatment selector
-                document.getElementById("selcttreatment").selectedIndex = 0;
-                selectedTreatmentCode = null;
 
                 document.getElementById("SMCModal").classList.remove("hidden");
                 initSMCTreatmentClick();
             } catch (err) {
-                console.error("Failed to load treatments", err);
-                // If get_today_smc.php doesn't exist, just show empty modal
-                showNotice("Ready to add new treatments", "yellow");
-                document.getElementById("SMCModal").classList.remove("hidden");
-                initSMCTreatmentClick();
+                console.error("Failed to load today's treatments", err);
+                showNotice("❌ Failed to load today's treatments", "red");
             }
         });
 
-        function getTreatmentName(code) {
-            const treatments = {
-                'FV': 'Fluoride Varnish',
-                'FG': 'Fluoride Gel',
-                'PFS': 'Pit and Fissure Sealant',
-                'PF': 'Permanent Filling',
-                'TF': 'Temporary Filling',
-                'X': 'Extraction',
-                'O': 'Others'
-            };
-            return treatments[code] || code;
-        }
 
-        // ==================== SAVE FUNCTION ====================
+        // Save SMC with update or insert logic
         function saveSMC() {
             const patientId = document.getElementById("patient_id").value;
             if (!patientId) return showNotice("Patient ID not set", "red");
 
-            const datePicker = document.getElementById("treatmentDate");
-            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
             const treatments = [];
-            let hasTreatments = false;
 
-            document.querySelectorAll("#SMCModal .tooth-input").forEach(input => {
-                const treatmentCode = input.value.trim();
-                const toothId = input.dataset.toothId;
-
-                if (treatmentCode && toothId) {
-                    treatments.push({
-                        tooth_id: toothId,
-                        treatment_code: treatmentCode
-                    });
-                    hasTreatments = true;
-                }
+            document.querySelectorAll("#SMCModal input[data-tooth-id]").forEach(input => {
+                treatments.push({
+                    tooth_id: input.dataset.toothId,
+                    treatment_code: input.dataset.treatmentId || "" // empty if cleared
+                });
             });
 
-            if (!hasTreatments) {
-                showNotice("No treatments selected", "yellow");
-                return;
-            }
-
-            // Disable save button
-            const saveBtn = document.getElementById("saveSMCBtn");
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = "Saving...";
-            saveBtn.disabled = true;
-
-            // Close modal
-            closeSMC();
-
-            // Use relative path for save endpoint
-            fetch("../../php/treatmentrecords/save_treatment_history.php", {
+            fetch("/dentalemr_system/php/treatmentrecords/add_or_update_vieworalB.php", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
                         patient_id: parseInt(patientId),
-                        treatments: treatments,
-                        date: selectedDate
+                        treatments,
+                        date: today
                     })
                 })
-                .then(async response => {
-                    const text = await response.text();
-                    console.log("Server response:", text);
-
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error("Failed to parse JSON:", text);
-                        throw new Error("Invalid server response");
-                    }
-                })
-                .then(data => {
-                    console.log("Parsed data:", data);
-
-                    if (data.success) {
-                        showNotice(data.message, "green");
-
-                        // Clear modal inputs
-                        document.querySelectorAll("#SMCModal .tooth-input").forEach(input => {
-                            input.value = "";
-                            input.style.backgroundColor = "";
-                            input.title = "";
-                        });
-
-                        // Reset treatment selector
-                        document.getElementById("selcttreatment").selectedIndex = 0;
-                        selectedTreatmentCode = null;
-
-                        // Refresh the table data
-                        setTimeout(() => {
-                            loadPatientData(patientId);
-                        }, 300);
-
-                    } else {
-                        showNotice("Failed: " + (data.message || "Unknown error"), "red");
-
-                        // If error is about missing table, create it
-                        if (data.message && data.message.includes("table not found")) {
-                            if (confirm("Treatment history table not found. Create it now?")) {
-                                createTreatmentHistoryTable();
-                            }
-                        }
-                    }
-
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
-                })
-                .catch(err => {
-                    console.error("Save error:", err);
-                    showNotice("Save failed: " + err.message, "red");
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
-                });
-        }
-
-        function createTreatmentHistoryTable() {
-            showNotice("Creating treatment history table...", "blue");
-
-            fetch("../../php/treatmentrecords/create_history_table.php")
-                .then(response => response.json())
+                .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        showNotice("Table created successfully! Please try saving again.", "green");
+                        showNotice(data.message, "blue");
+                        document.getElementById("SMCModal").classList.add("hidden");
+                        refreshTables(); // reload tables dynamically
                     } else {
-                        showNotice("Failed to create table: " + data.message, "red");
+                        showNotice("❌ " + data.message, "red");
                     }
                 })
                 .catch(err => {
-                    showNotice("Error creating table: " + err.message, "red");
+                    console.error("Save SMC error:", err);
+                    showNotice("❌ Request failed. Check console.", "red");
                 });
         }
+
 
         // Close modal
         function closeSMC() {
             document.getElementById("SMCModal").classList.add("hidden");
-            // Reset treatment selector
-            document.getElementById("selcttreatment").selectedIndex = 0;
-            selectedTreatmentCode = null;
         }
-
-        // Add CSS for better loading states
-        const style = document.createElement('style');
-        style.textContent = `
-            .tooth-input {
-                transition: all 0.2s ease;
-            }
-            
-            .tooth-input:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-            
-            #tables-container {
-                transition: opacity 0.3s ease;
-            }
-            
-            .loading-spinner {
-                display: none;
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 9999;
-            }
-            
-            #saveSMCBtn:disabled {
-                background-color: #93c5fd !important;
-                cursor: not-allowed;
-            }
-        `;
-        document.head.appendChild(style);
     </script>
-    <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
 
+    <script>
+        function refreshTables() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const patientId = urlParams.get("id");
+            if (!patientId) return;
+
+            fetch(`/dentalemr_system/php/treatmentrecords/view_oralB.php?patient_id=${patientId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.records) data.records = [];
+                    populateTables(data.records); // Reuse your existing function
+                })
+                .catch(error => {
+                    console.error('Error refreshing tables:', error);
+                    showNotice("❌ Failed to refresh tables", "red");
+                });
+        }
+    </script>
+
+        <!-- Load offline storage -->
+    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    
 
     <!-- Offline/Online Sync Handler -->
     <script>

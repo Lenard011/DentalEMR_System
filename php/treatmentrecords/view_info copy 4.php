@@ -11,24 +11,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', __DIR__ . '/php_errors.log');
 error_reporting(E_ALL);
 
-// Set CORS headers FIRST (before any output)
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE, PATCH");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
-header("Access-Control-Allow-Credentials: true");
-
-// Add after setting Content-Type header
-header("Cache-Control: no-cache, no-store, must-revalidate");
-header("Pragma: no-cache");
-header("Expires: 0");
-
-// Handle OPTIONS request for CORS preflight
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
-// Set JSON header
+// Set JSON header FIRST
 header('Content-Type: application/json; charset=UTF-8');
 
 // Database connection
@@ -37,20 +20,24 @@ $dbUser = "root";
 $dbPass = "";
 $dbName = "dentalemr_system";
 
-// Use mysqli with proper error handling
-mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-
-try {
-    $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
-    $conn->set_charset("utf8mb4");
-    $conn->options(MYSQLI_OPT_CONNECT_TIMEOUT, 5);
-} catch (Exception $e) {
+$conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+if ($conn->connect_error) {
     http_response_code(500);
-    echo json_encode([
-        "error" => "Database connection failed",
-        "message" => $e->getMessage(),
-        "code" => $e->getCode()
-    ]);
+    echo json_encode(["error" => "Database connection failed: " . $conn->connect_error]);
+    exit;
+}
+
+// Set charset
+$conn->set_charset("utf8mb4");
+
+// CORS headers
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+// Handle OPTIONS request for CORS preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
@@ -76,53 +63,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         // GET PATIENT INFO
         if ($action === 'get_patient') {
-            // Include months_old and pregnant fields
-            $sql = "SELECT patient_id, firstname, surname, middlename, 
-                   DATE_FORMAT(date_of_birth, '%Y-%m-%d') as date_of_birth,
-                   sex, age, months_old, pregnant, place_of_birth, address, occupation, guardian 
-            FROM patients 
-            WHERE patient_id=? AND if_treatment=1";
-
-            $stmt = $conn->prepare($sql);
+            $stmt = $conn->prepare("SELECT patient_id, firstname, surname, middlename, date_of_birth, sex, age, place_of_birth, address, occupation, guardian FROM patients WHERE patient_id=? AND if_treatment=1");
             if (!$stmt) {
-                error_log("Prepare failed: " . $conn->error);
                 throw new Exception("Database prepare failed: " . $conn->error);
             }
 
             $stmt->bind_param("i", $patientId);
-
-            if (!$stmt->execute()) {
-                error_log("Execute failed: " . $stmt->error);
-                throw new Exception("Failed to execute query: " . $stmt->error);
-            }
-
+            $stmt->execute();
             $result = $stmt->get_result();
-
-            if (!$result) {
-                throw new Exception("Failed to get result: " . $stmt->error);
-            }
-
             $patient = $result->fetch_assoc();
             $stmt->close();
 
             if (!$patient) {
                 http_response_code(404);
-                echo json_encode(["error" => "Patient not found or not in treatment"]);
+                echo json_encode(["error" => "Patient not found"]);
                 exit;
-            }
-
-            // Clean and format data for consistent browser display
-            foreach ($patient as $key => $value) {
-                if (is_string($value)) {
-                    $patient[$key] = htmlspecialchars_decode($value, ENT_QUOTES);
-                    $patient[$key] = trim($patient[$key]);
-                }
             }
 
             echo json_encode([
                 "success" => true,
                 "patient" => $patient
-            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            ]);
             exit;
         }
 
@@ -150,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     }
                 }
 
+                // Handle number-based memberships
                 if (!empty($row['philhealth_flag']) && $row['philhealth_flag'] == 1) {
                     $membership[] = [
                         "field" => "philhealth_flag",
@@ -227,6 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     if (!empty($row[$field]) && $row[$field] == 1) {
                         $details = '';
 
+                        // Add details if available
                         switch ($field) {
                             case 'allergies_flag':
                                 $details = $row['allergies_details'] ?? '';
@@ -313,15 +276,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 // ===========================
-// POST REQUESTS
+// POST REQUESTS - IMPROVED VERSION
 // ===========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Initialize input array
     $input = [];
 
+    // Always check for FormData first (most common from your frontend)
     if (!empty($_POST)) {
         $input = $_POST;
 
+        // For FormData, unchecked checkboxes are not sent at all
+        // So we need to check each possible checkbox field and set default to 0
         $checkboxFields = [
+            // Medical history
             'allergies_flag',
             'hypertension_cva',
             'diabetes_mellitus',
@@ -334,10 +302,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'blood_transfusion_flag',
             'tattoo',
             'other_conditions_flag',
+            // Dietary habits
             'sugar_flag',
             'alcohol_flag',
             'tobacco_flag',
             'betel_nut_flag',
+            // Membership
             'nhts_pr',
             'four_ps',
             'indigenous_people',
@@ -348,16 +318,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         foreach ($checkboxFields as $field) {
+            // If not set in POST, it means checkbox was unchecked
             if (!isset($input[$field])) {
                 $input[$field] = 0;
             } else {
+                // If set, convert to integer
                 $input[$field] = intval($input[$field]);
             }
         }
-    } else {
+    }
+    // If no POST data, try to get raw input (for JSON or form-urlencoded)
+    else {
         $rawInput = file_get_contents('php://input');
 
         if (!empty($rawInput)) {
+            // Check Content-Type
             $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 
             if (strpos($contentType, 'application/json') !== false) {
@@ -367,7 +342,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     echo json_encode(["error" => "Invalid JSON input", "details" => json_last_error_msg()]);
                     exit;
                 }
-            } else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
+            }
+            // Check for form-urlencoded (not common with FormData but for completeness)
+            else if (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
                 parse_str($rawInput, $input);
             }
         }
@@ -389,8 +366,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // SAVE PATIENT INFO - UPDATED FOR MONTHS_OLD AND PREGNANT
+        // SAVE PATIENT INFO
         if ($action === 'save_patient') {
+            // Required fields validation
             $requiredFields = ['firstname', 'surname', 'date_of_birth', 'sex', 'age'];
             $missingFields = [];
 
@@ -406,19 +384,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            // Get months_old (default to 0 if not provided)
-            $months_old = isset($input['months_old']) ? intval($input['months_old']) : 0;
-
-            // Get pregnant status (default to 'no' if not provided or not female)
-            $pregnant = 'no';
-            if (isset($input['sex']) && $input['sex'] === 'Female' && isset($input['pregnant'])) {
-                $pregnant = ($input['pregnant'] === 'yes') ? 'yes' : 'no';
-            }
-
-            // Prepare the update statement - now includes months_old and pregnant
+            // Prepare the update statement
             $stmt = $conn->prepare("UPDATE patients SET 
                 firstname=?, surname=?, middlename=?, date_of_birth=?, sex=?, age=?, 
-                months_old=?, pregnant=?, place_of_birth=?, address=?, occupation=?, guardian=?, updated_at=NOW()
+                place_of_birth=?, address=?, occupation=?, guardian=?, updated_at=NOW()
                 WHERE patient_id=?");
 
             if (!$stmt) {
@@ -433,15 +402,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $guardian = !empty($input['guardian']) ? $input['guardian'] : null;
 
             $stmt->bind_param(
-                "sssssiisssssi",
+                "sssssissssi",
                 $input['firstname'],
                 $input['surname'],
                 $middlename,
                 $input['date_of_birth'],
                 $input['sex'],
                 $input['age'],
-                $months_old,
-                $pregnant,
                 $place_of_birth,
                 $address,
                 $occupation,
@@ -489,6 +456,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // SAVE MEMBERSHIP
         if ($action === 'save_membership') {
+            // Check if record exists
             $check = $conn->prepare("SELECT patient_id FROM patient_other_info WHERE patient_id=?");
             $check->bind_param("i", $patientId);
             $check->execute();
@@ -496,6 +464,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $check->close();
 
             if (!$exists) {
+                // Insert new record with default values
                 $ins = $conn->prepare("INSERT INTO patient_other_info (patient_id) VALUES (?)");
                 $ins->bind_param("i", $patientId);
                 if (!$ins->execute()) {
@@ -504,6 +473,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ins->close();
             }
 
+            // Prepare the UPDATE statement
             $sql = "UPDATE patient_other_info SET 
                 nhts_pr = ?, 
                 four_ps = ?, 
@@ -522,6 +492,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Prepare failed: " . $conn->error);
             }
 
+            // Handle checkbox values - default to 0 if not set
             $nhts_pr = $input['nhts_pr'] ?? 0;
             $four_ps = $input['four_ps'] ?? 0;
             $indigenous_people = $input['indigenous_people'] ?? 0;
@@ -530,6 +501,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sss_flag = $input['sss_flag'] ?? 0;
             $gsis_flag = $input['gsis_flag'] ?? 0;
 
+            // Handle optional number fields
             $philhealth_number = !empty($input['philhealth_number']) ? $input['philhealth_number'] : null;
             $sss_number = !empty($input['sss_number']) ? $input['sss_number'] : null;
             $gsis_number = !empty($input['gsis_number']) ? $input['gsis_number'] : null;
@@ -561,7 +533,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        // SAVE MEDICAL HISTORY
+        // SAVE MEDICAL HISTORY - FIXED VERSION
         if ($action === 'save_medical') {
             // First, let's log what we're receiving
             error_log("=== SAVE_MEDICAL REQUEST ===");

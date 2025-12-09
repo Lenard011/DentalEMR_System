@@ -849,8 +849,8 @@ if (!$isOfflineMode) {
 
                 <!-- Edit Patient Modal -->
                 <div id="editPatientModal" tabindex="-1" aria-hidden="true"
-                    class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-4">
+                    class="fixed inset-0 hidden justify-center items-center z-50 bg-gray-600/50">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-lg p-6 relative">
                         <div class="flex flex-row justify-between items-center mb-4">
                             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Edit Patient Details</h2>
                             <button type="button" onclick="closeModal()"
@@ -867,77 +867,47 @@ if (!$isOfflineMode) {
                         <form id="editPatientForm">
                             <input type="hidden" id="editPatientId" name="patient_id" value="">
 
-                            <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">First
                                         Name</label>
-                                    <input type="text" id="editFirstname" name="firstname" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <input type="text" id="editFirstname" name="firstname"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                                 </div>
                                 <div>
-                                    <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Surname</label>
-                                    <input type="text" id="editSurname" name="surname" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <label
+                                        class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Surname</label>
+                                    <input type="text" id="editSurname" name="surname"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                                 </div>
                                 <div>
                                     <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Middle
                                         Name</label>
                                     <input type="text" id="editMiddlename" name="middlename"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                                 </div>
                                 <div>
                                     <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Date of
                                         Birth</label>
-                                    <input type="date" id="editDob" name="date_of_birth" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    <input type="date" id="editDob" name="date_of_birth"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                                 </div>
-                            </div>
-
-                            <!-- Age, Sex, Pregnant Section -->
-                            <div id="form-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-4">
-                                <!-- Age -->
-                                <div class="flex flex-col sm:flex-row gap-2">
-                                    <div class="flex-1">
-                                        <label for="editAge" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Age (Years)</label>
-                                        <input type="number" id="editAge" name="age" min="0" required data-label="Age"
-                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                    </div>
-                                    <div id="monthContainer" class="flex-1 hidden">
-                                        <div class="flex items-center justify-between mb-2">
-                                            <label for="editAgemonth" class="block text-xs font-medium text-gray-900 dark:text-white">Months</label>
-                                        </div>
-                                        <input type="number" id="editAgemonth" name="agemonth" min="0" max="59"
-                                            class="bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus-border-primary-500 cursor-not-allowed">
-                                    </div>
-                                </div>
-
-                                <!-- Sex -->
-                                <div id="sex-wrapper">
-                                    <label for="editSex" class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Sex</label>
-                                    <select id="editSex" name="sex" required data-label="Sex"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus-border-primary-500">
+                                <div>
+                                    <label
+                                        class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Sex</label>
+                                    <select id="editSex" name="sex"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                                         <option value="">-- Select --</option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
-
-                                <!-- Pregnant (hidden by default) -->
-                                <div id="editPregnantSection" class="hidden sm:col-span-2">
-                                    <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Pregnant</label>
-                                    <div class="flex flex-row gap-4 items-center">
-                                        <div class="flex items-center">
-                                            <input id="editPregnantYes" type="radio" value="yes" name="pregnant"
-                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
-                                            <label for="editPregnantYes" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Yes</label>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <input id="editPregnantNo" type="radio" value="no" name="pregnant" checked
-                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500">
-                                            <label for="editPregnantNo" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">No</label>
-                                        </div>
-                                    </div>
+                                <div>
+                                    <label
+                                        class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Age</label>
+                                    <input type="text" id="editAge" name="age"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                                 </div>
                             </div>
 
@@ -945,25 +915,28 @@ if (!$isOfflineMode) {
                                 <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Place of
                                     Birth</label>
                                 <input type="text" id="editPob" name="place_of_birth"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                             </div>
 
                             <div class="mt-4">
-                                <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Address</label>
+                                <label
+                                    class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Address</label>
                                 <input type="text" id="editAddress" name="address"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                             </div>
 
                             <div class="mt-4 grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Occupation</label>
+                                    <label
+                                        class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Occupation</label>
                                     <input type="text" id="editOccupation" name="occupation"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                                 </div>
                                 <div>
-                                    <label class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Guardian</label>
+                                    <label
+                                        class="block mb-2 text-xs font-medium text-gray-900 dark:text-white">Guardian</label>
                                     <input type="text" id="editGuardian" name="guardian"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm block w-full p-1">
                                 </div>
                             </div>
 
@@ -1448,7 +1421,6 @@ if (!$isOfflineMode) {
             });
         }
     </script>
-
     <script>
         function back() {
             location.href = ("treatmentrecords.php?uid=<?php echo $userId; ?>");
@@ -1487,18 +1459,20 @@ if (!$isOfflineMode) {
         }
     </script>
 
-    <!-- Patient + Membership Script -->
+    <!-- Patient + Membership -->
     <script>
         // Universal Browser Compatibility Layer
         (function() {
             // Feature detection and polyfills
             if (!window.Promise) {
                 console.warn('Promise not supported - loading polyfill');
+                // Load Promise polyfill dynamically if needed
                 var script = document.createElement('script');
                 script.src = 'https://cdn.jsdelivr.net/npm/promise-polyfill@8/dist/polyfill.min.js';
                 document.head.appendChild(script);
             }
 
+            // Fix for fetch in older browsers
             if (!window.fetch) {
                 console.warn('fetch not supported - loading polyfill');
                 var script = document.createElement('script');
@@ -1510,11 +1484,14 @@ if (!$isOfflineMode) {
             window.safeParseDate = function(dateString) {
                 if (!dateString) return null;
 
+                // Try different date formats
                 const formats = [
+                    // ISO format
                     () => {
                         const date = new Date(dateString);
                         return !isNaN(date.getTime()) ? date : null;
                     },
+                    // YYYY-MM-DD format
                     () => {
                         const parts = dateString.split('-');
                         if (parts.length === 3) {
@@ -1523,6 +1500,7 @@ if (!$isOfflineMode) {
                         }
                         return null;
                     },
+                    // DD/MM/YYYY format
                     () => {
                         const parts = dateString.split('/');
                         if (parts.length === 3) {
@@ -1544,15 +1522,18 @@ if (!$isOfflineMode) {
             // Universal fetch wrapper with better error handling
             const originalFetch = window.fetch;
             window.fetch = function(url, options = {}) {
+                // Add cache-busting for GET requests (fix for IE/Edge)
                 if (!options.method || options.method.toUpperCase() === 'GET') {
                     const separator = url.includes('?') ? '&' : '?';
                     url = url + separator + '_t=' + Date.now();
                 }
 
+                // Ensure headers exist
                 if (!options.headers) {
                     options.headers = {};
                 }
 
+                // Set default headers for all browsers
                 Object.assign(options.headers, {
                     'Cache-Control': 'no-cache, no-store, must-revalidate',
                     'Pragma': 'no-cache',
@@ -1560,10 +1541,12 @@ if (!$isOfflineMode) {
                     'X-Requested-With': 'XMLHttpRequest'
                 });
 
+                // Ensure credentials for sessions
                 if (!options.credentials) {
                     options.credentials = 'include';
                 }
 
+                // Set timeout for all requests (30 seconds)
                 const timeout = 30000;
 
                 return Promise.race([
@@ -1602,15 +1585,19 @@ if (!$isOfflineMode) {
                 const browser = window.getBrowserInfo();
                 console.log('Browser detected:', browser);
 
+                // Apply specific fixes
                 switch (browser) {
                     case 'ie':
                     case 'edge':
+                        // Additional fixes for IE/Edge
                         if (!window.console) window.console = {
                             log: function() {},
                             error: function() {}
                         };
                         break;
                     case 'safari':
+                        // Safari specific fixes
+                        // Ensure date inputs work correctly
                         const dateInputs = document.querySelectorAll('input[type="date"]');
                         dateInputs.forEach(input => {
                             input.addEventListener('focus', function() {
@@ -1621,7 +1608,6 @@ if (!$isOfflineMode) {
                         break;
                 }
             });
-
             // Fix for Date input in all browsers
             document.addEventListener('DOMContentLoaded', function() {
                 const dateInputs = document.querySelectorAll('input[type="date"]');
@@ -1629,6 +1615,7 @@ if (!$isOfflineMode) {
                     if (input.value) {
                         const date = window.safeParseDate(input.value);
                         if (date) {
+                            // Format as YYYY-MM-DD (standard for date inputs)
                             const yyyy = date.getFullYear();
                             const mm = String(date.getMonth() + 1).padStart(2, '0');
                             const dd = String(date.getDate()).padStart(2, '0');
@@ -1640,277 +1627,6 @@ if (!$isOfflineMode) {
         })();
 
         document.addEventListener("DOMContentLoaded", async () => {
-            // ========== AGE CALCULATION FUNCTIONALITY (Universal) ==========
-            function initializeAgeCalculator() {
-                // For both add and edit modals
-                const dobFields = document.querySelectorAll('#dob, #editDob');
-                const ageInputs = document.querySelectorAll('#age, #editAge');
-                const monthInputs = document.querySelectorAll('#agemonth, #editAgemonth');
-                const monthContainers = document.querySelectorAll('#monthContainer');
-                const sexInputs = document.querySelectorAll('#sex, #editSex');
-                const pregnantSections = document.querySelectorAll('#pregnant-section, #editPregnantSection');
-                const pregnantRadios = document.querySelectorAll('input[name="pregnant"]');
-
-                // Hide month containers initially
-                monthContainers.forEach(container => {
-                    if (container) container.style.display = 'none';
-                });
-
-                // Function to calculate age from DOB
-                function calculateAge(dobString) {
-                    if (!dobString) return {
-                        years: 0,
-                        months: 0,
-                        days: 0
-                    };
-
-                    const birthDate = window.safeParseDate(dobString);
-                    const today = new Date();
-
-                    if (!birthDate || birthDate > today) {
-                        return {
-                            years: 0,
-                            months: 0,
-                            days: 0
-                        };
-                    }
-
-                    let years = today.getFullYear() - birthDate.getFullYear();
-                    let months = today.getMonth() - birthDate.getMonth();
-                    let days = today.getDate() - birthDate.getDate();
-
-                    // Adjust for negative months
-                    if (months < 0) {
-                        years--;
-                        months += 12;
-                    }
-
-                    // Adjust for negative days
-                    if (days < 0) {
-                        months--;
-                        days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-
-                        // If months went negative, adjust years
-                        if (months < 0) {
-                            years--;
-                            months += 12;
-                        }
-                    }
-
-                    return {
-                        years: Math.max(0, years),
-                        months: Math.max(0, months),
-                        days: Math.max(0, days)
-                    };
-                }
-
-                // Function to update age from DOB
-                function updateFromDOB(dobField, ageInput, monthInput, monthContainer) {
-                    if (!dobField || !dobField.value) {
-                        if (ageInput) ageInput.value = '';
-                        if (monthInput) monthInput.value = '';
-                        if (monthContainer) monthContainer.style.display = 'none';
-                        return;
-                    }
-
-                    const {
-                        years,
-                        months
-                    } = calculateAge(dobField.value);
-
-                    // Update age field
-                    if (ageInput) {
-                        ageInput.value = years;
-                    }
-
-                    // Handle month field
-                    if (monthContainer && monthInput) {
-                        if (years < 5) {
-                            monthContainer.style.display = 'block';
-                            const totalMonths = (years * 12) + months;
-                            // Limit to 59 months (4 years 11 months)
-                            monthInput.value = Math.min(totalMonths, 59);
-                        } else {
-                            monthContainer.style.display = 'none';
-                            monthInput.value = '';
-                        }
-                    }
-                }
-
-                // Function to handle manual age input
-                function handleManualAgeInput(ageInput, monthInput, monthContainer) {
-                    if (!ageInput) return;
-
-                    const years = parseInt(ageInput.value) || 0;
-
-                    if (monthContainer && monthInput) {
-                        if (years < 5) {
-                            monthContainer.style.display = 'block';
-                            // If month is empty and age < 5, set to 0
-                            if (!monthInput.value.trim() && years >= 0) {
-                                monthInput.value = 0;
-                            }
-                        } else {
-                            monthContainer.style.display = 'none';
-                            monthInput.value = '';
-                        }
-                    }
-                }
-
-                // Function to update pregnant section
-                function updatePregnantSection(sexInput, ageInput, pregnantSection) {
-                    if (!pregnantSection || !sexInput || !ageInput) return;
-
-                    const age = parseInt(ageInput.value) || 0;
-                    const sex = sexInput.value;
-
-                    if (sex === 'Female' && age >= 10 && age <= 49) {
-                        pregnantSection.classList.remove('hidden');
-
-                        // Find related pregnant radios
-                        const relatedPregnantRadios = pregnantSection.querySelectorAll('input[name="pregnant"]');
-                        relatedPregnantRadios.forEach(radio => {
-                            radio.disabled = false;
-                            radio.required = true;
-                        });
-                    } else {
-                        pregnantSection.classList.add('hidden');
-
-                        const relatedPregnantRadios = pregnantSection.querySelectorAll('input[name="pregnant"]');
-                        relatedPregnantRadios.forEach(radio => {
-                            radio.disabled = true;
-                            radio.required = false;
-                            if (radio.value === "No" || radio.value === "no") {
-                                radio.checked = true;
-                            }
-                        });
-                    }
-                }
-
-                // Set up event listeners for each field set
-                dobFields.forEach(dobField => {
-                    if (dobField) {
-                        const formId = dobField.closest('form')?.id;
-                        const isEditForm = formId === 'editPatientForm';
-
-                        const ageInput = document.getElementById(isEditForm ? 'editAge' : 'age');
-                        const monthInput = document.getElementById(isEditForm ? 'editAgemonth' : 'agemonth');
-                        const monthContainer = document.getElementById('monthContainer');
-                        const sexInput = document.getElementById(isEditForm ? 'editSex' : 'sex');
-                        const pregnantSection = document.getElementById(isEditForm ? 'editPregnantSection' : 'pregnant-section');
-
-                        dobField.addEventListener('change', () => {
-                            updateFromDOB(dobField, ageInput, monthInput, monthContainer);
-                            if (sexInput && pregnantSection) {
-                                updatePregnantSection(sexInput, ageInput, pregnantSection);
-                            }
-                        });
-
-                        dobField.addEventListener('input', () => {
-                            updateFromDOB(dobField, ageInput, monthInput, monthContainer);
-                            if (sexInput && pregnantSection) {
-                                updatePregnantSection(sexInput, ageInput, pregnantSection);
-                            }
-                        });
-
-                        // If DOB already has value, calculate immediately
-                        if (dobField.value) {
-                            setTimeout(() => {
-                                updateFromDOB(dobField, ageInput, monthInput, monthContainer);
-                                if (sexInput && pregnantSection) {
-                                    updatePregnantSection(sexInput, ageInput, pregnantSection);
-                                }
-                            }, 100);
-                        }
-                    }
-                });
-
-                ageInputs.forEach(ageInput => {
-                    if (ageInput) {
-                        const formId = ageInput.closest('form')?.id;
-                        const isEditForm = formId === 'editPatientForm';
-
-                        const monthInput = document.getElementById(isEditForm ? 'editAgemonth' : 'agemonth');
-                        const monthContainer = document.getElementById('monthContainer');
-                        const sexInput = document.getElementById(isEditForm ? 'editSex' : 'sex');
-                        const pregnantSection = document.getElementById(isEditForm ? 'editPregnantSection' : 'pregnant-section');
-
-                        ageInput.addEventListener('input', () => {
-                            handleManualAgeInput(ageInput, monthInput, monthContainer);
-                            if (sexInput && pregnantSection) {
-                                updatePregnantSection(sexInput, ageInput, pregnantSection);
-                            }
-                        });
-
-                        ageInput.addEventListener('change', () => {
-                            handleManualAgeInput(ageInput, monthInput, monthContainer);
-                            if (sexInput && pregnantSection) {
-                                updatePregnantSection(sexInput, ageInput, pregnantSection);
-                            }
-                        });
-                    }
-                });
-
-                sexInputs.forEach(sexInput => {
-                    if (sexInput) {
-                        const formId = sexInput.closest('form')?.id;
-                        const isEditForm = formId === 'editPatientForm';
-
-                        const ageInput = document.getElementById(isEditForm ? 'editAge' : 'age');
-                        const pregnantSection = document.getElementById(isEditForm ? 'editPregnantSection' : 'pregnant-section');
-
-                        sexInput.addEventListener('change', () => {
-                            if (ageInput && pregnantSection) {
-                                updatePregnantSection(sexInput, ageInput, pregnantSection);
-                            }
-                        });
-                    }
-                });
-
-                monthInputs.forEach(monthInput => {
-                    if (monthInput) {
-                        monthInput.addEventListener('input', function() {
-                            const formId = this.closest('form')?.id;
-                            const isEditForm = formId === 'editPatientForm';
-                            const ageInput = document.getElementById(isEditForm ? 'editAge' : 'age');
-                            const monthContainer = document.getElementById('monthContainer');
-
-                            const age = parseInt(ageInput?.value) || 0;
-                            if (age < 5 && this.value && monthContainer) {
-                                monthContainer.style.display = 'block';
-                            }
-                        });
-                    }
-                });
-
-                // Initial update for pregnant sections
-                sexInputs.forEach(sexInput => {
-                    if (sexInput) {
-                        const formId = sexInput.closest('form')?.id;
-                        const isEditForm = formId === 'editPatientForm';
-                        const ageInput = document.getElementById(isEditForm ? 'editAge' : 'age');
-                        const pregnantSection = document.getElementById(isEditForm ? 'editPregnantSection' : 'pregnant-section');
-
-                        if (ageInput && pregnantSection) {
-                            updatePregnantSection(sexInput, ageInput, pregnantSection);
-                        }
-                    }
-                });
-            }
-
-            // Initialize age calculator when DOM is loaded
-            setTimeout(initializeAgeCalculator, 500);
-
-            // Initialize age calculator when edit modal is opened
-            const editBtn = document.getElementById("editBtn");
-            if (editBtn) {
-                editBtn.addEventListener('click', function() {
-                    // Small delay to ensure modal is visible
-                    setTimeout(initializeAgeCalculator, 100);
-                });
-            }
-
-            // ========== MAIN PATIENT + MEMBERSHIP FUNCTIONALITY ==========
             const params = new URLSearchParams(window.location.search);
             const patientId = params.get("id");
             const notice = document.getElementById("notice");
@@ -1919,28 +1635,30 @@ if (!$isOfflineMode) {
             window.showNotice = function(message, color = "blue") {
                 const notice = document.getElementById("notice");
                 if (!notice) {
+                    // Create notice element if it doesn't exist
                     const newNotice = document.createElement('div');
                     newNotice.id = 'notice';
                     newNotice.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 12px 20px;
-                border-radius: 6px;
-                color: white;
-                z-index: 9999;
-                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                font-family: sans-serif;
-                font-size: 14px;
-                max-width: 300px;
-                word-wrap: break-word;
-                display: none;
-            `;
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        padding: 12px 20px;
+                        border-radius: 6px;
+                        color: white;
+                        z-index: 9999;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        font-family: sans-serif;
+                        font-size: 14px;
+                        max-width: 300px;
+                        word-wrap: break-word;
+                        display: none;
+                    `;
                     document.body.appendChild(newNotice);
                 }
 
                 const targetNotice = document.getElementById("notice");
 
+                // Clear any existing timeout
                 if (targetNotice.timeoutId) {
                     clearTimeout(targetNotice.timeoutId);
                 }
@@ -1950,6 +1668,7 @@ if (!$isOfflineMode) {
                 targetNotice.style.display = "block";
                 targetNotice.style.opacity = "1";
 
+                // Use simple timeout for maximum compatibility
                 targetNotice.timeoutId = setTimeout(() => {
                     targetNotice.style.opacity = "0";
                     setTimeout(() => {
@@ -1963,60 +1682,11 @@ if (!$isOfflineMode) {
                 return;
             }
 
-            // Function to show/hide months container based on age
-            function toggleMonthsContainer() {
-                const ageInput = document.getElementById("editAge");
-                const monthContainer = document.getElementById("monthContainer");
-
-                if (!ageInput || !monthContainer) return;
-
-                const age = parseInt(ageInput.value) || 0;
-
-                if (age <= 4 && age >= 0) {
-                    monthContainer.style.display = "block";
-                    monthContainer.classList.remove("hidden");
-                } else {
-                    monthContainer.style.display = "none";
-                    monthContainer.classList.add("hidden");
-                }
-            }
-
-            // Function to calculate age from DOB
-            function calculateAgeFromDOB(dobString) {
-                if (!dobString) return {
-                    years: 0,
-                    months: 0
-                };
-
-                const dob = window.safeParseDate(dobString);
-                if (!dob) return {
-                    years: 0,
-                    months: 0
-                };
-
-                const today = new Date();
-                let years = today.getFullYear() - dob.getFullYear();
-                let months = today.getMonth() - dob.getMonth();
-
-                // Adjust for day of month
-                if (today.getDate() < dob.getDate()) {
-                    months--;
-                }
-
-                // Adjust for negative months
-                if (months < 0) {
-                    years--;
-                    months += 12;
-                }
-
-                return {
-                    years: Math.max(0, years),
-                    months: Math.max(0, months)
-                };
-            }
-
             // LOAD PATIENT INFO
             async function loadPatient() {
+                console.log("loadPatient called - checking if elements exist...");
+                console.log("patientName element exists:", !!document.getElementById("patientName"));
+                console.log("patientName2 element exists:", !!document.getElementById("patientName2"));
                 try {
                     const params = new URLSearchParams(window.location.search);
                     const patientId = params.get("id");
@@ -2026,10 +1696,11 @@ if (!$isOfflineMode) {
                         return;
                     }
 
+                    // Try multiple approaches for maximum compatibility
                     let result = null;
                     let success = false;
 
-                    // Approach 1: Standard fetch
+                    // Approach 1: Standard fetch (works in modern browsers)
                     try {
                         const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_patient&patient_id=${patientId}`, {
                             method: 'GET',
@@ -2040,23 +1711,27 @@ if (!$isOfflineMode) {
                             credentials: 'include'
                         });
 
+                        // Check response
                         if (!res.ok) {
                             throw new Error(`HTTP ${res.status}: ${res.statusText}`);
                         }
 
+                        // Try to parse as JSON
                         const responseText = await res.text();
 
+                        // First check if it's valid JSON
                         try {
                             result = JSON.parse(responseText);
                             success = result.success;
                         } catch (jsonError) {
+                            // Not JSON, might be HTML or error
                             console.error('Invalid JSON response:', responseText.substring(0, 200));
                             throw new Error('Server returned invalid response');
                         }
                     } catch (fetchError) {
                         console.warn('Fetch approach failed:', fetchError.message);
 
-                        // Approach 2: XMLHttpRequest
+                        // Approach 2: XMLHttpRequest (works in older browsers)
                         try {
                             result = await new Promise((resolve, reject) => {
                                 const xhr = new XMLHttpRequest();
@@ -2093,6 +1768,8 @@ if (!$isOfflineMode) {
                             success = result.success;
                         } catch (xhrError) {
                             console.warn('XHR approach failed:', xhrError.message);
+
+                            // Approach 3: Use iframe or fallback (last resort)
                             showNotice("Cannot connect to server. Please check your connection.", "crimson");
                             return;
                         }
@@ -2116,10 +1793,16 @@ if (!$isOfflineMode) {
                     const middlename = safeGet(p, 'middlename', '');
                     const surname = safeGet(p, 'surname', '');
 
+                    // Replace your name formatting code:
                     let fullName = '';
                     if (firstname || surname) {
+                        // Option A: Show full middle name
                         const middlePart = middlename ? ` ${middlename} ` : ' ';
                         fullName = `${firstname}${middlePart}${surname}`.trim();
+
+                        // Or Option B: Show middle initial (what you currently have)
+                        // const middleInitial = middlename ? ` ${middlename.charAt(0)}.` : '';
+                        // fullName = `${firstname}${middleInitial} ${surname}`.trim();
                     } else {
                         fullName = 'N/A';
                     }
@@ -2130,37 +1813,29 @@ if (!$isOfflineMode) {
 
                     if (patientNameElement1) {
                         patientNameElement1.textContent = fullName;
-                        patientNameElement1.classList.remove("italic");
+                        patientNameElement1.classList.remove("italic"); // Remove "Loading..." styling
                     }
 
                     if (patientNameElement2) {
                         patientNameElement2.textContent = fullName;
-                    }
-
-                    // Display age with months (only for ages 0-4)
-                    const ageValue = safeGet(p, 'age', '');
-                    const monthsValue = safeGet(p, 'months_old', '0');
-                    let ageDisplay = 'N/A';
-
-                    if (ageValue !== 'N/A' && ageValue !== '') {
-                        const ageNum = parseInt(ageValue) || 0;
-                        const monthsNum = parseInt(monthsValue) || 0;
-
-                        if (ageNum <= 4 && monthsNum > 0) {
-                            ageDisplay = `${ageNum}y ${monthsNum}m`;
-                        } else {
-                            ageDisplay = `${ageNum} years old`;
+                        // Also update the parent div to remove any loading states
+                        const parentDiv = patientNameElement2.closest('.min-w-0');
+                        if (parentDiv) {
+                            const loadingText = parentDiv.querySelector('p.text-xs.text-gray-500');
+                            if (loadingText && loadingText.textContent === 'Name') {
+                                // The name is loaded, so we can remove any loading indicators
+                            }
                         }
                     }
-
-                    document.getElementById("patientAge").textContent = ageDisplay;
                     document.getElementById("patientSex").textContent = safeGet(p, 'sex');
+                    document.getElementById("patientAge").textContent = safeGet(p, 'age');
 
                     // Safe date formatting for all browsers
                     const dateOfBirth = safeGet(p, 'date_of_birth');
                     if (dateOfBirth !== 'N/A') {
                         const date = window.safeParseDate(dateOfBirth);
                         if (date) {
+                            // Display in readable format
                             const options = {
                                 year: 'numeric',
                                 month: 'long',
@@ -2169,6 +1844,7 @@ if (!$isOfflineMode) {
                             try {
                                 document.getElementById("patientDob").textContent = date.toLocaleDateString('en-PH', options);
                             } catch (e) {
+                                // Fallback to simple format
                                 document.getElementById("patientDob").textContent = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
                             }
                         } else {
@@ -2204,36 +1880,8 @@ if (!$isOfflineMode) {
                         document.getElementById("editDob").value = '';
                     }
 
-                    // Handle age - use stored values
-                    const ageNum = parseInt(safeGet(p, 'age', '0')) || 0;
-                    const monthsNum = parseInt(safeGet(p, 'months_old', '0')) || 0;
-
-                    document.getElementById("editAge").value = ageNum;
-                    document.getElementById("editAgemonth").value = monthsNum;
-
-                    // Show/hide months container based on age
-                    toggleMonthsContainer();
-
-                    // Handle sex
-                    const sexValue = safeGet(p, 'sex', '');
-                    document.getElementById("editSex").value = sexValue;
-
-                    // Handle pregnant status
-                    const pregnantValue = safeGet(p, 'pregnant', 'no').toLowerCase();
-                    if (sexValue === 'Female') {
-                        document.getElementById("editPregnantSection").classList.remove("hidden");
-                        if (pregnantValue === 'yes') {
-                            document.getElementById("editPregnantYes").checked = true;
-                            document.getElementById("editPregnantNo").checked = false;
-                        } else {
-                            document.getElementById("editPregnantYes").checked = false;
-                            document.getElementById("editPregnantNo").checked = true;
-                        }
-                    } else {
-                        document.getElementById("editPregnantSection").classList.add("hidden");
-                        document.getElementById("editPregnantNo").checked = true;
-                    }
-
+                    document.getElementById("editSex").value = safeGet(p, 'sex', '');
+                    document.getElementById("editAge").value = safeGet(p, 'age', '');
                     document.getElementById("editPob").value = safeGet(p, 'place_of_birth', '');
                     document.getElementById("editAddress").value = safeGet(p, 'address', '');
                     document.getElementById("editOccupation").value = safeGet(p, 'occupation', '');
@@ -2243,6 +1891,7 @@ if (!$isOfflineMode) {
                     console.error('Critical error loading patient:', err);
                     showNotice("Failed to load patient info. Please refresh the page.", "crimson");
 
+                    // Set all fields to error state
                     const fields = [
                         "patientName", "patientName2", "patientSex", "patientAge",
                         "patientDob", "patientOccupation", "patientBirthPlace",
@@ -2270,6 +1919,7 @@ if (!$isOfflineMode) {
                         timeout = 30000
                     } = options;
 
+                    // Try fetch first (modern browsers)
                     if (window.fetch) {
                         const fetchOptions = {
                             method: method,
@@ -2301,10 +1951,12 @@ if (!$isOfflineMode) {
                                 clearTimeout(timeoutId);
                                 const text = await response.text();
 
+                                // Try to parse JSON
                                 try {
                                     const json = JSON.parse(text);
                                     resolve(json);
                                 } catch (e) {
+                                    // Not JSON
                                     if (response.ok) {
                                         resolve({
                                             text: text
@@ -2319,9 +1971,11 @@ if (!$isOfflineMode) {
                                 reject(error);
                             });
                     } else {
+                        // Fallback to XMLHttpRequest (older browsers)
                         const xhr = new XMLHttpRequest();
                         xhr.open(method, url, true);
 
+                        // Set headers
                         xhr.setRequestHeader('Accept', 'application/json');
                         xhr.setRequestHeader('Cache-Control', 'no-cache');
                         Object.keys(headers).forEach(key => {
@@ -2383,12 +2037,14 @@ if (!$isOfflineMode) {
                     const list = document.getElementById("membershipList");
                     list.innerHTML = "";
 
+                    // Build Membership List
                     (result.membership || []).forEach(item => {
                         const li = document.createElement("li");
                         li.textContent = item.label;
                         list.appendChild(li);
                     });
 
+                    // Pre-fill Form Fields
                     Object.entries(m).forEach(([k, v]) => {
                         const el = document.querySelector(`[name="${k}"]`);
                         if (!el) return;
@@ -2402,129 +2058,20 @@ if (!$isOfflineMode) {
                 }
             }
 
-            // Add event listeners for age and DOB changes in edit form
-            const editAgeInput = document.getElementById("editAge");
-            const editDobInput = document.getElementById("editDob");
-            const editSexInput = document.getElementById("editSex");
-
-            if (editAgeInput) {
-                editAgeInput.addEventListener("input", function() {
-                    toggleMonthsContainer();
-                    // Trigger pregnant section update
-                    const pregnantSection = document.getElementById("editPregnantSection");
-                    if (editSexInput && pregnantSection) {
-                        const sex = editSexInput.value;
-                        const age = parseInt(this.value) || 0;
-
-                        if (sex === 'Female' && age >= 10 && age <= 49) {
-                            pregnantSection.classList.remove("hidden");
-                        } else {
-                            pregnantSection.classList.add("hidden");
-                            document.getElementById("editPregnantNo").checked = true;
-                        }
-                    }
-                });
-
-                editAgeInput.addEventListener("change", function() {
-                    toggleMonthsContainer();
-                });
-            }
-
-            if (editDobInput) {
-                editDobInput.addEventListener("change", function() {
-                    // Calculate age from DOB when DOB changes
-                    const dobValue = this.value;
-                    if (dobValue) {
-                        const calculatedAge = calculateAgeFromDOB(dobValue);
-                        const ageInput = document.getElementById("editAge");
-                        const monthsInput = document.getElementById("editAgemonth");
-
-                        if (ageInput) {
-                            ageInput.value = calculatedAge.years;
-                        }
-
-                        // Update months if age is 4 or below
-                        if (calculatedAge.years <= 4 && monthsInput) {
-                            monthsInput.value = calculatedAge.months;
-                        }
-
-                        toggleMonthsContainer();
-
-                        // Update pregnant section
-                        const pregnantSection = document.getElementById("editPregnantSection");
-                        if (editSexInput && pregnantSection) {
-                            const sex = editSexInput.value;
-                            const age = calculatedAge.years;
-
-                            if (sex === 'Female' && age >= 10 && age <= 49) {
-                                pregnantSection.classList.remove("hidden");
-                            } else {
-                                pregnantSection.classList.add("hidden");
-                                document.getElementById("editPregnantNo").checked = true;
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Auto-calculate months when age is changed and months field is visible
-            if (editAgeInput) {
-                editAgeInput.addEventListener("blur", function() {
-                    const age = parseInt(this.value) || 0;
-                    const monthsInput = document.getElementById("editAgemonth");
-                    const dobInput = document.getElementById("editDob");
-
-                    if (age <= 4 && dobInput && dobInput.value && monthsInput) {
-                        // If months is empty or 0, calculate from DOB
-                        const currentMonths = parseInt(monthsInput.value) || 0;
-                        if (currentMonths === 0) {
-                            const calculatedAge = calculateAgeFromDOB(dobInput.value);
-                            if (calculatedAge.years === age) {
-                                monthsInput.value = calculatedAge.months;
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Add sex change listener for pregnant section
-            if (editSexInput) {
-                editSexInput.addEventListener("change", function() {
-                    const pregnantSection = document.getElementById("editPregnantSection");
-                    const ageInput = document.getElementById("editAge");
-                    const age = parseInt(ageInput?.value) || 0;
-
-                    if (this.value === "Female" && age >= 10 && age <= 49) {
-                        pregnantSection.classList.remove("hidden");
-                    } else {
-                        pregnantSection.classList.add("hidden");
-                        document.getElementById("editPregnantNo").checked = true;
-                    }
-                });
-            }
-
             await loadPatient();
             await loadMembership();
 
-            // Patient Modal
+            //  Patient Modal
             const editModal = document.getElementById("editPatientModal");
-            if (editModal && document.getElementById("editBtn")) {
-                document.getElementById("editBtn").addEventListener("click", () => {
-                    editModal.classList.remove("hidden");
-                    editModal.classList.add("flex");
-                    // Re-initialize age calculator for edit modal
-                    setTimeout(initializeAgeCalculator, 50);
-                });
-            }
+            document.getElementById("editBtn").addEventListener("click", () => {
+                editModal.classList.remove("hidden");
+                editModal.classList.add("flex");
+            });
 
             window.closeModal = () => {
-                if (editModal) {
-                    editModal.classList.add("hidden");
-                    editModal.classList.remove("flex");
-                }
+                editModal.classList.add("hidden");
+                editModal.classList.remove("flex");
             };
-
-            
 
             // Save Patient Info
             const editPatientForm = document.getElementById("editPatientForm");
@@ -2532,36 +2079,25 @@ if (!$isOfflineMode) {
                 editPatientForm.addEventListener("submit", async e => {
                     e.preventDefault();
 
+                    // Show loading state
                     const submitBtn = e.target.querySelector('[type="submit"]');
                     const originalText = submitBtn.textContent;
                     submitBtn.textContent = "Saving...";
                     submitBtn.disabled = true;
 
                     try {
+                        // Collect form data
                         const formData = new FormData(e.target);
                         const data = {};
                         formData.forEach((value, key) => {
                             data[key] = value;
                         });
 
-                        // Get age and determine if we need months_old
-                        const age = parseInt(data['age']) || 0;
-                        let months_old = 0;
-
-                        if (age <= 4) {
-                            // Use the months value from the form (editable by user)
-                            months_old = parseInt(data['agemonth']) || 0;
-                        }
-
-                        data['months_old'] = months_old;
-
-                        // Delete agemonth if it's not a database field
-                        delete data['agemonth'];
-
                         // Add action
                         data.action = 'save_patient';
                         data.patient_id = patientId;
 
+                        // Use universal AJAX helper
                         const result = await window.ajaxRequest({
                             url: '/dentalemr_system/php/treatmentrecords/view_info.php',
                             method: 'POST',
@@ -2576,38 +2112,7 @@ if (!$isOfflineMode) {
                         if (result.success) {
                             showNotice("Patient updated successfully!", "green");
                             window.closeModal();
-
-                            // Update display immediately
-                            const firstname = data['firstname'] || '';
-                            const middlename = data['middlename'] || '';
-                            const surname = data['surname'] || '';
-
-                            let updatedFullName = '';
-                            if (firstname || surname) {
-                                const middlePart = middlename ? ` ${middlename} ` : ' ';
-                                updatedFullName = `${firstname}${middlePart}${surname}`.trim();
-                            }
-
-                            const name1 = document.getElementById("patientName");
-                            const name2 = document.getElementById("patientName2");
-                            if (name1) name1.textContent = updatedFullName;
-                            if (name2) name2.textContent = updatedFullName;
-
-                            // Update age display
-                            const ageNum = parseInt(data['age']) || 0;
-                            const monthsNum = parseInt(data['months_old']) || 0;
-                            let ageDisplay = 'N/A';
-
-                            if (ageNum > 0) {
-                                if (ageNum <= 4 && monthsNum > 0) {
-                                    ageDisplay = `${ageNum}y ${monthsNum}m`;
-                                } else {
-                                    ageDisplay = `${ageNum} years`;
-                                }
-                            }
-                            document.getElementById("patientAge").textContent = ageDisplay;
-
-                            // Reload patient data for other fields
+                            // Reload patient data
                             await loadPatient();
                         } else {
                             showNotice(result.error || "Update failed.", "crimson");
@@ -2617,6 +2122,7 @@ if (!$isOfflineMode) {
                         console.error('Save error:', error);
                         showNotice("Error: " + error.message, "crimson");
                     } finally {
+                        // Restore button state
                         submitBtn.textContent = originalText;
                         submitBtn.disabled = false;
                     }
@@ -2625,85 +2131,76 @@ if (!$isOfflineMode) {
 
             // Membership Modal
             const membershipModal = document.getElementById("membershipModal");
-            if (membershipModal) {
-                const addBtn = document.getElementById("addBtn");
-                const cancelBtn = document.getElementById("cancelBtn");
-
-                if (addBtn) {
-                    addBtn.addEventListener("click", () => {
-                        membershipModal.classList.remove("hidden");
-                        membershipModal.classList.add("flex");
-                    });
-                }
-
-                if (cancelBtn) {
-                    cancelBtn.addEventListener("click", () => {
-                        membershipModal.classList.add("hidden");
-                        membershipModal.classList.remove("flex");
-                    });
-                }
-            }
+            document.getElementById("addBtn").addEventListener("click", () => {
+                membershipModal.classList.remove("hidden");
+                membershipModal.classList.add("flex");
+            });
+            document.getElementById("cancelBtn").addEventListener("click", () => {
+                membershipModal.classList.add("hidden");
+                membershipModal.classList.remove("flex");
+            });
 
             // Save Membership Info
-            const membershipForm = document.getElementById("membershipForm");
-            if (membershipForm) {
-                membershipForm.addEventListener("submit", async e => {
-                    e.preventDefault();
+            document.getElementById("membershipForm").addEventListener("submit", async e => {
+                e.preventDefault();
 
-                    const formData = new FormData(e.target);
+                // Create a new FormData object
+                const formData = new FormData(e.target);
 
-                    formData.append("patient_id", patientId);
-                    formData.append("action", "save_membership");
+                // Add patient_id and action
+                formData.append("patient_id", patientId);
+                formData.append("action", "save_membership");
 
-                    console.log('Membership FormData:');
-                    for (let [key, value] of formData.entries()) {
-                        console.log(key, ':', value);
-                    }
+                // Debug: Log all form data
+                console.log('Membership FormData:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key, ':', value);
+                }
 
-                    try {
-                        const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
-                            method: "POST",
-                            body: formData
-                        });
+                try {
+                    const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
+                        method: "POST",
+                        body: formData
+                    });
 
-                        console.log('Response status:', res.status);
+                    console.log('Response status:', res.status);
 
-                        const responseText = await res.text();
-                        console.log('Response text:', responseText.substring(0, 500));
+                    // Get the response text first to see what's happening
+                    const responseText = await res.text();
+                    console.log('Response text:', responseText.substring(0, 500));
 
-                        if (!res.ok) {
-                            try {
-                                const errorData = JSON.parse(responseText);
-                                showNotice("Error: " + (errorData.error || `HTTP ${res.status}`), "crimson");
-                            } catch {
-                                showNotice(`HTTP error ${res.status}: ${responseText.substring(0, 100)}`, "crimson");
-                            }
-                            return;
-                        }
-
+                    if (!res.ok) {
+                        // Try to parse as JSON for error details
                         try {
-                            const result = JSON.parse(responseText);
-                            console.log('Response result:', result);
-
-                            if (result.success) {
-                                showNotice("Membership updated successfully!", "blue");
-                                if (membershipModal) {
-                                    membershipModal.classList.add("hidden");
-                                }
-                                await loadMembership();
-                            } else {
-                                showNotice(result.error || "Failed to update membership.", "crimson");
-                            }
-                        } catch (jsonError) {
-                            console.error('JSON parse error:', jsonError);
-                            showNotice("Invalid server response. Check console for details.", "crimson");
+                            const errorData = JSON.parse(responseText);
+                            showNotice("Error: " + (errorData.error || `HTTP ${res.status}`), "crimson");
+                        } catch {
+                            showNotice(`HTTP error ${res.status}: ${responseText.substring(0, 100)}`, "crimson");
                         }
-                    } catch (error) {
-                        console.error('Network error:', error);
-                        showNotice("Network error: " + error.message, "crimson");
+                        return;
                     }
-                });
-            }
+
+                    // Try to parse the successful response as JSON
+                    try {
+                        const result = JSON.parse(responseText);
+                        console.log('Response result:', result);
+
+                        if (result.success) {
+                            showNotice("Membership updated successfully!", "blue");
+                            membershipModal.classList.add("hidden");
+                            await loadMembership();
+                        } else {
+                            showNotice(result.error || "Failed to update membership.", "crimson");
+                        }
+                    } catch (jsonError) {
+                        console.error('JSON parse error:', jsonError);
+                        showNotice("Invalid server response. Check console for details.", "crimson");
+                    }
+                } catch (error) {
+                    console.error('Network error:', error);
+                    showNotice("Network error: " + error.message, "crimson");
+                }
+            });
         });
     </script>
 

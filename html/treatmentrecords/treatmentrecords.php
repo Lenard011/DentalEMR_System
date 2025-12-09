@@ -535,23 +535,10 @@ if (!$isOfflineMode) {
                             <span class="ml-3">Archived</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="#"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M4 4v15a1 1 0 0 0 1 1h15M8 16l2.5-5.5 3 3L17.273 7 20 9.667" />
-                            </svg>
-
-                            <span class="ml-3">Analytics</span>
-                        </a>
-                    </li>
-
                 </ul>
             </div>
         </aside>
+        
         <main class="p-4 md:ml-64 h-auto pt-20">
             <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5 ">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">

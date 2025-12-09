@@ -733,20 +733,6 @@ if ($loggedUser['type'] === 'Dentist') {
                             <span class="ml-3">Archived</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="#"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M4 4v15a1 1 0 0 0 1 1h15M8 16l2.5-5.5 3 3L17.273 7 20 9.667" />
-                            </svg>
-
-                            <span class="ml-3">Analytics</span>
-                        </a>
-                    </li>
-
                 </ul>
             </div>
         </aside>
@@ -869,7 +855,7 @@ if ($loggedUser['type'] === 'Dentist') {
                     </div>
                     <div class="flex flex-col w-full overflow-x-auto">
                         <div class="min-w-max mx-auto">
-                            <p style="margin-bottom: -5px; margin-top: -10px;"
+                            <p style="margin-bottom: -5px; margin-top: -5px;"
                                 class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">Treatment
                             </p>
                             <div class="treatmentbox" id="treatRow1"></div>
@@ -916,7 +902,7 @@ if ($loggedUser['type'] === 'Dentist') {
         <!-- Modal -->
         <div id="ohcModalA" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50 p-2 md:p-4 overflow-auto">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl max-h-[90vh] overflow-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-6xl max-h-[90vh] overflow-auto">
                 <div class="flex flex-row justify-between items-center mb-4 p-6 pb-0">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Oral Health Condition</h2>
                     <button type="button" id="cancelMedicalBtn"
@@ -935,7 +921,7 @@ if ($loggedUser['type'] === 'Dentist') {
                             </div>
                             <div class="flex flex-col lg:flex-row w-full justify-between items-start gap-4">
                                 <!-- Tooth Part -->
-                                <div class="flex flex-col gap-2 mb-4 w-full lg:w-auto overflow-auto">
+                                <div class="flex flex-col gap-2 mb-4 w-full lg:w-5xl overflow-auto">
                                     <!-- A. -->
                                     <div class="flex justify-center items-center flex-wrap gap-2">
                                         <!-- Undo Button -->
@@ -980,7 +966,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </div>
                                     <div class="flex flex-col overflow-auto">
                                         <div class="min-w-max">
-                                            <p style="margin-bottom: -5px; margin-top: -10px;"
+                                            <p style="margin-bottom: -5px; margin-top: -5px;"
                                                 class="text-sm w-20 ml-2 font-normal text-gray-900 dark:text-white">
                                                 Treatment
                                             </p>
@@ -1014,7 +1000,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                     </div>
                                 </div>
                                 <!-- Legend Condition -->
-                                <div class="flex flex-row md:flex-row gap-4 w-full overflow-auto">
+                                <div class="flex flex-row md:flex-row gap-4 w-full lg:w-xl overflow-auto">
                                     <!-- Condition -->
                                     <div
                                         class="controls relative w-full p-4 flex rounded-sm flex-col border border-dashed border-gray-400 [border-image:repeating-linear-gradient(45deg,#6b7280_0_10px,transparent_10px_15px)_1] min-w-64">

@@ -345,6 +345,20 @@ if ($loggedUser['type'] === 'Dentist') {
                             <span class="ml-3">Archived</span>
                         </a>
                     </li>
+                    <li>
+                        <a href="#"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                                viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="M4 4v15a1 1 0 0 0 1 1h15M8 16l2.5-5.5 3 3L17.273 7 20 9.667" />
+                            </svg>
+
+                            <span class="ml-3">Analytics</span>
+                        </a>
+                    </li>
+
                 </ul>
             </div>
         </aside>
@@ -470,7 +484,7 @@ if ($loggedUser['type'] === 'Dentist') {
         </main>
         <div id="recordModal" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl mx-4 p-2 max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-7xl mx-4 p-2 max-h-[90vh] overflow-y-auto">
                 <div class="flex flex-row justify-between items-center ">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Oral Health Condition</h2>
                     <button type="button" id="cancelrecordBtn"
@@ -608,7 +622,6 @@ if ($loggedUser['type'] === 'Dentist') {
         const params = new URLSearchParams(window.location.search);
         const patientId = params.get('id');
 
-        // Set navigation links
         const patientInfoLink = document.getElementById("patientInfoLink");
         if (patientInfoLink && patientId) {
             patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
@@ -619,87 +632,62 @@ if ($loggedUser['type'] === 'Dentist') {
             });
         }
 
+        //  Set the Oral Health Condition link dynamically
         const oralHealthLink = document.getElementById("oralHealthLink");
         if (oralHealthLink && patientId) {
             oralHealthLink.href = `view_oral.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
+            // Optional fallback: disable link if no patient selected
             oralHealthLink.addEventListener("click", (e) => {
                 e.preventDefault();
                 alert("Please select a patient first.");
             });
         }
 
+
+        function backmain() {
+            location.href = ("treatmentrecords.php?uid=<?php echo $userId; ?>");
+        }
+
         const printdLink = document.getElementById("printdLink");
         if (printdLink && patientId) {
             printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
+            // Optional fallback: disable link if no patient selected
             printdLink.addEventListener("click", (e) => {
                 e.preventDefault();
                 alert("Please select a patient first.");
             });
         }
+    </script>
 
-        function backmain() {
-            location.href = "treatmentrecords.php?uid=<?php echo $userId; ?>";
-        }
+    <script>
+        const patientId1 = new URLSearchParams(window.location.search).get("id");
 
         // -------------------- FETCH RECORDS --------------------
         function loadTreatmentRecords() {
-            console.log('Loading records for patient ID:', patientId);
-
-            if (!patientId || patientId <= 0) {
+            if (!patientId1) {
                 document.getElementById("patientName").textContent = "⚠️ No patient selected";
-                document.getElementById("treatmentTableBody").innerHTML = `
-                <tr><td colspan="9" class="text-center py-4 text-gray-500">
-                    Please select a patient first.
-                </td></tr>`;
                 return;
             }
 
-            // Show loading state
-            document.getElementById("treatmentTableBody").innerHTML = `
-            <tr><td colspan="9" class="text-center py-4 text-gray-500">
-                Loading records...
-            </td></tr>`;
-
-            // Use a more specific endpoint path and add cache-busting
-            fetch(`/dentalemr_system/php/treatmentrecords/view_record.php?patient_id=${patientId}&t=${Date.now()}`)
-                .then(res => {
-                    console.log('Fetch response status:', res.status);
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.json();
-                })
+            fetch(`/dentalemr_system/php/treatmentrecords/view_record.php?patient_id=${patientId1}`)
+                .then(res => res.json())
                 .then(data => {
-                    console.log('Fetched data:', data);
+                    if (!data.success) throw new Error(data.message);
 
-                    if (!data.success) {
-                        throw new Error(data.message || "Failed to load records");
-                    }
+                    // 🧍‍♂️ Patient name
+                    document.getElementById("patientName").textContent = data.patient.fullname;
 
-                    // Update patient name
-                    const patientNameElement = document.getElementById("patientName");
-                    if (patientNameElement && data.patient) {
-                        patientNameElement.textContent = data.patient.fullname;
-                    }
-
-                    // Update table
+                    // 🦷 Treatment table
                     const tbody = document.getElementById("treatmentTableBody");
-                    if (!tbody) {
-                        console.error('Table body element not found');
-                        return;
-                    }
-
                     tbody.innerHTML = "";
 
-                    if (data.records && data.records.length > 0) {
+                    if (data.records.length > 0) {
                         data.records.forEach(rec => {
-                            const row = document.createElement("tr");
-                            row.className = "border-b border-gray-200 font-medium text-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700";
-
-                            row.innerHTML = `
-                            <td class="px-4 py-3 text-center whitespace-nowrap">${rec.created_at || 'N/A'}</td>
+                            tbody.insertAdjacentHTML("beforeend", `
+                        <tr class="border-b border-gray-200 font-medium text-gray-800 dark:border-gray-700">
+                            <td class="px-4 py-3 w-full text-center">${rec.created_at}</td>
                             <td class="px-4 py-3 text-center">${rec.oral_prophylaxis || ""}</td>
                             <td class="px-4 py-3 text-center">${rec.fluoride || ""}</td>
                             <td class="px-4 py-3 text-center">${rec.sealant || ""}</td>
@@ -707,150 +695,70 @@ if ($loggedUser['type'] === 'Dentist') {
                             <td class="px-4 py-3 text-center">${rec.temporary_filling || ""}</td>
                             <td class="px-4 py-3 text-center">${rec.extraction || ""}</td>
                             <td class="px-4 py-3 text-center">${rec.consultation || ""}</td>
-                            <td class="px-4 py-3 text-center max-w-xs truncate" title="${rec.remarks || ''}">${rec.remarks || ""}</td>
-                        `;
-
-                            tbody.appendChild(row);
+                            <td class="px-4 py-3 text-center">${rec.remarks || ""}</td>
+                        </tr>
+                    `);
                         });
-
-                        console.log(`Loaded ${data.records.length} records`);
                     } else {
-                        tbody.innerHTML = `
-                        <tr>
-                            <td colspan="9" class="text-center py-8 text-gray-500">
-                                No treatment records found for this patient.
-                            </td>
-                        </tr>`;
+                        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-gray-500">No records found.</td></tr>`;
                     }
                 })
                 .catch(err => {
                     console.error("Error fetching records:", err);
                     document.getElementById("treatmentTableBody").innerHTML = `
-                    <tr>
-                        <td colspan="9" class="text-center text-red-500 py-4">
-                            ❌ Failed to load records: ${err.message}
-                        </td>
-                    </tr>`;
+                <tr><td colspan="9" class="text-center text-red-500 py-4">
+                    ❌ Failed to load records.
+                </td></tr>`;
                 });
         }
+
+        // Initial load
+        loadTreatmentRecords();
 
         // -------------------- MODAL CONTROL --------------------
         const recordModal = document.getElementById("recordModal");
         const addBtn = document.getElementById("addSMC");
         const cancelBtn = document.getElementById("cancelrecordBtn");
-        const recordForm = document.getElementById("recordForm");
-
-        // Fix modal title to match content
-        const modalTitle = recordModal.querySelector('h2');
-        if (modalTitle) {
-            modalTitle.textContent = "Add Treatment Record";
-        }
 
         addBtn.addEventListener("click", () => {
-            console.log('Opening modal for patient ID:', patientId);
-            document.getElementById("patient_id").value = patientId;
+            document.getElementById("patient_id").value = patientId1;
             recordModal.classList.remove("hidden");
-            recordModal.classList.add("flex");
-
-            // Focus first input
-            setTimeout(() => {
-                const firstInput = recordForm.querySelector('input');
-                if (firstInput) firstInput.focus();
-            }, 100);
         });
 
         function closeRecord() {
             recordModal.classList.add("hidden");
-            recordModal.classList.remove("flex");
-            recordForm.reset();
         }
 
         if (cancelBtn) cancelBtn.addEventListener("click", closeRecord);
-
-        // Close modal when clicking outside
-        recordModal.addEventListener('click', (e) => {
-            if (e.target === recordModal) {
-                closeRecord();
-            }
-        });
 
         // -------------------- SAVE NEW RECORD --------------------
         function saveRecord() {
             const form = document.getElementById("recordForm");
             const formData = new FormData(form);
 
-            // Validate patient ID
-            const formPatientId = formData.get('patient_id');
-            if (!formPatientId || formPatientId <= 0) {
-                alert("❌ Invalid patient ID. Please refresh the page and try again.");
-                return;
-            }
-
-            console.log('Saving record for patient:', formPatientId);
-            console.log('Form data:', Object.fromEntries(formData.entries()));
-
-            // Show saving indicator
-            const saveBtn = recordForm.querySelector('button[type="button"]');
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = 'Saving...';
-            saveBtn.disabled = true;
-
             fetch(`/dentalemr_system/php/treatmentrecords/view_record.php`, {
                     method: "POST",
                     body: formData
                 })
-                .then(async res => {
-                    console.log('Save response status:', res.status);
-                    const data = await res.json();
-                    console.log('Save response data:', data);
-                    return data;
-                })
+                .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        console.log('Record saved successfully');
                         alert("✅ Record added successfully!");
                         closeRecord();
                         loadTreatmentRecords(); // Refresh table
+                        form.reset();
                     } else {
-                        throw new Error(data.message || "Failed to save record");
+                        alert("❌ " + data.message);
                     }
                 })
                 .catch(err => {
                     console.error("Error saving record:", err);
-                    alert(`⚠️ Failed to save record: ${err.message}`);
-                })
-                .finally(() => {
-                    // Restore button state
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
+                    alert("⚠️ Failed to save record.");
                 });
         }
-
-        // Also allow form submission on Enter key in textarea
-        recordForm.querySelector('textarea[name="remarks"]').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && e.ctrlKey) {
-                e.preventDefault();
-                saveRecord();
-            }
-        });
-
-        // Initial load when page is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, patient ID:', patientId);
-            // Small delay to ensure everything is loaded
-            setTimeout(loadTreatmentRecords, 100);
-        });
-
-        // Also reload when navigating back to the page
-        window.addEventListener('pageshow', (event) => {
-            if (event.persisted) {
-                console.log('Page restored from cache, reloading records');
-                loadTreatmentRecords();
-            }
-        });
     </script>
 
-    <!-- Load offline storage -->
+        <!-- Load offline storage -->
     <script src="/dentalemr_system/js/offline-storage.js"></script>
     <!-- Offline/Online Sync Handler -->
     <script>

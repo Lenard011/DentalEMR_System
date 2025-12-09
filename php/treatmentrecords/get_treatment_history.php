@@ -1,5 +1,5 @@
 <?php
-// get_today_smc.php
+// get_treatment_history.php
 header('Content-Type: application/json; charset=utf-8');
 
 try {
@@ -11,7 +11,6 @@ try {
     }
 
     $patient_id = intval($_GET['patient_id'] ?? 0);
-    $date = $_GET['date'] ?? date('Y-m-d');
     
     if ($patient_id <= 0) {
         echo json_encode(["error" => "Invalid patient ID"]);
@@ -29,16 +28,22 @@ try {
                     t.fdi_number,
                     th.treatment_code,
                     th.treatment_date,
-                    th.created_at
+                    th.created_at,
+                    DATE_FORMAT(th.treatment_date, '%Y-%m-%d') as date_only,
+                    DATE_FORMAT(th.created_at, '%Y-%m-%d %H:%i:%s') as full_date
                 FROM treatment_history th
                 JOIN teeth t ON th.tooth_id = t.tooth_id
-                WHERE th.patient_id = ? 
-                AND th.treatment_date = ?
-                ORDER BY th.created_at DESC";
+                WHERE th.patient_id = ?
+                ORDER BY th.treatment_date DESC, th.created_at DESC";
         
         $stmt = $db->prepare($sql);
-        $stmt->execute([$patient_id, $date]);
+        $stmt->execute([$patient_id]);
         $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Format for compatibility with existing frontend
+        foreach ($records as &$record) {
+            $record['created_at'] = $record['full_date'];
+        }
         
     } else {
         // Fallback to old table
@@ -51,20 +56,34 @@ try {
                 FROM services_monitoring_chart s
                 JOIN teeth t ON s.tooth_id = t.tooth_id
                 WHERE s.patient_id = ?
-                AND DATE(s.created_at) = ?
                 ORDER BY s.created_at DESC";
         
         $stmt = $db->prepare($sql);
-        $stmt->execute([$patient_id, $date]);
+        $stmt->execute([$patient_id]);
         $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    // Get patient name
+    $patientSql = "SELECT surname, firstname, middlename FROM patients WHERE patient_id = ?";
+    $patientStmt = $db->prepare($patientSql);
+    $patientStmt->execute([$patient_id]);
+    $patient = $patientStmt->fetch(PDO::FETCH_ASSOC);
+    
+    $patient_name = "Unknown Patient";
+    if ($patient) {
+        $middle = !empty($patient['middlename']) ? " " . $patient['middlename'][0] . "." : "";
+        $patient_name = $patient['firstname'] . $middle . " " . $patient['surname'];
     }
     
     echo json_encode([
         "success" => true,
+        "patient_name" => $patient_name,
         "records" => $records,
         "count" => count($records),
-        "date" => $date,
-        "using_history_table" => $usingHistoryTable
+        "using_history_table" => $usingHistoryTable,
+        "note" => $usingHistoryTable ? 
+            "Using treatment_history table (allows multiple treatments per tooth)" : 
+            "Using old services_monitoring_chart table"
     ]);
 
 } catch (Exception $e) {

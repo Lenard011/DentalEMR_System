@@ -224,3 +224,487 @@ Stack trace:
 
 [05-Dec-2025 16:07:07 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
 [05-Dec-2025 16:07:07 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 14:58:17 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 14:58:17 Europe/Berlin] Patient ID: 5
+[08-Dec-2025 14:58:17 Europe/Berlin] Received data: Array
+(
+    [diabetes_mellitus] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [blood_disorders] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 14:58:17 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 14:58:17 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 14:58:32 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 14:58:32 Europe/Berlin] Patient ID: 5
+[08-Dec-2025 14:58:32 Europe/Berlin] Received data: Array
+(
+    [diabetes_mellitus] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [blood_disorders] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 14:58:32 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 14:58:32 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 14:59:09 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 14:59:09 Europe/Berlin] Patient ID: 1
+[08-Dec-2025 14:59:09 Europe/Berlin] Received data: Array
+(
+    [blood_disorders] => 1
+    [heart_disease] => 1
+    [prev_hospitalization_flag] => 1
+    [last_admission_date] => 2016-10-26
+    [admission_cause] => dengue
+    [surgery_details] => 
+    [action] => save_medical
+    [patient_id] => 1
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [diabetes_mellitus] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 14:59:09 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 14:59:09 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 15:02:00 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 15:02:00 Europe/Berlin] Patient ID: 5
+[08-Dec-2025 15:02:00 Europe/Berlin] Received data: Array
+(
+    [diabetes_mellitus] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [blood_disorders] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 15:02:00 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 15:02:00 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 15:02:44 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 15:02:44 Europe/Berlin] Patient ID: 5
+[08-Dec-2025 15:02:44 Europe/Berlin] Received data: Array
+(
+    [hypertension_cva] => 1
+    [diabetes_mellitus] => 1
+    [blood_disorders] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 15:02:44 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 15:02:44 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 15:14:10 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 15:14:10 Europe/Berlin] Patient ID: 1
+[08-Dec-2025 15:14:10 Europe/Berlin] Received data: Array
+(
+    [blood_disorders] => 1
+    [heart_disease] => 1
+    [prev_hospitalization_flag] => 1
+    [last_admission_date] => 2016-10-26
+    [admission_cause] => dengue
+    [surgery_details] => 
+    [action] => save_medical
+    [patient_id] => 1
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [diabetes_mellitus] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 15:14:10 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 15:14:10 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 15:34:43 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 15:34:43 Europe/Berlin] Patient ID: 5
+[08-Dec-2025 15:34:43 Europe/Berlin] Received data: Array
+(
+    [diabetes_mellitus] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [blood_disorders] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 15:34:43 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 15:34:43 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 15:34:43 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 15:34:43 Europe/Berlin] Patient ID: 5
+[08-Dec-2025 15:34:43 Europe/Berlin] Received data: Array
+(
+    [diabetes_mellitus] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [blood_disorders] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 15:34:43 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 15:34:43 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 15:53:31 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php:629
+Stack trace:
+#0 C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php(629): mysqli_stmt->bind_param('isiiiiisissssss...', 0, NULL, 0, 1, 0, 0, 0, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, 5)
+#1 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php on line 629
+[08-Dec-2025 15:54:55 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php:629
+Stack trace:
+#0 C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php(629): mysqli_stmt->bind_param('isiiiiisissssss...', 0, NULL, 0, 1, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, 5)
+#1 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php on line 629
+[08-Dec-2025 15:55:04 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php:629
+Stack trace:
+#0 C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php(629): mysqli_stmt->bind_param('isiiiiisissssss...', 0, NULL, 0, 1, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, 5)
+#1 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php on line 629
+[08-Dec-2025 16:07:19 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php:629
+Stack trace:
+#0 C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php(629): mysqli_stmt->bind_param('isiiiiisissssss...', 0, NULL, 0, 1, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, 5)
+#1 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php on line 629
+[08-Dec-2025 16:54:15 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php:629
+Stack trace:
+#0 C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php(629): mysqli_stmt->bind_param('isiiiiisissssss...', 0, NULL, 0, 1, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, 5)
+#1 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php on line 629
+[08-Dec-2025 16:55:15 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php:629
+Stack trace:
+#0 C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php(629): mysqli_stmt->bind_param('isiiiiisissssss...', 0, NULL, 0, 1, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, 5)
+#1 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php on line 629
+[08-Dec-2025 17:02:29 Europe/Berlin] Membership POST data: Array
+(
+    [patient_id] => 5
+    [indigenous_people] => 1
+    [pwd] => 1
+    [philhealth_flag] => 1
+    [philhealth_number] => 123123
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+    [action] => save_membership
+)
+
+[08-Dec-2025 17:02:29 Europe/Berlin] Exception in POST handler: Prepare failed: Unknown column 'updated_at' in 'field list'
+[08-Dec-2025 17:02:33 Europe/Berlin] Membership POST data: Array
+(
+    [patient_id] => 5
+    [indigenous_people] => 1
+    [pwd] => 1
+    [philhealth_flag] => 1
+    [philhealth_number] => 123123
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+    [action] => save_membership
+)
+
+[08-Dec-2025 17:02:33 Europe/Berlin] Exception in POST handler: Prepare failed: Unknown column 'updated_at' in 'field list'
+[08-Dec-2025 17:02:34 Europe/Berlin] Membership POST data: Array
+(
+    [patient_id] => 5
+    [indigenous_people] => 1
+    [pwd] => 1
+    [philhealth_flag] => 1
+    [philhealth_number] => 123123
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+    [action] => save_membership
+)
+
+[08-Dec-2025 17:02:34 Europe/Berlin] Exception in POST handler: Prepare failed: Unknown column 'updated_at' in 'field list'
+[08-Dec-2025 17:02:41 Europe/Berlin] Membership POST data: Array
+(
+    [patient_id] => 5
+    [indigenous_people] => 1
+    [pwd] => 1
+    [philhealth_flag] => 1
+    [philhealth_number] => 13123
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+    [action] => save_membership
+)
+
+[08-Dec-2025 17:02:41 Europe/Berlin] Exception in POST handler: Prepare failed: Unknown column 'updated_at' in 'field list'
+[08-Dec-2025 17:02:46 Europe/Berlin] Membership POST data: Array
+(
+    [patient_id] => 5
+    [indigenous_people] => 1
+    [pwd] => 1
+    [philhealth_flag] => 1
+    [philhealth_number] => 13123
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+    [action] => save_membership
+)
+
+[08-Dec-2025 17:02:46 Europe/Berlin] Exception in POST handler: Prepare failed: Unknown column 'updated_at' in 'field list'
+[08-Dec-2025 23:00:26 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php:629
+Stack trace:
+#0 C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php(629): mysqli_stmt->bind_param('isiiiiisissssss...', 0, NULL, 1, 1, 1, 0, 0, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, 5)
+#1 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php on line 629
+[08-Dec-2025 23:00:36 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of elements in the type definition string must match the number of bind variables in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php:629
+Stack trace:
+#0 C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php(629): mysqli_stmt->bind_param('isiiiiisissssss...', 0, NULL, 0, 1, 1, 1, 0, 0, NULL, 0, NULL, 0, NULL, NULL, NULL, 0, NULL, 0, 0, NULL, 5)
+#1 {main}
+  thrown in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\api_view_info.php on line 629
+[08-Dec-2025 23:47:30 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 23:47:30 Europe/Berlin] Patient ID: 5
+[08-Dec-2025 23:47:30 Europe/Berlin] Received data: Array
+(
+    [diabetes_mellitus] => 1
+    [blood_disorders] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 23:47:30 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 23:47:30 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Dec-2025 23:57:12 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Dec-2025 23:57:12 Europe/Berlin] Patient ID: 5
+[08-Dec-2025 23:57:12 Europe/Berlin] Received data: Array
+(
+    [hypertension_cva] => 1
+    [diabetes_mellitus] => 1
+    [blood_disorders] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Dec-2025 23:57:12 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Dec-2025 23:57:12 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[09-Dec-2025 01:30:59 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[09-Dec-2025 01:30:59 Europe/Berlin] Patient ID: 5
+[09-Dec-2025 01:30:59 Europe/Berlin] Received data: Array
+(
+    [diabetes_mellitus] => 1
+    [blood_disorders] => 1
+    [action] => save_medical
+    [patient_id] => 5
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[09-Dec-2025 01:30:59 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[09-Dec-2025 01:30:59 Europe/Berlin] Types: isiiiiiisisisssisiisi
