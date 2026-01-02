@@ -1,106 +1,87 @@
-<?php
+    <?php
 // delete_logs.php
 session_start();
+require_once './db_connection.php';
+
 header('Content-Type: application/json');
 
-// Get input data
-$input = json_decode(file_get_contents('php://input'), true);
-$logIds = $input['log_ids'] ?? [];
-$userId = $input['user_id'] ?? null;
+// Get POST data
+$data = json_decode(file_get_contents('php://input'), true);
+$logIds = $data['log_ids'] ?? [];
+$userId = $data['user_id'] ?? 0;
 
-if (empty($logIds)) {
-    echo json_encode([
-        'success' => false,
-        'error' => 'No logs selected'
-    ]);
+// Validate session
+if (!isset($_SESSION['active_sessions'][$userId])) {
+    echo json_encode(['success' => false, 'message' => 'Invalid session']);
     exit;
 }
 
-// Database configuration
-$host = 'localhost';
-$dbname = 'dentalemr_system';
-$username = 'root';
-$password = '';
-
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode([
-        'success' => false,
-        'error' => 'Database connection failed'
-    ]);
+if (empty($logIds) || !is_array($logIds)) {
+    echo json_encode(['success' => false, 'message' => 'No logs selected']);
     exit;
 }
 
 try {
-    // Separate activity and history logs
-    $activityIds = [];
-    $historyIds = [];
-    
-    foreach ($logIds as $logId) {
-        if (is_numeric($logId)) {
-            // Simple check: IDs under 10000 are activity logs, over are history logs
-            // You might need to adjust this based on your actual ID ranges
-            if ($logId < 10000) {
-                $activityIds[] = $logId;
-            } else {
-                $historyIds[] = $logId;
-            }
-        }
+    if (!$conn || $conn->connect_error) {
+        throw new Exception("Database connection failed");
     }
-    
-    $deletedCount = 0;
-    
-    // Delete activity logs
-    if (!empty($activityIds)) {
-        $placeholders = str_repeat('?,', count($activityIds) - 1) . '?';
-        $stmt = $pdo->prepare("DELETE FROM activity_logs WHERE id IN ($placeholders)");
-        $stmt->execute($activityIds);
-        $deletedCount += $stmt->rowCount();
+
+    // Filter to numeric IDs only
+    $logIds = array_filter($logIds, 'is_numeric');
+
+    if (empty($logIds)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid log IDs']);
+        exit;
     }
-    
-    // Delete history logs
-    if (!empty($historyIds)) {
-        $placeholders = str_repeat('?,', count($historyIds) - 1) . '?';
-        $stmt = $pdo->prepare("DELETE FROM history_logs WHERE history_id IN ($placeholders)");
-        $stmt->execute($historyIds);
-        $deletedCount += $stmt->rowCount();
+
+    // Create placeholders for prepared statement
+    $placeholders = implode(',', array_fill(0, count($logIds), '?'));
+
+    // Delete from activity_logs
+    $stmt1 = $conn->prepare("DELETE FROM activity_logs WHERE id IN ($placeholders)");
+    if ($stmt1) {
+        $types = str_repeat('i', count($logIds));
+        $stmt1->bind_param($types, ...$logIds);
+        $stmt1->execute();
+        $stmt1->close();
     }
-    
-    // Log the deletion activity
-    if ($userId) {
-        // Get user info
-        $stmt = $pdo->prepare("SELECT name FROM dentist WHERE id = ? UNION SELECT name FROM staff WHERE id = ? LIMIT 1");
-        $stmt->execute([$userId, $userId]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        $userName = $user['name'] ?? 'Unknown User';
-        
-        // Log the deletion
-        $ipAddress = $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
-        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
-        
-        $stmt = $pdo->prepare("
-            INSERT INTO activity_logs 
-            (user_id, user_name, action, target, details, ip_address, user_agent, created_at) 
-            VALUES (?, ?, 'DELETE', 'System Logs', ?, ?, ?, NOW())
-        ");
-        
-        $details = "Deleted $deletedCount system log(s)";
-        $stmt->execute([$userId, $userName, $details, $ipAddress, $userAgent]);
+
+    // Delete from history_logs
+    $stmt2 = $conn->prepare("DELETE FROM history_logs WHERE history_id IN ($placeholders)");
+    if ($stmt2) {
+        $types = str_repeat('i', count($logIds));
+        $stmt2->bind_param($types, ...$logIds);
+        $stmt2->execute();
+        $stmt2->close();
     }
-    
+
+    // Log this deletion activity
+    $userName = $_SESSION['active_sessions'][$userId]['name'] ?? 'Unknown';
+    $action = "Deleted " . count($logIds) . " system logs";
+    $details = "User deleted logs with IDs: " . implode(', ', $logIds);
+
+    $logStmt = $conn->prepare("INSERT INTO activity_logs (user_id, user_name, action, details, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?)");
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+
+    if ($logStmt) {
+        $logStmt->bind_param('isssss', $userId, $userName, $action, $details, $ip, $agent);
+        $logStmt->execute();
+        $logStmt->close();
+    }
+
     echo json_encode([
         'success' => true,
-        'deleted_count' => $deletedCount,
-        'message' => "Successfully deleted $deletedCount log(s)"
+        'message' => 'Successfully deleted ' . count($logIds) . ' log(s)'
     ]);
-    
-} catch (PDOException $e) {
-    error_log("Delete Logs Error: " . $e->getMessage());
+} catch (Exception $e) {
+    error_log("Delete logs error: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'error' => 'Failed to delete logs: ' . $e->getMessage()
+        'message' => 'Failed to delete logs: ' . $e->getMessage()
     ]);
 }
-?>
+
+if (isset($conn)) {
+    $conn->close();
+}

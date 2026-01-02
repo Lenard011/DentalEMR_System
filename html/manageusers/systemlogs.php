@@ -873,7 +873,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold mb-4">Export Options</h3>
-                        <div class="space-y-3">
+                        <div class="space-y-3 mb-4">
                             <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <input type="radio" name="exportFormat" value="csv" checked class="mr-3">
                                 <div>
@@ -888,13 +888,17 @@ if ($loggedUser['type'] === 'Dentist') {
                                     <div class="text-sm text-gray-600 dark:text-gray-400">Best for developers and APIs</div>
                                 </div>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
-                                <input type="radio" name="exportFormat" value="pdf" class="mr-3">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 opacity-50 cursor-not-allowed">
+                                <input type="radio" name="exportFormat" value="pdf" disabled class="mr-3">
                                 <div>
                                     <div class="font-medium">PDF Format</div>
-                                    <div class="text-sm text-gray-600 dark:text-gray-400">Best for printing and sharing</div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400">Coming soon</div>
                                 </div>
                             </label>
+                        </div>
+                        <div class="text-xs text-gray-500 mb-4">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            PDF export requires additional setup. Currently available: CSV and JSON.
                         </div>
                         <div class="mt-6 flex justify-end space-x-3">
                             <button onclick="closeExportModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -1545,7 +1549,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 this.filterLogs('all');
                 this.clearSelection();
             }
-            
+
             clearFilters() {
                 this.clearSearch();
                 this.filterLogs('all');
@@ -1714,35 +1718,71 @@ if ($loggedUser['type'] === 'Dentist') {
                 if (modal) modal.classList.add('hidden');
             }
 
-            async proceedExport() {
+            proceedExport() {
                 const format = document.querySelector('input[name="exportFormat"]:checked');
                 if (!format) return;
 
                 const formatValue = format.value;
                 const logIds = this.selectedLogs.size > 0 ? Array.from(this.selectedLogs) : null;
 
+                // Build query parameters
                 const params = new URLSearchParams({
                     format: formatValue,
                     user_id: <?php echo $userId; ?>
                 });
 
-                if (logIds) {
+                if (logIds && logIds.length > 0) {
                     params.append('log_ids', logIds.join(','));
                 }
 
                 this.closeExportModal();
                 this.showToast('Preparing export...', 'info');
 
-                setTimeout(() => {
-                    const link = document.createElement('a');
-                    link.href = `/dentalemr_system/php/manageusers/export_logs.php?${params}`;
+                // Create download link
+                const link = document.createElement('a');
+                link.href = `/dentalemr_system/php/manageusers/export_logs.php?${params}`;
+                link.target = '_blank';
+                link.style.display = 'none';
+
+                // For JSON format, we need to handle it differently
+                if (formatValue === 'json') {
+                    // Fetch JSON data first to handle errors
+                    fetch(link.href)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Export failed');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success === false) {
+                                throw new Error(data.message || 'Export failed');
+                            }
+                            // Create downloadable JSON file
+                            const blob = new Blob([JSON.stringify(data, null, 2)], {
+                                type: 'application/json'
+                            });
+                            const url = URL.createObjectURL(blob);
+                            link.href = url;
+                            link.download = `system_logs_${new Date().toISOString().split('T')[0]}.json`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                            this.showToast('Export completed successfully', 'success');
+                        })
+                        .catch(error => {
+                            console.error('Export error:', error);
+                            this.showToast(`Export failed: ${error.message}`, 'error');
+                        });
+                } else {
+                    // For CSV and PDF, use direct download
                     link.download = `system_logs_${new Date().toISOString().split('T')[0]}.${formatValue}`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-
                     this.showToast('Export started', 'success');
-                }, 500);
+                }
             }
 
             exportSelected() {
@@ -1997,7 +2037,7 @@ if ($loggedUser['type'] === 'Dentist') {
     <!-- Inactivity Timer -->
     <script>
         let inactivityTimer;
-        const inactivityLimit = 600000; // 10 minutes
+        const inactivityLimit = 1800000; // 10 minutes
 
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
