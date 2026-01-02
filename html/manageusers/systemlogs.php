@@ -936,6 +936,11 @@ if ($loggedUser['type'] === 'Dentist') {
                 this.searchTimeout = null;
                 this.isLoading = false;
                 this.logToDelete = null;
+
+                // Advanced filter properties
+                this.dateFrom = '';
+                this.dateTo = '';
+                this.userType = '';
             }
 
             init() {
@@ -945,10 +950,41 @@ if ($loggedUser['type'] === 'Dentist') {
                 this.setupEventListeners();
                 this.setupConnectionMonitoring();
 
+                // Set default dates for date range filters
+                this.setDefaultDateRange();
+
                 // Load initial data with a small delay to ensure DOM is ready
                 setTimeout(() => {
                     this.loadInitialData();
                 }, 100);
+            }
+
+            setDefaultDateRange() {
+                // Set dateFrom to 30 days ago
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+                // Set dateTo to today
+                const today = new Date();
+
+                // Format dates as YYYY-MM-DD for input fields
+                const formatDate = (date) => {
+                    return date.toISOString().split('T')[0];
+                };
+
+                // Set the input field values
+                const dateFromInput = document.getElementById('dateFrom');
+                const dateToInput = document.getElementById('dateTo');
+
+                if (dateFromInput) {
+                    dateFromInput.value = formatDate(thirtyDaysAgo);
+                    this.dateFrom = formatDate(thirtyDaysAgo);
+                }
+
+                if (dateToInput) {
+                    dateToInput.value = formatDate(today);
+                    this.dateTo = formatDate(today);
+                }
             }
 
             updateFilterButtons() {
@@ -994,7 +1030,50 @@ if ($loggedUser['type'] === 'Dentist') {
                         this.closeAllModals();
                     }
                 });
+
+                // Date range input listeners
+                const dateFromInput = document.getElementById('dateFrom');
+                const dateToInput = document.getElementById('dateTo');
+
+                if (dateFromInput) {
+                    dateFromInput.addEventListener('change', (e) => {
+                        this.dateFrom = e.target.value;
+                        // Validate date range
+                        this.validateDateRange();
+                    });
+                }
+
+                if (dateToInput) {
+                    dateToInput.addEventListener('change', (e) => {
+                        this.dateTo = e.target.value;
+                        // Validate date range
+                        this.validateDateRange();
+                    });
+                }
+
+                // User type filter listener
+                const userTypeFilter = document.getElementById('userTypeFilter');
+                if (userTypeFilter) {
+                    userTypeFilter.addEventListener('change', (e) => {
+                        this.userType = e.target.value;
+                    });
+                }
             }
+
+            validateDateRange() {
+                const dateFromInput = document.getElementById('dateFrom');
+                const dateToInput = document.getElementById('dateTo');
+
+                if (this.dateFrom && this.dateTo && this.dateFrom > this.dateTo) {
+                    this.showToast('End date cannot be earlier than start date', 'warning');
+                    // Swap dates if they're in wrong order
+                    [this.dateFrom, this.dateTo] = [this.dateTo, this.dateFrom];
+
+                    if (dateFromInput) dateFromInput.value = this.dateFrom;
+                    if (dateToInput) dateToInput.value = this.dateTo;
+                }
+            }
+
 
             setupConnectionMonitoring() {
                 const updateConnectionStatus = () => {
@@ -1068,7 +1147,18 @@ if ($loggedUser['type'] === 'Dentist') {
                         sort: this.sortField,
                         order: this.sortOrder
                     });
+                    // Add advanced filter parameters if they exist
+                    if (this.dateFrom) {
+                        params.append('date_from', this.dateFrom);
+                    }
 
+                    if (this.dateTo) {
+                        params.append('date_to', this.dateTo);
+                    }
+
+                    if (this.userType) {
+                        params.append('user_type', this.userType);
+                    }
                     console.log('Fetching logs with params:', params.toString());
 
                     const response = await fetch(`/dentalemr_system/php/manageusers/fetch_system_logs.php?${params}`, {
@@ -1112,6 +1202,61 @@ if ($loggedUser['type'] === 'Dentist') {
                 } finally {
                     this.isLoading = false;
                     this.hideLoadingState();
+                }
+            }
+            applyAdvancedFilters() {
+                // Get date range values
+                const dateFromInput = document.getElementById('dateFrom');
+                const dateToInput = document.getElementById('dateTo');
+                const userTypeFilter = document.getElementById('userTypeFilter');
+
+                if (dateFromInput) this.dateFrom = dateFromInput.value;
+                if (dateToInput) this.dateTo = dateToInput.value;
+                if (userTypeFilter) this.userType = userTypeFilter.value;
+
+                // Validate date range
+                this.validateDateRange();
+
+                // Reset to first page and load logs
+                this.currentPage = 1;
+                this.loadLogs();
+
+                // Show feedback
+                const filterCount = [this.dateFrom, this.dateTo, this.userType].filter(Boolean).length;
+                if (filterCount > 0) {
+                    this.showToast(`Applied ${filterCount} filter(s)`, 'info');
+                }
+            }
+
+            clearAdvancedFilters() {
+                // Reset date range to default
+                this.setDefaultDateRange();
+
+                // Reset user type filter
+                const userTypeFilter = document.getElementById('userTypeFilter');
+                if (userTypeFilter) {
+                    userTypeFilter.value = '';
+                    this.userType = '';
+                }
+
+                // Apply the cleared filters
+                this.applyAdvancedFilters();
+            }
+
+            toggleAdvancedFilters() {
+                const filters = document.getElementById('advancedFilters');
+                const toggleBtn = document.querySelector('button[onclick*="toggleAdvancedFilters"]');
+
+                if (filters) {
+                    filters.classList.toggle('hidden');
+
+                    // Update button text
+                    if (toggleBtn) {
+                        const isHidden = filters.classList.contains('hidden');
+                        const icon = isHidden ? '<i class="fas fa-filter mr-1"></i>' : '<i class="fas fa-times mr-1"></i>';
+                        const text = isHidden ? 'Advanced Filters' : 'Close Filters';
+                        toggleBtn.innerHTML = `${icon}${text}`;
+                    }
                 }
             }
 
@@ -1400,7 +1545,14 @@ if ($loggedUser['type'] === 'Dentist') {
                 this.filterLogs('all');
                 this.clearSelection();
             }
-
+            
+            clearFilters() {
+                this.clearSearch();
+                this.filterLogs('all');
+                this.clearAdvancedFilters();
+                this.clearSelection();
+                this.showToast('All filters cleared', 'info');
+            }
             toggleAdvancedFilters() {
                 const filters = document.getElementById('advancedFilters');
                 if (filters) {

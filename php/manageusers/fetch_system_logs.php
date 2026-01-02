@@ -38,6 +38,11 @@ $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'created_at';
 $order = isset($_GET['order']) && strtoupper($_GET['order']) === 'ASC' ? 'ASC' : 'DESC';
 
+// Advanced filter parameters
+$dateFrom = isset($_GET['date_from']) ? $_GET['date_from'] : '';
+$dateTo = isset($_GET['date_to']) ? $_GET['date_to'] : '';
+$userTypeFilter = isset($_GET['user_type']) ? $_GET['user_type'] : '';
+
 if ($page < 1) $page = 1;
 if ($limit < 1 || $limit > 100) $limit = 10;
 
@@ -134,6 +139,26 @@ try {
         $types .= 's';
     }
 
+    // Date range filter
+    if (!empty($dateFrom)) {
+        $whereConditions[] = "DATE(created_at) >= ?";
+        $params[] = $dateFrom;
+        $types .= 's';
+    }
+    
+    if (!empty($dateTo)) {
+        $whereConditions[] = "DATE(created_at) <= ?";
+        $params[] = $dateTo;
+        $types .= 's';
+    }
+    
+    // User type filter
+    if (!empty($userTypeFilter)) {
+        $whereConditions[] = "user_type = ?";
+        $params[] = $userTypeFilter;
+        $types .= 's';
+    }
+
     // Build the WHERE clause
     $whereClause = '';
     if (!empty($whereConditions)) {
@@ -218,7 +243,12 @@ try {
         'total' => $totalItems,
         'page' => $page,
         'limit' => $limit,
-        'total_pages' => ceil($totalItems / $limit) ?: 1
+        'total_pages' => ceil($totalItems / $limit) ?: 1,
+        'filters' => [
+            'date_from' => $dateFrom,
+            'date_to' => $dateTo,
+            'user_type' => $userTypeFilter
+        ]
     ]);
 } catch (Exception $e) {
     error_log("Error fetching logs: " . $e->getMessage());
