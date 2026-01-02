@@ -1365,6 +1365,9 @@ if ($loggedUser['type'] === 'Dentist') {
                 const key = `${toothId}-${partName}`;
                 part.dataset.key = key;
 
+                const textSpan = document.createElement('span');
+                part.appendChild(textSpan);
+
                 return part;
             }
 
@@ -1456,12 +1459,13 @@ if ($loggedUser['type'] === 'Dentist') {
                     el.style.color = "";
                     el.style.fontWeight = "";
 
-                    if (el.classList.contains('part')) {
-                        // Clear tooth parts completely
-                        el.textContent = "";
-                        el.removeAttribute('data-content');
+                    const textSpan = el.querySelector('span');
+                    if (textSpan) {
+                        textSpan.textContent = "";
+                        textSpan.style.color = "";
+                        textSpan.style.fontWeight = "";
+                        textSpan.style.fontSize = "";
                     } else {
-                        // Clear condition/treatment boxes
                         el.textContent = "";
                     }
                 });
@@ -1556,16 +1560,19 @@ if ($loggedUser['type'] === 'Dentist') {
 
                             el.style.backgroundColor = backgroundColor;
 
-                            // Set text ONLY for condition boxes, NOT for tooth parts
-                            if (el.classList.contains('condition-box') || el.classList.contains('condition1-box')) {
-                                const displayText = c.condition_code || '';
+                            // Set text
+                            const textSpan = el.querySelector('span');
+                            const displayText = c.condition_code || '';
+
+                            if (textSpan) {
+                                textSpan.textContent = displayText;
+                                textSpan.style.color = displayText === '✓' ? '#000000' : '#ffffff';
+                                textSpan.style.fontWeight = 'bold';
+                                textSpan.style.fontSize = '10px';
+                            } else {
                                 el.textContent = displayText;
                                 el.style.color = displayText === '✓' ? '#000000' : '#ffffff';
                                 el.style.fontWeight = 'bold';
-                            } else if (el.classList.contains('part')) {
-                                // For tooth parts: set color but no text
-                                el.textContent = '';
-                                el.style.color = 'transparent';
                             }
                         });
                     }
@@ -1625,6 +1632,8 @@ if ($loggedUser['type'] === 'Dentist') {
                 const el = modal.querySelector(`[data-key="${key}"]`);
                 if (!el) return;
 
+                const textSpan = el.querySelector('span');
+
                 // Mark as unsaved
                 modalHasUnsavedChanges = true;
 
@@ -1636,7 +1645,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         prevColor: el.dataset.color || '',
                         prevCondition: el.dataset.condition || '',
                         prevTreatment: el.dataset.treatment || '',
-                        prevTextContent: el.textContent,
+                        prevTextContent: textSpan ? textSpan.textContent : el.textContent,
                         prevCase: el.dataset.case || 'upper',
                         newColor: color,
                         newCondition: isTreatment ? '' : cond,
@@ -1664,27 +1673,32 @@ if ($loggedUser['type'] === 'Dentist') {
 
                     const displayText = formatCondition(cond, textCase);
 
-                    if (el.classList.contains('part')) {
-                        // TOOTH PART: No text, just color
-                        el.textContent = '';
-                        el.style.color = 'transparent';
+                    if (textSpan) {
+                        textSpan.textContent = displayText;
+                    } else {
+                        el.textContent = displayText;
+                    }
 
-                        if (cond && cond.toLowerCase() === '✓') {
-                            el.style.backgroundColor = '#fff';
+                    if (cond && cond.toLowerCase() === '✓') {
+                        el.style.backgroundColor = '#fff';
+                        if (textSpan) {
+                            textSpan.style.color = '#000';
                         } else {
-                            el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
+                            el.style.color = '#000';
                         }
                     } else {
-                        // CONDITION BOX: Show text
-                        el.textContent = displayText;
-
-                        if (cond && cond.toLowerCase() === '✓') {
-                            el.style.backgroundColor = '#fff';
-                            el.style.color = '#000';
+                        el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
+                        if (textSpan) {
+                            textSpan.style.color = '#fff';
                         } else {
-                            el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
                             el.style.color = '#fff';
                         }
+                    }
+
+                    if (textSpan) {
+                        textSpan.style.fontWeight = 'bold';
+                        textSpan.style.fontSize = '10px';
+                    } else {
                         el.style.fontWeight = 'bold';
                     }
                 }
@@ -1768,6 +1782,8 @@ if ($loggedUser['type'] === 'Dentist') {
 
                     const el = modal.querySelector(`[data-key="${last.key}"]`);
                     if (el) {
+                        const textSpan = el.querySelector('span');
+
                         if (last.isTreatment) {
                             el.dataset.treatment = last.prevTreatment || '';
                             el.textContent = last.prevTreatment || '';
@@ -1778,23 +1794,24 @@ if ($loggedUser['type'] === 'Dentist') {
                             el.dataset.color = last.prevColor || '';
                             el.dataset.case = last.prevCase || 'upper';
 
-                            if (el.classList.contains('part')) {
-                                // Tooth part: no text
-                                el.textContent = '';
-                                el.style.color = 'transparent';
-                                if (last.prevCondition && last.prevCondition.toLowerCase() === '✓') {
-                                    el.style.backgroundColor = '#fff';
+                            if (textSpan) {
+                                textSpan.textContent = last.prevTextContent || '';
+                            } else {
+                                el.textContent = last.prevTextContent || '';
+                            }
+
+                            if (last.prevCondition && last.prevCondition.toLowerCase() === '✓') {
+                                el.style.backgroundColor = '#fff';
+                                if (textSpan) {
+                                    textSpan.style.color = '#000';
                                 } else {
-                                    el.style.backgroundColor = last.prevColor === 'blue' ? '#1e40af' : last.prevColor === 'red' ? '#b91c1c' : '#fff';
+                                    el.style.color = '#000';
                                 }
                             } else {
-                                // Condition box: show text
-                                el.textContent = last.prevTextContent || '';
-                                if (last.prevCondition && last.prevCondition.toLowerCase() === '✓') {
-                                    el.style.backgroundColor = '#fff';
-                                    el.style.color = '#000';
+                                el.style.backgroundColor = last.prevColor === 'blue' ? '#1e40af' : last.prevColor === 'red' ? '#b91c1c' : '#fff';
+                                if (textSpan) {
+                                    textSpan.style.color = last.prevColor ? '#fff' : '#000';
                                 } else {
-                                    el.style.backgroundColor = last.prevColor === 'blue' ? '#1e40af' : last.prevColor === 'red' ? '#b91c1c' : '#fff';
                                     el.style.color = last.prevColor ? '#fff' : '#000';
                                 }
                             }
@@ -1832,6 +1849,12 @@ if ($loggedUser['type'] === 'Dentist') {
                         el.style.backgroundColor = '#fff';
                         el.style.color = '#000';
                         el.style.fontWeight = 'normal';
+
+                        const textSpan = el.querySelector('span');
+                        if (textSpan) {
+                            textSpan.textContent = '';
+                            textSpan.style.color = '';
+                        }
                     });
 
                     modalHistoryStack.length = 0;
@@ -1850,6 +1873,9 @@ if ($loggedUser['type'] === 'Dentist') {
                     const toothIdNum = getToothIdByFDI(fdiNumber);
                     part.dataset.toothid = toothIdNum;
                     part.dataset.fdinumber = fdiNumber;
+
+                    const textSpan = document.createElement('span');
+                    part.appendChild(textSpan);
 
                     part.addEventListener('click', () => {
                         if (!modalSelectedCondition) {
@@ -2165,6 +2191,9 @@ if ($loggedUser['type'] === 'Dentist') {
                             el.textContent = '';
                             el.style.backgroundColor = '#fff';
                             el.style.color = '#000';
+
+                            const textSpan = el.querySelector('span');
+                            if (textSpan) textSpan.textContent = '';
                         });
 
                         // Reset all selections

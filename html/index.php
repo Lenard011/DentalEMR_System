@@ -911,7 +911,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
             position: fixed;
             top: 80px;
             right: 20px;
-            z-index: 1000;
+            z-index: 40;
             padding: 8px 16px;
             border-radius: 8px;
             font-weight: 500;
@@ -1337,6 +1337,11 @@ if (!$isOfflineMode && $conn && !$dbError) {
                                 <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId;
                                                                                                     echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
+                            </li>
+                            <li>
+                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                                                                                    echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">System logs</a>
                             </li>
                         </ul>
                         <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">

@@ -300,7 +300,6 @@ if (!$isOfflineMode) {
             background-color: #2563eb;
         }
     </style>
-
     <style>
         .controls {
             margin-bottom: 20px;
@@ -550,53 +549,6 @@ if (!$isOfflineMode) {
             color: #000;
         }
 
-        /* Ensure condition boxes show vertical text */
-        .condition-box::after,
-        .condition1-box::after {
-            content: attr(data-content) !important;
-            /* writing-mode: vertical-rl; */
-            text-orientation: mixed;
-            transform: none !important;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) !important;
-            font-size: 14px;
-            font-weight: bold;
-            color: white;
-            text-align: center;
-            pointer-events: none;
-            white-space: nowrap;
-            display: block !important;
-        }
-
-        /* For checkmark in condition boxes */
-        .condition-box[data-content="✓"]::after,
-        .condition1-box[data-content="✓"]::after {
-            writing-mode: horizontal-tb;
-            color: #000;
-            font-size: 16px;
-        }
-
-        /* Make sure tooth parts show their pseudo-elements properly */
-        .part-top-left::after,
-        .part-top-right::after,
-        .part-bottom-left::after,
-        .part-bottom-right::after,
-        .part-center::after {
-            display: block !important;
-        }
-
-        /* For tooth parts with checkmark */
-        .part[data-content="✓"]::after {
-            color: #000 !important;
-        }
-
-        /* For tooth parts with letters - make them transparent */
-        .part[data-content]:not([data-content="✓"])::after {
-            color: transparent !important;
-        }
-
         /* for condition boxes we will allow JS to set colors on the element */
     </style>
 </head>
@@ -831,7 +783,8 @@ if (!$isOfflineMode) {
             <input type="hidden" id="patient_id">
             <input type="hidden" id="visit_id" value="0">
             <!-- Individual Patient Treatment Record Inforamtion -->
-            <main class="p-3 md:ml-64 h-auto pt-15" id="patienttreatment" style="display: flex; flex-direction: column;">
+            <main class="p-3 md:ml-64 h-auto pt-15" id="patienttreatment"
+                style="display: flex; flex-direction: column;">
                 <div class="text-center">
                     <p class="text-lg font-semibold  text-gray-900 dark:text-white">Individual Patient Treatment Record
                     </p>
@@ -2626,7 +2579,7 @@ if (!$isOfflineMode) {
             else input.value = "";
         }
     </script>
-
+    
     <script>
         function toggleInput(checkbox, inputId) {
             document.getElementById(inputId).disabled = !checkbox.checked;
@@ -2636,7 +2589,7 @@ if (!$isOfflineMode) {
 
         }
     </script>
-
+    
     <script>
         function toggleHospitalization(checkbox) {
             const fields = [
@@ -3263,14 +3216,13 @@ if (!$isOfflineMode) {
                         newCondition: cond,
                         newTreatment: el.dataset.treatment,
                         newCase: textCase,
-                        isTreatment: !!isTreatment,
-                        isToothPart: el.classList.contains('part')
+                        isTreatment: !!isTreatment
                     });
                     redoStack.length = 0;
                 }
 
                 if (isTreatment) {
-                    // Treatment boxes - show text directly
+                    // Treatment boxes - horizontal text
                     el.dataset.treatment = cond || '';
                     el.textContent = cond || '';
                     el.style.backgroundColor = '#fff';
@@ -3278,46 +3230,27 @@ if (!$isOfflineMode) {
                     el.dataset.color = '';
                     el.dataset.condition = '';
                     el.dataset.case = '';
+                    // Remove data-content for treatment boxes
                     el.removeAttribute('data-content');
                 } else {
-                    // For condition boxes AND tooth parts
+                    // Condition boxes - vertical text
                     el.dataset.condition = cond || '';
                     el.dataset.color = color || '';
                     el.dataset.case = textCase || 'upper';
 
-                    // Clear the actual text content
+                    // Set the data-content attribute for the pseudo-element
+                    const displayText = formatCondition(cond, textCase);
+                    el.setAttribute('data-content', displayText);
+
+                    // Clear the actual text content since we're using pseudo-element
                     el.textContent = '';
 
-                    if (cond) {
-                        const displayText = formatCondition(cond, textCase);
-
-                        if (el.classList.contains('part')) {
-                            // TOOTH PART: Set transparent color and use data-content for pseudo-element
-                            el.style.color = 'transparent';
-                            el.setAttribute('data-content', displayText);
-
-                            if (cond.toLowerCase() === '✓') {
-                                el.style.backgroundColor = '#fff';
-                            } else {
-                                el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
-                            }
-                        } else {
-                            // CONDITION BOX (treatRow2, treatRow3): Show text via pseudo-element
-                            el.setAttribute('data-content', displayText);
-
-                            if (cond.toLowerCase() === '✓') {
-                                el.style.backgroundColor = '#fff';
-                                el.style.color = 'transparent';
-                            } else {
-                                el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
-                                el.style.color = 'transparent';
-                            }
-                        }
-                    } else {
-                        // Clear condition
+                    if (cond && cond.toLowerCase() === '✓') {
                         el.style.backgroundColor = '#fff';
                         el.style.color = '#000';
-                        el.removeAttribute('data-content');
+                    } else {
+                        el.style.backgroundColor = color === 'blue' ? '#1e40af' : color === 'red' ? '#b91c1c' : '#fff';
+                        el.style.color = '#fff';
                     }
                 }
             }
@@ -3353,7 +3286,6 @@ if (!$isOfflineMode) {
                     el.textContent = '';
                     el.style.backgroundColor = '#fff';
                     el.style.color = '#000';
-                    el.removeAttribute('data-content');
                 });
                 historyStack.length = 0;
                 redoStack.length = 0;
@@ -3517,7 +3449,7 @@ if (!$isOfflineMode) {
                     items.push({
                         type: "condition",
                         tooth_id,
-                        condition_code: condCode,
+                        condition_code: condCode, // Send the original condition code
                         box_key: part.dataset.key,
                         color,
                         case_type: caseType
@@ -3550,7 +3482,7 @@ if (!$isOfflineMode) {
                         items.push({
                             type: "condition",
                             tooth_id,
-                            condition_code: condCode,
+                            condition_code: condCode, // Send the original condition code
                             box_key: key,
                             color,
                             case_type: caseType

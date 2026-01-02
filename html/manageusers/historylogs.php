@@ -153,77 +153,65 @@ if ($loggedUser['type'] === 'Dentist') {
                     </a>
 
                 </div>
-                <!-- UserProfile -->
-                <div class="flex items-center lg:order-2">
-                    <button type="button" data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation"
-                        class="p-2 mr-1 text-gray-500 rounded-lg md:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-                        <span class="sr-only">Toggle search</span>
-                        <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path clip-rule="evenodd" fill-rule="evenodd"
-                                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z">
-                            </path>
-                        </svg>
-                    </button>
-                    <button type="button"
-                        class="flex mx-3 cursor-pointer text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                        id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown">
-                        <span class="sr-only">Open user menu</span>
-                        <img class="w-8 h-8 rounded-full"
-                            src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png"
-                            alt="user photo" />
-                    </button>
-                    <!-- Dropdown menu -->
-                    <div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
-                        id="dropdown">
-                        <div class="py-3 px-4">
-                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">
-                                <?php
-                                echo htmlspecialchars(
-                                    !empty($loggedUser['name'])
-                                        ? $loggedUser['name']
-                                        : ($loggedUser['email'] ?? 'User')
-                                );
-                                ?>
-                            </span>
-                            <span class="block text-sm text-gray-900 truncate dark:text-white">
-                                <?php
-                                echo htmlspecialchars(
-                                    !empty($loggedUser['email'])
-                                        ? $loggedUser['email']
-                                        : ($loggedUser['name'] ?? 'User')
-                                );
-                                ?>
-                            </span>
-                        </div>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My
-                                    profile</a>
-                            </li>
-                            <li>
+                <!-- User Profile -->
+                <div class="flex items-center space-x-3">
+
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button type="button" id="userDropdownButton" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                                <?php if (!empty($loggedUser['photo'])): ?>
+                                    <img src="<?php echo htmlspecialchars($loggedUser['photo']); ?>" alt="User" class="w-full h-full object-cover">
+                                <?php else: ?>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
+                                <?php endif; ?>
+                            </div>
+                            <div class="hidden md:block text-left">
+                                <div class="text-sm font-medium truncate max-w-[150px]">
+                                    <?php echo htmlspecialchars($loggedUser['name'] ?? 'User'); ?>
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                                    <?php echo htmlspecialchars($loggedUser['type'] ?? 'User Type'); ?>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                                <div class="text-sm font-semibold">
+                                    <?php echo htmlspecialchars($loggedUser['name'] ?? 'User'); ?>
+                                </div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    <?php echo htmlspecialchars($loggedUser['email'] ?? 'user@example.com'); ?>
+                                </div>
+                            </div>
+                            <div class="py-2">
+                                <a href="/dentalemr_system/html/profile.php?uid=<?php echo $userId; ?>"
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
+                                    My Profile
+                                </a>
                                 <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
-                            </li>
-                        </ul>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $userId; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">History logs</a>
-                            </li>
-                            <li>
-                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
-                            </li>
-                        </ul>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-users-cog mr-3 text-gray-500"></i>
+                                    Manage Users
+                                </a>
+                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId; ?>"
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 bg-blue-50 dark:bg-blue-900/20">
+                                    <i class="fas fa-history mr-3 text-blue-500"></i>
+                                    System Logs
+                                </a>
+                            </div>
+                            <div class="border-t border-gray-200 dark:border-gray-700 py-2">
                                 <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
-                                    out</a>
-                            </li>
-                        </ul>
+                                    class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                    <i class="fas fa-sign-out-alt mr-3"></i>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
