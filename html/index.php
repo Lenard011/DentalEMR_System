@@ -123,12 +123,13 @@ if (!$isOfflineMode) {
     }
 
     if (!$dbError && $loggedUser['type'] === 'Dentist') {
-        $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
+        $stmt = $conn->prepare("SELECT name, profile_picture FROM dentist WHERE id = ?");
         $stmt->bind_param("i", $loggedUser['id']);
         $stmt->execute();
-        $stmt->bind_result($dentistName);
+        $stmt->bind_result($dentistName, $dentistProfilePicture);
         if ($stmt->fetch()) {
             $loggedUser['name'] = $dentistName;
+            $loggedUser['profile_picture'] = $dentistProfilePicture; // Add this line
         }
         $stmt->close();
     }
@@ -1242,7 +1243,6 @@ if (!$isOfflineMode && $conn && !$dbError) {
             <i class="fas fa-<?php echo $isOfflineMode ? 'wifi-slash' : 'wifi'; ?>"></i>
             <span><?php echo $isOfflineMode ? 'Offline Mode' : 'Online'; ?></span>
         </div>
-
         <nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
             <div class="flex flex-wrap justify-between items-center">
                 <div class="flex justify-start items-center">
@@ -1255,6 +1255,12 @@ if (!$isOfflineMode && $conn && !$dbError) {
                                 d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
                                 clip-rule="evenodd"></path>
                         </svg>
+                        <svg aria-hidden="true" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
                     <a href="#" class="flex items-center justify-between mr-4">
@@ -1264,92 +1270,111 @@ if (!$isOfflineMode && $conn && !$dbError) {
                     </a>
 
                     <?php if ($isOfflineMode): ?>
-                        <div class="offline-indicator">
-                            <i class="fas fa-wifi-slash"></i>
-                            <span>Offline Mode</span>
+                        <div class="ml-4 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg flex items-center gap-2">
+                            <i class="fas fa-wifi-slash text-orange-600 dark:text-orange-400 text-sm"></i>
+                            <span class="text-sm font-medium text-orange-800 dark:text-orange-300">Offline Mode</span>
                         </div>
                     <?php endif; ?>
                 </div>
 
-                <!-- UserProfile -->
-                <div class="flex items-center lg:order-2">
+                <!-- User Profile -->
+                <div class="flex items-center space-x-3">
                     <?php if ($isOfflineMode): ?>
                         <button onclick="syncOfflineData()"
-                            class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors mr-2 flex items-center gap-2">
+                            class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 text-sm">
                             <i class="fas fa-sync"></i>
                             Sync When Online
                         </button>
                     <?php endif; ?>
 
-                    <button type="button"
-                        class="flex mx-3 cursor-pointer text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                        id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown">
-                        <span class="sr-only">Open user menu</span>
-                        <img class="w-8 h-8 rounded-full"
-                            src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png"
-                            alt="user photo" />
-                    </button>
-
-                    <!-- Dropdown menu -->
-                    <div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
-                        id="dropdown">
-                        <div class="py-3 px-4">
-                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">
-                                <?php
-                                echo htmlspecialchars(
-                                    !empty($loggedUser['name'])
-                                        ? $loggedUser['name']
-                                        : ($loggedUser['email'] ?? 'User')
-                                );
-                                ?>
-                                <?php if ($isOfflineMode): ?>
-                                    <span class="text-orange-600 text-xs">(Offline)</span>
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                                <?php if (!empty($loggedUser['profile_picture'])): ?>
+                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                <?php else: ?>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
                                 <?php endif; ?>
-                            </span>
-                            <span class="block text-sm text-gray-900 truncate dark:text-white">
-                                <?php
-                                echo htmlspecialchars(
-                                    !empty($loggedUser['email'])
-                                        ? $loggedUser['email']
-                                        : ($loggedUser['name'] ?? 'User')
-                                );
-                                ?>
-                            </span>
-                        </div>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My profile</a>
-                            </li>
-                            <li>
+                            </div>
+                            <div class="hidden md:block text-left">
+                                <div class="text-sm font-medium truncate max-w-[150px]">
+                                    <?php
+                                    echo htmlspecialchars(
+                                        !empty($loggedUser['name'])
+                                            ? $loggedUser['name']
+                                            : ($loggedUser['email'] ?? 'User')
+                                    );
+                                    ?>
+                                    <?php if ($isOfflineMode): ?>
+                                        <span class="text-orange-600 text-xs">(Offline)</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                                    <?php
+                                    echo htmlspecialchars(
+                                        !empty($loggedUser['email'])
+                                            ? $loggedUser['email']
+                                            : ($loggedUser['name'] ?? 'User')
+                                    );
+                                    ?>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                                <div class="text-sm font-semibold">
+                                    <?php
+                                    echo htmlspecialchars(
+                                        !empty($loggedUser['name'])
+                                            ? $loggedUser['name']
+                                            : ($loggedUser['email'] ?? 'User')
+                                    );
+                                    ?>
+                                    <?php if ($isOfflineMode): ?>
+                                        <span class="text-orange-600 text-xs">(Offline)</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    <?php
+                                    echo htmlspecialchars(
+                                        !empty($loggedUser['email'])
+                                            ? $loggedUser['email']
+                                            : ($loggedUser['name'] ?? 'User')
+                                    );
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="py-2">
+                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
+                                    My Profile
+                                </a>
                                 <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
-                            </li>
-                        </ul>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">History logs</a>
-                            </li>
-                            <li>
-                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId;
-                                                                                                    echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
-                            </li>
-                            <li>
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-users-cog mr-3 text-gray-500"></i>
+                                    Manage Users
+                                </a>
                                 <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
-                                                                                                    echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">System logs</a>
-                            </li>
-                        </ul>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
+                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-history mr-3 text-gray-500"></i>
+                                    System Logs
+                                </a>
+                            </div>
+                            <div class="border-t border-gray-200 dark:border-gray-700 py-2">
                                 <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign out</a>
-                            </li>
-                        </ul>
+                                    class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                    <i class="fas fa-sign-out-alt mr-3"></i>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

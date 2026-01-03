@@ -2,80 +2,190 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
-// REQUIRE userId parameter for each page
-if (!isset($_GET['uid'])) {
-    echo "<script>
-        alert('Invalid session. Please log in again.');
-        window.location.href = '/dentalemr_system/html/login/login.html';
-    </script>";
-    exit;
-}
+// Check if we're in offline mode
+$isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
 
-$userId = intval($_GET['uid']);
+// Enhanced session validation with offline support
+if ($isOfflineMode) {
+    // Offline mode session validation
+    $isValidSession = false;
 
-// CHECK IF THIS USER IS REALLY LOGGED IN
-if (
-    !isset($_SESSION['active_sessions']) ||
-    !isset($_SESSION['active_sessions'][$userId])
-) {
-    echo "<script>
-        alert('Please log in first.');
-        window.location.href = '/dentalemr_system/html/login/login.html';
-    </script>";
-    exit;
-}
-
-// PER-USER INACTIVITY TIMEOUT
-$inactiveLimit = 1800; // 30 minutes
-
-if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
-    $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
-
-    if ((time() - $lastActivity) > $inactiveLimit) {
-        unset($_SESSION['active_sessions'][$userId]);
-
-        if (empty($_SESSION['active_sessions'])) {
-            session_unset();
-            session_destroy();
-        }
-
+    // Check if we have offline session data
+    if (isset($_SESSION['offline_user'])) {
+        $loggedUser = $_SESSION['offline_user'];
+        $userId = 'offline';
+        $isValidSession = true;
+    } else {
+        // Try to create offline session from localStorage data
         echo "<script>
-            alert('You have been logged out due to inactivity.');
-            window.location.href = '/dentalemr_system/html/login/login.html';
+            document.addEventListener('DOMContentLoaded', function() {
+                const checkOfflineSession = () => {
+                    try {
+                        const sessionData = sessionStorage.getItem('dentalemr_current_user');
+                        if (sessionData) {
+                            const user = JSON.parse(sessionData);
+                            if (user && user.isOffline) {
+                                console.log('Valid offline session detected:', user.email);
+                                return true;
+                            }
+                        }
+                        
+                        const offlineUsers = localStorage.getItem('dentalemr_local_users');
+                        if (offlineUsers) {
+                            const users = JSON.parse(offlineUsers);
+                            if (users && users.length > 0) {
+                                console.log('Offline users found in localStorage');
+                                return true;
+                            }
+                        }
+                        return false;
+                    } catch (error) {
+                        console.error('Error checking offline session:', error);
+                        return false;
+                    }
+                };
+                
+                if (!checkOfflineSession()) {
+                    alert('Please log in first for offline access.');
+                    window.location.href = '/dentalemr_system/html/login/login.html';
+                }
+            });
+        </script>";
+
+        // Create offline session for this request
+        $_SESSION['offline_user'] = [
+            'id' => 'offline_user',
+            'name' => 'Offline User',
+            'email' => 'offline@dentalclinic.com',
+            'type' => 'Dentist',
+            'isOffline' => true
+        ];
+        $loggedUser = $_SESSION['offline_user'];
+        $userId = 'offline';
+        $isValidSession = true;
+    }
+} else {
+    // Online mode - normal session validation
+    if (!isset($_GET['uid'])) {
+        echo "<script>
+            if (!navigator.onLine) {
+                // Redirect to same page in offline mode
+                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+            } else {
+                alert('Invalid session. Please log in again.');
+                window.location.href = '/dentalemr_system/html/login/login.html';
+            }
+        </script>";
+        exit;
+    }
+
+    $userId = intval($_GET['uid']);
+    $isValidSession = false;
+
+    // CHECK IF THIS USER IS REALLY LOGGED IN
+    if (
+        isset($_SESSION['active_sessions']) &&
+        isset($_SESSION['active_sessions'][$userId])
+    ) {
+        $userSession = $_SESSION['active_sessions'][$userId];
+
+        // Check basic required fields
+        if (isset($userSession['id']) && isset($userSession['type'])) {
+            $isValidSession = true;
+            // Update last activity
+            $_SESSION['active_sessions'][$userId]['last_activity'] = time();
+            $loggedUser = $userSession;
+        }
+    }
+
+    if (!$isValidSession) {
+        echo "<script>
+            if (!navigator.onLine) {
+                // Redirect to same page in offline mode
+                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+            } else {
+                alert('Please log in first.');
+                window.location.href = '/dentalemr_system/html/login/login.html';
+            }
         </script>";
         exit;
     }
 }
 
-// Update last activity timestamp
-$_SESSION['active_sessions'][$userId]['last_activity'] = time();
+// PER-USER INACTIVITY TIMEOUT (Online mode only)
+if (!$isOfflineMode) {
+    $inactiveLimit = 1800; // 10 minutes
+
+    if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
+        $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
+
+        if ((time() - $lastActivity) > $inactiveLimit) {
+            // Log out ONLY this user (not everyone)
+            unset($_SESSION['active_sessions'][$userId]);
+
+            // If no one else is logged in, end session entirely
+            if (empty($_SESSION['active_sessions'])) {
+                session_unset();
+                session_destroy();
+            }
+
+            echo "<script>
+                alert('You have been logged out due to inactivity.');
+                window.location.href = '/dentalemr_system/html/login/login.html';
+            </script>";
+            exit;
+        }
+    }
+
+    // Update last activity timestamp
+    $_SESSION['active_sessions'][$userId]['last_activity'] = time();
+}
 
 // GET USER DATA FOR PAGE USE
-$loggedUser = $_SESSION['active_sessions'][$userId];
-
-// Store user session info safely
-$host = "localhost";
-$dbUser = "root";
-$dbPass = "";
-$dbName = "dentalemr_system";
-
-$conn = new mysqli($host, $dbUser, $dbPass, $dbName);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+if ($isOfflineMode) {
+    $loggedUser = $_SESSION['offline_user'];
+} else {
+    $loggedUser = $_SESSION['active_sessions'][$userId];
 }
 
-// Fetch dentist name if user is a dentist
-if ($loggedUser['type'] === 'Dentist') {
-    $stmt = $conn->prepare("SELECT name FROM dentist WHERE id = ?");
-    $stmt->bind_param("i", $loggedUser['id']);
-    $stmt->execute();
-    $stmt->bind_result($dentistName);
-    if ($stmt->fetch()) {
-        $loggedUser['name'] = $dentistName;
+// Database connection only for online mode
+$conn = null;
+if (!$isOfflineMode) {
+    $host = "localhost";
+    $dbUser = "root";
+    $dbPass = "";
+    $dbName = "dentalemr_system";
+
+    $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+    if ($conn->connect_error) {
+        // If database fails but browser is online, show error
+        if (!isset($_GET['offline'])) {
+            echo "<script>
+                if (navigator.onLine) {
+                    alert('Database connection failed. Please try again.');
+                    console.error('Database error: " . addslashes($conn->connect_error) . "');
+                } else {
+                    // Switch to offline mode automatically
+                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                }
+            </script>";
+            exit;
+        }
     }
-    $stmt->close();
-}
 
+    // Fetch dentist name if user is a dentist (only in online mode)
+    if ($loggedUser['type'] === 'Dentist') {
+        $stmt = $conn->prepare("SELECT name, profile_picture FROM dentist WHERE id = ?");
+        $stmt->bind_param("i", $loggedUser['id']);
+        $stmt->execute();
+        $stmt->bind_result($dentistName, $dentistProfilePicture);
+        if ($stmt->fetch()) {
+            $loggedUser['name'] = $dentistName;
+            $loggedUser['profile_picture'] = $dentistProfilePicture; // Add this line
+        }
+        $stmt->close();
+    }
+}
 // Get patient ID from URL
 $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -88,12 +198,12 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Treatment Records</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
-        <nav
-            class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
+        <nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
             <div class="flex flex-wrap justify-between items-center">
                 <div class="flex justify-start items-center">
                     <button data-drawer-target="drawer-navigation" data-drawer-toggle="drawer-navigation"
@@ -113,85 +223,118 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                         </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="https://flowbite.com" class="flex items-center justify-between mr-4">
+                    <a href="#" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
-                            class="mr-3 h-8" alt="Flowbite Logo" />
-                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
-                            Clinic</span>
+                            class="mr-3 h-8" alt="MHO Logo" />
+                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
                     </a>
 
-                </div>
-                <!-- UserProfile -->
-                <div class="flex items-center lg:order-2">
-                    <button type="button" data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation"
-                        class="p-2 mr-1 text-gray-500 rounded-lg md:hidden hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-                        <span class="sr-only">Toggle search</span>
-                        <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path clip-rule="evenodd" fill-rule="evenodd"
-                                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z">
-                            </path>
-                        </svg>
-                    </button>
-                    <button type="button"
-                        class="flex mx-3 cursor-pointer text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-                        id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown">
-                        <span class="sr-only">Open user menu</span>
-                        <img class="w-8 h-8 rounded-full"
-                            src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png"
-                            alt="user photo" />
-                    </button>
-                    <!-- Dropdown menu -->
-                    <div class="hidden z-50 my-4 w-56 text-base list-none bg-white divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
-                        id="dropdown">
-                        <div class="py-3 px-4">
-                            <span class="block text-sm font-semibold text-gray-900 dark:text-white">
-                                <?php
-                                echo htmlspecialchars(
-                                    !empty($loggedUser['name'])
-                                        ? $loggedUser['name']
-                                        : ($loggedUser['email'] ?? 'User')
-                                );
-                                ?>
-                            </span>
-                            <span class="block text-sm text-gray-900 truncate dark:text-white">
-                                <?php
-                                echo htmlspecialchars(
-                                    !empty($loggedUser['email'])
-                                        ? $loggedUser['email']
-                                        : ($loggedUser['name'] ?? 'User')
-                                );
-                                ?>
-                            </span>
+                    <?php if ($isOfflineMode): ?>
+                        <div class="ml-4 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg flex items-center gap-2">
+                            <i class="fas fa-wifi-slash text-orange-600 dark:text-orange-400 text-sm"></i>
+                            <span class="text-sm font-medium text-orange-800 dark:text-orange-300">Offline Mode</span>
                         </div>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
+                    <?php endif; ?>
+                </div>
+
+                <!-- User Profile -->
+                <div class="flex items-center space-x-3">
+                    <?php if ($isOfflineMode): ?>
+                        <button onclick="syncOfflineData()"
+                            class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 text-sm">
+                            <i class="fas fa-sync"></i>
+                            Sync When Online
+                        </button>
+                    <?php endif; ?>
+
+                    <!-- User Dropdown -->
+                    <div class="relative">
+                        <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                                <?php if (!empty($loggedUser['profile_picture'])): ?>
+                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                <?php else: ?>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
+                                <?php endif; ?>
+                            </div>
+                            <div class="hidden md:block text-left">
+                                <div class="text-sm font-medium truncate max-w-[150px]">
+                                    <?php
+                                    echo htmlspecialchars(
+                                        !empty($loggedUser['name'])
+                                            ? $loggedUser['name']
+                                            : ($loggedUser['email'] ?? 'User')
+                                    );
+                                    ?>
+                                    <?php if ($isOfflineMode): ?>
+                                        <span class="text-orange-600 text-xs">(Offline)</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                                    <?php
+                                    echo htmlspecialchars(
+                                        !empty($loggedUser['email'])
+                                            ? $loggedUser['email']
+                                            : ($loggedUser['name'] ?? 'User')
+                                    );
+                                    ?>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
+                            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                                <div class="text-sm font-semibold">
+                                    <?php
+                                    echo htmlspecialchars(
+                                        !empty($loggedUser['name'])
+                                            ? $loggedUser['name']
+                                            : ($loggedUser['email'] ?? 'User')
+                                    );
+                                    ?>
+                                    <?php if ($isOfflineMode): ?>
+                                        <span class="text-orange-600 text-xs">(Offline)</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                    <?php
+                                    echo htmlspecialchars(
+                                        !empty($loggedUser['email'])
+                                            ? $loggedUser['email']
+                                            : ($loggedUser['name'] ?? 'User')
+                                    );
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="py-2">
                                 <a href="#"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">My
-                                    profile</a>
-                            </li>
-                            <li>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Manage users</a>
-                            </li>
-                        </ul>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
-                                <a href="/dentalemr_system/html/manageusers/historylogs.php?uid=<?php echo $userId; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">History logs</a>
-                            </li>
-                            <li>
-                                <a href="/dentalemr_system/html/manageusers/activitylogs.php?uid=<?php echo $userId; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white">Activity logs</a>
-                            </li>
-                        </ul>
-                        <ul class="py-1 text-gray-700 dark:text-gray-300" aria-labelledby="dropdown">
-                            <li>
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
+                                    My Profile
+                                </a>
+                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-users-cog mr-3 text-gray-500"></i>
+                                    Manage Users
+                                </a>
+                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-history mr-3 text-gray-500"></i>
+                                    System Logs
+                                </a>
+                            </div>
+                            <div class="border-t border-gray-200 dark:border-gray-700 py-2">
                                 <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
-                                    class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Sign
-                                    out</a>
-                            </li>
-                        </ul>
+                                    class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                    <i class="fas fa-sign-out-alt mr-3"></i>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -344,7 +487,7 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
             </div>
         </aside>
 
-        <header class="md:ml-64 pt-13">
+        <header class="md:ml-64 pt-20">
             <nav class="bg-white border-gray-200 dark:bg-gray-800 w-full drop-shadow-sm pb-2">
                 <div class="flex flex-col justify-between items-center mx-auto px-2 sm:px-4">
                     <!-- Top Section: Back Button, Title, Print Button -->

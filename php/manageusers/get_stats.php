@@ -4,7 +4,6 @@ require_once './db_connection.php';
 
 header('Content-Type: application/json');
 
-// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
@@ -14,12 +13,124 @@ if (!isset($_GET['uid']) || !isset($_SESSION['active_sessions'][$_GET['uid']])) 
 }
 
 try {
-    // Check database connection
     if (!$conn || $conn->connect_error) {
         throw new Exception("Database connection failed");
     }
 
-    // Total logs from both tables
+    $today = date('Y-m-d');
+
+    // FIXED QUERY: Count users with successful "Login" (case-sensitive exact match)
+    // Based on your database output, the action is "Login" (with capital L)
+    $activeUsersQuery = "
+        SELECT COUNT(DISTINCT user_id) as active_users_today
+        FROM activity_logs 
+        WHERE DATE(created_at) = ? 
+        AND user_id IS NOT NULL 
+        AND user_id != 0
+        AND action = 'Login'  -- Exact match for 'Login' with capital L
+    ";
+
+    $stmt = $conn->prepare($activeUsersQuery);
+    if (!$stmt) {
+        throw new Exception("Prepare failed for active users: " . $conn->error);
+    }
+    $stmt->bind_param('s', $today);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $activeUsers = $row['active_users_today'] ?? 0;
+    $stmt->close();
+
+    // If the above returns 0, try case-insensitive
+    if ($activeUsers == 0) {
+        $caseInsensitiveQuery = "
+            SELECT COUNT(DISTINCT user_id) as active_users_today
+            FROM activity_logs 
+            WHERE DATE(created_at) = ? 
+            AND user_id IS NOT NULL 
+            AND user_id != 0
+            AND (
+                action = 'Login' OR  -- Exact match
+                LOWER(action) = 'login'  -- Case-insensitive match
+            )
+        ";
+
+        $stmt = $conn->prepare($caseInsensitiveQuery);
+        $stmt->bind_param('s', $today);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $activeUsers = $row['active_users_today'] ?? 0;
+        $stmt->close();
+    }
+
+    // If still 0, use a more flexible approach
+    if ($activeUsers == 0) {
+        $flexibleQuery = "
+            SELECT COUNT(DISTINCT user_id) as active_users_today
+            FROM activity_logs 
+            WHERE DATE(created_at) = ? 
+            AND user_id IS NOT NULL 
+            AND user_id != 0
+            AND LOWER(action) LIKE '%login%'
+            AND LOWER(action) NOT LIKE '%failed%'
+        ";
+
+        $stmt = $conn->prepare($flexibleQuery);
+        $stmt->bind_param('s', $today);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $activeUsers = $row['active_users_today'] ?? 0;
+        $stmt->close();
+    }
+
+    // Verify with raw data
+    $verifyQuery = "
+        SELECT DISTINCT user_id, action
+        FROM activity_logs 
+        WHERE DATE(created_at) = ? 
+        AND user_id IS NOT NULL 
+        AND user_id != 0
+        AND LOWER(action) LIKE '%login%'
+        ORDER BY user_id
+    ";
+
+    $stmt = $conn->prepare($verifyQuery);
+    $stmt->bind_param('s', $today);
+    $stmt->execute();
+    $verifyResult = $stmt->get_result();
+
+    $userActions = [];
+    while ($verifyRow = $verifyResult->fetch_assoc()) {
+        $userId = $verifyRow['user_id'];
+        $action = $verifyRow['action'];
+        $userActions[$userId][] = $action;
+    }
+    $stmt->close();
+
+    // Manual count based on verification
+    $manualCount = 0;
+    foreach ($userActions as $userId => $actions) {
+        $hasSuccessfulLogin = false;
+        foreach ($actions as $action) {
+            $lowerAction = strtolower($action);
+            if ($lowerAction === 'login') {
+                $hasSuccessfulLogin = true;
+                break;
+            }
+        }
+        if ($hasSuccessfulLogin) {
+            $manualCount++;
+        }
+    }
+
+    // Use the manual count if it's different from query result
+    if ($manualCount > $activeUsers) {
+        $activeUsers = $manualCount;
+    }
+
+    // 1. Get total logs count
     $totalQuery = "
         SELECT (
             (SELECT COUNT(*) FROM activity_logs WHERE user_id IS NOT NULL) + 
@@ -34,8 +145,7 @@ try {
     $totalRow = $result->fetch_assoc();
     $totalLogs = $totalRow['total'] ?? 0;
 
-    // Today's logs
-    $today = date('Y-m-d');
+    // 2. Today's logs count
     $todayQuery = "
         SELECT (
             (SELECT COUNT(*) FROM activity_logs WHERE DATE(created_at) = ? AND user_id IS NOT NULL) + 
@@ -54,32 +164,7 @@ try {
     $todayLogs = $todayRow['total'] ?? 0;
     $stmt->close();
 
-    // Active users (unique users who performed activities today)
-    $activeUsers = 0;
-
-    // From activity_logs
-    $activityUsersQuery = "SELECT COUNT(DISTINCT user_id) as total FROM activity_logs WHERE DATE(created_at) = ? AND user_id IS NOT NULL";
-    $stmt = $conn->prepare($activityUsersQuery);
-    $stmt->bind_param('s', $today);
-    $stmt->execute();
-    $activityResult = $stmt->get_result();
-    if ($activityRow = $activityResult->fetch_assoc()) {
-        $activeUsers += $activityRow['total'] ?? 0;
-    }
-    $stmt->close();
-
-    // From history_logs
-    $historyUsersQuery = "SELECT COUNT(DISTINCT changed_by_id) as total FROM history_logs WHERE DATE(created_at) = ? AND changed_by_id IS NOT NULL";
-    $stmt = $conn->prepare($historyUsersQuery);
-    $stmt->bind_param('s', $today);
-    $stmt->execute();
-    $historyResult = $stmt->get_result();
-    if ($historyRow = $historyResult->fetch_assoc()) {
-        $activeUsers += $historyRow['total'] ?? 0;
-    }
-    $stmt->close();
-
-    // Database size - simplified
+    // 3. Database size
     $dbSize = 0;
     $sizeQuery = "SELECT SUM(data_length + index_length) / 1024 / 1024 as size_mb FROM information_schema.tables WHERE table_schema = DATABASE()";
     $result = $conn->query($sizeQuery);
@@ -92,7 +177,13 @@ try {
         'total_logs' => (int)$totalLogs,
         'today_logs' => (int)$todayLogs,
         'active_users' => (int)$activeUsers,
-        'db_size' => (float)$dbSize
+        'db_size' => (float)$dbSize,
+        '_verification' => [ // Debug info
+            'query_result' => $activeUsers,
+            'manual_count' => $manualCount,
+            'user_actions' => $userActions,
+            'today' => $today
+        ]
     ]);
 } catch (Exception $e) {
     error_log("Error in get_stats.php: " . $e->getMessage());
