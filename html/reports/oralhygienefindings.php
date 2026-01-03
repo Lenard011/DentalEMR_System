@@ -1073,6 +1073,7 @@ function getInterpretation($percentage)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oral Hygiene Findings - MHO Dental Clinic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -1125,7 +1126,7 @@ function getInterpretation($percentage)
     </style>
 </head>
 
-<body>
+<body class="bg-gray-50 dark:bg-gray-900">
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
         <!-- Navigation Header -->
         <nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
@@ -1148,9 +1149,9 @@ function getInterpretation($percentage)
                         </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="#" class="flex items-center justify-between mr-4">
+                    <a href="#" class="flex items-center justify-between mr-4 ">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
-                            class="mr-3 h-8" alt="MHO Logo" />
+                            class="mr-3 h-8 rounded-full" alt="MHO Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
                     </a>
 
@@ -1174,16 +1175,17 @@ function getInterpretation($percentage)
 
                     <!-- User Dropdown -->
                     <div class="relative">
-                        <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown"
+                            class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                                 <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
                                 <?php else: ?>
-                                <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
                                 <?php endif; ?>
                             </div>
-                            <div class="hidden md:block text-left">
-                                <div class="text-sm font-medium truncate max-w-[150px]">
+                            <div class="text-left">
+                                <div class="text-sm font-medium truncate max-w-[150px] dark:text-white">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['name'])
@@ -1195,7 +1197,7 @@ function getInterpretation($percentage)
                                         <span class="text-orange-600 text-xs">(Offline)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                                <div class="text-xs text-gray-500 dark:text-white truncate max-w-[150px]">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['email'])
@@ -1211,7 +1213,7 @@ function getInterpretation($percentage)
                         <!-- Dropdown Menu -->
                         <div id="dropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
                             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                                <div class="text-sm font-semibold">
+                                <div class="text-sm font-semibold dark:text-white">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['name'])
@@ -1223,7 +1225,7 @@ function getInterpretation($percentage)
                                         <span class="text-orange-600 text-xs">(Offline)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                <div class="text-xs text-gray-600 dark:text-white mt-1 ">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['email'])
@@ -1234,24 +1236,40 @@ function getInterpretation($percentage)
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="#"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
+                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
                                 <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-users-cog mr-3 text-gray-500"></i>
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
                                 <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-history mr-3 text-gray-500"></i>
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
                                     System Logs
                                 </a>
                             </div>
+
+                            <!-- Theme Toggle -->
+                            <div class="border-t border-gray-200 dark:border-gray-700 py-2">
+                                <button type="button" id="theme-toggle"
+                                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg id="theme-toggle-dark-icon" class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                    </svg>
+                                    <svg id="theme-toggle-light-icon" class="w-4 h-4 mr-2 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span id="theme-toggle-text">Toggle theme</span>
+                                </button>
+                            </div>
+
+                            <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
                                 <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
@@ -2281,6 +2299,83 @@ function getInterpretation($percentage)
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../../js/tailwind.config.js"></script>
+    <!-- Theme Toggle Script -->
+    <script>
+        // ========== THEME MANAGEMENT ==========
+        function initTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleText = document.getElementById('theme-toggle-text');
+
+            // Get current theme
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            // Set initial theme
+            if (currentTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
+            }
+
+            // Add click event to theme toggle
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    toggleTheme();
+                });
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleText = document.getElementById('theme-toggle-text');
+
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
+            }
+        }
+
+        // Initialize theme when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+
+            // Also update dropdown visibility based on theme
+            const dropdown = document.getElementById('dropdown');
+            const userMenuButton = document.getElementById('user-menu-button');
+
+            if (userMenuButton && dropdown) {
+                userMenuButton.addEventListener('click', function() {
+                    dropdown.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
     <script>
         // Load report data - Updated to properly handle report types
         function loadReportData() {

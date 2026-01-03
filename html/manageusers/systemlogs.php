@@ -80,6 +80,7 @@ if ($loggedUser['type'] === 'Dentist') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="theme-color" content="#3b82f6">
     <title>MHO Dental Clinic - System Logs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -253,8 +254,7 @@ if ($loggedUser['type'] === 'Dentist') {
         </div>
 
         <!-- Navigation -->
-        <nav
-            class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
+        <nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
             <div class="flex flex-wrap justify-between items-center">
                 <div class="flex justify-start items-center">
                     <button data-drawer-target="drawer-navigation" data-drawer-toggle="drawer-navigation"
@@ -266,78 +266,92 @@ if ($loggedUser['type'] === 'Dentist') {
                                 d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
                                 clip-rule="evenodd"></path>
                         </svg>
-                        <svg aria-hidden="true" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd"
-                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                clip-rule="evenodd"></path>
-                        </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="https://flowbite.com" class="flex items-center justify-between mr-4">
+                    <a href="/dentalemr_system/html/index.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
-                            class="mr-3 h-8" alt="Flowbite Logo" />
-                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental
-                            Clinic</span>
+                            class="mr-3 h-8 rounded-full" alt="MHO Dental Clinic Logo" />
+                        <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
                     </a>
-
                 </div>
+
                 <!-- User Profile -->
                 <div class="flex items-center space-x-3">
-
-                    <!-- User Dropdown -->
                     <div class="relative">
-                        <button type="button" id="userDropdownButton" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <button type="button" id="userDropdownButton"
+                            class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white transition-colors duration-200">
+                            <!-- Profile Picture or Icon - UPDATED to use $displayPicture -->
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                                <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                <?php if (!empty($displayPicture)): ?>
+                                    <img src="<?php echo htmlspecialchars($displayPicture); ?>"
+                                        alt="Profile"
+                                        class="w-full h-full object-cover"
+                                        id="navProfilePicture">
                                 <?php else: ?>
-                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400" id="navProfileIcon"></i>
                                 <?php endif; ?>
                             </div>
+
+                            <!-- User Info (hidden on mobile) -->
                             <div class="hidden md:block text-left">
-                                <div class="text-sm font-medium truncate max-w-[150px]">
+                                <div class="text-sm font-medium truncate max-w-[150px]" id="navUserName">
                                     <?php echo htmlspecialchars($loggedUser['name'] ?? 'User'); ?>
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
                                     <?php echo htmlspecialchars($loggedUser['type'] ?? 'User Type'); ?>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+
+                            <!-- Dropdown Arrow -->
+                            <i class="fas fa-chevron-down text-xs text-gray-500 transition-transform duration-200" id="dropdownArrow"></i>
                         </button>
 
                         <!-- Dropdown Menu -->
-                        <div id="userDropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden">
+                        <div id="userDropdown"
+                            class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50 transform transition-all duration-200 origin-top-right">
                             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                                <div class="text-sm font-semibold">
+                                <div class="text-sm font-semibold text-gray-900 dark:text-white truncate" id="dropdownUserName">
                                     <?php echo htmlspecialchars($loggedUser['name'] ?? 'User'); ?>
                                 </div>
-                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">
                                     <?php echo htmlspecialchars($loggedUser['email'] ?? 'user@example.com'); ?>
                                 </div>
                             </div>
                             <div class="py-2">
                                 <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
-                                    My Profile
+                                    class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700   transition-colors duration-150">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500 w-4 text-center"></i>
+                                    <span>My Profile</span>
                                 </a>
                                 <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-users-cog mr-3 text-gray-500"></i>
-                                    Manage Users
+                                    class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
+                                    <i class="fas fa-users-cog mr-3 text-gray-500 w-4 text-center"></i>
+                                    <span>Manage Users</span>
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId; ?>"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 bg-blue-50 dark:bg-blue-900/20">
-                                    <i class="fas fa-history mr-3 text-blue-500"></i>
-                                    System Logs
+                                <a href="#"
+                                    class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-blue-900/20 transition-colors duration-150">
+                                    <i class="fas fa-history mr-3 text-blue-500 w-4 text-center"></i>
+                                    <span>System Logs</span>
                                 </a>
+                            </div>
+                            <!-- Theme Toggle -->
+                            <div class="border-t border-gray-200 dark:border-gray-700 py-2">
+                                <button type="button" id="theme-toggle"
+                                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg id="theme-toggle-dark-icon" class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                    </svg>
+                                    <svg id="theme-toggle-light-icon" class="w-4 h-4 mr-2 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span id="theme-toggle-text">Toggle theme</span>
+                                </button>
                             </div>
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
                                 <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
-                                    <i class="fas fa-sign-out-alt mr-3"></i>
-                                    Sign Out
+                                    class="flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150">
+                                    <i class="fas fa-sign-out-alt mr-3 w-4 text-center"></i>
+                                    <span>Sign Out</span>
                                 </a>
                             </div>
                         </div>
@@ -507,7 +521,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                 <i class="fas fa-clock mr-1"></i>
                                 Last updated: <span id="lastUpdated">Just now</span>
                             </div>
-                            <button onclick="refreshLogs()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" title="Refresh">
+                            <button onclick="refreshLogs()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white" title="Refresh">
                                 <i class="fas fa-sync-alt"></i>
                             </button>
                         </div>
@@ -550,16 +564,16 @@ if ($loggedUser['type'] === 'Dentist') {
 
                     <!-- Advanced Filters (Collapsible) -->
                     <div class="mt-4 hidden" id="advancedFilters">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-900  dark:text-white rounded-lg">
                             <div>
                                 <label class="block text-sm font-medium mb-2">Date Range</label>
                                 <div class="flex gap-2">
-                                    <input type="date" id="dateFrom" class="flex-1 p-2 border rounded-lg">
+                                    <input type="date" id="dateFrom" class="flex-1 p-2 border rounded-lg ">
                                     <input type="date" id="dateTo" class="flex-1 p-2 border rounded-lg">
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium mb-2">User Type</label>
+                                <label class="block text-sm font-medium mb-2 ">User Type</label>
                                 <select id="userTypeFilter" class="w-full p-2 border rounded-lg">
                                     <option value="">All Users</option>
                                     <option value="Dentist">Dentist</option>
@@ -589,7 +603,7 @@ if ($loggedUser['type'] === 'Dentist') {
             <div class="p-4">
                 <div class="max-w-7xl mx-auto">
                     <!-- Stats Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6  dark:text-white">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
                             <div class="flex items-center">
                                 <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
@@ -614,20 +628,6 @@ if ($loggedUser['type'] === 'Dentist') {
                         </div>
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
                             <div class="flex items-center">
-                                <div class="p-3 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">
-                                    <i class="fas fa-users text-lg"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Active Users</p>
-                                    <p class="text-2xl font-semibold" id="activeUsers">0</p>
-                                    <div class="text-xs text-gray-500 mt-1" id="activeUsersSubtitle">
-                                        <span id="todayLoginsCount">0</span> logged in today
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                            <div class="flex items-center">
                                 <div class="p-3 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
                                     <i class="fas fa-database text-lg"></i>
                                 </div>
@@ -645,7 +645,7 @@ if ($loggedUser['type'] === 'Dentist') {
 
 
                     <!-- Bulk Actions Bar -->
-                    <div id="bulkActionsBar" class="hidden bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
+                    <div id="bulkActionsBar" class="hidden bg-blue-50 dark:bg-blue-900/20 border  dark:text-white border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div class="flex items-center gap-3">
                                 <div class="flex items-center">
@@ -672,7 +672,7 @@ if ($loggedUser['type'] === 'Dentist') {
                     </div>
 
                     <!-- Logs Table Container -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200  dark:text-white dark:border-gray-700 overflow-hidden">
                         <!-- Table Header -->
                         <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                             <h3 class="font-semibold">System Activities</h3>
@@ -790,7 +790,7 @@ if ($loggedUser['type'] === 'Dentist') {
                     </div>
 
                     <!-- Quick Stats -->
-                    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4  dark:text-white">
                         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                             <h4 class="font-medium mb-3">Most Active Users (7 days)</h4>
                             <div id="topUsers" class="space-y-2">
@@ -800,12 +800,6 @@ if ($loggedUser['type'] === 'Dentist') {
                         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
                             <h4 class="font-medium mb-3">Top Activities (7 days)</h4>
                             <div id="activityTypes" class="space-y-2">
-                                <!-- Will be populated by JavaScript -->
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                            <h4 class="font-medium mb-3">System Health</h4>
-                            <div id="systemHealth" class="space-y-3">
                                 <!-- Will be populated by JavaScript -->
                             </div>
                         </div>
@@ -912,6 +906,83 @@ if ($loggedUser['type'] === 'Dentist') {
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../../js/tailwind.config.js"></script>
+    <!-- Theme Toggle Script -->
+    <script>
+        // ========== THEME MANAGEMENT ==========
+        function initTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleText = document.getElementById('theme-toggle-text');
+
+            // Get current theme
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            // Set initial theme
+            if (currentTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
+            }
+
+            // Add click event to theme toggle
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    toggleTheme();
+                });
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleText = document.getElementById('theme-toggle-text');
+
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
+            }
+        }
+
+        // Initialize theme when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+
+            // Also update dropdown visibility based on theme
+            const dropdown = document.getElementById('dropdown');
+            const userMenuButton = document.getElementById('user-menu-button');
+
+            if (userMenuButton && dropdown) {
+                userMenuButton.addEventListener('click', function() {
+                    dropdown.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 
     <script>
         // Improved JavaScript with better organization and performance

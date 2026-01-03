@@ -218,11 +218,12 @@ $displayEmail = htmlspecialchars(
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>MHO Dental Clinic - Manage Users</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body>
+<body class="bg-gray-50 dark:bg-gray-900">
     <div class="antialiased bg-gray-50 dark:bg-gray-900">
         <!-- Navigation -->
         <nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
@@ -237,122 +238,92 @@ $displayEmail = htmlspecialchars(
                                 d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
                                 clip-rule="evenodd"></path>
                         </svg>
-                        <svg aria-hidden="true" class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd"
-                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                clip-rule="evenodd"></path>
-                        </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="#" class="flex items-center justify-between mr-4">
+                    <a href="/dentalemr_system/html/index.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
-                            class="mr-3 h-8" alt="MHO Logo" />
+                            class="mr-3 h-8 rounded-full" alt="MHO Dental Clinic Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
                     </a>
-
-                    <?php if ($isOfflineMode): ?>
-                        <div class="ml-4 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg flex items-center gap-2">
-                            <i class="fas fa-wifi-slash text-orange-600 dark:text-orange-400 text-sm"></i>
-                            <span class="text-sm font-medium text-orange-800 dark:text-orange-300">Offline Mode</span>
-                        </div>
-                    <?php endif; ?>
                 </div>
 
                 <!-- User Profile -->
                 <div class="flex items-center space-x-3">
-                    <?php if ($isOfflineMode): ?>
-                        <button onclick="syncOfflineData()"
-                            class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 text-sm">
-                            <i class="fas fa-sync"></i>
-                            Sync When Online
-                        </button>
-                    <?php endif; ?>
-
-                    <!-- User Dropdown -->
                     <div class="relative">
-                        <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+                        <button type="button" id="userDropdownButton"
+                            class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white transition-colors duration-200">
+                            <!-- Profile Picture or Icon - UPDATED to use $displayPicture -->
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                                <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                <?php if (!empty($displayPicture)): ?>
+                                    <img src="<?php echo htmlspecialchars($displayPicture); ?>"
+                                        alt="Profile"
+                                        class="w-full h-full object-cover"
+                                        id="navProfilePicture">
                                 <?php else: ?>
-                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400" id="navProfileIcon"></i>
                                 <?php endif; ?>
                             </div>
+
+                            <!-- User Info (hidden on mobile) -->
                             <div class="hidden md:block text-left">
-                                <div class="text-sm font-medium truncate max-w-[150px]">
-                                    <?php
-                                    echo htmlspecialchars(
-                                        !empty($loggedUser['name'])
-                                            ? $loggedUser['name']
-                                            : ($loggedUser['email'] ?? 'User')
-                                    );
-                                    ?>
-                                    <?php if ($isOfflineMode): ?>
-                                        <span class="text-orange-600 text-xs">(Offline)</span>
-                                    <?php endif; ?>
+                                <div class="text-sm font-medium truncate max-w-[150px]" id="navUserName">
+                                    <?php echo htmlspecialchars($loggedUser['name'] ?? 'User'); ?>
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
-                                    <?php
-                                    echo htmlspecialchars(
-                                        !empty($loggedUser['email'])
-                                            ? $loggedUser['email']
-                                            : ($loggedUser['name'] ?? 'User')
-                                    );
-                                    ?>
+                                    <?php echo htmlspecialchars($loggedUser['type'] ?? 'User Type'); ?>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+
+                            <!-- Dropdown Arrow -->
+                            <i class="fas fa-chevron-down text-xs text-gray-500 transition-transform duration-200" id="dropdownArrow"></i>
                         </button>
 
                         <!-- Dropdown Menu -->
-                        <div id="dropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
+                        <div id="userDropdown"
+                            class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50 transform transition-all duration-200 origin-top-right">
                             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                                <div class="text-sm font-semibold">
-                                    <?php
-                                    echo htmlspecialchars(
-                                        !empty($loggedUser['name'])
-                                            ? $loggedUser['name']
-                                            : ($loggedUser['email'] ?? 'User')
-                                    );
-                                    ?>
-                                    <?php if ($isOfflineMode): ?>
-                                        <span class="text-orange-600 text-xs">(Offline)</span>
-                                    <?php endif; ?>
+                                <div class="text-sm font-semibold text-gray-900 dark:text-white truncate" id="dropdownUserName">
+                                    <?php echo htmlspecialchars($loggedUser['name'] ?? 'User'); ?>
                                 </div>
-                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                    <?php
-                                    echo htmlspecialchars(
-                                        !empty($loggedUser['email'])
-                                            ? $loggedUser['email']
-                                            : ($loggedUser['name'] ?? 'User')
-                                    );
-                                    ?>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">
+                                    <?php echo htmlspecialchars($loggedUser['email'] ?? 'user@example.com'); ?>
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>" [[[]]
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
-                                    My Profile
+                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                    class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700   transition-colors duration-150">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500 w-4 text-center"></i>
+                                    <span>My Profile</span>
                                 </a>
                                 <a href="#"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 bg-blue-50 dark:bg-blue-900/20">
-                                    <i class="fas fa-users-cog mr-3 text-blue-500"></i>
-                                    Manage Users
+                                    class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 dark:bg-blue-900/20 transition-colors duration-150">
+                                    <i class="fas fa-users-cog mr-3 text-blue-500 w-4 text-center"></i>
+                                    <span>Manage Users</span>
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-history mr-3 text-gray-500"></i>
-                                    System Logs
+                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId; ?>"
+                                    class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700  transition-colors duration-150">
+                                    <i class="fas fa-history mr-3 text-gray-500 w-4 text-center"></i>
+                                    <span>System Logs</span>
                                 </a>
+                            </div>
+                            <!-- Theme Toggle -->
+                            <div class="border-t border-gray-200 dark:border-gray-700 py-2">
+                                <button type="button" id="theme-toggle"
+                                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg id="theme-toggle-dark-icon" class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                    </svg>
+                                    <svg id="theme-toggle-light-icon" class="w-4 h-4 mr-2 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span id="theme-toggle-text">Toggle theme</span>
+                                </button>
                             </div>
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
                                 <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
-                                    <i class="fas fa-sign-out-alt mr-3"></i>
-                                    Sign Out
+                                    class="flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150">
+                                    <i class="fas fa-sign-out-alt mr-3 w-4 text-center"></i>
+                                    <span>Sign Out</span>
                                 </a>
                             </div>
                         </div>
@@ -508,7 +479,7 @@ $displayEmail = htmlspecialchars(
         </aside>
 
         <main class="p-4 md:ml-64 h-auto pt-20">
-            <h1 class="text-xl text-center w-full font-bold">Manage Users</h1>
+            <h1 class="text-xl text-center w-full font-bold dark:text-white">Manage Users</h1>
             <section id="dentist" class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
                 <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
                     <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg">
@@ -615,7 +586,83 @@ $displayEmail = htmlspecialchars(
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
+    <script src="../../js/tailwind.config.js"></script>
+    <!-- Theme Toggle Script -->
+    <script>
+        // ========== THEME MANAGEMENT ==========
+        function initTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleText = document.getElementById('theme-toggle-text');
 
+            // Get current theme
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            // Set initial theme
+            if (currentTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
+            }
+
+            // Add click event to theme toggle
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    toggleTheme();
+                });
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleText = document.getElementById('theme-toggle-text');
+
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
+            }
+        }
+
+        // Initialize theme when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+
+            // Also update dropdown visibility based on theme
+            const dropdown = document.getElementById('dropdown');
+            const userMenuButton = document.getElementById('user-menu-button');
+
+            if (userMenuButton && dropdown) {
+                userMenuButton.addEventListener('click', function() {
+                    dropdown.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
     <!-- Enhanced Client-side inactivity logout -->
     <script>
         let inactivityTime = 1800000; // 10 minutes in ms
@@ -638,7 +685,277 @@ $displayEmail = htmlspecialchars(
 
         resetTimer();
     </script>
+    <script>
+        // Toggle user dropdown menu
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownButton = document.getElementById('userDropdownButton');
+            const dropdownMenu = document.getElementById('userDropdown');
+            const dropdownArrow = document.getElementById('dropdownArrow');
 
+            if (dropdownButton && dropdownMenu) {
+                // Toggle dropdown on button click
+                dropdownButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('hidden');
+                    dropdownMenu.classList.toggle('opacity-0');
+                    dropdownMenu.classList.toggle('opacity-100');
+                    dropdownMenu.classList.toggle('scale-95');
+                    dropdownMenu.classList.toggle('scale-100');
+
+                    // Rotate arrow
+                    dropdownArrow.classList.toggle('rotate-180');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.add('hidden', 'opacity-0', 'scale-95');
+                        dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        dropdownArrow.classList.remove('rotate-180');
+                    }
+                });
+
+                // Close dropdown on Escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && !dropdownMenu.classList.contains('hidden')) {
+                        dropdownMenu.classList.add('hidden', 'opacity-0', 'scale-95');
+                        dropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        dropdownArrow.classList.remove('rotate-180');
+                    }
+                });
+            }
+        });
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.parentElement.querySelector('button i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // Preview profile picture and update navigation immediately
+        function previewProfilePicture(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('profilePicturePreview');
+                    preview.src = e.target.result;
+
+                    // Update navigation bar profile picture
+                    const navProfileImg = document.getElementById('navProfilePicture');
+                    const navProfileIcon = document.getElementById('navProfileIcon');
+
+                    if (navProfileImg) {
+                        navProfileImg.src = e.target.result;
+                    } else if (navProfileIcon) {
+                        // Replace icon with image
+                        navProfileIcon.style.display = 'none';
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Profile';
+                        img.className = 'w-full h-full object-cover';
+                        img.id = 'navProfilePicture';
+                        navProfileIcon.parentElement.appendChild(img);
+                    }
+
+                    showNotification('Profile picture preview updated. Click Save Changes to apply.', 'success');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Function to update navigation after successful profile update
+        function updateNavigationAfterProfileUpdate(newName, newEmail, newProfilePicture = null) {
+            // Update user name in navigation
+            const navUserName = document.getElementById('navUserName');
+            const dropdownUserName = document.getElementById('dropdownUserName');
+
+            if (navUserName) navUserName.textContent = newName;
+            if (dropdownUserName) dropdownUserName.textContent = newName;
+
+            // Update profile picture in navigation if changed
+            if (newProfilePicture) {
+                const navProfileImg = document.getElementById('navProfilePicture');
+                const navProfileIcon = document.getElementById('navProfileIcon');
+
+                if (navProfileImg) {
+                    navProfileImg.src = newProfilePicture;
+                } else if (navProfileIcon) {
+                    // Replace icon with image
+                    navProfileIcon.style.display = 'none';
+                    const img = document.createElement('img');
+                    img.src = newProfilePicture;
+                    img.alt = 'Profile';
+                    img.className = 'w-full h-full object-cover';
+                    img.id = 'navProfilePicture';
+                    navProfileIcon.parentElement.appendChild(img);
+                }
+            }
+
+            // Update main profile picture to ensure consistency
+            const mainProfilePic = document.getElementById('profilePicturePreview');
+            if (mainProfilePic && newProfilePicture) {
+                mainProfilePic.src = newProfilePicture;
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            if (confirm('Are you sure you want to reset all changes?')) {
+                document.querySelector('form').reset();
+                showNotification('Form has been reset to original values.', 'info');
+            }
+        }
+
+        // Show/Hide help modal
+        function showHelp() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        }
+
+        function hideHelp() {
+            document.getElementById('helpModal').classList.add('hidden');
+        }
+
+        // Inactivity timer
+        let inactivityTimer;
+        const inactivityLimit = 600000; // 10 minutes
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(() => {
+                window.location.href = '/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>&reason=inactivity';
+            }, inactivityLimit);
+        }
+
+        // Reset timer on user activity
+        ['click', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+            document.addEventListener(event, resetInactivityTimer);
+        });
+
+        // Start timer
+        resetInactivityTimer();
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            // Remove existing notification
+            const existing = document.querySelector('.notification-toast');
+            if (existing) existing.remove();
+
+            const notification = document.createElement('div');
+            notification.className = `notification-toast fixed top-4 right-4 px-6 py-3 rounded-xl shadow-lg z-50 transform translate-x-full opacity-0 transition-all duration-300 ${
+                type === 'error' ? 'bg-red-500 text-white' : 
+                type === 'success' ? 'bg-green-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} mr-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full', 'opacity-0');
+                notification.classList.add('translate-x-0', 'opacity-100');
+            }, 10);
+
+            setTimeout(() => {
+                notification.classList.remove('translate-x-0', 'opacity-100');
+                notification.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Form validation
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const inputs = this.querySelectorAll('input[required]');
+                let valid = true;
+
+                inputs.forEach(input => {
+                    if (!input.value.trim()) {
+                        input.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+                        valid = false;
+                    } else {
+                        input.classList.remove('border-red-500', 'bg-red-50', 'dark:bg-red-900/20');
+                    }
+                });
+
+                if (!valid) {
+                    e.preventDefault();
+                    showNotification('Please fill in all required fields marked with *.', 'error');
+                }
+            });
+        });
+
+        // Add responsive classes on resize
+        window.addEventListener('resize', function() {
+            const width = window.innerWidth;
+            const cards = document.querySelectorAll('.card-hover');
+
+            if (width < 768) {
+                cards.forEach(card => {
+                    card.classList.remove('card-hover');
+                });
+            } else {
+                cards.forEach(card => {
+                    card.classList.add('card-hover');
+                });
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', function() {
+            // Check screen size on load
+            window.dispatchEvent(new Event('resize'));
+
+            // Smooth scroll to top
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Close help modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideHelp();
+            }
+        });
+
+        // Close help modal when clicking outside
+        document.getElementById('helpModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideHelp();
+            }
+        });
+
+        // Auto-update navigation when page loads (in case of form submission)
+        window.addEventListener('load', function() {
+            // Check if we have success message (meaning form was submitted)
+            const successMsg = document.querySelector('.text-green-700, .text-green-300');
+            if (successMsg && successMsg.textContent.includes('Profile updated')) {
+                // The page will reload with new data, but we can force a small delay to ensure DOM is ready
+                setTimeout(() => {
+                    // Update navigation with current data
+                    const userName = document.querySelector('input[name="name"]').value;
+                    const navUserName = document.getElementById('navUserName');
+                    const dropdownUserName = document.getElementById('dropdownUserName');
+
+                    if (navUserName) navUserName.textContent = userName;
+                    if (dropdownUserName) dropdownUserName.textContent = userName;
+                }, 100);
+            }
+        });
+    </script>
     <!-- Enhanced Staff Management Script -->
     <script>
         let staffData = [];

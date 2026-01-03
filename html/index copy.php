@@ -657,113 +657,13 @@ if (!$isOfflineMode && $conn && !$dbError) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $isOfflineMode ? 'Offline Dashboard' : 'Dashboard'; ?> - MHO Dental Clinic</title>
-
-    <!-- Theme Color Meta Tags -->
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
-
-    <!-- CSS -->
     <link href="../css/style.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- JavaScript Libraries -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
-    <!-- Initialize Theme Immediately -->
-    <script>
-        // Set theme before page renders to prevent flash
-        (function() {
-            const theme = localStorage.getItem('theme') || 'light';
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        })();
-    </script>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Your existing styles remain the same, just adding theme-related fixes */
-
-        /* Fix for dark mode transitions */
-        * {
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-
-        /* Fix for modal in dark mode */
-        .dark .modal-content {
-            background-color: #1f2937;
-            color: #f9fafb;
-        }
-
-        .dark .modal-header {
-            border-bottom-color: #374151;
-        }
-
-        .dark .modal-title {
-            color: #93c5fd;
-        }
-
-        .dark .close-btn {
-            color: #9ca3af;
-        }
-
-        .dark .close-btn:hover {
-            color: #ef4444;
-        }
-
-        .dark .search-box input {
-            background-color: #374151;
-            border-color: #4b5563;
-            color: #f9fafb;
-        }
-
-        .dark .search-box input::placeholder {
-            color: #9ca3af;
-        }
-
-        .dark .patient-table th {
-            background-color: #374151;
-            color: #d1d5db;
-            border-bottom-color: #4b5563;
-        }
-
-        .dark .patient-table td {
-            border-bottom-color: #4b5563;
-        }
-
-        .dark .patient-table tr:hover {
-            background-color: #374151;
-        }
-
-        .dark .modal-tabs {
-            border-bottom-color: #374151;
-        }
-
-        .dark .modal-tab {
-            color: #9ca3af;
-        }
-
-        .dark .modal-tab:hover {
-            background-color: #374151;
-        }
-
-        .dark .modal-tab.active {
-            color: #60a5fa;
-            border-bottom-color: #60a5fa;
-        }
-
-        /* Dark mode for empty state */
-        .dark .empty-state {
-            color: #9ca3af;
-        }
-
-        .dark .empty-state i {
-            color: #4b5563;
-        }
-
+        /* Your existing styles remain the same with additions */
         .clickable {
             cursor: pointer !important;
             transition: all 0.3s ease !important;
@@ -789,9 +689,9 @@ if (!$isOfflineMode && $conn && !$dbError) {
             transition: background-color 0.2s ease !important;
         }
 
-        /* .clickable-row:hover {
+        .clickable-row:hover {
             background-color: #dbeafe !important;
-        } */
+        }
 
         .modal {
             display: none;
@@ -1272,30 +1172,6 @@ if (!$isOfflineMode && $conn && !$dbError) {
                 opacity: 1;
             }
         }
-
-        /* Dark mode table fixes */
-        .dark table {
-            background-color: #1f2937;
-        }
-
-        .dark th {
-            background-color: #374151;
-            color: #e5e7eb;
-            border-bottom-color: #4b5563;
-        }
-
-        .dark td {
-            border-bottom-color: #374151;
-            color: #d1d5db;
-        }
-
-        .dark tr:nth-child(even) {
-            background-color: #111827;
-        }
-
-        .dark tr:hover {
-            background-color: #374151;
-        }
     </style>
 </head>
 
@@ -1389,7 +1265,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                     </button>
                     <a href="#" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
-                            class="mr-3 h-8 rounded-full" alt="MHO Logo" />
+                            class="mr-3 h-8" alt="MHO Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
                     </a>
 
@@ -1405,7 +1281,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                 <div class="flex items-center space-x-3">
                     <?php if ($isOfflineMode): ?>
                         <button onclick="syncOfflineData()"
-                            class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm dark:bg-orange-600 dark:hover:bg-orange-700">
+                            class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 text-sm">
                             <i class="fas fa-sync"></i>
                             Sync When Online
                         </button>
@@ -1413,19 +1289,16 @@ if (!$isOfflineMode && $conn && !$dbError) {
 
                     <!-- User Dropdown -->
                     <div class="relative">
-                        <button type="button" id="user-menu-button" aria-expanded="false"
-                            class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">
+                        <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                                 <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>"
-                                        alt="Profile"
-                                        class="w-full h-full object-cover">
+                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
                                 <?php else: ?>
-                                    <i class="fas fa-user text-gray-600 dark:text-gray-300"></i>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
                                 <?php endif; ?>
                             </div>
                             <div class="hidden md:block text-left">
-                                <div class="text-sm font-medium truncate max-w-[150px] dark:text-white">
+                                <div class="text-sm font-medium truncate max-w-[150px]">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['name'])
@@ -1434,10 +1307,10 @@ if (!$isOfflineMode && $conn && !$dbError) {
                                     );
                                     ?>
                                     <?php if ($isOfflineMode): ?>
-                                        <span class="text-orange-600 dark:text-orange-400 text-xs">(Offline)</span>
+                                        <span class="text-orange-600 text-xs">(Offline)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-300 truncate max-w-[150px]">
+                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['email'])
@@ -1447,13 +1320,13 @@ if (!$isOfflineMode && $conn && !$dbError) {
                                     ?>
                                 </div>
                             </div>
-                            <i class="fas fa-chevron-down text-xs text-gray-500 dark:text-gray-300"></i>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                         </button>
 
                         <!-- Dropdown Menu -->
                         <div id="dropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
                             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                                <div class="text-sm font-semibold dark:text-white">
+                                <div class="text-sm font-semibold">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['name'])
@@ -1462,10 +1335,10 @@ if (!$isOfflineMode && $conn && !$dbError) {
                                     );
                                     ?>
                                     <?php if ($isOfflineMode): ?>
-                                        <span class="text-orange-600 dark:text-orange-400 text-xs">(Offline)</span>
+                                        <span class="text-orange-600 text-xs">(Offline)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['email'])
@@ -1477,39 +1350,36 @@ if (!$isOfflineMode && $conn && !$dbError) {
                             </div>
                             <div class="py-2">
                                 <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
                                     My Profile
                                 </a>
                                 <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-users-cog mr-3 text-gray-500"></i>
                                     Manage Users
                                 </a>
                                 <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
+                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-history mr-3 text-gray-500"></i>
                                     System Logs
                                 </a>
                             </div>
-
-                            <!-- Theme Toggle -->
+                            <!-- Add theme toggle here -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <button type="button" id="theme-toggle"
-                                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <svg id="theme-toggle-dark-icon" class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                <button type="button" id="nav-theme-toggle"
+                                    class="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                                    <svg id="nav-theme-light-icon" class="w-4 h-4 mr-2 hidden" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
                                     </svg>
-                                    <svg id="theme-toggle-light-icon" class="w-4 h-4 mr-2 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                    <svg id="nav-theme-dark-icon" class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                                     </svg>
-                                    <span id="theme-toggle-text">Toggle theme</span>
+                                    <span id="nav-theme-text">Dark Mode</span>
                                 </button>
                             </div>
-
-                            <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
                                 <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
@@ -1547,7 +1417,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                 <ul class="space-y-2">
                     <li>
                         <a href="#"
-                            class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100   group">
+                            class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-blue-600 transition duration-75 dark:text-blue-400  dark:group-hover:text-blue"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -1676,8 +1546,8 @@ if (!$isOfflineMode && $conn && !$dbError) {
 
         <main class="p-4 md:ml-64 h-auto pt-20">
             <div class="dashboard">
-                <h1 class=" dark:text-white">🦷 MHO Dental Clinic Dashboard <?php if ($isOfflineMode): ?><span class="text-orange-500 ">(Offline Mode)</span><?php endif; ?></h1>
-                <h1 class="text-2xl font-bold mb-4  dark:text-white">
+                <h1>🦷 MHO Dental Clinic Dashboard <?php if ($isOfflineMode): ?><span class="text-orange-500">(Offline Mode)</span><?php endif; ?></h1>
+                <h1 class="text-2xl font-bold mb-4">
                     Welcome,
                     <?php
                     echo htmlspecialchars(
@@ -1725,11 +1595,11 @@ if (!$isOfflineMode && $conn && !$dbError) {
                             <!-- Dropdown -->
                             <div id="filterDropdown">
                                 <ul class="text-sm">
-                                    <li><button data-group="total" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-900">Total Patients</button></li>
-                                    <li><button data-group="children" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-900">Children</button></li>
-                                    <li><button data-group="youth" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-900">Youth</button></li>
-                                    <li><button data-group="adults" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-900">Adults</button></li>
-                                    <li><button data-group="all" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-900">Show All</button></li>
+                                    <li><button data-group="total" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Total Patients</button></li>
+                                    <li><button data-group="children" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Children</button></li>
+                                    <li><button data-group="youth" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Youth</button></li>
+                                    <li><button data-group="adults" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Adults</button></li>
+                                    <li><button data-group="all" class="filter-option flex w-full font-normal text-gray-900 px-2 py-1.5 cursor-pointer transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white">Show All</button></li>
                                 </ul>
                             </div>
                         <?php endif; ?>
@@ -1884,7 +1754,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
                                         <td><?php echo $v['visit_date']; ?></td>
                                         <td><?php echo $v['firstname'] . " " . $v['surname']; ?></td>
                                         <td>
-                                            <button class="text-blue-600 text-sm"
+                                            <button class="text-blue-600 hover:text-blue-800 text-sm"
                                                 onclick="event.stopPropagation(); viewVisitDetails(<?php echo $v['visit_id']; ?>)">
                                                 <i class="fas fa-eye mr-1"></i>View Details
                                             </button>
@@ -1953,66 +1823,6 @@ if (!$isOfflineMode && $conn && !$dbError) {
     <script src="/dentalemr_system/js/local-auth.js"></script>
 
     <script>
-        // ========== THEME MANAGEMENT ==========
-        function initTheme() {
-            const themeToggle = document.getElementById('theme-toggle');
-            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-            const themeToggleText = document.getElementById('theme-toggle-text');
-
-            // Get current theme
-            const currentTheme = localStorage.getItem('theme') || 'light';
-
-            // Set initial theme
-            if (currentTheme === 'dark') {
-                document.documentElement.classList.add('dark');
-                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
-                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
-                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
-            } else {
-                document.documentElement.classList.remove('dark');
-                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
-                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
-                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
-            }
-
-            // Add click event to theme toggle
-            if (themeToggle) {
-                themeToggle.addEventListener('click', function() {
-                    toggleTheme();
-                });
-            }
-        }
-
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.contains('dark');
-            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-            const themeToggleText = document.getElementById('theme-toggle-text');
-
-            if (isDark) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
-                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
-                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
-                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
-                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
-            }
-
-            // Update charts if they exist (they might need redrawing for theme changes)
-            if (typeof google !== 'undefined' && google.visualization) {
-                setTimeout(() => {
-                    if (typeof drawCharts === 'function') {
-                        drawCharts();
-                    }
-                }, 100);
-            }
-        }
         document.addEventListener('DOMContentLoaded', function() {
             const navThemeToggle = document.getElementById('nav-theme-toggle');
             const navThemeLightIcon = document.getElementById('nav-theme-light-icon');
@@ -2729,24 +2539,6 @@ if (!$isOfflineMode && $conn && !$dbError) {
         const isOfflineMode = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
 
         document.addEventListener('DOMContentLoaded', function() {
-            initTheme();
-
-            // Also update dropdown visibility based on theme
-            const dropdown = document.getElementById('dropdown');
-            const userMenuButton = document.getElementById('user-menu-button');
-
-            if (userMenuButton && dropdown) {
-                userMenuButton.addEventListener('click', function() {
-                    dropdown.classList.toggle('hidden');
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!userMenuButton.contains(event.target) && !dropdown.contains(event.target)) {
-                        dropdown.classList.add('hidden');
-                    }
-                });
-            }
             const connectionStatus = document.getElementById('connectionStatus');
             if (connectionStatus) {
                 connectionStatus.classList.remove('hidden');
