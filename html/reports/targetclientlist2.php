@@ -147,7 +147,18 @@ if ($isOfflineMode) {
 } else {
     $loggedUser = $_SESSION['active_sessions'][$userId];
 }
+// ========== NEW: Get parameters from URL ==========
+$selectedYear = isset($_GET['year']) && is_numeric($_GET['year']) ? (int)$_GET['year'] : date('Y');
+$currentPage = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+$addressFilter = isset($_GET['address']) ? trim($_GET['address']) : '';
+$startRow = isset($_GET['startRow']) ? (int)$_GET['startRow'] : 0;
 
+// Validate year range
+$currentYear = date('Y');
+if ($selectedYear < 2000 || $selectedYear > $currentYear + 1) {
+    $selectedYear = $currentYear;
+}
 // Database connection only for online mode
 $conn = null;
 if (!$isOfflineMode) {
@@ -184,7 +195,97 @@ if (!$isOfflineMode) {
             $loggedUser['profile_picture'] = $dentistProfilePicture; // Add this line
         }
         $stmt->close();
+    } // Fetch dentist name if user is a dentist (only in online mode)
+    if ($loggedUser['type'] === 'Dentist') {
+        $stmt = $conn->prepare("SELECT name, profile_picture FROM dentist WHERE id = ?");
+        $stmt->bind_param("i", $loggedUser['id']);
+        $stmt->execute();
+        $stmt->bind_result($dentistName, $dentistProfilePicture);
+        if ($stmt->fetch()) {
+            $loggedUser['name'] = $dentistName;
+            $loggedUser['profile_picture'] = $dentistProfilePicture;
+        }
+        $stmt->close();
     }
+
+    // ========== NEW: Fetch patients data for the table ==========
+    // This should match the query from targetclientlist.php to get the same patients
+    $limit = 10;
+    $offset = ($currentPage - 1) * $limit;
+
+    // Build query similar to targetclientlist.php
+    $sql = "SELECT DISTINCT p.* 
+            FROM patients p 
+            WHERE YEAR(p.created_at) = $selectedYear";
+
+    if ($search !== '') {
+        $s = $conn->real_escape_string($search);
+        $sql .= " AND (p.surname LIKE '%{$s}%' OR p.firstname LIKE '%{$s}%' OR p.middlename LIKE '%{$s}%')";
+    }
+    if ($addressFilter !== '') {
+        $a = $conn->real_escape_string($addressFilter);
+        $sql .= " AND p.address LIKE '%{$a}%'";
+    }
+
+    $sql .= " ORDER BY p.created_at DESC LIMIT $limit OFFSET $offset";
+
+    $patients_result = $conn->query($sql);
+
+    // Count total records for pagination info
+    $count_sql = "SELECT COUNT(DISTINCT p.patient_id) AS total 
+                  FROM patients p 
+                  WHERE YEAR(p.created_at) = $selectedYear";
+
+    if ($search !== '') {
+        $count_sql .= " AND (p.surname LIKE '%{$s}%' OR p.firstname LIKE '%{$s}%' OR p.middlename LIKE '%{$s}%')";
+    }
+    if ($addressFilter !== '') {
+        $count_sql .= " AND p.address LIKE '%{$a}%'";
+    }
+
+    $total_query = $conn->query($count_sql);
+    $total_row = $total_query->fetch_assoc();
+    $total_records = (int)$total_row['total'];
+    $total_pages = ceil($total_records / $limit);
+
+    // Range for display
+    $start = ($total_records > 0) ? $offset + 1 : 0;
+    $end = min(($offset + $limit), $total_records);
+
+    // Fetch existing target client list data for these patients
+    $targetData = [];
+    if ($patients_result && $patients_result->num_rows > 0) {
+        $patientIds = [];
+        $patients_result->data_seek(0); // Reset pointer
+
+        while ($row = $patients_result->fetch_assoc()) {
+            $patientIds[] = $row['patient_id'];
+        }
+
+        if (!empty($patientIds)) {
+            $idsString = implode(',', $patientIds);
+            $targetQuery = "SELECT * FROM target_client_list_data 
+                           WHERE patient_id IN ($idsString) AND year = $selectedYear";
+            $targetResult = $conn->query($targetQuery);
+
+            if ($targetResult) {
+                while ($targetRow = $targetResult->fetch_assoc()) {
+                    $targetData[$targetRow['patient_id']] = $targetRow;
+                }
+            }
+        }
+
+        // Reset pointer for main display
+        $patients_result->data_seek(0);
+    }
+} else {
+    // Offline mode - you'll need to implement similar logic with localStorage
+    $patients_result = null;
+    $total_records = 0;
+    $total_pages = 1;
+    $start = 0;
+    $end = 0;
+    $targetData = [];
 }
 
 ?>
@@ -198,6 +299,39 @@ if (!$isOfflineMode) {
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .target-input {
+            min-height: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .target-input:focus {
+            background-color: rgba(59, 130, 246, 0.05);
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+
+        .target-input:hover:not(:focus) {
+            background-color: rgba(243, 244, 246, 0.5);
+        }
+
+        /* Make the table more readable */
+        table input {
+            font-size: 11px;
+            padding: 2px 4px;
+        }
+
+        /* Ensure table cells maintain size */
+        td {
+            min-width: 50px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .overflow-x-auto {
+                overflow-x: auto;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -251,9 +385,9 @@ if (!$isOfflineMode) {
                         <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                                 <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
                                 <?php else: ?>
-                                <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
                                 <?php endif; ?>
                             </div>
                             <div class="hidden md:block text-left">
@@ -479,28 +613,39 @@ if (!$isOfflineMode) {
                                 <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
                             </svg>
 
-
                             <span class="ml-3">Archived</span>
                         </a>
                     </li>
                 </ul>
             </div>
         </aside>
-        <!-- Individual Patient Treatment Record Inforamtion -->
+        <!-- Individual Patient Treatment Record Inforamition -->
         <main class="p-3 md:ml-64 h-auto pt-20" id="patienttreatment" style="display: flex; flex-direction: column;">
             <div class="text-center">
-                <p class="text-lg font-semibold  text-gray-900 dark:text-white">Target Client List For
-                </p>
-                <p class="text-lg font-semibold  text-gray-900 dark:text-white" style="margin-top:  -5px;;">Oral Health
-                    Care And Services
+                <p class="text-lg font-semibold text-gray-900 dark:text-white">Target Client List For</p>
+                <p class="text-lg font-semibold text-gray-900 dark:text-white" style="margin-top: -5px;">Oral Health Care And Services</p>
+                <p class="text-md font-medium text-gray-700 dark:text-gray-300 mt-2">
+                    Year: <span class="font-bold"><?php echo $selectedYear; ?></span>
+                    <?php if ($search): ?>
+                        | Search: <span class="font-bold">"<?php echo htmlspecialchars($search); ?>"</span>
+                    <?php endif; ?>
                 </p>
             </div>
 
             <section class="bg-white dark:bg-gray-900 p-3 rounded-lg mb-3 mt-3">
                 <div class="w-full justify-between flex flex-row p-1">
                     <div class="flex items-center space-x-3 w-full md:w-auto">
-                        <form class="w-80 items-center">
-                            <div class="relative ">
+                        <form class="w-80 items-center" method="GET" action="">
+                            <input type="hidden" name="year" value="<?php echo $selectedYear; ?>">
+                            <input type="hidden" name="uid" value="<?php echo $userId; ?>">
+                            <input type="hidden" name="page" value="<?php echo $currentPage; ?>">
+                            <?php if ($addressFilter): ?>
+                                <input type="hidden" name="address" value="<?php echo htmlspecialchars($addressFilter); ?>">
+                            <?php endif; ?>
+                            <?php if ($isOfflineMode): ?>
+                                <input type="hidden" name="offline" value="true">
+                            <?php endif; ?>
+                            <div class="relative">
                                 <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                                     <svg class="w-3 h-3 text-gray-500 dark:text-gray-400" aria-hidden="true"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -508,11 +653,13 @@ if (!$isOfflineMode) {
                                             stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                                     </svg>
                                 </div>
-                                <input type="search" id="default-search"
+                                <input type="search" name="search"
+                                    value="<?php echo htmlspecialchars($search); ?>"
                                     class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                    placeholder="Search patient" required />
-                                <button type="submit"
-                                    class="text-white absolute end-1.5 bottom-1.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs px-2 py-1 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button>
+                                    placeholder="Search patient" />
+                                <button type="submit" class="text-white absolute end-1.5 bottom-1.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs px-2 py-1 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    Search
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -577,13 +724,12 @@ if (!$isOfflineMode) {
                 <form action="#">
                     <div class="grid gap-2 mb-4 mt-5">
                         <div class="overflow-x-auto ">
-                            <table
-                                class="min-w-[1600px] w-full text-xs text-gray-600 dark:text-gray-300 border border-gray-300 border-collapse">
-                                <!-- Column widths -->
+                            <table class="min-w-[1600px] w-full text-xs text-gray-600 dark:text-gray-300 border border-gray-300 border-collapse">
+                                <!-- Column widths - FIXED: Added remarks column and adjusted colspan counts -->
                                 <colgroup>
                                     <col style="width: 50px;"> <!-- No -->
 
-                                    <!-- Age / Risk Group -->
+                                    <!-- Oral Health Services Provided (18 columns) -->
                                     <col style="width: 90px;">
                                     <col style="width: 90px;">
                                     <col style="width: 90px;">
@@ -603,6 +749,7 @@ if (!$isOfflineMode) {
                                     <col style="width: 90px;">
                                     <col style="width: 90px;">
 
+                                    <!-- Provided with Basic Oral Health Care (7 columns) -->
                                     <col style="width: 150px;">
                                     <col style="width: 150px;">
                                     <col style="width: 150px;">
@@ -611,23 +758,25 @@ if (!$isOfflineMode) {
                                     <col style="width: 150px;">
                                     <col style="width: 150px;">
 
+                                    <!-- Remarks column (1 column) -->
+                                    <col style="width: 250px;"> <!-- Added this line for remarks -->
                                 </colgroup>
 
-                                <thead
-                                    class="text-xs align-top  text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
+                                <thead class="text-xs align-top text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-300">
                                     <!-- Row 1 -->
                                     <tr class="h-[20px] leading-[1.2]">
-                                        <th rowspan="3" class="whitespace-nowrap border border-gray-300 px-1 py-2">No.
-                                        </th>
-                                        <!-- Age / Risk Group -->
+                                        <th rowspan="3" class="whitespace-nowrap border border-gray-300 px-1 py-2">No.</th>
+                                        <!-- Oral Health Services Provided -->
                                         <th colspan="18" class="whitespace-nowrap border border-gray-300 px-1 py-2 leading-3.5">
                                             Oral Health Services Provided<br>
                                             <span class="text-[14px] font-semibold">(Write data given)<br>(10)</span>
                                         </th>
-                                        <th colspan="25" class="whitespace-nowrap border border-gray-300 px-1 py-2  leading-3.5">
-                                            Provided with Basic Oral Health Care(BOHC)<br>
+                                        <!-- Provided with Basic Oral Health Care -->
+                                        <th colspan="7" class="whitespace-nowrap border border-gray-300 px-1 py-2 leading-3.5"> <!-- Changed from 25 to 7 -->
+                                            Provided with Basic Oral Health Care (BOHC)<br>
                                             <span class="text-[14px] font-semibold">(Input data given)<br>(11)</span>
                                         </th>
+                                        <!-- Remarks -->
                                         <th rowspan="3" class="border border-gray-300 px-2 py-2 leading-3.5">
                                             Remarks<br><br>
                                             <span class="font-semibold text-[14px]">(12)</span>
@@ -636,26 +785,12 @@ if (!$isOfflineMode) {
 
                                     <!-- Row 2 -->
                                     <tr class="h-[20px] leading-[1.2]">
-                                        <!-- Oral health Services Provided -->
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
-                                        <!-- BOHC -->
+                                        <!-- Empty cells for Oral Health Services Provided (these are sub-columns) -->
+                                        <?php for ($i = 0; $i < 18; $i++): ?>
+                                            <th class="border border-gray-300 px-1 py-2 border-b-0"></th>
+                                        <?php endfor; ?>
+
+                                        <!-- BOHC Age Group Headers -->
                                         <th class="border border-gray-300 px-1 py-2"><span class="text-[11px] font-extrabold">0-11 mos.</span></th>
                                         <th class="border border-gray-300 px-1 py-2"><span class="text-[11px] font-extrabold">1-4 y/o<br>(12-59 mos)</span></th>
                                         <th class="border border-gray-300 px-1 py-2"><span class="text-[11px] font-extrabold">5-9 y/o</span></th>
@@ -665,8 +800,9 @@ if (!$isOfflineMode) {
                                         <th class="border border-gray-300 px-1 py-2"><span class="text-[11px] font-extrabold">Pregnant</span></th>
                                     </tr>
 
+                                    <!-- Row 3 -->
                                     <tr class="h-[20px] leading-[1.2]">
-                                        <!-- Oral health Services Provided -->
+                                        <!-- Oral Health Services Provided Service Codes -->
                                         <th class="border border-gray-300 px-1 py-2 border-t-0"><span>OE</span></th>
                                         <th class="border border-gray-300 px-1 py-2 border-t-0"><span>IIOHC</span></th>
                                         <th class="border border-gray-300 px-1 py-2 border-t-0"><span>AEBF</span></th>
@@ -685,7 +821,8 @@ if (!$isOfflineMode) {
                                         <th class="border border-gray-300 px-1 py-2 border-t-0"><span>Ref</span></th>
                                         <th class="border border-gray-300 px-1 py-2 border-t-0"><span>TPEC</span></th>
                                         <th class="border border-gray-300 px-1 py-2 border-t-0"><span>Dr</span></th>
-                                        <!-- BOHC -->
+
+                                        <!-- BOHC Details -->
                                         <th class="border border-gray-300 px-1 py-2 text-[10px]"><span style="font-weight: bolder;">If given OE,<br>IIOHC, AEBF</span><br>(for 0-8 mos.)<br>plus TFA (for<br>9-11 mos. old)</th>
                                         <th class="border border-gray-300 px-1 py-2 text-[10px]"><span style="font-weight: bolder;">If give OE,<br>TBA, STB<br>and the OHE</span><br>and/or<br>ART, OPS</th>
                                         <th class="border border-gray-300 px-1 py-2 text-[10px]"><span style="font-weight: bolder;">If given OE,<br>STB and<br>OHE</span> and/or<br>PFS, TF, PF</th>
@@ -694,37 +831,313 @@ if (!$isOfflineMode) {
                                         <th class="border border-gray-300 px-1 py-2 text-[10px]"><span style="font-weight: bolder;">If given OE<br>and E&CC</span><br>and/or<br>OUT: RP, RUT,<br>Ref</th>
                                         <th class="border border-gray-300 px-1 py-2 text-[10px]"><span style="font-weight: bolder;">If given OE<br>and E&CC</span><br>and/or<br>OPS, GT, TF<br>PF</th>
                                     </tr>
-
                                 </thead>
 
                                 <tbody>
-                                    <tr class="h-[20px] leading-[1]  text-center">
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                        <td class="border border-gray-300 px-1 py-2"></td>
-                                    </tr>
+                                    <?php if (!$patients_result || $patients_result->num_rows === 0): ?>
+                                        <tr>
+                                            <td colspan="27" class="text-center border border-gray-300 py-8 text-gray-500"> <!-- Fixed colspan to 27 -->
+                                                <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                                                No patient records found for <?php echo $selectedYear; ?>.
+                                                <?php if ($search): ?>
+                                                    <br><span class="text-sm">Try a different search or year.</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <?php else:
+                                        $i = $start;
+                                        while ($row = $patients_result->fetch_assoc()):
+                                            $patientId = $row['patient_id'];
+                                            $patientData = $targetData[$patientId] ?? [];
+                                            $fullName = trim($row['surname'] . ', ' . $row['firstname'] . ' ' . $row['middlename']);
+                                        ?>
+                                            <tr class="h-[20px] leading-[1] text-center" data-patient-id="<?php echo $patientId; ?>">
+                                                <td class="border border-gray-300 px-1 py-2"><?php echo $i++; ?>
+                                                    <div class="text-[10px] text-center mt-1 text-gray-600">
+                                                        <?php echo htmlspecialchars($fullName); ?>
+                                                    </div>
+                                                </td>
+
+                                                <!-- Oral Health Services Provided columns (18 columns) -->
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="oe"
+                                                        value="<?php echo htmlspecialchars($patientData['oe'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="iiohc"
+                                                        value="<?php echo htmlspecialchars($patientData['iiohc'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="aebf"
+                                                        value="<?php echo htmlspecialchars($patientData['aebf'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="tfa"
+                                                        value="<?php echo htmlspecialchars($patientData['tfa'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="stb"
+                                                        value="<?php echo htmlspecialchars($patientData['stb'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="ohe"
+                                                        value="<?php echo htmlspecialchars($patientData['ohe'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="ecc"
+                                                        value="<?php echo htmlspecialchars($patientData['ecc'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="art"
+                                                        value="<?php echo htmlspecialchars($patientData['art'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="ops"
+                                                        value="<?php echo htmlspecialchars($patientData['ops'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="pfs"
+                                                        value="<?php echo htmlspecialchars($patientData['pfs'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="tf"
+                                                        value="<?php echo htmlspecialchars($patientData['tf'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="pf"
+                                                        value="<?php echo htmlspecialchars($patientData['pf'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="gt"
+                                                        value="<?php echo htmlspecialchars($patientData['gt'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="rp"
+                                                        value="<?php echo htmlspecialchars($patientData['rp'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="rut"
+                                                        value="<?php echo htmlspecialchars($patientData['rut'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="ref"
+                                                        value="<?php echo htmlspecialchars($patientData['ref'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="tpec"
+                                                        value="<?php echo htmlspecialchars($patientData['tpec'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="dr"
+                                                        value="<?php echo htmlspecialchars($patientData['dr'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+
+                                                <!-- Provided with Basic Oral Health Care columns (7 columns) -->
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="bohc_0_11"
+                                                        value="<?php echo htmlspecialchars($patientData['bohc_0_11'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="bohc_1_4"
+                                                        value="<?php echo htmlspecialchars($patientData['bohc_1_4'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="bohc_5_9"
+                                                        value="<?php echo htmlspecialchars($patientData['bohc_5_9'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="bohc_10_19"
+                                                        value="<?php echo htmlspecialchars($patientData['bohc_10_19'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="bohc_20_59"
+                                                        value="<?php echo htmlspecialchars($patientData['bohc_20_59'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="bohc_60_plus"
+                                                        value="<?php echo htmlspecialchars($patientData['bohc_60_plus'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+                                                <td class="border border-gray-300 px-1 py-2">
+                                                    <input type="text"
+                                                        class="target-input w-full text-center border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="bohc_pregnant"
+                                                        value="<?php echo htmlspecialchars($patientData['bohc_pregnant'] ?? ''); ?>"
+                                                        maxlength="10">
+                                                </td>
+
+                                                <!-- Remarks column - Now properly aligned -->
+                                                <td class="border border-gray-300 px-2 py-2 text-left">
+                                                    <input type="text"
+                                                        class="target-input w-full border-0 focus:ring-1 focus:ring-blue-500 focus:outline-none bg-transparent"
+                                                        data-field="remarks"
+                                                        value="<?php echo htmlspecialchars($patientData['remarks'] ?? ''); ?>"
+                                                        placeholder="Enter remarks...">
+                                                </td>
+                                            </tr>
+                                    <?php
+                                        endwhile;
+                                    endif;
+                                    ?>
                                 </tbody>
                             </table>
+                            <!-- Pagination -->
+                            <nav class="flex flex-col items-start justify-between p-2 md:flex-row md:items-center md:space-y-0"
+                                aria-label="Table navigation">
+                                <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                    Showing <span class="font-semibold text-gray-900 dark:text-white">
+                                        <?= $start ?>-<?= $end ?>
+                                    </span> of <span class="font-semibold text-gray-900 dark:text-white">
+                                        <?= $total_records ?>
+                                    </span> records for <?= $selectedYear ?>
+                                </span>
+
+                                <ul class="inline-flex items-stretch -space-x-px">
+                                    <!-- Previous Button -->
+                                    <li>
+                                        <a href="/dentalemr_system/html/reports/targetclientlist2.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($currentPage > 1) ? 'page=' . ($currentPage - 1) : '#' ?><?php
+                                                                                                                                                                                                                                    echo $search ? '&search=' . urlencode($search) : '';
+                                                                                                                                                                                                                                    echo $addressFilter ? '&address=' . urlencode($addressFilter) : '';
+                                                                                                                                                                                                                                    echo $isOfflineMode ? '&offline=true' : '';
+                                                                                                                                                                                                                                    ?>"
+                                            class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($currentPage <= 1) ? 'pointer-events-none opacity-50' : '' ?>">
+                                            <span class="sr-only">Previous</span>
+                                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd"
+                                                    d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </a>
+                                    </li>
+
+                                    <!-- Page Numbers -->
+                                    <?php
+                                    $range = 3; // how many page links to show around current
+                                    for ($i = max(1, $currentPage - $range); $i <= min($total_pages, $currentPage + $range); $i++): ?>
+                                        <li>
+                                            <a href="/dentalemr_system/html/reports/targetclientlist2.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $i ?><?php
+                                                                                                                                                                                        echo $search ? '&search=' . urlencode($search) : '';
+                                                                                                                                                                                        echo $addressFilter ? '&address=' . urlencode($addressFilter) : '';
+                                                                                                                                                                                        echo $isOfflineMode ? '&offline=true' : '';
+                                                                                                                                                                                        ?>"
+                                                class="flex items-center justify-center px-3 py-2 text-sm leading-tight border 
+                                        <?= ($i == $currentPage)
+                                            ? 'z-10 text-blue-600 bg-blue-50 border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
+                                            : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white' ?>">
+                                                <?= $i ?>
+                                            </a>
+                                        </li>
+                                    <?php endfor; ?>
+
+                                    <!-- Ellipsis and Last Page -->
+                                    <?php if ($currentPage + $range < $total_pages): ?>
+                                        <li>
+                                            <span
+                                                class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">...</span>
+                                        </li>
+                                        <li>
+                                            <a href="/dentalemr_system/html/reports/targetclientlist2.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $total_pages ?><?php
+                                                                                                                                                                                                echo $search ? '&search=' . urlencode($search) : '';
+                                                                                                                                                                                                echo $addressFilter ? '&address=' . urlencode($addressFilter) : '';
+                                                                                                                                                                                                echo $isOfflineMode ? '&offline=true' : '';
+                                                                                                                                                                                                ?>"
+                                                class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
+                                                <?= $total_pages ?>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+
+                                    <!-- Next Button -->
+                                    <li>
+                                        <a href="/dentalemr_system/html/reports/targetclientlist2.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($currentPage < $total_pages) ? 'page=' . ($currentPage + 1) : '#' ?><?php
+                                                                                                                                                                                                                                            echo $search ? '&search=' . urlencode($search) : '';
+                                                                                                                                                                                                                                            echo $addressFilter ? '&address=' . urlencode($addressFilter) : '';
+                                                                                                                                                                                                                                            echo $isOfflineMode ? '&offline=true' : '';
+                                                                                                                                                                                                                                            ?>"
+                                            class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($currentPage >= $total_pages) ? 'pointer-events-none opacity-50' : '' ?>">
+                                            <span class="sr-only">Next</span>
+                                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd"
+                                                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </form>
@@ -740,7 +1153,7 @@ if (!$isOfflineMode) {
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="../js/tailwind.config.js"></script>
+    <script src="../../js/tailwind.config.js"></script>
     <!-- Client-side 10-minute inactivity logout -->
     <script>
         let inactivityTime = 600000; // 10 minutes in ms
@@ -763,7 +1176,30 @@ if (!$isOfflineMode) {
 
     <script>
         function back() {
-            location.href = ("targetclientlist.php?uid=<?php echo $userId; ?>");
+            // Get all current parameters to pass back
+            const currentYear = <?php echo $selectedYear; ?>;
+            const currentPage = <?php echo $currentPage; ?>;
+            const currentSearch = '<?php echo addslashes($search); ?>';
+            const currentAddress = '<?php echo addslashes($addressFilter); ?>';
+            const userId = <?php echo $userId; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            // Build the URL with all current parameters
+            let url = `targetclientlist.php?uid=${userId}&year=${currentYear}&page=${currentPage}`;
+
+            if (currentSearch) {
+                url += `&search=${encodeURIComponent(currentSearch)}`;
+            }
+
+            if (currentAddress) {
+                url += `&address=${encodeURIComponent(currentAddress)}`;
+            }
+
+            if (isOffline) {
+                url += '&offline=true';
+            }
+
+            location.href = url;
         }
     </script>
 
@@ -817,6 +1253,226 @@ if (!$isOfflineMode) {
         });
 
         // ========== OFFLINE SUPPORT FOR REPORTS - END ==========
+    </script>
+
+    <!-- Target Client List Data Management -->
+    <script>
+        // Debug function to check if file exists
+        function checkSaveFileExists() {
+            const baseUrl = window.location.origin;
+            const saveUrl = baseUrl + '/dentalemr_system/php/save_targetclient_data.php';
+
+            fetch(saveUrl, {
+                    method: 'HEAD'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log('Save file exists and is accessible');
+                    } else {
+                        console.warn('Save file returned status:', response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error('Cannot access save file:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSaveFileExists();
+            const inputs = document.querySelectorAll('.target-input');
+            let saveTimeout;
+            const saveDelay = 1500; // 1.5 seconds delay after typing
+
+            inputs.forEach(input => {
+                // Auto-save on blur (when user clicks out)
+                input.addEventListener('blur', function() {
+                    saveRowData(this.closest('tr'));
+                });
+
+                // Auto-save after typing stops (debounce)
+                input.addEventListener('input', function() {
+                    clearTimeout(saveTimeout);
+                    const row = this.closest('tr');
+                    saveTimeout = setTimeout(() => {
+                        saveRowData(row);
+                    }, saveDelay);
+                });
+
+                // Save on Enter key
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveRowData(this.closest('tr'));
+                        this.blur();
+                    }
+                });
+            });
+
+            function saveRowData(row) {
+                const patientId = row.getAttribute('data-patient-id');
+                const year = <?php echo $selectedYear; ?>;
+
+                if (!patientId) return;
+
+                // Collect all input values
+                const data = {
+                    patient_id: patientId,
+                    year: year
+                };
+
+                // Get all input fields in this row
+                const inputs = row.querySelectorAll('.target-input');
+                inputs.forEach(input => {
+                    const field = input.getAttribute('data-field');
+                    data[field] = input.value.trim();
+                });
+
+                // Add offline mode check
+                const isOfflineMode = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+                if (isOfflineMode) {
+                    // Save to localStorage for offline mode
+                    saveToLocalStorage(data);
+                } else {
+                    // Send to server
+                    saveToServer(data);
+                }
+            }
+
+            function saveToServer(data) {
+                const formData = new FormData();
+
+                // Append all data to formData
+                for (const key in data) {
+                    formData.append(key, data[key]);
+                }
+
+                // Add user ID for logging
+                formData.append('user_id', <?php echo $userId; ?>);
+
+                console.log('Saving data for patient:', data.patient_id);
+                console.log('Data:', data);
+
+                // Try to get the base URL dynamically
+                const baseUrl = window.location.origin;
+                const saveUrl = baseUrl + '/dentalemr_system/php/save_targetclient_data.php';
+
+                console.log('Saving to URL:', saveUrl);
+
+                fetch(saveUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json',
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        console.log('Save response:', result);
+                        if (result.success) {
+                            showNotification(result.message || 'Data saved successfully', 'success');
+                        } else {
+                            const errorMsg = result.error || 'Unknown error';
+                            showNotification('Error saving data: ' + errorMsg, 'error');
+                            console.error('Save error details:', result);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Network error:', error);
+
+                        // Check if we're offline
+                        if (!navigator.onLine) {
+                            showNotification('You are offline. Data saved locally.', 'warning');
+                            // Save to localStorage as fallback
+                            saveToLocalStorage(data);
+                        } else {
+                            showNotification('Network error. Please check your connection. Error: ' + error.message, 'error');
+                        }
+                    });
+            }
+
+            function saveToLocalStorage(data) {
+                const key = `targetclient_${data.patient_id}_${data.year}`;
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                    showNotification('Data saved locally (offline mode)', 'info');
+
+                    // Also store in a pending sync list
+                    const pendingSync = JSON.parse(localStorage.getItem('pending_targetclient_sync') || '[]');
+                    if (!pendingSync.includes(key)) {
+                        pendingSync.push(key);
+                        localStorage.setItem('pending_targetclient_sync', JSON.stringify(pendingSync));
+                    }
+                } catch (error) {
+                    console.error('LocalStorage error:', error);
+                    showNotification('Error saving locally. Storage might be full.', 'error');
+                }
+            }
+
+            function showNotification(message, type = 'info') {
+                // Remove existing notification
+                const existingNotif = document.getElementById('save-notification');
+                if (existingNotif) {
+                    existingNotif.remove();
+                }
+
+                // Create new notification
+                const notif = document.createElement('div');
+                notif.id = 'save-notification';
+                notif.className = `fixed top-20 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white font-medium ${
+                    type === 'success' ? 'bg-green-500' :
+                    type === 'error' ? 'bg-red-500' :
+                    type === 'info' ? 'bg-blue-500' : 'bg-gray-500'
+                }`;
+                notif.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation' : 'info'}-circle mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+
+                document.body.appendChild(notif);
+
+                // Auto-remove after 3 seconds
+                setTimeout(() => {
+                    if (notif.parentNode) {
+                        notif.remove();
+                    }
+                }, 3000);
+            }
+
+            // Sync offline data when online
+            window.addEventListener('online', function() {
+                const pendingSync = JSON.parse(localStorage.getItem('pending_targetclient_sync') || '[]');
+                if (pendingSync.length > 0 && !<?php echo $isOfflineMode ? 'true' : 'false'; ?>) {
+                    showNotification('Syncing offline data...', 'info');
+                    syncOfflineData();
+                }
+            });
+
+            function syncOfflineData() {
+                const pendingSync = JSON.parse(localStorage.getItem('pending_targetclient_sync') || '[]');
+
+                pendingSync.forEach(key => {
+                    const data = JSON.parse(localStorage.getItem(key) || '{}');
+                    if (data.patient_id) {
+                        saveToServer(data);
+                    }
+                });
+
+                // Clear pending sync after successful sync
+                localStorage.removeItem('pending_targetclient_sync');
+                showNotification('Offline data sync initiated', 'info');
+            }
+
+            // Add sync function to global scope for the sync button
+            window.syncOfflineData = syncOfflineData;
+        });
     </script>
 </body>
 

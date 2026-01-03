@@ -194,15 +194,20 @@ if (!$isOfflineMode) {
 // patients_table.php
 // Improved backend for Target Client List table
 
-// CONFIGURE DB CONNECTION
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "dentalemr_system";
+// Only create new connection if not already created in online mode
+if (!$isOfflineMode && $conn) {
+    // Use the existing connection
+} else {
+    // CONFIGURE DB CONNECTION for offline mode or if connection failed
+    $host = "localhost";
+    $user = "root";
+    $pass = "";
+    $dbname = "dentalemr_system";
 
-$conn = new mysqli($host, $user, $pass, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    $conn = new mysqli($host, $user, $pass, $dbname);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 }
 
 // Helper: normalize boolean-like fields
@@ -238,6 +243,17 @@ function compute_months_from_dob($dob)
     return ($diff->y * 12) + $diff->m;
 }
 
+// Get current year for default filtering
+$currentYear = date('Y');
+
+// Get year filter from GET parameter or use current year
+$selectedYear = isset($_GET['year']) && is_numeric($_GET['year']) ? (int)$_GET['year'] : $currentYear;
+
+// Validate year range (adjust as needed)
+if ($selectedYear < 2000 || $selectedYear > $currentYear + 1) {
+    $selectedYear = $currentYear;
+}
+
 // Input from GET
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $addressFilter = isset($_GET['address']) ? trim($_GET['address']) : '';
@@ -248,8 +264,12 @@ $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] :
 if ($page < 1) $page = 1;
 $offset = ($page - 1) * $limit;
 
-// Count total records with optional filters
-$count_sql = "SELECT COUNT(*) AS total FROM patients p WHERE 1=1";
+// FIXED: Get DISTINCT patients with their LATEST related records
+// Count total distinct patients with filters including year filter
+$count_sql = "SELECT COUNT(DISTINCT p.patient_id) AS total 
+              FROM patients p 
+              WHERE YEAR(p.created_at) = $selectedYear";
+
 if ($search !== '') {
     $s = $conn->real_escape_string($search);
     $count_sql .= " AND (p.surname LIKE '%{$s}%' OR p.firstname LIKE '%{$s}%' OR p.middlename LIKE '%{$s}%')";
@@ -258,26 +278,62 @@ if ($addressFilter !== '') {
     $a = $conn->real_escape_string($addressFilter);
     $count_sql .= " AND p.address LIKE '%{$a}%'";
 }
+
 $total_query = $conn->query($count_sql);
 $total_row = $total_query->fetch_assoc();
 $total_records = (int)$total_row['total'];
 $total_pages = ceil($total_records / $limit);
 
-// Main query: patients + joined info
+// FIXED: Main query - Get DISTINCT patients with their LATEST related records
+// Since patient_other_info doesn't have created_at, we'll use info_id (assuming higher ID = newer)
+// And oral_health_condition has created_at for ordering
 $sql = "
 SELECT 
     p.*,
-    COALESCE(o.indigenous_people, '') AS indigenous_people,
-    COALESCE(oh.orally_fit_child, '') AS orally_fit_child,
-    oh.perm_decayed_teeth_d,
-    oh.perm_missing_teeth_m,
-    oh.perm_filled_teeth_f,
-    oh.created_at AS oral_health_recorded_at
+    -- Get the latest patient_other_info record for each patient (using highest info_id)
+    COALESCE(
+        (SELECT o.indigenous_people 
+         FROM patient_other_info o 
+         WHERE o.patient_id = p.patient_id 
+         ORDER BY o.info_id DESC 
+         LIMIT 1), 
+        ''
+    ) AS indigenous_people,
+    -- Get the latest oral_health_condition record for each patient
+    COALESCE(
+        (SELECT oh.orally_fit_child 
+         FROM oral_health_condition oh 
+         WHERE oh.patient_id = p.patient_id 
+         ORDER BY oh.created_at DESC 
+         LIMIT 1), 
+        ''
+    ) AS orally_fit_child,
+    -- Get the latest perm_decayed_teeth_d
+    (SELECT oh.perm_decayed_teeth_d 
+     FROM oral_health_condition oh 
+     WHERE oh.patient_id = p.patient_id 
+     ORDER BY oh.created_at DESC 
+     LIMIT 1) AS perm_decayed_teeth_d,
+    -- Get the latest perm_missing_teeth_m
+    (SELECT oh.perm_missing_teeth_m 
+     FROM oral_health_condition oh 
+     WHERE oh.patient_id = p.patient_id 
+     ORDER BY oh.created_at DESC 
+     LIMIT 1) AS perm_missing_teeth_m,
+    -- Get the latest perm_filled_teeth_f
+    (SELECT oh.perm_filled_teeth_f 
+     FROM oral_health_condition oh 
+     WHERE oh.patient_id = p.patient_id 
+     ORDER BY oh.created_at DESC 
+     LIMIT 1) AS perm_filled_teeth_f,
+    -- Get the latest oral health recorded date
+    (SELECT oh.created_at 
+     FROM oral_health_condition oh 
+     WHERE oh.patient_id = p.patient_id 
+     ORDER BY oh.created_at DESC 
+     LIMIT 1) AS oral_health_recorded_at
 FROM patients p
-LEFT JOIN patient_other_info o ON p.patient_id = o.patient_id
-LEFT JOIN oral_health_condition oh ON p.patient_id = oh.patient_id
-WHERE 1=1
-";
+WHERE YEAR(p.created_at) = $selectedYear";
 
 // Apply search filter
 if ($search !== '') {
@@ -288,6 +344,9 @@ if ($addressFilter !== '') {
     $sql .= " AND p.address LIKE '%{$a}%'";
 }
 
+// Group by patient to ensure uniqueness
+$sql .= " GROUP BY p.patient_id";
+
 // Order and limit
 $sql .= " ORDER BY p.created_at DESC LIMIT $limit OFFSET $offset";
 
@@ -296,12 +355,24 @@ if (!$res) {
     die("Query error: " . $conn->error);
 }
 
+// Get available years from database for dropdown
+$years_sql = "SELECT DISTINCT YEAR(created_at) as year FROM patients ORDER BY year DESC";
+$years_result = $conn->query($years_sql);
+$availableYears = [];
+if ($years_result) {
+    while ($row = $years_result->fetch_assoc()) {
+        $availableYears[] = $row['year'];
+    }
+}
+
+// If no years found, add current year
+if (empty($availableYears)) {
+    $availableYears[] = $currentYear;
+}
+
 // Range for display
 $start = ($total_records > 0) ? $offset + 1 : 0;
 $end = min(($offset + $limit), $total_records);
-
-// Now $res contains all necessary rows with safe access
-// You can use safe_get($row,'key') in the front-end to avoid warnings
 ?>
 
 <!doctype html>
@@ -367,9 +438,9 @@ $end = min(($offset + $limit), $total_records);
                         <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                                 <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
+                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
                                 <?php else: ?>
-                                <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
+                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
                                 <?php endif; ?>
                             </div>
                             <div class="hidden md:block text-left">
@@ -605,18 +676,52 @@ $end = min(($offset + $limit), $total_records);
         <!-- Individual Patient Treatment Record Inforamtion -->
         <main class="p-3 md:ml-64 h-auto pt-20" id="patienttreatment" style="display: flex; flex-direction: column;">
             <div class="text-center">
-                <p class="text-lg font-semibold  text-gray-900 dark:text-white">Target Client List For
+                <p class="text-lg font-semibold text-gray-900 dark:text-white">Target Client List For
                 </p>
-                <p class="text-lg font-semibold  text-gray-900 dark:text-white" style="margin-top:  -5px;;">Oral Health
+                <p class="text-lg font-semibold text-gray-900 dark:text-white" style="margin-top: -5px;">Oral Health
                     Care And Services
+                </p>
+                <p class="text-md font-medium text-gray-700 dark:text-gray-300 mt-2">
+                    Year: <span class="font-bold"><?php echo $selectedYear; ?></span>
                 </p>
             </div>
 
             <section class="bg-white dark:bg-gray-900 pt-3 px-3 rounded-lg mb-3 mt-3">
                 <div class="w-full justify-between flex flex-row p-1">
                     <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <!-- Year Filter Dropdown -->
+                        <div class="relative">
+                            <button id="yearDropdownButton" data-dropdown-toggle="yearDropdown"
+                                class="flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                                type="button">
+                                <i class="fas fa-calendar-alt mr-2 text-gray-500"></i>
+                                Year: <?php echo $selectedYear; ?>
+                                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
+                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path clip-rule="evenodd" fill-rule="evenodd"
+                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                </svg>
+                            </button>
+                            <div id="yearDropdown"
+                                class="z-10 hidden w-32 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
+                                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Select Year</h6>
+                                <ul class="space-y-2 text-sm" aria-labelledby="yearDropdownButton">
+                                    <?php foreach ($availableYears as $year): ?>
+                                        <li>
+                                            <a href="?year=<?php echo $year; ?>&uid=<?php echo $userId; ?>"
+                                                class="block px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 <?php echo $year == $selectedYear ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300' : ''; ?>">
+                                                <?php echo $year; ?>
+                                            </a>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        </div>
+
                         <form class="w-80 items-center" method="GET" action="">
-                            <div class="relative ">
+                            <input type="hidden" name="year" value="<?php echo $selectedYear; ?>">
+                            <input type="hidden" name="uid" value="<?php echo $userId; ?>">
+                            <div class="relative">
                                 <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
                                     <svg class="w-3 h-3 text-gray-500 dark:text-gray-400" aria-hidden="true"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
@@ -624,14 +729,14 @@ $end = min(($offset + $limit), $total_records);
                                             stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                                     </svg>
                                 </div>
-                                <input type="search" id="default-search" name="search"
+                                <input type="search" name="search"
                                     value="<?php echo htmlspecialchars($search); ?>"
                                     class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     placeholder="Search patient" />
-
                             </div>
                         </form>
                     </div>
+
                     <div class="items-center flex flex-col gap-0 ">
                         <label for="name" class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Part 1/2</label>
                         <div class="flex flex-row items-center gap-1">
@@ -689,11 +794,37 @@ $end = min(($offset + $limit), $total_records);
                     </div>
                 </div>
 
+                <!-- Info Box showing year statistics -->
+                <div class="mt-4 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Year <?php echo $selectedYear; ?> - Patient Records
+                            </h4>
+                            <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">
+                                Showing only patients registered in <?php echo $selectedYear; ?>.
+                                <?php if ($total_records > 0): ?>
+                                    Total: <?php echo $total_records; ?> patient<?php echo $total_records != 1 ? 's' : ''; ?>
+                                <?php else: ?>
+                                    No patient records found for this year.
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                        <?php if ($total_records > 0): ?>
+                            <button onclick="exportYearReport(<?php echo $selectedYear; ?>)"
+                                class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg flex items-center gap-2">
+                                <i class="fas fa-download"></i>
+                                Export <?php echo $selectedYear; ?> Report
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
                 <form action="#">
                     <div class="grid gap-2 mb-4 mt-5">
-                        <div class="overflow-x-auto ">
-                            <table
-                                class="min-w-[1600px] w-full text-xs text-gray-600 dark:text-gray-300 border border-gray-300 border-collapse">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-[1600px] w-full text-xs text-gray-600 dark:text-gray-300 border border-gray-300 border-collapse">
                                 <!-- Column widths -->
                                 <colgroup>
                                     <col style="width: 50px;"> <!-- No -->
@@ -834,13 +965,16 @@ $end = min(($offset + $limit), $total_records);
                                     </tr>
                                 </thead>
 
-
                                 <tbody>
-                                    <?php
-                                    if ($res->num_rows === 0):
-                                    ?>
+                                    <?php if ($res->num_rows === 0): ?>
                                         <tr>
-                                            <td colspan="26" class="text-center border border-gray-300 py-4 text-gray-500">No patient records found.</td>
+                                            <td colspan="26" class="text-center border border-gray-300 py-8 text-gray-500">
+                                                <i class="fas fa-inbox text-2xl mb-2 block"></i>
+                                                No patient records found for <?php echo $selectedYear; ?>.
+                                                <?php if ($search): ?>
+                                                    <br><span class="text-sm">Try a different search or year.</span>
+                                                <?php endif; ?>
+                                            </td>
                                         </tr>
                                         <?php
                                     else:
@@ -971,20 +1105,22 @@ $end = min(($offset + $limit), $total_records);
                                 </tbody>
                             </table>
                         </div>
-                        <nav class="flex flex-col  items-start justify-between p-2  md:flex-row md:items-center md:space-y-0"
+
+                        <!-- Pagination (already includes year in links) -->
+                        <nav class="flex flex-col items-start justify-between p-2 md:flex-row md:items-center md:space-y-0"
                             aria-label="Table navigation">
                             <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
                                 Showing <span class="font-semibold text-gray-900 dark:text-white">
                                     <?= $start ?>-<?= $end ?>
                                 </span> of <span class="font-semibold text-gray-900 dark:text-white">
                                     <?= $total_records ?>
-                                </span>
+                                </span> records for <?= $selectedYear ?>
                             </span>
 
                             <ul class="inline-flex items-stretch -space-x-px">
                                 <!-- Previous Button -->
                                 <li>
-                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&<?= ($page > 1) ? 'page=' . ($page - 1) : '#' ?>"
+                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page > 1) ? 'page=' . ($page - 1) : '#' ?>"
                                         class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($page <= 1) ? 'pointer-events-none opacity-50' : '' ?>">
                                         <span class="sr-only">Previous</span>
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -1001,7 +1137,7 @@ $end = min(($offset + $limit), $total_records);
                                 $range = 3; // how many page links to show around current
                                 for ($i = max(1, $page - $range); $i <= min($total_pages, $page + $range); $i++): ?>
                                     <li>
-                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&page=<?= $i ?>"
+                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $i ?>"
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight border 
                                 <?= ($i == $page)
                                         ? 'z-10 text-blue-600 bg-blue-50 border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
@@ -1018,7 +1154,7 @@ $end = min(($offset + $limit), $total_records);
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">...</span>
                                     </li>
                                     <li>
-                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&page=<?= $total_pages ?>"
+                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $total_pages ?>"
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                                             <?= $total_pages ?>
                                         </a>
@@ -1027,7 +1163,7 @@ $end = min(($offset + $limit), $total_records);
 
                                 <!-- Next Button -->
                                 <li>
-                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&<?= ($page < $total_pages) ? 'page=' . ($page + 1) : '#' ?>"
+                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page < $total_pages) ? 'page=' . ($page + 1) : '#' ?>"
                                         class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($page >= $total_pages) ? 'pointer-events-none opacity-50' : '' ?>">
                                         <span class="sr-only">Next</span>
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -1040,7 +1176,6 @@ $end = min(($offset + $limit), $total_records);
                                 </li>
                             </ul>
                         </nav>
-
                     </div>
                 </form>
             </section>
@@ -1049,11 +1184,27 @@ $end = min(($offset + $limit), $total_records);
             $res->free();
             $conn->close();
             ?>
-            <div class="flex justify-end">
+
+            <div class="flex justify-between mt-4">
+                <a href="?year=<?php echo ($selectedYear - 1); ?>&uid=<?php echo $userId; ?>"
+                    class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 <?php echo ($selectedYear <= min($availableYears)) ? 'opacity-50 pointer-events-none' : ''; ?>">
+                    <i class="fas fa-arrow-left"></i>
+                    Previous Year (<?php echo $selectedYear - 1; ?>)
+                </a>
+
                 <button type="button" onclick="next()"
-                    class="text-white justify-center  cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800  focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-18 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-18 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                     Next
                 </button>
+
+                <a href="?year=<?php echo ($selectedYear + 1); ?>&uid=<?php echo $userId; ?><?php
+                                                                                            echo $search ? '&search=' . urlencode($search) : '';
+                                                                                            echo $addressFilter ? '&address=' . urlencode($addressFilter) : '';
+                                                                                            echo $isOfflineMode ? '&offline=true' : '';
+                                                                                            ?>" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 <?php echo ($selectedYear >= $currentYear) ? 'opacity-50 pointer-events-none' : ''; ?>">
+                    Next Year (<?php echo $selectedYear + 1; ?>)
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         </main>
     </div>
@@ -1083,7 +1234,33 @@ $end = min(($offset + $limit), $total_records);
 
     <script>
         function next() {
-            location.href = ("targetclientlist2.php?uid=<?php echo $userId; ?>");
+            // Get current parameters
+            const currentYear = <?php echo $selectedYear; ?>;
+            const currentPage = <?php echo $page; ?>;
+            const currentSearch = '<?php echo addslashes($search); ?>';
+            const currentAddress = '<?php echo addslashes($addressFilter); ?>';
+            const userId = <?php echo $userId; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            // Build the URL with all current parameters
+            let url = `targetclientlist2.php?uid=${userId}&year=${currentYear}&page=${currentPage}`;
+
+            if (currentSearch) {
+                url += `&search=${encodeURIComponent(currentSearch)}`;
+            }
+
+            if (currentAddress) {
+                url += `&address=${encodeURIComponent(currentAddress)}`;
+            }
+
+            if (isOffline) {
+                url += '&offline=true';
+            }
+
+            // Also pass the starting row number for continuity
+            url += `&startRow=${<?php echo $start - 1; ?>}`;
+
+            location.href = url;
         }
     </script>
 
