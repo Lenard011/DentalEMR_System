@@ -309,7 +309,7 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
@@ -627,8 +627,8 @@ if (!$isOfflineMode) {
         <div id="recordModal" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl mx-4 p-2 max-h-[90vh] overflow-y-auto">
-                <div class="flex flex-row justify-between items-center ">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Oral Health Condition</h2>
+                <div class="flex flex-row justify-between items-center">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Add Treatment Record</h2>
                     <button type="button" id="cancelrecordBtn"
                         class="relative cursor-pointer text-gray-500 hover:text-gray-800 dark:hover:text-white"
                         onclick="closeRecord()">
@@ -641,95 +641,108 @@ if (!$isOfflineMode) {
                         <div>
                             <div class="mb-3">
                                 <p class="text-14 font-semibold text-gray-900 dark:text-white">
-                                    Record of Services Oriented
+                                    Record of Services Rendered
                                 </p>
                             </div>
+
+                            <!-- Add Date Field at the top -->
+                            <div class="mb-4">
+                                <div class="w-full max-w-xs">
+                                    <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                        <span class="text-red-500 mr-1">*</span>Date of Service
+                                    </label>
+                                    <input type="date" name="service_date" id="service_date"
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                        required
+                                        value="<?php echo date('Y-m-d'); ?>">
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Select the date when services were rendered
+                                    </p>
+                                </div>
+                            </div>
+
                             <div class="flex flex-col w-full justify-between items-center gap-5">
                                 <ul class="w-full space-y-1 text-sm list-disc list-inside ml-5 mb-5">
                                     <li>For Oral Prophylaxis, Fluoride Varnish/Gel - Check (✓) if rendered.</li>
-                                    <li>For Permanent & Temporary Filling, Pit and Fissure Sealant and Extraction -
-                                        Indicate
-                                        number.</li>
+                                    <li>For Permanent & Temporary Filling, Pit and Fissure Sealant and Extraction - Indicate number.</li>
                                 </ul>
                                 <div class="w-full flex flex-col gap-5 p-1">
                                     <div class="w-full flex flex-row justify-between relative gap-5">
                                         <div class="w-full">
-                                            <label
-                                                class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Oral
-                                                Prophylaxis</label>
-                                            <input type="text" name="oral_prophylaxis"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600"
-                                                required>
+                                            <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Oral Prophylaxis
+                                            </label>
+                                            <input type="text" name="oral_prophylaxis" placeholder="✓ or leave blank"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                                         </div>
                                         <div class="w-full">
-                                            <label
-                                                class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Fluoride
-                                                Varnish / Fluoride Gel</label>
-                                            <input type="text" name="fluoride"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600"
-                                                required>
+                                            <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Fluoride Varnish / Fluoride Gel
+                                            </label>
+                                            <input type="text" name="fluoride" placeholder="✓ or leave blank"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                                         </div>
                                         <div class="w-full">
-                                            <label
-                                                class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Pit
-                                                and Fissure Sealant</label>
-                                            <input type="text" name="sealant"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600"
-                                                required>
+                                            <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Pit and Fissure Sealant
+                                            </label>
+                                            <input type="text" name="sealant" placeholder="Number or leave blank"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                                         </div>
                                     </div>
 
                                     <div class="w-full flex flex-row justify-between relative gap-5">
                                         <div class="w-full">
-                                            <label
-                                                class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Permanent
-                                                Filling</label>
-                                            <input type="text" name="permanent_filling"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600"
-                                                required>
+                                            <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Permanent Filling
+                                            </label>
+                                            <input type="text" name="permanent_filling" placeholder="Number or leave blank"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                                         </div>
                                         <div class="w-full">
-                                            <label
-                                                class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Temporary
-                                                Filling</label>
-                                            <input type="text" name="temporary_filling"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600"
-                                                required>
+                                            <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Temporary Filling
+                                            </label>
+                                            <input type="text" name="temporary_filling" placeholder="Number or leave blank"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                                         </div>
                                         <div class="w-full">
-                                            <label
-                                                class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Extraction</label>
-                                            <input type="text" name="extraction"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600"
-                                                required>
+                                            <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Extraction
+                                            </label>
+                                            <input type="text" name="extraction" placeholder="Number or leave blank"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                                         </div>
                                     </div>
 
                                     <div class="w-full flex flex-row justify-between relative gap-5">
-                                        <div class="w-129">
-                                            <label
-                                                class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Consultation</label>
-                                            <input type="text" name="consultation"
-                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600"
-                                                required>
+                                        <div class="w-full">
+                                            <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Consultation
+                                            </label>
+                                            <input type="text" name="consultation" placeholder="Type of consultation"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                                         </div>
                                         <div class="w-full">
-                                            <label
-                                                class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks
-                                                / Others (Specify)</label>
-                                            <textarea rows="4" name="remarks"
-                                                class="bg-gray-50 border border-gray-300 h-30 text-gray-900 text-xs rounded-sm block w-full p-1 dark:bg-gray-700 dark:border-gray-600"
-                                                required></textarea>
+                                            <label class="flex mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                                Remarks / Others (Specify)
+                                            </label>
+                                            <textarea rows="4" name="remarks" placeholder="Additional notes or specifications"
+                                                class="bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-sm block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"></textarea>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </section>
-                    <div class="flex justify-end gap-2">
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button type="button" onclick="closeRecord()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                            Cancel
+                        </button>
                         <button type="button" onclick="saveRecord()"
-                            class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-1 w-18 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                            Save
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-700 hover:bg-blue-800 rounded-lg dark:bg-blue-600 dark:hover:bg-blue-700">
+                            Save Record
                         </button>
                     </div>
                 </form>
@@ -818,7 +831,7 @@ if (!$isOfflineMode) {
     </script>
     <!-- Client-side 10-minute inactivity logout -->
     <script>
-        let inactivityTime = 600000; // 10 minutes in ms
+        let inactivityTime = 1800000; // 10 minutes in ms
         let logoutTimer;
 
         function resetTimer() {
@@ -931,16 +944,16 @@ if (!$isOfflineMode) {
                             row.className = "border-b border-gray-200 font-medium text-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white";
 
                             row.innerHTML = `
-                            <td class="px-4 py-3 text-center whitespace-nowrap">${rec.created_at || 'N/A'}</td>
-                            <td class="px-4 py-3 text-center">${rec.oral_prophylaxis || ""}</td>
-                            <td class="px-4 py-3 text-center">${rec.fluoride || ""}</td>
-                            <td class="px-4 py-3 text-center">${rec.sealant || ""}</td>
-                            <td class="px-4 py-3 text-center">${rec.permanent_filling || ""}</td>
-                            <td class="px-4 py-3 text-center">${rec.temporary_filling || ""}</td>
-                            <td class="px-4 py-3 text-center">${rec.extraction || ""}</td>
-                            <td class="px-4 py-3 text-center">${rec.consultation || ""}</td>
-                            <td class="px-4 py-3 text-center max-w-xs truncate" title="${rec.remarks || ''}">${rec.remarks || ""}</td>
-                        `;
+                                <td class="px-4 py-3 text-center whitespace-nowrap">${rec.created_at || 'N/A'}</td>
+                                <td class="px-4 py-3 text-center">${rec.oral_prophylaxis || "-"}</td>
+                                <td class="px-4 py-3 text-center">${rec.fluoride || "-"}</td>
+                                <td class="px-4 py-3 text-center">${rec.sealant || "-"}</td>
+                                <td class="px-4 py-3 text-center">${rec.permanent_filling || "-"}</td>
+                                <td class="px-4 py-3 text-center">${rec.temporary_filling || "-"}</td>
+                                <td class="px-4 py-3 text-center">${rec.extraction || "-"}</td>
+                                <td class="px-4 py-3 text-center">${rec.consultation || "-"}</td>
+                                <td class="px-4 py-3 text-center max-w-xs truncate" title="${rec.remarks || ''}">${rec.remarks || "-"}</td>
+                            `;
 
                             tbody.appendChild(row);
                         });
@@ -981,6 +994,11 @@ if (!$isOfflineMode) {
         addBtn.addEventListener("click", () => {
             console.log('Opening modal for patient ID:', patientId);
             document.getElementById("patient_id").value = patientId;
+
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("service_date").value = today;
+
             recordModal.classList.remove("hidden");
             recordModal.classList.add("flex");
 
@@ -995,6 +1013,10 @@ if (!$isOfflineMode) {
             recordModal.classList.add("hidden");
             recordModal.classList.remove("flex");
             recordForm.reset();
+
+            // Reset date to today after form reset
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("service_date").value = today;
         }
 
         if (cancelBtn) cancelBtn.addEventListener("click", closeRecord);
@@ -1018,7 +1040,22 @@ if (!$isOfflineMode) {
                 return;
             }
 
+            // Validate date
+            const serviceDate = formData.get('service_date');
+            if (!serviceDate) {
+                alert("❌ Please select a service date.");
+                return;
+            }
+
+            // Validate date format
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(serviceDate)) {
+                alert("❌ Invalid date format. Please use YYYY-MM-DD format.");
+                return;
+            }
+
             console.log('Saving record for patient:', formPatientId);
+            console.log('Service date:', serviceDate);
             console.log('Form data:', Object.fromEntries(formData.entries()));
 
             // Show saving indicator
@@ -1040,7 +1077,7 @@ if (!$isOfflineMode) {
                 .then(data => {
                     if (data.success) {
                         console.log('Record saved successfully');
-                        alert("✅ Record added successfully!");
+                        showNotification("✅ Record added successfully!", "success");
                         closeRecord();
                         loadTreatmentRecords(); // Refresh table
                     } else {
@@ -1049,7 +1086,7 @@ if (!$isOfflineMode) {
                 })
                 .catch(err => {
                     console.error("Error saving record:", err);
-                    alert(`⚠️ Failed to save record: ${err.message}`);
+                    showNotification(`⚠️ Failed to save record: ${err.message}`, "error");
                 })
                 .finally(() => {
                     // Restore button state
@@ -1058,6 +1095,53 @@ if (!$isOfflineMode) {
                 });
         }
 
+        function showNotification(message, type = "info") {
+            // Remove existing notification
+            const existingNotification = document.getElementById('custom-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.id = 'custom-notification';
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-0 opacity-100`;
+
+            // Set style based on type
+            if (type === "success") {
+                notification.className += " bg-green-100 text-green-800 border border-green-300";
+            } else if (type === "error") {
+                notification.className += " bg-red-100 text-red-800 border border-red-300";
+            } else {
+                notification.className += " bg-blue-100 text-blue-800 border border-blue-300";
+            }
+
+            notification.innerHTML = `
+        <div class="flex items-center">
+            ${type === "success" ? '<i class="fas fa-check-circle mr-3"></i>' : ''}
+            ${type === "error" ? '<i class="fas fa-exclamation-circle mr-3"></i>' : ''}
+            <span>${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+
+            document.body.appendChild(notification);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
         // Also allow form submission on Enter key in textarea
         recordForm.querySelector('textarea[name="remarks"]').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && e.ctrlKey) {

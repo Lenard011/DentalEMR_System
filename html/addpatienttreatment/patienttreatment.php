@@ -729,7 +729,7 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile

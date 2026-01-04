@@ -1656,7 +1656,18 @@ $conn->close();
                         <?php endfor; ?>
                     </div>
 
-                    <!-- Column 5: Temporary Filling -->
+                    <!-- Column 5: Permanent Filling (ADDED THIS MISSING COLUMN) -->
+                    <div class="flex flex-col text-center items-center w-70">
+                        <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Permanent<br>Filling</p>
+                        <?php for ($i = 0; $i < 20; $i++): ?>
+                            <input
+                                type="text"
+                                class="h-5 w-full text-[12px] font-normal border border-l-0 text-center px-1 <?php echo $i > 0 ? 'border-t-0' : ''; ?>"
+                                value="<?php echo isset($preventiveData[$i]['permanent_filling']) ? htmlspecialchars($preventiveData[$i]['permanent_filling']) : ''; ?>">
+                        <?php endfor; ?>
+                    </div>
+
+                    <!-- Column 6: Temporary Filling -->
                     <div class="flex flex-col text-center items-center w-70">
                         <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Temporary<br>Filling</p>
                         <?php for ($i = 0; $i < 20; $i++): ?>
@@ -1667,7 +1678,7 @@ $conn->close();
                         <?php endfor; ?>
                     </div>
 
-                    <!-- Column 6: Extraction -->
+                    <!-- Column 7: Extraction -->
                     <div class="flex flex-col text-center items-center w-70">
                         <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Extraction</p>
                         <?php for ($i = 0; $i < 20; $i++): ?>
@@ -1678,7 +1689,7 @@ $conn->close();
                         <?php endfor; ?>
                     </div>
 
-                    <!-- Column 7: Consultation -->
+                    <!-- Column 8: Consultation -->
                     <div class="flex flex-col text-center items-center w-50">
                         <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Consultation</p>
                         <?php for ($i = 0; $i < 20; $i++): ?>
@@ -1693,7 +1704,7 @@ $conn->close();
                         <?php endfor; ?>
                     </div>
 
-                    <!-- Column 8: Remarks -->
+                    <!-- Column 9: Remarks -->
                     <div class="flex flex-col text-center items-center w-100">
                         <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Remarks / Others (Specify)</p>
                         <?php for ($i = 0; $i < 20; $i++): ?>
@@ -1704,7 +1715,7 @@ $conn->close();
                         <?php endfor; ?>
                     </div>
 
-                    <!-- Column 9: Dentist’s Signature -->
+                    <!-- Column 10: Dentist's Signature -->
                     <div class="flex flex-col text-center items-center w-70">
                         <p class="text-[12px] border border-b-0 font-medium h-14 px-2 border-l-0 flex items-center justify-center w-full">Dentist's Signature</p>
                         <?php for ($i = 0; $i < 20; $i++): ?>
@@ -1716,8 +1727,6 @@ $conn->close();
                     </div>
 
                 </div>
-
-
             </div>
         </main>
     </div>
@@ -2093,24 +2102,39 @@ $conn->close();
                     }
                     if (!visit) return;
 
-                    // Populate conditions
+                    // Populate conditions - FOR PRINT: Only colors, no text on teeth
                     visit.conditions.forEach(c => {
                         const el = document.querySelector(`[data-key='${c.box_key}${year.suffix}']`);
                         if (!el) return;
+
                         const fallbackColor = c.condition_code?.toLowerCase() === 'm' ? '#ef4444' : '#3b82f6';
                         const fillColor = c.color?.trim() || fallbackColor;
 
-                        el.textContent = c.condition_code || '';
-                        Object.assign(el.style, {
-                            backgroundColor: fillColor,
-                            color: '#fff',
-                            fontWeight: 'bold',
-                            fontSize: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid rgba(0,0,0,0.1)'
-                        });
+                        // For tooth parts (teeth): only set color, no text
+                        if (el.classList.contains('part')) {
+                            // TOOTH PART: No text, just color
+                            el.textContent = '';
+                            el.style.color = 'transparent';
+
+                            if (c.condition_code && c.condition_code.toLowerCase() === '✓') {
+                                el.style.backgroundColor = '#fff';
+                            } else {
+                                el.style.backgroundColor = fillColor;
+                            }
+                        } else {
+                            // CONDITION BOX: Show text with color
+                            el.textContent = c.condition_code || '';
+                            Object.assign(el.style, {
+                                backgroundColor: fillColor,
+                                color: (c.condition_code && c.condition_code.toLowerCase() === '✓') ? '#000' : '#fff',
+                                fontWeight: 'bold',
+                                fontSize: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '1px solid rgba(0,0,0,0.1)'
+                            });
+                        }
                     });
 
                     // Populate treatments
@@ -2133,7 +2157,8 @@ $conn->close();
 
             } catch (err) {
                 console.error("Failed to load visit data:", err);
-                alert("Failed to load visit data: " + err.message);
+                // Don't alert in print mode to avoid print dialog interruption
+                console.error("Failed to load visit data: " + err.message);
             }
         }
 

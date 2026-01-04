@@ -312,7 +312,6 @@ try {
     $patient_id = $data['patient_id'] ?? null;
     $oral_data = $data['oral_data'] ?? [];
     $visit_id = $data['visit_id'] ?? null;
-    $visit_date = $data['visit_date'] ?? null;
 
     if (!$patient_id) {
         throw new Exception('Missing patient_id');
@@ -332,27 +331,16 @@ try {
     $db->beginTransaction();
     debug_log("Starting transaction");
 
-    // Create or update visit with date
+    // Create visit if missing
     if (!$visit_id || $visit_id == 0) {
-        // Get next visit number for this patient
         $q = $db->prepare("SELECT COALESCE(MAX(visit_number),0)+1 AS nextnum FROM visits WHERE patient_id=?");
         $q->execute([$patient_id]);
         $num = $q->fetch(PDO::FETCH_ASSOC)['nextnum'] ?? 1;
 
-        // Use provided date or current date
-        $effective_date = $visit_date ?: date('Y-m-d');
-
-        $q = $db->prepare("INSERT INTO visits (patient_id, visit_date, visit_number) VALUES (?, ?, ?)");
-        $q->execute([$patient_id, $effective_date, $num]);
+        $q = $db->prepare("INSERT INTO visits (patient_id, visit_date, visit_number) VALUES (?, NOW(), ?)");
+        $q->execute([$patient_id, $num]);
         $visit_id = $db->lastInsertId();
-        debug_log("Created new visit_id: $visit_id for patient: $patient_id with date: $effective_date");
-    } else {
-        // Update existing visit with new date if provided
-        if ($visit_date) {
-            $q = $db->prepare("UPDATE visits SET visit_date = ? WHERE visit_id = ?");
-            $q->execute([$visit_date, $visit_id]);
-            debug_log("Updated visit_id: $visit_id with date: $visit_date");
-        }
+        debug_log("Created new visit_id: $visit_id for patient: $patient_id");
     }
 
     // Prepare statements

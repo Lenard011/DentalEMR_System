@@ -8,7 +8,7 @@ require_once '../conn.php';
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
-ini_set('display_errors', 0);
+ini_set('display_errors', 0); // Set to 1 for debugging
 
 try {
     // Check if it's a POST request
@@ -23,24 +23,7 @@ try {
         throw new Exception("Invalid patient ID.");
     }
 
-    // Handle examination date
-    $examination_date = isset($_POST['examination_date']) ? trim($_POST['examination_date']) : '';
-    
-    // Validate and format the date
-    if (!empty($examination_date)) {
-        // Validate date format (YYYY-MM-DD)
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $examination_date)) {
-            throw new Exception("Invalid date format. Please use YYYY-MM-DD format.");
-        }
-        
-        // Convert to MySQL datetime format
-        $examination_datetime = $examination_date . ' ' . date('H:i:s');
-    } else {
-        // Use current date/time if not provided
-        $examination_datetime = date('Y-m-d H:i:s');
-    }
-
-    // Collect all fields
+    // Collect all fields with proper sanitization
     $fields = [
         'orally_fit_child' => isset($_POST['orally_fit_child']) ? trim($_POST['orally_fit_child']) : '',
         'dental_caries' => isset($_POST['dental_caries']) ? trim($_POST['dental_caries']) : '',
@@ -72,7 +55,7 @@ try {
         perm_missing_teeth_m, perm_filled_teeth_f, perm_total_dmf,
         temp_teeth_present, temp_sound_teeth, temp_decayed_teeth_d,
         temp_filled_teeth_f, temp_total_df, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
     $stmt = $conn->prepare($sql);
 
@@ -80,12 +63,9 @@ try {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    // Debug: Check field values
-    error_log("Examination datetime: " . $examination_datetime);
-    
-    // Bind parameters - FIXED: 23 parameters total (22 fields + NOW() for updated_at)
-    $bind_result = $stmt->bind_param(
-        "isssssssssiiiiiiiiiiis", // Changed to 22 'i's and 's's
+    // Bind parameters
+    $stmt->bind_param(
+        "isssssssssiiiiiiiiiii",
         $patient_id,
         $fields['orally_fit_child'],
         $fields['dental_caries'],
@@ -106,23 +86,18 @@ try {
         $fields['temp_sound_teeth'],
         $fields['temp_decayed_teeth_d'],
         $fields['temp_filled_teeth_f'],
-        $fields['temp_total_df'],
-        $examination_datetime
+        $fields['temp_total_df']
     );
-
-    if (!$bind_result) {
-        throw new Exception("Bind failed: " . $stmt->error);
-    }
 
     // Execute the statement
     if ($stmt->execute()) {
         $response = [
             'success' => true,
             'message' => 'Oral health record saved successfully.',
-            'record_id' => $stmt->insert_id,
-            'examination_date' => $examination_date ?: date('Y-m-d')
+            'record_id' => $stmt->insert_id
         ];
 
+        // Output clean JSON
         echo json_encode($response);
     } else {
         throw new Exception("Execute failed: " . $stmt->error);
@@ -132,6 +107,7 @@ try {
 } catch (Exception $e) {
     error_log("Save OHC Error: " . $e->getMessage());
 
+    // Output error as JSON
     $response = [
         'success' => false,
         'message' => 'Error: ' . $e->getMessage()
@@ -141,4 +117,4 @@ try {
 }
 
 $conn->close();
-exit;
+exit; // Important: stop script execution after output

@@ -1,0 +1,100 @@
+POST Data: Array
+(
+    [patient_id] => 8
+    [examination_date] => 2026-01-04
+    [orally_fit_child] => ✓
+    [dental_caries] => ✓
+    [gingivitis] => 
+    [periodontal_disease] => ✓
+    [debris] => 
+    [calculus] => 
+    [abnormal_growth] => 
+    [cleft_palate] => 
+    [others] => ✓
+    [perm_teeth_present] => 0
+    [perm_sound_teeth] => 0
+    [perm_decayed_teeth_d] => 0
+    [perm_missing_teeth_m] => 2
+    [perm_filled_teeth_f] => 1
+    [perm_total_dmf] => 3
+    [temp_teeth_present] => 0
+    [temp_sound_teeth] => 0
+    [temp_decayed_teeth_d] => 0
+    [temp_filled_teeth_f] => 1
+    [temp_total_df] => 1
+)
+POST Data: Array
+(
+    [patient_id] => 8
+    [examination_date] => 2026-01-04
+    [orally_fit_child] => ✓
+    [dental_caries] => 
+    [gingivitis] => ✓
+    [periodontal_disease] => 
+    [debris] => 
+    [calculus] => 
+    [abnormal_growth] => ✓
+    [cleft_palate] => ✓
+    [others] => ✓
+    [perm_teeth_present] => 0
+    [perm_sound_teeth] => 0
+    [perm_decayed_teeth_d] => 0
+    [perm_missing_teeth_m] => 2
+    [perm_filled_teeth_f] => 1
+    [perm_total_dmf] => 3
+    [temp_teeth_present] => 0
+    [temp_sound_teeth] => 0
+    [temp_decayed_teeth_d] => 0
+    [temp_filled_teeth_f] => 1
+    [temp_total_df] => 1
+)
+POST Data: Array
+(
+    [patient_id] => 8
+    [examination_date] => 2026-01-04
+    [orally_fit_child] => ✓
+    [dental_caries] => 
+    [gingivitis] => ✓
+    [periodontal_disease] => 
+    [debris] => 
+    [calculus] => 
+    [abnormal_growth] => ✓
+    [cleft_palate] => ✓
+    [others] => ✓
+    [perm_teeth_present] => 0
+    [perm_sound_teeth] => 0
+    [perm_decayed_teeth_d] => 0
+    [perm_missing_teeth_m] => 2
+    [perm_filled_teeth_f] => 1
+    [perm_total_dmf] => 3
+    [temp_teeth_present] => 0
+    [temp_sound_teeth] => 0
+    [temp_decayed_teeth_d] => 0
+    [temp_filled_teeth_f] => 1
+    [temp_total_df] => 1
+)
+POST Data: Array
+(
+    [patient_id] => 8
+    [examination_date] => 2026-01-04
+    [orally_fit_child] => ✓
+    [dental_caries] => 
+    [gingivitis] => ✓
+    [periodontal_disease] => 
+    [debris] => 
+    [calculus] => 
+    [abnormal_growth] => ✓
+    [cleft_palate] => ✓
+    [others] => ✓
+    [perm_teeth_present] => 0
+    [perm_sound_teeth] => 0
+    [perm_decayed_teeth_d] => 0
+    [perm_missing_teeth_m] => 2
+    [perm_filled_teeth_f] => 1
+    [perm_total_dmf] => 3
+    [temp_teeth_present] => 0
+    [temp_sound_teeth] => 0
+    [temp_decayed_teeth_d] => 0
+    [temp_filled_teeth_f] => 1
+    [temp_total_df] => 1
+)

@@ -1,7 +1,7 @@
 <?php
 session_start();
 date_default_timezone_set('Asia/Manila');
-
+$currentPart = 2;
 // Check if we're in offline mode
 $isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
 
@@ -444,7 +444,7 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
@@ -688,56 +688,70 @@ if (!$isOfflineMode) {
                             <div class="rounded-full  bg-gray-600 border border-gray-500 h-5 w-5"></div>
                         </div>
                     </div>
-                    <div class="flex flex-row justify-between ">
-                        <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
-                                class="w-full md:w-auto cursor-pointer flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
-                                    class="h-4 w-4 mr-2 text-gray-400" viewbox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Filter
-                                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path clip-rule="evenodd" fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                </svg>
-                            </button>
-                            <div id="filterDropdown"
-                                class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose
-                                    address
-                                </h6>
-                                <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                                    <li class="flex items-center">
-                                        <input id="apple" type="checkbox" value=""
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                        <label for="apple"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Balansay</label>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button type="button" class="flex items-center justify-center cursor-pointer text-white bg-blue-700
-                                    hover:bg-blue-800 font-medium rounded-lg gap-1 text-sm px-4 py-2 dark:bg-blue-600
-                                    dark:hover:bg-blue-700">
-                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                    viewBox="0 0 24 24">
-                                    <path stroke="white" stroke-linejoin="round" stroke-width="2"
-                                        d="M16.444 18H19a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h2.556M17 11V5a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v6h10ZM7 15h10v4a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-4Z" />
-                                </svg>
-                                Generate report
-                            </button>
-                        </div>
-                    </div>
-
                 </div>
+                <!-- Info Box showing year statistics -->
+                <div class="mt-4 mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                Year <?php echo $selectedYear; ?> - Patient Records
+                            </h4>
+                            <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">
+                                Showing only patients registered in <?php echo $selectedYear; ?>.
+                                <?php if ($total_records > 0): ?>
+                                    Total: <?php echo $total_records; ?> patient<?php echo $total_records != 1 ? 's' : ''; ?>
+                                <?php else: ?>
+                                    No patient records found for this year.
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                        <?php if ($total_records > 0): ?>
+                            <!-- In the filters section of targetclientlist.php -->
+                            <div class="flex items-center space-x-3 w-full md:w-auto">
+                                <!-- Export Dropdown -->
+                                <div class="relative">
+                                    <button id="exportDropdownButton" data-dropdown-toggle="exportDropdown"
+                                        class="flex items-center justify-center cursor-pointer text-white bg-blue-700
+                                        hover:bg-blue-800 font-medium rounded-lg gap-1 text-sm px-4 py-2 dark:bg-blue-600
+                                        dark:hover:bg-blue-700">
+                                        <i class="fas fa-download"></i>
+                                        Export Report
+                                        <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                                    </button>
 
+                                    <div id="exportDropdown" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
+                                        <div class="p-2">
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">Export Current Part</div>
+                                            <a href="/dentalemr_system/php/export_targetclient.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&part=<?php echo $currentPart; ?>&type=excel"
+                                                class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                                                <i class="fas fa-file-excel text-green-600 mr-2"></i>
+                                                Export Current to Excel
+                                            </a>
+
+                                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">Export Both Parts</div>
+                                            <a href="javascript:void(0)" onclick="exportBothParts('excel')"
+                                                class="flex items-center px-3 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded">
+                                                <i class="fas fa-file-excel text-green-600 mr-2"></i>
+                                                Method 1: Export Both (Excel)
+                                            </a>
+                                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">Export Complete Report</div>
+                                            <a href="javascript:void(0)" onclick="exportCompleteReport('excel')"
+                                                class="flex items-center px-3 py-2 text-sm text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded">
+                                                <i class="fas fa-file-alt text-green-700 mr-2"></i>
+                                                Export Complete Report (Excel)
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
                 <form action="#">
                     <div class="grid gap-2 mb-4 mt-5">
                         <div class="overflow-x-auto ">
@@ -1244,6 +1258,394 @@ if (!$isOfflineMode) {
                         dropdown.classList.add('hidden');
                     }
                 });
+            }
+        });
+    </script>
+    <script>
+        // New function to export complete report (both parts in one file)
+        function exportCompleteReport(format = 'excel') {
+            const userId = <?php echo $userId; ?>;
+            const year = <?php echo $selectedYear; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                alert('Complete report export is not available in offline mode. Please go online to export.');
+                return;
+            }
+
+            showNotification('Preparing complete report...', 'info');
+
+            // Make sure to pass 'both' as string, not as number
+            const completeUrl = `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=both&type=${format}`;
+
+            console.log('Export URL:', completeUrl); // Debug log
+
+            // Open in new tab to avoid any browser restrictions
+            window.open(completeUrl, '_blank');
+
+            showNotification('Complete report exported successfully! Check your downloads.', 'success');
+        }
+        // Export functionality
+        function exportYearReport(year) {
+            const userId = <?php echo $userId; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                if (confirm('You are in offline mode. Exporting will use locally stored data which may be incomplete. Continue?')) {
+                    exportOfflineData(year);
+                }
+                return;
+            }
+
+            // Determine which part we're on
+            const isPart2 = window.location.pathname.includes('targetclientlist2.php');
+            const part = isPart2 ? 2 : 1;
+
+            window.open(`/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=${part}&type=excel`, '_blank');
+        }
+
+        // Fixed and improved export functions
+        function exportBothParts(format = 'excel') {
+            const userId = <?php echo $userId; ?>;
+            const year = <?php echo $selectedYear; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                alert('Complete export is not available in offline mode. Please go online to export both parts.');
+                return;
+            }
+
+            // Show progress notification
+            showNotification('Starting export of both parts...', 'info');
+
+            // Create a small delay between downloads to avoid browser blocking
+            setTimeout(() => {
+                // Download Part 1
+                const part1Url = `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=1&type=${format}`;
+                const part1Link = document.createElement('a');
+                part1Link.href = part1Url;
+                part1Link.target = '_blank';
+                part1Link.download = `Target_Client_List_Part1_${year}_${getCurrentDateTime()}.${format === 'csv' ? 'csv' : 'xls'}`;
+                document.body.appendChild(part1Link);
+                part1Link.click();
+                document.body.removeChild(part1Link);
+
+                showNotification('Part 1 downloaded. Starting Part 2...', 'info');
+
+                // Wait a moment before downloading Part 2
+                setTimeout(() => {
+                    // Download Part 2
+                    const part2Url = `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=2&type=${format}`;
+                    const part2Link = document.createElement('a');
+                    part2Link.href = part2Url;
+                    part2Link.target = '_blank';
+                    part2Link.download = `Target_Client_List_Part2_${year}_${getCurrentDateTime()}.${format === 'csv' ? 'csv' : 'xls'}`;
+                    document.body.appendChild(part2Link);
+                    part2Link.click();
+                    document.body.removeChild(part2Link);
+
+                    showNotification('Both parts exported successfully!', 'success');
+                }, 2000);
+            }, 500);
+        }
+
+        // New robust method for exporting both parts
+        function exportBothPartsAlternative(format = 'excel') {
+            const userId = <?php echo $userId; ?>;
+            const year = <?php echo $selectedYear; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                alert('Complete export is not available in offline mode. Please go online to export both parts.');
+                return;
+            }
+
+            // Use a step-by-step approach with user confirmation
+            const exportSteps = confirm(
+                'Complete report export will download two files:\n\n' +
+                '1. Target Client List Part 1\n' +
+                '2. Target Client List Part 2\n\n' +
+                'Click OK to start the export process.'
+            );
+
+            if (!exportSteps) return;
+
+            // Step 1: Export Part 1
+            showNotification('Exporting Part 1... Please allow downloads.', 'info');
+
+            // Create download for Part 1
+            const part1Window = window.open(
+                `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=1&type=${format}`,
+                '_blank'
+            );
+
+            // Wait and then export Part 2
+            setTimeout(() => {
+                showNotification('Now exporting Part 2...', 'info');
+
+                // Create download for Part 2
+                const part2Window = window.open(
+                    `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=2&type=${format}`,
+                    '_blank'
+                );
+
+                // Final notification
+                setTimeout(() => {
+                    showNotification('Export completed! Check your downloads folder.', 'success');
+
+                    // Close the windows after a delay
+                    if (part1Window) setTimeout(() => part1Window.close(), 1000);
+                    if (part2Window) setTimeout(() => part2Window.close(), 1500);
+                }, 3000);
+            }, 2000);
+        }
+
+        // New method: Single click export with ZIP (if you implement server-side ZIP)
+        function exportBothPartsZIP() {
+            const userId = <?php echo $userId; ?>;
+            const year = <?php echo $selectedYear; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                alert('Complete export is not available in offline mode. Please go online to export both parts.');
+                return;
+            }
+
+            // You can implement this if you create a server-side ZIP generator
+            alert('ZIP export feature coming soon! For now, use the "Export Both" options above.');
+        }
+
+        // Helper function for timestamp
+        function getCurrentDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+        }
+
+        function exportOfflineData(year) {
+            // Check if we're on Part 1 or Part 2
+            const isPart2 = window.location.pathname.includes('targetclientlist2.php');
+
+            if (isPart2) {
+                exportOfflinePart2(year);
+            } else {
+                exportOfflinePart1(year);
+            }
+        }
+
+        function exportOfflinePart1(year) {
+            // For Part 1, we need to get data from the current page table
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tbody tr');
+
+            if (rows.length === 0) {
+                alert('No data found for export.');
+                return;
+            }
+
+            // Create CSV content
+            let csvContent = "data:text/csv;charset=utf-8,";
+
+            // Headers
+            const headers = [
+                'No.', 'Date of Consultation', 'Family Serial No.', 'Name of Client',
+                'Sex (M)', 'Sex (F)', 'Complete Address', 'Date of Birth',
+                '0-11 mos.', '1-4 y/o', '5-9 y/o', '10-14 y/o', '15-19 y/o', '20-59 y/o', '>=60 y/o',
+                'Pregnant 10-14', 'Pregnant 15-19', 'Pregnant 20-49',
+                'Indigenous People', 'Orally Fit Upon Examination', 'Orally Fit After Rehab',
+                'Decayed Tooth', 'Missing Tooth', 'Filled Tooth'
+            ];
+            csvContent += headers.join(',') + "\n";
+
+            // Extract data from table rows
+            rows.forEach((row, index) => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 25) {
+                    const rowData = [
+                        index + 1,
+                        cells[1]?.textContent.trim() || '',
+                        cells[2]?.textContent.trim() || '',
+                        cells[3]?.textContent.trim() || '',
+                        cells[4]?.textContent.trim() || '',
+                        cells[5]?.textContent.trim() || '',
+                        cells[6]?.textContent.trim() || '',
+                        cells[7]?.textContent.trim() || '',
+                        cells[8]?.textContent.trim() || '',
+                        cells[9]?.textContent.trim() || '',
+                        cells[10]?.textContent.trim() || '',
+                        cells[11]?.textContent.trim() || '',
+                        cells[12]?.textContent.trim() || '',
+                        cells[13]?.textContent.trim() || '',
+                        cells[14]?.textContent.trim() || '',
+                        cells[15]?.textContent.trim() || '',
+                        cells[16]?.textContent.trim() || '',
+                        cells[17]?.textContent.trim() || '',
+                        cells[18]?.textContent.trim() || '',
+                        cells[19]?.textContent.trim() || '',
+                        cells[20]?.textContent.trim() || '',
+                        cells[21]?.textContent.trim() || '',
+                        cells[22]?.textContent.trim() || '',
+                        cells[23]?.textContent.trim() || ''
+                    ];
+                    csvContent += rowData.join(',') + "\n";
+                }
+            });
+
+            // Download CSV
+            downloadCSV(csvContent, `Target_Client_List_Part1_Offline_${year}_${getCurrentDate()}.csv`);
+        }
+
+        function exportOfflinePart2(year) {
+            // For Part 2, collect data from localStorage
+            const offlineData = [];
+            const keys = Object.keys(localStorage);
+
+            for (const key of keys) {
+                if (key.startsWith('targetclient_')) {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    if (data.year == year) {
+                        offlineData.push(data);
+                    }
+                }
+            }
+
+            if (offlineData.length === 0) {
+                alert('No offline data found for export.');
+                return;
+            }
+
+            // Create CSV
+            let csvContent = "data:text/csv;charset=utf-8,";
+
+            // Add headers
+            const headers = ['Patient ID', 'Year', 'OE', 'IIOHC', 'AEBF', 'TFA', 'STB', 'OHE', 'E&CC', 'ART',
+                'OPS', 'PFS', 'TF', 'PF', 'GT', 'RP', 'RUT', 'Ref', 'TPEC', 'Dr',
+                'BOHC 0-11', 'BOHC 1-4', 'BOHC 5-9', 'BOHC 10-19', 'BOHC 20-59', 'BOHC 60+', 'BOHC Pregnant', 'Remarks'
+            ];
+            csvContent += headers.join(',') + "\n";
+
+            // Add data rows
+            offlineData.forEach(data => {
+                const row = [
+                    data.patient_id || '',
+                    data.year || '',
+                    data.oe || '',
+                    data.iiohc || '',
+                    data.aebf || '',
+                    data.tfa || '',
+                    data.stb || '',
+                    data.ohe || '',
+                    data.ecc || '',
+                    data.art || '',
+                    data.ops || '',
+                    data.pfs || '',
+                    data.tf || '',
+                    data.pf || '',
+                    data.gt || '',
+                    data.rp || '',
+                    data.rut || '',
+                    data.ref || '',
+                    data.tpec || '',
+                    data.dr || '',
+                    data.bohc_0_11 || '',
+                    data.bohc_1_4 || '',
+                    data.bohc_5_9 || '',
+                    data.bohc_10_19 || '',
+                    data.bohc_20_59 || '',
+                    data.bohc_60_plus || '',
+                    data.bohc_pregnant || '',
+                    data.remarks || ''
+                ];
+                csvContent += row.join(',') + "\n";
+            });
+
+            // Download CSV
+            downloadCSV(csvContent, `Target_Client_List_Part2_Offline_${year}_${getCurrentDate()}.csv`);
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('Offline export completed!', 'success');
+        }
+
+        function getCurrentDate() {
+            const now = new Date();
+            return now.toISOString().slice(0, 10).replace(/-/g, '');
+        }
+
+        function showNotification(message, type = 'info') {
+            // Remove existing notification
+            const existingNotif = document.getElementById('export-notification');
+            if (existingNotif) {
+                existingNotif.remove();
+            }
+
+            // Create new notification
+            const notif = document.createElement('div');
+            notif.id = 'export-notification';
+            notif.className = `fixed top-20 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white font-medium ${getNotificationClass(type)}`;
+            notif.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${getNotificationIcon(type)} mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+            document.body.appendChild(notif);
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (notif.parentNode) {
+                    notif.remove();
+                }
+            }, 3000);
+        }
+
+        function getNotificationClass(type) {
+            switch (type) {
+                case 'success':
+                    return 'bg-green-500';
+                case 'error':
+                    return 'bg-red-500';
+                case 'warning':
+                    return 'bg-yellow-500';
+                case 'info':
+                default:
+                    return 'bg-blue-500';
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'success':
+                    return 'fa-check-circle';
+                case 'error':
+                    return 'fa-exclamation-circle';
+                case 'warning':
+                    return 'fa-exclamation-triangle';
+                case 'info':
+                default:
+                    return 'fa-info-circle';
+            }
+        }
+
+        // Add keyboard shortcut for export (Ctrl+E)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportYearReport(<?php echo $selectedYear; ?>);
             }
         });
     </script>

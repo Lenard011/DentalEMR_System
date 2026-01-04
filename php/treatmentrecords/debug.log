@@ -1818,3 +1818,104 @@
 2025-12-09 13:56:12 - Treatment inserted successfully
 2025-12-09 13:56:12 - Transaction committed successfully. Inserted: 6 items
 2025-12-09 13:56:12 - Sending response: {"success":true,"visit_id":"19","inserted":6,"warnings":[]}
+2026-01-04 09:50:02 - Received save request: {"action":"save","patient_id":"8","visit_id":"0","visit_date":"2026-01-04","oral_data":[{"type":"condition","tooth_id":"74","condition_code":"S","box_key":"T-74-center","color":"red","case_type":"temporary"},{"type":"condition","tooth_id":"24","condition_code":"S","box_key":"R3-11","color":"red","case_type":"temporary"},{"type":"treatment","tooth_id":"24","treatment_code":"X","box_key":"R4-11","color":"","case_type":"permanent"}]}
+2026-01-04 09:50:02 - Parsed input: Array
+(
+    [action] => save
+    [patient_id] => 8
+    [visit_id] => 0
+    [visit_date] => 2026-01-04
+    [oral_data] => Array
+        (
+            [0] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 74
+                    [condition_code] => S
+                    [box_key] => T-74-center
+                    [color] => red
+                    [case_type] => temporary
+                )
+
+            [1] => Array
+                (
+                    [type] => condition
+                    [tooth_id] => 24
+                    [condition_code] => S
+                    [box_key] => R3-11
+                    [color] => red
+                    [case_type] => temporary
+                )
+
+            [2] => Array
+                (
+                    [type] => treatment
+                    [tooth_id] => 24
+                    [treatment_code] => X
+                    [box_key] => R4-11
+                    [color] => 
+                    [case_type] => permanent
+                )
+
+        )
+
+)
+
+2026-01-04 09:50:02 - Starting transaction
+2026-01-04 09:50:02 - Created new visit_id: 20 for patient: 8 with date: 2026-01-04
+2026-01-04 09:50:02 - Processing item 0: Array
+(
+    [type] => condition
+    [tooth_id] => 74
+    [condition_code] => S
+    [box_key] => T-74-center
+    [color] => red
+    [case_type] => temporary
+)
+
+2026-01-04 09:50:02 - Resolving tooth_id for: '74'
+2026-01-04 09:50:02 - Found tooth by FDI: 74 => 46
+2026-01-04 09:50:02 - Item details: type=condition, tooth=46, box=T-74-center
+2026-01-04 09:50:02 - Processing condition: 'S', caseType: temporary
+2026-01-04 09:50:02 - Looking for condition: 'S', caseType: temporary, isPermanent: 0
+2026-01-04 09:50:02 - Found condition_id: 13 for 'S' in column code
+2026-01-04 09:50:02 - Inserting condition: visit_id=20, tooth_id=46, condition_id=13, box_key='T-74-center', color='red', case_type='temporary'
+2026-01-04 09:50:02 - Condition inserted successfully
+2026-01-04 09:50:02 - Processing item 1: Array
+(
+    [type] => condition
+    [tooth_id] => 24
+    [condition_code] => S
+    [box_key] => R3-11
+    [color] => red
+    [case_type] => temporary
+)
+
+2026-01-04 09:50:02 - Resolving tooth_id for: '24'
+2026-01-04 09:50:02 - Found tooth by tooth_id: 24 => 24
+2026-01-04 09:50:02 - Item details: type=condition, tooth=24, box=R3-11
+2026-01-04 09:50:02 - Processing condition: 'S', caseType: temporary
+2026-01-04 09:50:02 - Looking for condition: 'S', caseType: temporary, isPermanent: 0
+2026-01-04 09:50:02 - Found condition_id: 13 for 'S' in column code
+2026-01-04 09:50:02 - Inserting condition: visit_id=20, tooth_id=24, condition_id=13, box_key='R3-11', color='red', case_type='temporary'
+2026-01-04 09:50:02 - Condition inserted successfully
+2026-01-04 09:50:02 - Processing item 2: Array
+(
+    [type] => treatment
+    [tooth_id] => 24
+    [treatment_code] => X
+    [box_key] => R4-11
+    [color] => 
+    [case_type] => permanent
+)
+
+2026-01-04 09:50:02 - Resolving tooth_id for: '24'
+2026-01-04 09:50:02 - Found tooth by tooth_id: 24 => 24
+2026-01-04 09:50:02 - Item details: type=treatment, tooth=24, box=R4-11
+2026-01-04 09:50:02 - Processing treatment: 'X'
+2026-01-04 09:50:02 - Looking for treatment: 'X'
+2026-01-04 09:50:02 - Found treatment_id: 13 for 'X'
+2026-01-04 09:50:02 - Inserting treatment: visit_id=20, tooth_id=24, treatment_id=13, box_key='R4-11', color='', case_type='permanent'
+2026-01-04 09:50:02 - Treatment inserted successfully
+2026-01-04 09:50:02 - Transaction committed successfully. Inserted: 3 items
+2026-01-04 09:50:02 - Sending response: {"success":true,"visit_id":"20","inserted":3,"warnings":[]}

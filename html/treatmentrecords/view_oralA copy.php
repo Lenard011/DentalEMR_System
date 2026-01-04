@@ -699,7 +699,7 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
@@ -1056,6 +1056,7 @@ if (!$isOfflineMode) {
                 </div>
             </section>
         </main>
+
         <!-- Modal -->
         <div id="ohcModalA" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50 p-2 md:p-4 overflow-auto">
@@ -1073,25 +1074,6 @@ if (!$isOfflineMode) {
                     <section class="bg-white dark:bg-gray-900 p-2 rounded-lg mb-3 mt-3">
                         <div>
                             <input type="hidden" id="visit_id" value="0">
-
-                            <!-- Date Input Section -->
-                            <div class="mb-4">
-                                <label for="visit_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                                    Visit Date <span class="text-red-500">*</span>
-                                </label>
-                                <div class="relative">
-                                    <input type="date" id="visit_date" name="visit_date" required
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value="<?php echo date('Y-m-d'); ?>">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Select the date when this oral health assessment was conducted</p>
-                            </div>
-
                             <div class="mb-3">
                                 <p class="text-14 font-semibold text-gray-900 dark:text-white">A. Oral Health Condition</p>
                             </div>
@@ -1103,9 +1085,9 @@ if (!$isOfflineMode) {
                                         <!-- Undo Button -->
                                         <button type="button" id="undoBtn"
                                             class="text-white justify-center cursor-pointer inline-flex items-center gap-1 
-                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                            font-medium rounded-lg text-sm p-2 
-                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                                    font-medium rounded-lg text-sm p-2 
+                                    dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -1116,9 +1098,9 @@ if (!$isOfflineMode) {
                                         <!-- Redo Button -->
                                         <button type="button" id="redoBtn"
                                             class="text-white justify-center cursor-pointer inline-flex items-center gap-1 
-                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                            font-medium rounded-lg text-sm p-2 
-                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                                    font-medium rounded-lg text-sm p-2 
+                                    dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -1129,9 +1111,9 @@ if (!$isOfflineMode) {
                                         <!-- Clear All Button -->
                                         <button type="button" id="clearAll"
                                             class="text-white justify-center cursor-pointer inline-flex items-center gap-1
-                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                            font-medium rounded-lg text-sm p-2 
-                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                                    font-medium rounded-lg text-sm p-2 
+                                    dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -1265,7 +1247,7 @@ if (!$isOfflineMode) {
                                                             dx
                                                         </td>
                                                     </tr>
-                                                    <tr class="border-1  dark:text-white">
+                                                    <tr class="border-1  dark:text-white" >
                                                         <td class="border-1">
                                                             Un
                                                         </td>
@@ -1408,10 +1390,6 @@ if (!$isOfflineMode) {
                         </div>
                     </section>
                     <div class="flex justify-end gap-2">
-                        <button type="button" onclick="closeOHCModalA()"
-                            class="text-gray-700 justify-center cursor-pointer inline-flex items-center bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
-                            Cancel
-                        </button>
                         <button type="button" onclick="saveOHCA()"
                             class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                             Save
@@ -2188,12 +2166,6 @@ if (!$isOfflineMode) {
                 // Reset state
                 modalHasUnsavedChanges = false;
 
-                // Set default date to today
-                const dateInput = modal.querySelector('#visit_date');
-                if (dateInput) {
-                    dateInput.value = new Date().toISOString().split('T')[0];
-                }
-
                 // Show modal
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
@@ -2242,15 +2214,9 @@ if (!$isOfflineMode) {
 
                 const patient_id = modal.querySelector("#patient_id")?.value || '';
                 const visit_id = modal.querySelector("#visit_id")?.value || 0;
-                const visit_date = modal.querySelector("#visit_date")?.value || '';
 
                 if (!patient_id) {
                     alert('Patient ID required');
-                    return;
-                }
-
-                if (!visit_date) {
-                    alert('Please select a visit date');
                     return;
                 }
 
@@ -2322,7 +2288,6 @@ if (!$isOfflineMode) {
                     action: "save",
                     patient_id: patient_id,
                     visit_id: visit_id,
-                    visit_date: visit_date,
                     oral_data: items
                 };
 
@@ -2333,7 +2298,7 @@ if (!$isOfflineMode) {
                     saveBtn.textContent = 'Saving...';
                     saveBtn.disabled = true;
 
-                    console.log("Saving data with date:", payload);
+                    console.log("Saving data:", payload);
 
                     const res = await fetch("/dentalemr_system/php/treatmentrecords/oral_condition_api.php", {
                         method: "POST",
@@ -2359,9 +2324,6 @@ if (!$isOfflineMode) {
                             el.style.backgroundColor = '#fff';
                             el.style.color = '#000';
                         });
-
-                        // Reset form
-                        modal.querySelector("#visit_date").value = new Date().toISOString().split('T')[0];
 
                         // Reset all selections
                         const blueSelect = modal.querySelector('#blueSelect');

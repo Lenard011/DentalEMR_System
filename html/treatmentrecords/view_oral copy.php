@@ -691,7 +691,7 @@ $conn->close();
             </section>
         </main>
 
-        <!-- Modal -->
+        <!-- Modal  -->
         <div id="ohcModal" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl p-4 m-2 max-h-[90vh] overflow-y-auto">
@@ -705,18 +705,6 @@ $conn->close();
                 </div>
                 <form id="ohcForm" class="space-y-4">
                     <input type="hidden" name="patient_id" id="patient_id" value="<?php echo $patientId; ?>">
-
-                    <!-- Date Input Section - ADDED HERE -->
-                    <div class="mb-4">
-                        <div class="flex flex-row justify-between w-120 items-center">
-                            <label for="examination_date" 
-                                class="flex text-sm font-medium text-gray-900 dark:text-white">Examination Date:</label>
-                            <input type="date" name="examination_date" id="examination_date" 
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-50 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                value="<?php echo date('Y-m-d'); ?>" />
-                        </div>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Default is today's date</p>
-                    </div>
 
                     <div class="grid gap-2 mb-4">
                         <div class="mb-3">
@@ -1692,25 +1680,16 @@ $conn->close();
         function getValue(id) {
             const form = document.getElementById("ohcForm");
             const el = form.querySelector(`#${id}`);
-            if (!el) {
-                console.warn(`Element with id ${id} not found`);
-                return "";
-            }
-
-            // For date fields
-            if (el.type === "date") {
-                return el.value || "";
-            }
+            if (!el) return "";
 
             // For check fields (text inputs that toggle ✓/✗)
-            if (el.type === "text" && el.hasAttribute('readonly')) {
+            if (el.type === "text" && el.hasAttribute('readonly') && el.onclick) {
                 return el.value?.trim() || "";
             }
 
             // For number fields
             if (el.type === "number") {
-                const val = el.value;
-                return val === "" ? "0" : val;
+                return el.value || "0";
             }
 
             return el.value?.trim() || "";
@@ -1753,7 +1732,6 @@ $conn->close();
 
             // Collect all form values
             const fields = [
-                'examination_date',
                 'orally_fit_child', 'dental_caries', 'gingivitis', 'periodontal_disease',
                 'debris', 'calculus', 'abnormal_growth', 'cleft_palate', 'others',
                 'perm_teeth_present', 'perm_sound_teeth', 'perm_decayed_teeth_d',
@@ -1764,72 +1742,51 @@ $conn->close();
 
             fields.forEach(field => {
                 const value = getValue(field);
-                console.log(`${field}: ${value}`);
                 formData.append(field, value);
             });
 
             console.log("Saving oral health data for patient:", patient_id);
-            console.log("FormData entries:");
-            for (let [key, value] of formData.entries()) {
-                console.log(key, value);
-            }
 
             try {
-                // Show loading state
-                const saveBtn = document.querySelector('button[onclick="saveOHC()"]');
-                const originalText = saveBtn.innerHTML;
-                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
-                saveBtn.disabled = true;
-
+                // Use FormData instead of JSON for better compatibility
                 const response = await fetch("/dentalemr_system/php/treatmentrecords/save_ohc.php", {
                     method: "POST",
                     body: formData
                 });
 
                 const text = await response.text();
-                console.log("Raw server response:", text);
+                console.log("Server response:", text);
 
+                // Try to parse JSON
                 let result;
                 try {
                     result = JSON.parse(text);
                 } catch (parseError) {
                     console.error("JSON Parse Error:", parseError);
-                    console.error("Raw response that failed to parse:", text);
-                    
-                    // Try to extract error message from HTML response
-                    let errorMessage = "Server returned an invalid response.";
-                    if (text.includes('Fatal error') || text.includes('Parse error')) {
-                        const errorMatch = text.match(/<b>([^<]+)<\/b>/);
-                        if (errorMatch) {
-                            errorMessage = "Server error: " + errorMatch[1];
-                        }
+                    console.error("Raw response text:", text);
+
+                    // Check if the response contains HTML or PHP errors
+                    if (text.includes('<') || text.includes('PHP') || text.includes('Error')) {
+                        alert("Server returned an error page. Please check server logs.");
+                    } else {
+                        alert("Server returned invalid response. Please try again.");
                     }
-                    
-                    alert(errorMessage + "\nPlease check server logs for details.");
                     return;
                 }
-
-                // Restore button
-                saveBtn.innerHTML = originalText;
-                saveBtn.disabled = false;
 
                 if (result.success) {
                     alert(result.message);
                     closeOHCModal();
+                    // Force a complete page reload to show new records
                     setTimeout(() => {
-                        location.reload(true);
+                        location.reload(true); // true forces reload from server
                     }, 300);
                 } else {
-                    alert("Error: " + (result.message || "Unknown error saving data."));
+                    alert(result.message || "Error saving data.");
                 }
             } catch (err) {
                 console.error("Network Error:", err);
                 alert("Failed to save data. Please check your connection and try again.");
-                
-                // Restore button
-                const saveBtn = document.querySelector('button[onclick="saveOHC()"]');
-                saveBtn.innerHTML = 'Save';
-                saveBtn.disabled = false;
             }
         }
 

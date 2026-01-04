@@ -13,19 +13,6 @@ try {
             throw new Exception("Missing patient ID.");
         }
 
-        // Handle custom service date or use current date
-        $createdAt = date('Y-m-d H:i:s'); // Default to current timestamp
-        if (!empty($data['service_date'])) {
-            // Validate date format
-            $date = DateTime::createFromFormat('Y-m-d', $data['service_date']);
-            if ($date && $date->format('Y-m-d') === $data['service_date']) {
-                // Use the selected date at noon (12:00:00)
-                $createdAt = $data['service_date'] . ' 12:00:00';
-            } else {
-                throw new Exception("Invalid date format. Please use YYYY-MM-DD format.");
-            }
-        }
-
         $stmt = $pdo->prepare("
             INSERT INTO patient_treatment_record (
                 patient_id, oral_prophylaxis, fluoride, sealant,
@@ -34,27 +21,25 @@ try {
             ) VALUES (
                 :patient_id, :oral_prophylaxis, :fluoride, :sealant,
                 :permanent_filling, :temporary_filling, :extraction,
-                :consultation, :remarks, :created_at
+                :consultation, :remarks, NOW()
             )
         ");
 
         $stmt->execute([
             ':patient_id' => $data['patient_id'],
-            ':oral_prophylaxis' => $data['oral_prophylaxis'] ?? '',
-            ':fluoride' => $data['fluoride'] ?? '',
-            ':sealant' => $data['sealant'] ?? '',
-            ':permanent_filling' => $data['permanent_filling'] ?? '',
-            ':temporary_filling' => $data['temporary_filling'] ?? '',
-            ':extraction' => $data['extraction'] ?? '',
-            ':consultation' => $data['consultation'] ?? '',
-            ':remarks' => $data['remarks'] ?? '',
-            ':created_at' => $createdAt
+            ':oral_prophylaxis' => $data['oral_prophylaxis'],
+            ':fluoride' => $data['fluoride'],
+            ':sealant' => $data['sealant'],
+            ':permanent_filling' => $data['permanent_filling'],
+            ':temporary_filling' => $data['temporary_filling'],
+            ':extraction' => $data['extraction'],
+            ':consultation' => $data['consultation'],
+            ':remarks' => $data['remarks']
         ]);
 
         echo json_encode([
             "success" => true,
-            "message" => "Record added successfully.",
-            "created_at" => $createdAt
+            "message" => "Record added successfully."
         ]);
         exit;
     }
@@ -64,7 +49,7 @@ try {
         $patient_id = isset($_GET['patient_id']) ? intval($_GET['patient_id']) : 0;
         if ($patient_id <= 0) throw new Exception("Invalid patient ID");
 
-        // Fetch patient name
+        // 🩺 Fetch patient name
         $stmtPatient = $pdo->prepare("
             SELECT firstname, middlename, surname
             FROM patients
@@ -80,7 +65,7 @@ try {
             ($patient['middlename'] ? substr($patient['middlename'], 0, 1) . '. ' : '') .
             $patient['surname']);
 
-        // Fetch records (display DATE from created_at)
+        // Fetch records (only DATE from created_at)
         $stmtRecords = $pdo->prepare("
             SELECT 
                 DATE(created_at) AS created_at,
