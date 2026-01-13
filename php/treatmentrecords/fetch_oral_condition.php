@@ -1,9 +1,25 @@
 <?php
-// fetch_oral_condition.php - FINAL VERSION
+// fetch_oral_condition.php - UPDATED WITH HISTORY LOGGING
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache, must-revalidate');
 ini_set('display_errors', 0);
 error_reporting(0);
+
+// Enable error logging for debugging
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log');
+
+// Set CORS headers
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE, PATCH");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Credentials: true");
+
+// Handle OPTIONS request for CORS preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 require_once __DIR__ . '/conns.php';
 
@@ -12,6 +28,89 @@ if (!$db) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Database connection error']);
     exit;
+}
+
+// ===========================
+// HISTORY LOGGING FUNCTION
+// ===========================
+function addHistoryLog($db, $tableName, $recordId, $action, $changedByType, $changedById, $oldValues = null, $newValues = null, $description = null)
+{
+    try {
+        $sql = "INSERT INTO history_logs 
+                (table_name, record_id, action, changed_by_type, changed_by_id, old_values, new_values, description, ip_address) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $db->prepare($sql);
+        if (!$stmt) {
+            error_log("Failed to prepare history log statement: " . implode(' ', $db->errorInfo()));
+            return false;
+        }
+
+        $oldJSON = $oldValues ? json_encode($oldValues, JSON_UNESCAPED_UNICODE) : null;
+        $newJSON = $newValues ? json_encode($newValues, JSON_UNESCAPED_UNICODE) : null;
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+        $stmt->execute([
+            $tableName,
+            $recordId,
+            $action,
+            $changedByType,
+            $changedById,
+            $oldJSON,
+            $newJSON,
+            $description,
+            $ip
+        ]);
+
+        return true;
+    } catch (Exception $e) {
+        error_log("Error in addHistoryLog: " . $e->getMessage());
+        return false;
+    }
+}
+
+// ===========================
+// GET LOGGED USER INFORMATION
+// ===========================
+function getLoggedUserInfo($input = [])
+{
+    $userId = 0;
+    $userType = 'System';
+    $userName = 'System';
+
+    // Check GET parameters
+    if (isset($_GET['uid']) && !empty($_GET['uid'])) {
+        $userId = intval($_GET['uid']);
+        $userType = 'System';
+        $userName = 'System User';
+    }
+
+    return [
+        'id' => $userId,
+        'type' => $userType,
+        'name' => $userName
+    ];
+}
+
+// ===========================
+// GET PATIENT NAME FUNCTION
+// ===========================
+function getPatientName($db, $patientId)
+{
+    try {
+        $stmt = $db->prepare("SELECT firstname, surname FROM patients WHERE patient_id = ?");
+        $stmt->execute([$patientId]);
+        $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($patient) {
+            $name = trim(($patient['firstname'] ?? '') . ' ' . ($patient['surname'] ?? ''));
+            return $name ?: "Patient ID: $patientId";
+        }
+        return "Unknown Patient (ID: $patientId)";
+    } catch (Exception $e) {
+        error_log("Error getting patient name: " . $e->getMessage());
+        return "Patient ID: $patientId";
+    }
 }
 
 try {
@@ -28,6 +127,24 @@ try {
 
     if (!$patient) {
         throw new Exception('Patient not found');
+    }
+
+    // Get logged user info for potential logging (if uid is provided)
+    $loggedUser = getLoggedUserInfo();
+
+    // Log the fetch action
+    if ($loggedUser['id'] > 0) {
+        addHistoryLog(
+            $db,
+            "patients",
+            $patient_id,
+            "VIEW",
+            $loggedUser['type'],
+            $loggedUser['id'],
+            null,
+            null,
+            "Fetched oral health condition data for patient: " . getPatientName($db, $patient_id)
+        );
     }
 
     // Fetch all visits
@@ -99,7 +216,12 @@ try {
     echo json_encode([
         'success' => true,
         'patient' => $patient,
-        'visits' => $result
+        'visits' => $result,
+        'logged_by' => $loggedUser['id'] > 0 ? [
+            "type" => $loggedUser['type'],
+            "name" => $loggedUser['name'],
+            "id" => $loggedUser['id']
+        ] : null
     ]);
 } catch (Exception $e) {
     http_response_code(400);

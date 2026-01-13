@@ -91,7 +91,7 @@ try {
                 <p>Your password has been reset by an administrator.</p>
                 <p><strong>New Temporary Password:</strong> {$temporaryPassword}</p>
                 <p>Please login and change your password immediately.</p>
-                <p>Login URL: https://yourdomain.com/dentalemr_system/html/login/login.html</p>
+                <p>Login URL: https://yourdomain.com/DentalEMR_System/html/login/login.html</p>
             </div>
         </div>
     </body>

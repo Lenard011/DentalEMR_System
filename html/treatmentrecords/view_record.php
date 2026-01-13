@@ -47,7 +47,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -70,10 +70,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +102,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +131,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +152,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,7 +166,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -194,6 +194,7 @@ if (!$isOfflineMode) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Treatment Records</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -309,18 +310,18 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -344,7 +345,7 @@ if (!$isOfflineMode) {
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -752,7 +753,7 @@ if (!$isOfflineMode) {
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="../../js/tailwind.config.js"></script>
+    <script src="/DentalEMR_System/js/tailwind.config.js"></script>
     <!-- Theme Toggle Script -->
     <script>
         // ========== THEME MANAGEMENT ==========
@@ -838,7 +839,7 @@ if (!$isOfflineMode) {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
+                window.location.href = "/DentalEMR_System/php/login/logout.php?uid=<?php echo $userId; ?>";
             }, inactivityTime);
         }
 
@@ -889,94 +890,112 @@ if (!$isOfflineMode) {
         }
 
         // -------------------- FETCH RECORDS --------------------
-        function loadTreatmentRecords() {
+        // Update the loadTreatmentRecords function to handle HTML errors
+        async function loadTreatmentRecords() {
             console.log('Loading records for patient ID:', patientId);
 
             if (!patientId || patientId <= 0) {
                 document.getElementById("patientName").textContent = "⚠️ No patient selected";
                 document.getElementById("treatmentTableBody").innerHTML = `
-                <tr><td colspan="9" class="text-center py-4 text-gray-500">
-                    Please select a patient first.
-                </td></tr>`;
+        <tr><td colspan="9" class="text-center py-4 text-gray-500">
+            Please select a patient first.
+        </td></tr>`;
                 return;
             }
 
             // Show loading state
             document.getElementById("treatmentTableBody").innerHTML = `
-            <tr><td colspan="9" class="text-center py-4 text-gray-500">
-                Loading records...
-            </td></tr>`;
+    <tr><td colspan="9" class="text-center py-4 text-gray-500">
+        Loading records...
+    </td></tr>`;
 
-            // Use a more specific endpoint path and add cache-busting
-            fetch(`/dentalemr_system/php/treatmentrecords/view_record.php?patient_id=${patientId}&t=${Date.now()}`)
-                .then(res => {
-                    console.log('Fetch response status:', res.status);
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('Fetched data:', data);
+            try {
+                const response = await fetch(`/DentalEMR_System/php/treatmentrecords/view_record.php?patient_id=${patientId}&t=${Date.now()}`);
 
-                    if (!data.success) {
-                        throw new Error(data.message || "Failed to load records");
-                    }
+                // First, get the response as text to check if it's valid JSON
+                const responseText = await response.text();
 
-                    // Update patient name
-                    const patientNameElement = document.getElementById("patientName");
-                    if (patientNameElement && data.patient) {
-                        patientNameElement.textContent = data.patient.fullname;
-                    }
+                // Check if response contains HTML error
+                if (responseText.trim().startsWith('<') || responseText.includes('<br />')) {
+                    console.error('Server returned HTML instead of JSON:', responseText.substring(0, 200));
+                    throw new Error('Server error: Received HTML response. Please check server logs.');
+                }
 
-                    // Update table
-                    const tbody = document.getElementById("treatmentTableBody");
-                    if (!tbody) {
-                        console.error('Table body element not found');
-                        return;
-                    }
+                // Try to parse as JSON
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('Failed to parse JSON:', parseError, 'Response:', responseText.substring(0, 200));
+                    throw new Error('Invalid response from server. Expected JSON but got: ' + responseText.substring(0, 100));
+                }
 
-                    tbody.innerHTML = "";
+                console.log('Fetched data:', data);
 
-                    if (data.records && data.records.length > 0) {
-                        data.records.forEach(rec => {
-                            const row = document.createElement("tr");
-                            row.className = "border-b border-gray-200 font-medium text-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white";
+                if (!data.success) {
+                    throw new Error(data.message || "Failed to load records");
+                }
 
-                            row.innerHTML = `
-                                <td class="px-4 py-3 text-center whitespace-nowrap">${rec.created_at || 'N/A'}</td>
-                                <td class="px-4 py-3 text-center">${rec.oral_prophylaxis || "-"}</td>
-                                <td class="px-4 py-3 text-center">${rec.fluoride || "-"}</td>
-                                <td class="px-4 py-3 text-center">${rec.sealant || "-"}</td>
-                                <td class="px-4 py-3 text-center">${rec.permanent_filling || "-"}</td>
-                                <td class="px-4 py-3 text-center">${rec.temporary_filling || "-"}</td>
-                                <td class="px-4 py-3 text-center">${rec.extraction || "-"}</td>
-                                <td class="px-4 py-3 text-center">${rec.consultation || "-"}</td>
-                                <td class="px-4 py-3 text-center max-w-xs truncate" title="${rec.remarks || ''}">${rec.remarks || "-"}</td>
-                            `;
+                // Update patient name
+                const patientNameElement = document.getElementById("patientName");
+                if (patientNameElement && data.patient) {
+                    patientNameElement.textContent = data.patient.fullname;
+                }
 
-                            tbody.appendChild(row);
-                        });
+                // Update table
+                const tbody = document.getElementById("treatmentTableBody");
+                if (!tbody) {
+                    console.error('Table body element not found');
+                    return;
+                }
 
-                        console.log(`Loaded ${data.records.length} records`);
-                    } else {
-                        tbody.innerHTML = `
-                        <tr>
-                            <td colspan="9" class="text-center py-8 text-gray-500">
-                                No treatment records found for this patient.
-                            </td>
-                        </tr>`;
-                    }
-                })
-                .catch(err => {
-                    console.error("Error fetching records:", err);
-                    document.getElementById("treatmentTableBody").innerHTML = `
-                    <tr>
-                        <td colspan="9" class="text-center text-red-500 py-4">
-                            ❌ Failed to load records: ${err.message}
-                        </td>
-                    </tr>`;
-                });
+                tbody.innerHTML = "";
+
+                if (data.records && data.records.length > 0) {
+                    data.records.forEach(rec => {
+                        const row = document.createElement("tr");
+                        row.className = "border-b border-gray-200 font-medium text-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white";
+
+                        row.innerHTML = `
+                    <td class="px-4 py-3 text-center whitespace-nowrap">${rec.created_at || 'N/A'}</td>
+                    <td class="px-4 py-3 text-center">${rec.oral_prophylaxis || "-"}</td>
+                    <td class="px-4 py-3 text-center">${rec.fluoride || "-"}</td>
+                    <td class="px-4 py-3 text-center">${rec.sealant || "-"}</td>
+                    <td class="px-4 py-3 text-center">${rec.permanent_filling || "-"}</td>
+                    <td class="px-4 py-3 text-center">${rec.temporary_filling || "-"}</td>
+                    <td class="px-4 py-3 text-center">${rec.extraction || "-"}</td>
+                    <td class="px-4 py-3 text-center">${rec.consultation || "-"}</td>
+                    <td class="px-4 py-3 text-center max-w-xs truncate" title="${rec.remarks || ''}">${rec.remarks || "-"}</td>
+                `;
+
+                        tbody.appendChild(row);
+                    });
+
+                    console.log(`Loaded ${data.records.length} records`);
+                } else {
+                    tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-8 text-gray-500">
+                    No treatment records found for this patient.
+                </td>
+            </tr>`;
+                }
+            } catch (err) {
+                console.error("Error fetching records:", err);
+
+                // More user-friendly error message
+                let errorMessage = err.message;
+                if (err.message.includes('HTML response') || err.message.includes('Invalid response')) {
+                    errorMessage = 'Server configuration error. Please contact administrator.';
+                }
+
+                document.getElementById("treatmentTableBody").innerHTML = `
+        <tr>
+            <td colspan="9" class="text-center text-red-500 py-4">
+                ❌ Failed to load records: ${errorMessage}
+            </td>
+        </tr>`;
+            }
         }
 
         // -------------------- MODAL CONTROL --------------------
@@ -1064,7 +1083,7 @@ if (!$isOfflineMode) {
             saveBtn.textContent = 'Saving...';
             saveBtn.disabled = true;
 
-            fetch(`/dentalemr_system/php/treatmentrecords/view_record.php`, {
+            fetch(`/DentalEMR_System/php/treatmentrecords/view_record.php`, {
                     method: "POST",
                     body: formData
                 })
@@ -1167,7 +1186,7 @@ if (!$isOfflineMode) {
     </script>
 
     <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
     <!-- Offline/Online Sync Handler -->
     <script>
         // Global offline sync manager
@@ -1276,7 +1295,7 @@ if (!$isOfflineMode) {
                 const patientIds = archiveActions.map(action => action.data.patient_id || action.data.id);
 
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/treatment.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -1342,7 +1361,7 @@ if (!$isOfflineMode) {
 
                 // Online: proceed with normal archive
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/treatment.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',

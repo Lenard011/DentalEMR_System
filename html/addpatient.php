@@ -2,58 +2,19 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
+// Include logging functions
+require_once '../php/logging.php';
+
 // Check if we're in offline mode
 $isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
 
 // Enhanced session validation with offline support
 if ($isOfflineMode) {
     // Offline mode session validation
-    $isValidSession = false;
-
-    // Check if we have offline session data
     if (isset($_SESSION['offline_user'])) {
         $loggedUser = $_SESSION['offline_user'];
         $userId = 'offline';
-        $isValidSession = true;
     } else {
-        // Try to create offline session from localStorage data (via JavaScript)
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const checkOfflineSession = () => {
-                    try {
-                        // Check sessionStorage first
-                        const sessionData = sessionStorage.getItem('dentalemr_current_user');
-                        if (sessionData) {
-                            const user = JSON.parse(sessionData);
-                            if (user && user.isOffline) {
-                                console.log('Valid offline session detected:', user.email);
-                                return true;
-                            }
-                        }
-                        
-                        // Fallback: check localStorage for offline users
-                        const offlineUsers = localStorage.getItem('dentalemr_local_users');
-                        if (offlineUsers) {
-                            const users = JSON.parse(offlineUsers);
-                            if (users && users.length > 0) {
-                                console.log('Offline users found in localStorage');
-                                return true;
-                            }
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error checking offline session:', error);
-                        return false;
-                    }
-                };
-                
-                if (!checkOfflineSession()) {
-                    alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
-                }
-            });
-        </script>";
-
         // Create offline session for this request
         $_SESSION['offline_user'] = [
             'id' => 'offline_user',
@@ -64,18 +25,16 @@ if ($isOfflineMode) {
         ];
         $loggedUser = $_SESSION['offline_user'];
         $userId = 'offline';
-        $isValidSession = true;
     }
 } else {
     // Online mode - normal session validation
     if (!isset($_GET['uid'])) {
         echo "<script>
             if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
+                window.location.href = '/DentalEMR_System/html/addpatient.php?offline=true';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -103,11 +62,10 @@ if ($isOfflineMode) {
     if (!$isValidSession) {
         echo "<script>
             if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
+                window.location.href = '/DentalEMR_System/html/addpatient.php?offline=true';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -116,7 +74,7 @@ if ($isOfflineMode) {
 
 // PER-USER INACTIVITY TIMEOUT (Online mode only)
 if (!$isOfflineMode) {
-    $inactiveLimit = 1800; // 10 minutes
+    $inactiveLimit = 1800; // 30 minutes
 
     if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
         $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
@@ -133,7 +91,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -154,9 +112,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -167,15 +125,14 @@ if (!$isOfflineMode) {
                     alert('Database connection failed. Please try again.');
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
-                    // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
+                    window.location.href = '/DentalEMR_System/html/addpatient.php?offline=true';
                 }
             </script>";
             exit;
         }
     }
 
-    // Fetch dentist name if user is a dentist (only in online mode)
+    // Fetch user details based on type
     if ($loggedUser['type'] === 'Dentist') {
         $stmt = $conn->prepare("SELECT name, profile_picture FROM dentist WHERE id = ?");
         $stmt->bind_param("i", $loggedUser['id']);
@@ -183,9 +140,25 @@ if (!$isOfflineMode) {
         $stmt->bind_result($dentistName, $dentistProfilePicture);
         if ($stmt->fetch()) {
             $loggedUser['name'] = $dentistName;
-            $loggedUser['profile_picture'] = $dentistProfilePicture; // Add this line
+            $loggedUser['profile_picture'] = $dentistProfilePicture;
         }
         $stmt->close();
+        
+        // Log page access for dentist
+        logActivity($conn, $loggedUser['id'], 'Dentist', 'VIEW_PAGE', 'Accessed Add Patient page');
+    } elseif ($loggedUser['type'] === 'Staff') {
+        $stmt = $conn->prepare("SELECT name, profile_picture FROM staff WHERE id = ?");
+        $stmt->bind_param("i", $loggedUser['id']);
+        $stmt->execute();
+        $stmt->bind_result($staffName, $staffProfilePicture);
+        if ($stmt->fetch()) {
+            $loggedUser['name'] = $staffName;
+            $loggedUser['profile_picture'] = $staffProfilePicture;
+        }
+        $stmt->close();
+        
+        // Log page access for staff
+        logActivity($conn, $loggedUser['id'], 'Staff', 'VIEW_PAGE', 'Accessed Add Patient page');
     }
 }
 ?>
@@ -196,6 +169,7 @@ if (!$isOfflineMode) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add patient</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
 
     <!-- Theme Color Meta Tags -->
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
@@ -519,18 +493,18 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -554,7 +528,7 @@ if (!$isOfflineMode) {
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -1524,7 +1498,7 @@ if (!$isOfflineMode) {
             if (!<?php echo $isOfflineMode ? 'true' : 'false'; ?>) {
                 logoutTimer = setTimeout(() => {
                     alert("You've been logged out due to 30 minutes of inactivity.");
-                    window.location.href = "/dentalemr_system/php/login/logout.php";
+                    window.location.href = "/DentalEMR_System/php/login/logout.php";
                 }, inactivityTime);
             }
         }
@@ -1684,7 +1658,9 @@ if (!$isOfflineMode) {
                 allPatients.push({
                     ...patient,
                     source: 'online',
-                    isOffline: false
+                    isOffline: false,
+                    // Ensure patient_id is preserved
+                    patient_id: patient.patient_id || patient.id
                 });
             });
 
@@ -1693,7 +1669,7 @@ if (!$isOfflineMode) {
             unsyncedOffline.forEach(patient => {
                 const patientData = patient.data;
                 allPatients.push({
-                    patient_id: patient.id,
+                    patient_id: patient.id, // Use the offline ID
                     surname: patientData.surname || '',
                     firstname: patientData.firstname || '',
                     middlename: patientData.middlename || '',
@@ -1749,14 +1725,18 @@ if (!$isOfflineMode) {
                     const unsyncedPatients = offlinePatients.filter(p => !p.synced);
                     const filteredPatients = mergePatients([], unsyncedPatients, currentSearch, selectedAddresses);
 
-                    displayPatients(filteredPatients, filteredPatients.length);
+                    // Apply client-side pagination for offline mode
+                    const startIndex = (page - 1) * limit;
+                    const endIndex = startIndex + limit;
+                    const paginatedPatients = filteredPatients.slice(startIndex, endIndex);
+
+                    displayPatients(paginatedPatients, filteredPatients.length);
                     isTableLoading = false;
                     return;
                 }
 
-                // Online mode - fetch from server and merge with offline
-                const cacheBuster = forceRefresh ? `&_t=${Date.now()}` : '';
-                const url = `${API_PATH}?page=${page}&limit=${limit}&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}${cacheBuster}`;
+                // Online mode - fetch ALL data from server (no pagination on server)
+                const url = `${API_PATH}?limit=1000&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}&_t=${Date.now()}`;
 
                 const res = await fetch(url, {
                     cache: "no-store",
@@ -1779,7 +1759,7 @@ if (!$isOfflineMode) {
                     selectedAddresses
                 );
 
-                // Apply pagination
+                // Apply client-side pagination
                 const startIndex = (page - 1) * limit;
                 const endIndex = startIndex + limit;
                 const paginatedPatients = allPatients.slice(startIndex, endIndex);
@@ -1800,7 +1780,12 @@ if (!$isOfflineMode) {
                     const unsyncedPatients = offlinePatients.filter(p => !p.synced);
                     const filteredPatients = mergePatients([], unsyncedPatients, currentSearch, selectedAddresses);
 
-                    displayPatients(filteredPatients, filteredPatients.length);
+                    // Apply client-side pagination
+                    const startIndex = (page - 1) * limit;
+                    const endIndex = startIndex + limit;
+                    const paginatedPatients = filteredPatients.slice(startIndex, endIndex);
+
+                    displayPatients(paginatedPatients, filteredPatients.length);
 
                     // Show offline indicator
                     showOfflineIndicator();
@@ -1824,16 +1809,16 @@ if (!$isOfflineMode) {
 
             if (!patients || patients.length === 0) {
                 showMessageInTable(`
-                <div class="text-center py-8">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No patients found</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        ${navigator.onLine ? 'Get started by adding a new patient.' : 'You are offline. Patient data will be saved locally.'}
-                    </p>
-                </div>
-            `);
+            <div class="text-center py-8">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No patients found</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    ${navigator.onLine ? 'Get started by adding a new patient.' : 'You are offline. Patient data will be saved locally.'}
+                </p>
+            </div>
+        `);
                 if (paginationNav) paginationNav.innerHTML = "";
                 return;
             }
@@ -1845,41 +1830,44 @@ if (!$isOfflineMode) {
                 const offlineBadge = isOfflinePatient ?
                     `<span class="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Offline</span>` : '';
 
+                // FIXED: Use the actual patient_id from the database
+                const actualId = p.patient_id || p.id || displayId;
+
                 tbody.insertAdjacentHTML("beforeend", `
-                <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${displayId}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        <div class="flex items-center justify-center">
-                            <span>${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</span>
-                            ${offlineBadge}
-                        </div>
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(p.sex)}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(String(p.age))}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(p.address)}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        <button onclick="${isOfflinePatient ? 
-                            `viewOfflinePatient('${p.patient_id}')` : 
-                            `window.location.href='viewrecord.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId; ?>&id=${encodeURIComponent(p.patient_id)}${isOfflineMode ? '&offline=true' : ''}'`}"
-                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
-                            View
-                        </button>
-                        ${isOfflinePatient ? `
-                        <button onclick="deleteOfflinePatient('${p.patient_id}')"
-                            class="ml-2 text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-2">
-                            Delete
-                        </button>` : ''}
-                    </td>
-                </tr>
-            `);
+            <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${actualId}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    <div class="flex items-center justify-center">
+                        <span>${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</span>
+                        ${offlineBadge}
+                    </div>
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${escapeHtml(p.sex)}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    ${escapeHtml(String(p.age))}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${escapeHtml(p.address)}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    <button onclick="${isOfflinePatient ? 
+                        `viewOfflinePatient('${p.patient_id}')` : 
+                        `window.location.href='viewrecord.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId; ?>&id=${encodeURIComponent(p.patient_id)}${isOfflineMode ? '&offline=true' : ''}'`}"
+                        class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
+                        View
+                    </button>
+                    ${isOfflinePatient ? `
+                    <button onclick="deleteOfflinePatient('${p.patient_id}')"
+                        class="ml-2 text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-2">
+                        Delete
+                    </button>` : ''}
+                </td>
+            </tr>
+        `);
             });
 
             renderPagination(totalCount, limit, currentPage);
@@ -2386,7 +2374,7 @@ if (!$isOfflineMode) {
                             formData.append("patient", "1");
                             formData.append("offline_sync", "true");
 
-                            const response = await fetch("/dentalemr_system/php/register_patient/addpatient.php", {
+                            const response = await fetch("/DentalEMR_System/php/register_patient/addpatient.php", {
                                 method: "POST",
                                 body: formData
                             });
@@ -2667,7 +2655,7 @@ if (!$isOfflineMode) {
                         formData.append("patient", "1");
 
                         try {
-                            const response = await fetch("/dentalemr_system/php/register_patient/addpatient.php", {
+                            const response = await fetch("/DentalEMR_System/php/register_patient/addpatient.php", {
                                 method: "POST",
                                 body: formData
                             });

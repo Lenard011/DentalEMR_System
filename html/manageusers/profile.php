@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 // REQUIRE userId parameter
 if (!isset($_GET['uid'])) {
-    header('Location: /dentalemr_system/html/login/login.html?error=invalid_session');
+    header('Location: /DentalEMR_System/html/login/login.html?error=invalid_session');
     exit;
 }
 
@@ -16,7 +16,7 @@ if (
     !isset($_SESSION['active_sessions']) ||
     !isset($_SESSION['active_sessions'][$userId])
 ) {
-    header('Location: /dentalemr_system/html/login/login.html?error=session_expired');
+    header('Location: /DentalEMR_System/html/login/login.html?error=session_expired');
     exit;
 }
 
@@ -36,7 +36,7 @@ if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
             session_destroy();
         }
 
-        header('Location: /dentalemr_system/html/login/login.html?error=inactivity');
+        header('Location: /DentalEMR_System/html/login/login.html?error=inactivity');
         exit;
     }
 }
@@ -49,9 +49,9 @@ $loggedUser = $_SESSION['active_sessions'][$userId];
 
 // Database connection
 $host = "localhost";
-$dbUser = "root";
-$dbPass = "";
-$dbName = "dentalemr_system";
+$dbUser = "u401132124_dentalclinic";
+$dbPass = "Mho_DentalClinic1st";
+$dbName = "u401132124_mho_dentalemr";
 
 $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
 if ($conn->connect_error) {
@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (in_array($fileType, $allowedTypes)) {
                 if ($fileSize < 5242880) { // 5MB limit
-                    $uploadDir = '/dentalemr_system/uploads/profile_pictures/';
+                    $uploadDir = '/DentalEMR_System/uploads/profile_pictures/';
                     $uploadPath = $_SERVER['DOCUMENT_ROOT'] . $uploadDir;
 
                     // Create directory if it doesn't exist
@@ -321,7 +321,7 @@ if (!empty($profilePicture)) {
     $displayPicture = $profilePicture;
 
     // Check if it's a local file
-    if (strpos($profilePicture, '/dentalemr_system/uploads/') === 0) {
+    if (strpos($profilePicture, '/DentalEMR_System/uploads/') === 0) {
         if (!file_exists($_SERVER['DOCUMENT_ROOT'] . $profilePicture)) {
             // File doesn't exist, fall back to avatar
             $displayPicture = 'https://ui-avatars.com/api/?name=' . urlencode($userData['name'] ?? 'User') . '&background=3b82f6&color=fff&size=256&bold=true';
@@ -340,6 +340,7 @@ if (!empty($profilePicture)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MHO Dental Clinic - My Profile</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -515,7 +516,7 @@ if (!empty($profilePicture)) {
                         </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="/dentalemr_system/html/index.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
+                    <a href="/DentalEMR_System/html/index.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
                             class="mr-3 h-8 rounded-full" alt="MHO Dental Clinic Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
@@ -570,12 +571,12 @@ if (!empty($profilePicture)) {
                                     <i class="fas fa-user-circle mr-3 text-blue-500 w-4 text-center"></i>
                                     <span>My Profile</span>
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 w-4 text-center"></i>
                                     <span>Manage Users</span>
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
                                     <i class="fas fa-history mr-3 text-gray-500 w-4 text-center"></i>
                                     <span>System Logs</span>
@@ -595,7 +596,7 @@ if (!empty($profilePicture)) {
                                 </button>
                             </div>
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150">
                                     <i class="fas fa-sign-out-alt mr-3 w-4 text-center"></i>
                                     <span>Sign Out</span>
@@ -741,12 +742,12 @@ if (!empty($profilePicture)) {
                             Quick Actions
                         </h3>
                         <div class="space-y-3">
-                            <a href="/dentalemr_system/html/index.php?uid=<?php echo $userId; ?>"
+                            <a href="/DentalEMR_System/html/index.php?uid=<?php echo $userId; ?>"
                                 class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
                                 <i class="fas fa-tachometer-alt mr-3 text-blue-500"></i>
                                 <span>Dashboard</span>
                             </a>
-                            <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
+                            <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                 class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
                                 <i class="fas fa-users mr-3 text-green-500"></i>
                                 <span>Manage Users</span>
@@ -1202,7 +1203,7 @@ if (!empty($profilePicture)) {
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(() => {
-                window.location.href = '/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>&reason=inactivity';
+                window.location.href = '/DentalEMR_System/php/login/logout.php?uid=<?php echo $userId; ?>&reason=inactivity';
             }, inactivityLimit);
         }
 

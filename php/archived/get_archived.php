@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 mysqli_report(MYSQLI_REPORT_OFF);
 // Database connection
-$mysqli = new mysqli("localhost", "root", "", "dentalemr_system");
+$mysqli = new mysqli("localhost", "u401132124_dentalclinic", "Mho_DentalClinic1st", "u401132124_mho_dentalemr");
 if ($mysqli->connect_errno) {
     echo json_encode(["error" => "Database connection failed"]);
     exit;

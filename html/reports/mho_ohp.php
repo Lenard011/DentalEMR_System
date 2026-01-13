@@ -47,7 +47,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -70,10 +70,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +102,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +131,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +152,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,7 +166,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -192,9 +192,9 @@ if (!$isOfflineMode) {
 <?php
 // === DATABASE CONNECTION ===
 $host = "localhost";
-$user = "root";
-$pass = "";
-$db = "dentalemr_system";
+$user = "u401132124_dentalclinic";
+$pass = "Mho_DentalClinic1st";
+$db = "u401132124_mho_dentalemr";
 
 $conn = new mysqli($host, $user, $pass, $db);
 if ($conn->connect_error) {
@@ -324,6 +324,7 @@ $barangayNames = array_keys($barangays);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Target Client List</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -442,18 +443,18 @@ $barangayNames = array_keys($barangays);
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a  href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -477,7 +478,7 @@ $barangayNames = array_keys($barangays);
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -903,7 +904,7 @@ $barangayNames = array_keys($barangays);
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php";
+                window.location.href = "/DentalEMR_System/php/login/logout.php";
             }, inactivityTime);
         }
 

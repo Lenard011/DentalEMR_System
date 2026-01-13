@@ -7,9 +7,9 @@ $isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
 // Database connection only for online mode
 if (!$isOfflineMode) {
     $DB_HOST = "localhost";
-    $DB_USER = "root";
-    $DB_PASS = "";
-    $DB_NAME = "dentalemr_system";
+    $DB_USER = "u401132124_dentalclinic";
+    $DB_PASS = "Mho_DentalClinic1st";
+    $DB_NAME = "u401132124_mho_dentalemr";
 
     $mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
     if ($mysqli->connect_errno) {
@@ -105,6 +105,7 @@ try {
         $total = (int)$countRow['total'];
         $cstmt->close();
 
+        // Distinct address list for filters
         // Distinct address list for filters
         $addrRes = $mysqli->query("SELECT DISTINCT address FROM patients WHERE if_treatment = 0 AND address IS NOT NULL AND address <> '' ORDER BY address ASC");
         $addresses = [];

@@ -1,45 +1,45 @@
 // Enhanced Service Worker for Dental EMR System
 const CACHE_NAME = 'dentalemr-v3';
-const OFFLINE_URL = '/dentalemr_system/html/offline.html';
-const OFFLINE_DASHBOARD = '/dentalemr_system/html/offline-dashboard.html';
+const OFFLINE_URL = '/DentalEMR_System/html/offline.html';
+const OFFLINE_DASHBOARD = '/DentalEMR_System/html/offline-dashboard.html';
 
 // Essential assets to cache
 const ESSENTIAL_ASSETS = [
-    '/dentalemr_system/',
-    '/dentalemr_system/html/login/login.html',
-    '/dentalemr_system/html/offline.html',
-    '/dentalemr_system/html/offline-dashboard.html',
-    '/dentalemr_system/css/style.css',
-    '/dentalemr_system/js/offline-storage.js',
-    '/dentalemr_system/js/local-auth.js',
+    '/DentalEMR_System/',
+    '/DentalEMR_System/html/login/login.html',
+    '/DentalEMR_System/html/offline.html',
+    '/DentalEMR_System/html/offline-dashboard.html',
+    '/DentalEMR_System/css/style.css',
+    '/DentalEMR_System/js/offline-storage.js',
+    '/DentalEMR_System/js/local-auth.js',
 
     // Main application pages
-    '/dentalemr_system/html/index.php',
-    '/dentalemr_system/html/addpatient.php',
-    '/dentalemr_system/html/archived.php',
-    '/dentalemr_system/html/viewrecord.php',
+    '/DentalEMR_System/html/index.php',
+    '/DentalEMR_System/html/addpatient.php',
+    '/DentalEMR_System/html/archived.php',
+    '/DentalEMR_System/html/viewrecord.php',
 
     // Staff pages
-    '/dentalemr_system/html/a_staff/addpatient.php',
+    '/DentalEMR_System/html/a_staff/addpatient.php',
 
     // Treatment pages
-    '/dentalemr_system/html/treatmentrecords/treatmentrecords.php',
-    '/dentalemr_system/html/treatmentrecords/view_info.php',
-    '/dentalemr_system/html/treatmentrecords/view_oral.php',
-    '/dentalemr_system/html/treatmentrecords/view_oralA.php',
-    '/dentalemr_system/html/treatmentrecords/view_oralB.php',
-    '/dentalemr_system/html/treatmentrecords/view_record.php',
-    '/dentalemr_system/html/addpatienttreatment/patienttreatment.php',
+    '/DentalEMR_System/html/treatmentrecords/treatmentrecords.php',
+    '/DentalEMR_System/html/treatmentrecords/view_info.php',
+    '/DentalEMR_System/html/treatmentrecords/view_oral.php',
+    '/DentalEMR_System/html/treatmentrecords/view_oralA.php',
+    '/DentalEMR_System/html/treatmentrecords/view_oralB.php',
+    '/DentalEMR_System/html/treatmentrecords/view_record.php',
+    '/DentalEMR_System/html/addpatienttreatment/patienttreatment.php',
 
     // Report pages
-    '/dentalemr_system/html/reports/targetclientlist.php',
-    '/dentalemr_system/html/reports/mho_ohp.php',
-    '/dentalemr_system/html/reports/oralhygienefindings.php',
+    '/DentalEMR_System/html/reports/targetclientlist.php',
+    '/DentalEMR_System/html/reports/mho_ohp.php',
+    '/DentalEMR_System/html/reports/oralhygienefindings.php',
 
     // Manage users pages
-    '/dentalemr_system/html/manageusers/manageuser.php',
-    '/dentalemr_system/html/manageusers/activitylogs.php',
-    '/dentalemr_system/html/manageusers/historylogs.php'
+    '/DentalEMR_System/html/manageusers/manageuser.php',
+    '/DentalEMR_System/html/manageusers/activitylogs.php',
+    '/DentalEMR_System/html/manageusers/historylogs.php'
 ];
 
 // Install event
@@ -93,7 +93,7 @@ self.addEventListener('fetch', (event) => {
 
                     // For login page, serve cached version
                     if (url.pathname.includes('login.html')) {
-                        return caches.match('/dentalemr_system/html/login/login.html');
+                        return caches.match('/DentalEMR_System/html/login/login.html');
                     }
 
                     return caches.match(OFFLINE_URL);
@@ -164,14 +164,14 @@ self.addEventListener('fetch', (event) => {
 // Helper functions
 function isAppPage(pathname) {
     const appPages = [
-        '/dentalemr_system/html/index.php',
-        '/dentalemr_system/html/addpatient.php',
-        '/dentalemr_system/html/archived.php',
-        '/dentalemr_system/html/viewrecord.php',
-        '/dentalemr_system/html/a_staff/',
-        '/dentalemr_system/html/treatmentrecords/',
-        '/dentalemr_system/html/reports/',
-        '/dentalemr_system/html/manageusers/'
+        '/DentalEMR_System/html/index.php',
+        '/DentalEMR_System/html/addpatient.php',
+        '/DentalEMR_System/html/archived.php',
+        '/DentalEMR_System/html/viewrecord.php',
+        '/DentalEMR_System/html/a_staff/',
+        '/DentalEMR_System/html/treatmentrecords/',
+        '/DentalEMR_System/html/reports/',
+        '/DentalEMR_System/html/manageusers/'
     ];
     return appPages.some(page => pathname.includes(page));
 }

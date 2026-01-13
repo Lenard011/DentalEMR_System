@@ -47,7 +47,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -70,10 +70,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/a_staff/treatmentrecords/staff_view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +102,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/a_staff/treatmentrecords/staff_view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +131,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +152,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,7 +166,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/a_staff/treatmentrecords/staff_view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -195,6 +195,7 @@ if (!$isOfflineMode) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Treatment Records</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -612,7 +613,7 @@ if (!$isOfflineMode) {
                         </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="#" class="flex items-center justify-between mr-4 ">
+                    <a href="./staff_dashboard.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
                             class="mr-3 h-8 rounded-full" alt="MHO Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
@@ -641,11 +642,9 @@ if (!$isOfflineMode) {
                         <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown"
                             class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                                <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
-                                <?php else: ?>
-                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
-                                <?php endif; ?>
+                                <img class="w-full h-full object-cover"
+                                    src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png"
+                                    alt="user photo" />
                             </div>
                             <div class="text-left">
                                 <div class="text-sm font-medium truncate max-w-[150px] dark:text-white">
@@ -688,7 +687,7 @@ if (!$isOfflineMode) {
                                         <span class="text-orange-600 text-xs">(Offline)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-xs text-gray-600 dark:text-white mt-1 ">
+                                <div class="text-xs text-gray-600 dark:text-white mt-1">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['email'])
@@ -699,22 +698,10 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/a_staff/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
-                                </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
-                                    Manage Users
-                                </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
-                                    System Logs
                                 </a>
                             </div>
 
@@ -734,7 +721,7 @@ if (!$isOfflineMode) {
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -745,9 +732,7 @@ if (!$isOfflineMode) {
                 </div>
             </div>
         </nav>
-
         <!-- Sidebar -->
-
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -770,10 +755,10 @@ if (!$isOfflineMode) {
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="./staff_dashboard.php?uid=<?php echo $userId; ?>"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
-                                class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
                                 <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
@@ -784,10 +769,10 @@ if (!$isOfflineMode) {
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
+                        <a href="/DentalEMR_System/html/a_staff/staff_addpatient.php?uid=<?php echo $userId; ?>"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
@@ -799,41 +784,20 @@ if (!$isOfflineMode) {
                         </a>
                     </li>
                     <li>
-                        <button type="button"
-                            class="flex items-center cursor-pointer p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                            aria-controls="dropdown-pages" data-collapse-toggle="dropdown-pages">
+                        <a href="#"
+                            class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100   group">
                             <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                class="w-6 h-6 text-blue-600 transition duration-75 dark:text-blue-400  dark:group-hover:text-blue"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                                    clip-rule="evenodd"></path>
+                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                             </svg>
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap">Patient Treatment</span>
-                            <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <ul id="dropdown-pages" class="visible py-2 space-y-2">
-                            <li>
-                                <a href="#"
-                                    class="pl-11 flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100   group">Treatment
-                                    Records</a>
-                            </li>
-                            <li>
-                                <a href="../addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
-                                    Patient Treatment</a>
-                            </li>
-                        </ul>
+                            <span class="ml-3">Treatment Records</span>
+                        </a>
                     </li>
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.php?uid=<?php echo $userId; ?>"
+                        <a href="./staff_targetclientlist.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -848,7 +812,7 @@ if (!$isOfflineMode) {
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.php?uid=<?php echo $userId; ?>"
+                        <a href="./staff_mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -861,34 +825,14 @@ if (!$isOfflineMode) {
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="./staff_oralhygienefindings.php?uid=<?php echo $userId; ?>" class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                 viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
                                     d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5" />
                             </svg>
-
                             <span class="ml-3">Oral Hygiene Findings</span>
-                        </a>
-                    </li>
-                </ul>
-                <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
-                    <li>
-                        <a href="../archived.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-                                    clip-rule="evenodd" />
-                                <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-                            </svg>
-
-
-                            <span class="ml-3">Archived</span>
                         </a>
                     </li>
                 </ul>
@@ -969,7 +913,7 @@ if (!$isOfflineMode) {
                     <p id="patientName" class="italic text-lg font-medium text-gray-900 dark:text-white text-center sm:text-left">
                         Loading ...
                     </p>
-                    <button type="button" id="addTooth" onclick="openOHCModalA();"
+                    <!-- <button type="button" id="addTooth" onclick="openOHCModalA();"
                         class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-1 lg:py-1 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
                         <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -977,7 +921,7 @@ if (!$isOfflineMode) {
                                 d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
                         </svg>
                         Add
-                    </button>
+                    </button> -->
                 </div>
                 <div
                     class="mx-auto flex flex-col justify-center items-center max-w-full px-1.5 py-2 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950 overflow-x-auto">
@@ -1056,7 +1000,6 @@ if (!$isOfflineMode) {
                 </div>
             </section>
         </main>
-
         <!-- Modal -->
         <div id="ohcModalA" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50 p-2 md:p-4 overflow-auto">
@@ -1074,6 +1017,25 @@ if (!$isOfflineMode) {
                     <section class="bg-white dark:bg-gray-900 p-2 rounded-lg mb-3 mt-3">
                         <div>
                             <input type="hidden" id="visit_id" value="0">
+
+                            <!-- Date Input Section -->
+                            <div class="mb-4">
+                                <label for="visit_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                                    Visit Date <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input type="date" id="visit_date" name="visit_date" required
+                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                        value="<?php echo date('Y-m-d'); ?>">
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Select the date when this oral health assessment was conducted</p>
+                            </div>
+
                             <div class="mb-3">
                                 <p class="text-14 font-semibold text-gray-900 dark:text-white">A. Oral Health Condition</p>
                             </div>
@@ -1085,9 +1047,9 @@ if (!$isOfflineMode) {
                                         <!-- Undo Button -->
                                         <button type="button" id="undoBtn"
                                             class="text-white justify-center cursor-pointer inline-flex items-center gap-1 
-                                    bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                    font-medium rounded-lg text-sm p-2 
-                                    dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                            font-medium rounded-lg text-sm p-2 
+                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -1098,9 +1060,9 @@ if (!$isOfflineMode) {
                                         <!-- Redo Button -->
                                         <button type="button" id="redoBtn"
                                             class="text-white justify-center cursor-pointer inline-flex items-center gap-1 
-                                    bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                    font-medium rounded-lg text-sm p-2 
-                                    dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                            font-medium rounded-lg text-sm p-2 
+                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -1111,9 +1073,9 @@ if (!$isOfflineMode) {
                                         <!-- Clear All Button -->
                                         <button type="button" id="clearAll"
                                             class="text-white justify-center cursor-pointer inline-flex items-center gap-1
-                                    bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
-                                    font-medium rounded-lg text-sm p-2 
-                                    dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 
+                            font-medium rounded-lg text-sm p-2 
+                            dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -1247,7 +1209,7 @@ if (!$isOfflineMode) {
                                                             dx
                                                         </td>
                                                     </tr>
-                                                    <tr class="border-1  dark:text-white" >
+                                                    <tr class="border-1  dark:text-white">
                                                         <td class="border-1">
                                                             Un
                                                         </td>
@@ -1390,6 +1352,10 @@ if (!$isOfflineMode) {
                         </div>
                     </section>
                     <div class="flex justify-end gap-2">
+                        <button type="button" onclick="closeOHCModalA()"
+                            class="text-gray-700 justify-center cursor-pointer inline-flex items-center bg-white border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600">
+                            Cancel
+                        </button>
                         <button type="button" onclick="saveOHCA()"
                             class="text-white justify-center cursor-pointer inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                             Save
@@ -1481,7 +1447,7 @@ if (!$isOfflineMode) {
 
             async function loadModalTeethData() {
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/get_teeth.php');
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/get_teeth.php');
                     if (response.ok) {
                         const data = await response.json();
                         if (data && !data.error) {
@@ -1642,7 +1608,7 @@ if (!$isOfflineMode) {
 
                     // Fetch with cache busting
                     const timestamp = new Date().getTime();
-                    const apiUrl = `/dentalemr_system/php/treatmentrecords/fetch_oral_condition.php?patient_id=${patientId}&_=${timestamp}`;
+                    const apiUrl = `/DentalEMR_System/php/treatmentrecords/fetch_oral_condition.php?patient_id=${patientId}&_=${timestamp}`;
 
                     const res = await fetch(apiUrl);
 
@@ -2166,6 +2132,12 @@ if (!$isOfflineMode) {
                 // Reset state
                 modalHasUnsavedChanges = false;
 
+                // Set default date to today
+                const dateInput = modal.querySelector('#visit_date');
+                if (dateInput) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                }
+
                 // Show modal
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
@@ -2214,9 +2186,15 @@ if (!$isOfflineMode) {
 
                 const patient_id = modal.querySelector("#patient_id")?.value || '';
                 const visit_id = modal.querySelector("#visit_id")?.value || 0;
+                const visit_date = modal.querySelector("#visit_date")?.value || '';
 
                 if (!patient_id) {
                     alert('Patient ID required');
+                    return;
+                }
+
+                if (!visit_date) {
+                    alert('Please select a visit date');
                     return;
                 }
 
@@ -2288,6 +2266,7 @@ if (!$isOfflineMode) {
                     action: "save",
                     patient_id: patient_id,
                     visit_id: visit_id,
+                    visit_date: visit_date,
                     oral_data: items
                 };
 
@@ -2298,9 +2277,9 @@ if (!$isOfflineMode) {
                     saveBtn.textContent = 'Saving...';
                     saveBtn.disabled = true;
 
-                    console.log("Saving data:", payload);
+                    console.log("Saving data with date:", payload);
 
-                    const res = await fetch("/dentalemr_system/php/treatmentrecords/oral_condition_api.php", {
+                    const res = await fetch("/DentalEMR_System/php/treatmentrecords/oral_condition_api.php", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json"
@@ -2324,6 +2303,9 @@ if (!$isOfflineMode) {
                             el.style.backgroundColor = '#fff';
                             el.style.color = '#000';
                         });
+
+                        // Reset form
+                        modal.querySelector("#visit_date").value = new Date().toISOString().split('T')[0];
 
                         // Reset all selections
                         const blueSelect = modal.querySelector('#blueSelect');
@@ -2491,7 +2473,7 @@ if (!$isOfflineMode) {
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="../../js/tailwind.config.js"></script>
+    <script src="/DentalEMR_System/js/tailwind.config.js"></script>
     <!-- Theme Toggle Script -->
     <script>
         // ========== THEME MANAGEMENT ==========
@@ -2577,7 +2559,7 @@ if (!$isOfflineMode) {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
+                window.location.href = "/DentalEMR_System/php/login/logout.php?uid=<?php echo $userId; ?>";
             }, inactivityTime);
         }
 
@@ -2590,7 +2572,7 @@ if (!$isOfflineMode) {
 
     <script>
         function backmain() {
-            location.href = ("treatmentrecords.php?uid=<?php echo $userId; ?>");
+            location.href = ("staff_treatmentrecords.php?uid=<?php echo $userId; ?>");
         }
     </script>
 
@@ -2600,7 +2582,7 @@ if (!$isOfflineMode) {
 
         const patientInfoLink = document.getElementById("patientInfoLink");
         if (patientInfoLink && patientId) {
-            patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+            patientInfoLink.href = `staff_view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
             patientInfoLink.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -2610,7 +2592,7 @@ if (!$isOfflineMode) {
 
         const servicesRenderedLink = document.getElementById("servicesRenderedLink");
         if (servicesRenderedLink && patientId) {
-            servicesRenderedLink.href = `view_record.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+            servicesRenderedLink.href = `staff_view_record.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         } else {
             // Optional fallback: disable link if no patient selected
             servicesRenderedLink.addEventListener("click", (e) => {
@@ -2630,7 +2612,7 @@ if (!$isOfflineMode) {
             }
 
             // Navigate to view_oralA.php while keeping patient ID in the URL
-            window.location.href = `view_oralB.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+            window.location.href = `staff_view_oralB.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         }
 
         function back() {
@@ -2644,7 +2626,7 @@ if (!$isOfflineMode) {
             }
 
             // Navigate to view_oralA.php while keeping patient ID in the URL
-            window.location.href = `view_oral.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
+            window.location.href = `staff_view_oral.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
         }
         const printdLink = document.getElementById("printdLink");
         if (printdLink && patientId) {
@@ -2661,7 +2643,7 @@ if (!$isOfflineMode) {
 
 
     <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
 
     <!-- Offline/Online Sync Handler -->
     <script>
@@ -2771,7 +2753,7 @@ if (!$isOfflineMode) {
                 const patientIds = archiveActions.map(action => action.data.patient_id || action.data.id);
 
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/treatment.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -2798,7 +2780,7 @@ if (!$isOfflineMode) {
                         }
 
                         // Refresh the patient list if on treatment records page
-                        if (window.location.pathname.includes('treatmentrecords.php')) {
+                        if (window.location.pathname.includes('staff_treatmentrecords.php')) {
                             setTimeout(() => {
                                 if (typeof window.loadPatients === 'function') {
                                     window.loadPatients();
@@ -2837,7 +2819,7 @@ if (!$isOfflineMode) {
 
                 // Online: proceed with normal archive
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/treatment.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',

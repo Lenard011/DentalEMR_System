@@ -3,9 +3,9 @@ header('Content-Type: application/json');
 
 // Database configuration
 $host = 'localhost';
-$dbname = 'dentalemr_system';
-$username = 'root';
-$password = '';
+$dbname = 'u401132124_mho_dentalemr';
+$username = 'u401132124_dentalclinic';
+$password = 'Mho_DentalClinic1st';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);

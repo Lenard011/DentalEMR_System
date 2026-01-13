@@ -4,7 +4,7 @@
 // ===========================
 session_start();
 
-// Enable error logging to help debug
+// Enable error logging for debugging
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
 ini_set('log_errors', 1);
@@ -33,9 +33,9 @@ header('Content-Type: application/json; charset=UTF-8');
 
 // Database connection
 $host = "localhost";
-$dbUser = "root";
-$dbPass = "";
-$dbName = "dentalemr_system";
+$dbUser = "u401132124_dentalclinic";
+$dbPass = "Mho_DentalClinic1st";
+$dbName = "u401132124_mho_dentalemr";
 
 // Use mysqli with proper error handling
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
@@ -52,6 +52,105 @@ try {
         "code" => $e->getCode()
     ]);
     exit;
+}
+
+// ===========================
+// HISTORY LOGGING FUNCTION
+// ===========================
+function addHistoryLog($conn, $tableName, $recordId, $action, $changedByType, $changedById, $oldValues = null, $newValues = null, $description = null)
+{
+    try {
+        $sql = "INSERT INTO history_logs 
+                (table_name, record_id, action, changed_by_type, changed_by_id, old_values, new_values, description, ip_address) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            error_log("Failed to prepare history log statement: " . $conn->error);
+            return false;
+        }
+
+        $oldJSON = $oldValues ? json_encode($oldValues, JSON_UNESCAPED_UNICODE) : null;
+        $newJSON = $newValues ? json_encode($newValues, JSON_UNESCAPED_UNICODE) : null;
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+        $stmt->bind_param(
+            "sississss",
+            $tableName,
+            $recordId,
+            $action,
+            $changedByType,
+            $changedById,
+            $oldJSON,
+            $newJSON,
+            $description,
+            $ip
+        );
+
+        $success = $stmt->execute();
+        if (!$success) {
+            error_log("Failed to execute history log: " . $stmt->error);
+        }
+
+        $stmt->close();
+        return $success;
+    } catch (Exception $e) {
+        error_log("Error in addHistoryLog: " . $e->getMessage());
+        return false;
+    }
+}
+
+// ===========================
+// GET USER INFORMATION FUNCTION
+// ===========================
+function getLoggedUserInfo($conn, $input = [])
+{
+    $userId = 0;
+    $userType = 'System';
+    $userName = 'System';
+
+    // Priority: Check POST data first (from form submissions)
+    if (!empty($input['uid'])) {
+        $userId = intval($input['uid']);
+        $userType = $input['user_type'] ?? 'System';
+        $userName = $input['user_name'] ?? 'System User';
+    }
+    // Check GET parameters
+    elseif (isset($_GET['uid']) && !empty($_GET['uid'])) {
+        $userId = intval($_GET['uid']);
+        $userType = 'System';
+        $userName = 'System User';
+    }
+
+    return [
+        'id' => $userId,
+        'type' => $userType,
+        'name' => $userName
+    ];
+}
+
+// ===========================
+// GET PATIENT NAME FUNCTION
+// ===========================
+function getPatientName($conn, $patientId)
+{
+    try {
+        $stmt = $conn->prepare("SELECT firstname, surname FROM patients WHERE patient_id = ?");
+        $stmt->bind_param("i", $patientId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $patient = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($patient) {
+            $name = trim(($patient['firstname'] ?? '') . ' ' . ($patient['surname'] ?? ''));
+            return $name ?: "Patient ID: $patientId";
+        }
+        return "Unknown Patient (ID: $patientId)";
+    } catch (Exception $e) {
+        error_log("Error getting patient name: " . $e->getMessage());
+        return "Patient ID: $patientId";
+    }
 }
 
 // ===========================
@@ -76,7 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         // GET PATIENT INFO
         if ($action === 'get_patient') {
-            // Include months_old and pregnant fields
             $sql = "SELECT patient_id, firstname, surname, middlename, 
                    DATE_FORMAT(date_of_birth, '%Y-%m-%d') as date_of_birth,
                    sex, age, months_old, pregnant, place_of_birth, address, occupation, guardian 
@@ -313,7 +411,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 // ===========================
-// POST REQUESTS
+// POST REQUESTS WITH HISTORY LOGS
 // ===========================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = [];
@@ -389,7 +487,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // SAVE PATIENT INFO - UPDATED FOR MONTHS_OLD AND PREGNANT
+        // Get logged user info for logging
+        $loggedUser = getLoggedUserInfo($conn, $input);
+        $patientName = getPatientName($conn, $patientId);
+
+        // SAVE PATIENT INFO - FIXED: Without updated_at column
         if ($action === 'save_patient') {
             $requiredFields = ['firstname', 'surname', 'date_of_birth', 'sex', 'age'];
             $missingFields = [];
@@ -415,10 +517,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pregnant = ($input['pregnant'] === 'yes') ? 'yes' : 'no';
             }
 
-            // Prepare the update statement - now includes months_old and pregnant
+            // Get current patient data for logging old values
+            $currentStmt = $conn->prepare("SELECT firstname, surname, middlename, date_of_birth, sex, age, months_old, pregnant, place_of_birth, address, occupation, guardian FROM patients WHERE patient_id=?");
+            $currentStmt->bind_param("i", $patientId);
+            $currentStmt->execute();
+            $currentResult = $currentStmt->get_result();
+            $oldData = $currentResult->fetch_assoc();
+            $currentStmt->close();
+
+            // Prepare the update statement - WITHOUT updated_at column
             $stmt = $conn->prepare("UPDATE patients SET 
                 firstname=?, surname=?, middlename=?, date_of_birth=?, sex=?, age=?, 
-                months_old=?, pregnant=?, place_of_birth=?, address=?, occupation=?, guardian=?, updated_at=NOW()
+                months_old=?, pregnant=?, place_of_birth=?, address=?, occupation=?, guardian=?
                 WHERE patient_id=?");
 
             if (!$stmt) {
@@ -432,8 +542,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $occupation = !empty($input['occupation']) ? $input['occupation'] : null;
             $guardian = !empty($input['guardian']) ? $input['guardian'] : null;
 
+            // Note: Changed type string from "sssssiisssssi" to "sssssiissssi" (12 params instead of 13)
             $stmt->bind_param(
-                "sssssiisssssi",
+                "sssssiissssi",
                 $input['firstname'],
                 $input['surname'],
                 $middlename,
@@ -449,15 +560,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $patientId
             );
 
-            if ($stmt->execute()) {
-                echo json_encode([
-                    "success" => true,
-                    "message" => "Patient updated successfully"
-                ]);
-            } else {
+            if (!$stmt->execute()) {
                 throw new Exception("Failed to update patient: " . $stmt->error);
             }
+
             $stmt->close();
+
+            // Prepare new data for logging
+            $newData = [
+                'firstname' => $input['firstname'],
+                'surname' => $input['surname'],
+                'middlename' => $middlename,
+                'date_of_birth' => $input['date_of_birth'],
+                'sex' => $input['sex'],
+                'age' => $input['age'],
+                'months_old' => $months_old,
+                'pregnant' => $pregnant,
+                'place_of_birth' => $place_of_birth,
+                'address' => $address,
+                'occupation' => $occupation,
+                'guardian' => $guardian
+            ];
+
+            // Log the update
+            addHistoryLog(
+                $conn,
+                "patients",
+                $patientId,
+                "UPDATE",
+                $loggedUser['type'],
+                $loggedUser['id'],
+                $oldData,
+                $newData,
+                "Updated patient info: $patientName (ID: $patientId) by {$loggedUser['type']} {$loggedUser['name']}"
+            );
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Patient updated successfully",
+                "logged_by" => [
+                    "type" => $loggedUser['type'],
+                    "name" => $loggedUser['name'],
+                    "id" => $loggedUser['id']
+                ]
+            ]);
             exit;
         }
 
@@ -475,20 +621,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare("INSERT INTO vital_signs (patient_id, blood_pressure, pulse_rate, temperature, weight, recorded_at) VALUES (?, ?, ?, ?, ?, NOW())");
             $stmt->bind_param("issss", $patientId, $input['blood_pressure'], $input['pulse_rate'], $input['temperature'], $input['weight']);
 
-            if ($stmt->execute()) {
-                echo json_encode([
-                    "success" => true,
-                    "message" => "Vital signs saved successfully"
-                ]);
-            } else {
+            if (!$stmt->execute()) {
                 throw new Exception("Failed to save vital signs: " . $stmt->error);
             }
+
+            $vitalId = $stmt->insert_id;
             $stmt->close();
+
+            // Log vital signs addition
+            addHistoryLog(
+                $conn,
+                "vital_signs",
+                $vitalId,
+                "CREATE",
+                $loggedUser['type'],
+                $loggedUser['id'],
+                null,
+                [
+                    'blood_pressure' => $input['blood_pressure'],
+                    'pulse_rate' => $input['pulse_rate'],
+                    'temperature' => $input['temperature'],
+                    'weight' => $input['weight']
+                ],
+                "Added vital signs for patient: $patientName (ID: $patientId) by {$loggedUser['type']} {$loggedUser['name']}"
+            );
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Vital signs saved successfully",
+                "logged_by" => [
+                    "type" => $loggedUser['type'],
+                    "name" => $loggedUser['name'],
+                    "id" => $loggedUser['id']
+                ]
+            ]);
             exit;
         }
 
-        // SAVE MEMBERSHIP
+        // SAVE MEMBERSHIP - FIXED: Without updated_at column
         if ($action === 'save_membership') {
+            // Get current membership data for logging old values
+            $currentStmt = $conn->prepare("SELECT * FROM patient_other_info WHERE patient_id=?");
+            $currentStmt->bind_param("i", $patientId);
+            $currentStmt->execute();
+            $currentResult = $currentStmt->get_result();
+            $oldData = $currentResult->fetch_assoc();
+            $currentStmt->close();
+
+            // Check if record exists
             $check = $conn->prepare("SELECT patient_id FROM patient_other_info WHERE patient_id=?");
             $check->bind_param("i", $patientId);
             $check->execute();
@@ -504,6 +684,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $ins->close();
             }
 
+            // FIXED: Remove updated_at column from query
             $sql = "UPDATE patient_other_info SET 
                 nhts_pr = ?, 
                 four_ps = ?, 
@@ -549,24 +730,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $patientId
             );
 
-            if ($stmt->execute()) {
-                echo json_encode([
-                    "success" => true,
-                    "message" => "Membership updated successfully"
-                ]);
-            } else {
+            if (!$stmt->execute()) {
                 throw new Exception("Failed to save membership: " . $stmt->error);
             }
+
             $stmt->close();
+
+            // Prepare new data for logging
+            $newData = [
+                'nhts_pr' => $nhts_pr,
+                'four_ps' => $four_ps,
+                'indigenous_people' => $indigenous_people,
+                'pwd' => $pwd,
+                'philhealth_flag' => $philhealth_flag,
+                'philhealth_number' => $philhealth_number,
+                'sss_flag' => $sss_flag,
+                'sss_number' => $sss_number,
+                'gsis_flag' => $gsis_flag,
+                'gsis_number' => $gsis_number
+            ];
+
+            // Log membership update
+            addHistoryLog(
+                $conn,
+                "patient_other_info",
+                $patientId,
+                $exists ? "UPDATE" : "CREATE",
+                $loggedUser['type'],
+                $loggedUser['id'],
+                $oldData,
+                $newData,
+                "Updated membership info for patient: $patientName (ID: $patientId) by {$loggedUser['type']} {$loggedUser['name']}"
+            );
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Membership updated successfully",
+                "logged_by" => [
+                    "type" => $loggedUser['type'],
+                    "name" => $loggedUser['name'],
+                    "id" => $loggedUser['id']
+                ]
+            ]);
             exit;
         }
 
-        // SAVE MEDICAL HISTORY
+        // SAVE MEDICAL HISTORY - FIXED: Use dynamic column detection without updated_at
         if ($action === 'save_medical') {
-            // First, let's log what we're receiving
-            error_log("=== SAVE_MEDICAL REQUEST ===");
-            error_log("Patient ID: " . $patientId);
-            error_log("Received data: " . print_r($input, true));
+            // Get current medical history for logging old values
+            $currentStmt = $conn->prepare("SELECT * FROM medical_history WHERE patient_id = ?");
+            $currentStmt->bind_param("i", $patientId);
+            $currentStmt->execute();
+            $currentResult = $currentStmt->get_result();
+            $oldData = $currentResult->fetch_assoc();
+            $currentStmt->close();
 
             // Clean and validate input values
             $allergies_flag = isset($input['allergies_flag']) ? intval($input['allergies_flag']) : 0;
@@ -590,18 +807,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $other_conditions_flag = isset($input['other_conditions_flag']) ? intval($input['other_conditions_flag']) : 0;
             $other_conditions = isset($input['other_conditions']) ? trim($input['other_conditions']) : null;
 
-            // Check if medical_history table exists and has correct structure
-            $checkTable = $conn->query("SHOW TABLES LIKE 'medical_history'");
-            if ($checkTable->num_rows === 0) {
-                throw new Exception("medical_history table does not exist");
-            }
-
             // Check if record exists
             $checkStmt = $conn->prepare("SELECT patient_id FROM medical_history WHERE patient_id = ?");
-            if (!$checkStmt) {
-                throw new Exception("Check prepare failed: " . $conn->error);
-            }
-
             $checkStmt->bind_param("i", $patientId);
             $checkStmt->execute();
             $checkStmt->store_result();
@@ -611,24 +818,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$exists) {
                 // Insert a new record
                 $insertStmt = $conn->prepare("INSERT INTO medical_history (patient_id) VALUES (?)");
-                if (!$insertStmt) {
-                    throw new Exception("Insert prepare failed: " . $conn->error);
-                }
                 $insertStmt->bind_param("i", $patientId);
                 if (!$insertStmt->execute()) {
-                    $insertStmt->close();
-                    throw new Exception("Failed to create medical history record: " . $conn->error);
+                    throw new Exception("Failed to create medical history record: " . $insertStmt->error);
                 }
                 $insertStmt->close();
             }
 
             // Build the UPDATE query dynamically based on what columns exist
-            $columns = [];
-            $values = [];
-            $types = "";
-            $bindParams = [];
-
-            // List all possible columns with their values and types
             $fieldMap = [
                 'allergies_flag' => ['value' => $allergies_flag, 'type' => 'i'],
                 'allergies_details' => ['value' => $allergies_details, 'type' => 's'],
@@ -662,6 +859,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Build the SQL query only with existing columns
             $sql = "UPDATE medical_history SET ";
             $setParts = [];
+            $values = [];
+            $types = "";
 
             foreach ($fieldMap as $column => $data) {
                 if (in_array($column, $existingColumns)) {
@@ -682,12 +881,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $values[] = $patientId;
             $types .= 'i';
 
-            error_log("Medical History SQL: " . $sql);
-            error_log("Types: " . $types);
-
             $stmt = $conn->prepare($sql);
             if (!$stmt) {
-                error_log("Prepare failed: " . $conn->error);
                 throw new Exception("Failed to prepare medical history update: " . $conn->error);
             }
 
@@ -699,57 +894,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             call_user_func_array([$stmt, 'bind_param'], $bindParams);
 
-            if ($stmt->execute()) {
-                if ($stmt->affected_rows > 0) {
-                    echo json_encode([
-                        "success" => true,
-                        "message" => "Medical history saved successfully",
-                        "affected_rows" => $stmt->affected_rows
-                    ]);
-                } else {
-                    echo json_encode([
-                        "success" => true,
-                        "message" => "Medical history updated (no changes detected)",
-                        "affected_rows" => 0
-                    ]);
-                }
-            } else {
-                error_log("Execute failed: " . $stmt->error);
+            if (!$stmt->execute()) {
                 throw new Exception("Failed to save medical history: " . $stmt->error);
             }
+
             $stmt->close();
+
+            // Prepare new data for logging
+            $newData = [];
+            foreach ($fieldMap as $column => $data) {
+                if (in_array($column, $existingColumns)) {
+                    $newData[$column] = $data['value'];
+                }
+            }
+
+            // Log medical history update
+            addHistoryLog(
+                $conn,
+                "medical_history",
+                $patientId, // Using patient_id as record_id since there's no id column
+                $exists ? "UPDATE" : "CREATE",
+                $loggedUser['type'],
+                $loggedUser['id'],
+                $oldData,
+                $newData,
+                "Updated medical history for patient: $patientName (ID: $patientId) by {$loggedUser['type']} {$loggedUser['name']}"
+            );
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Medical history saved successfully",
+                "logged_by" => [
+                    "type" => $loggedUser['type'],
+                    "name" => $loggedUser['name'],
+                    "id" => $loggedUser['id']
+                ]
+            ]);
             exit;
         }
 
-        // SAVE DIETARY HABITS - FIXED VERSION
+        // SAVE DIETARY HABITS - FIXED: Without updated_at column
         if ($action === 'save_dietary') {
+            // Get current dietary habits for logging old values
+            $currentStmt = $conn->prepare("SELECT * FROM dietary_habits WHERE patient_id = ?");
+            $currentStmt->bind_param("i", $patientId);
+            $currentStmt->execute();
+            $currentResult = $currentStmt->get_result();
+            $oldData = $currentResult->fetch_assoc();
+            $currentStmt->close();
+
             // Check if record exists, create if not
             $check = $conn->prepare("SELECT patient_id FROM dietary_habits WHERE patient_id = ?");
-            if (!$check) {
-                throw new Exception("Check prepare failed: " . $conn->error);
-            }
             $check->bind_param("i", $patientId);
             $check->execute();
             $check->store_result();
+            $exists = $check->num_rows > 0;
+            $check->close();
 
-            if ($check->num_rows === 0) {
-                $check->close();
+            if (!$exists) {
                 // Create a new record
                 $insert = $conn->prepare("INSERT INTO dietary_habits (patient_id) VALUES (?)");
-                if (!$insert) {
-                    throw new Exception("Insert prepare failed: " . $conn->error);
-                }
                 $insert->bind_param("i", $patientId);
                 if (!$insert->execute()) {
-                    $insert->close();
-                    throw new Exception("Failed to create dietary habits record: " . $conn->error);
+                    throw new Exception("Failed to create dietary habits record: " . $insert->error);
                 }
                 $insert->close();
-            } else {
-                $check->close();
             }
 
-            // Prepare the UPDATE statement
+            // Prepare the UPDATE statement - FIXED: Remove updated_at
             $sql = "UPDATE dietary_habits SET 
                 sugar_flag = ?, 
                 sugar_details = ?,
@@ -789,15 +1001,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $patientId
             );
 
-            if ($stmt->execute()) {
-                echo json_encode([
-                    "success" => true,
-                    "message" => "Dietary habits saved successfully"
-                ]);
-            } else {
+            if (!$stmt->execute()) {
                 throw new Exception("Failed to save dietary habits: " . $stmt->error);
             }
+
             $stmt->close();
+
+            // Prepare new data for logging
+            $newData = [
+                'sugar_flag' => $sugar_flag,
+                'sugar_details' => $sugar_details,
+                'alcohol_flag' => $alcohol_flag,
+                'alcohol_details' => $alcohol_details,
+                'tobacco_flag' => $tobacco_flag,
+                'tobacco_details' => $tobacco_details,
+                'betel_nut_flag' => $betel_nut_flag,
+                'betel_nut_details' => $betel_nut_details
+            ];
+
+            // Log dietary habits update
+            addHistoryLog(
+                $conn,
+                "dietary_habits",
+                $patientId, // Using patient_id as record_id
+                $exists ? "UPDATE" : "CREATE",
+                $loggedUser['type'],
+                $loggedUser['id'],
+                $oldData,
+                $newData,
+                "Updated dietary habits for patient: $patientName (ID: $patientId) by {$loggedUser['type']} {$loggedUser['name']}"
+            );
+
+            echo json_encode([
+                "success" => true,
+                "message" => "Dietary habits saved successfully",
+                "logged_by" => [
+                    "type" => $loggedUser['type'],
+                    "name" => $loggedUser['name'],
+                    "id" => $loggedUser['id']
+                ]
+            ]);
             exit;
         }
 

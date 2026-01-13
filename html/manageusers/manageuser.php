@@ -50,7 +50,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -73,10 +73,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -105,10 +105,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -134,7 +134,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -155,9 +155,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -169,7 +169,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -218,6 +218,7 @@ $displayEmail = htmlspecialchars(
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>MHO Dental Clinic - Manage Users</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -240,7 +241,7 @@ $displayEmail = htmlspecialchars(
                         </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="/dentalemr_system/html/index.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
+                    <a href="/DentalEMR_System/html/index.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
                             class="mr-3 h-8 rounded-full" alt="MHO Dental Clinic Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
@@ -290,7 +291,7 @@ $displayEmail = htmlspecialchars(
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700   transition-colors duration-150">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 w-4 text-center"></i>
                                     <span>My Profile</span>
@@ -300,7 +301,7 @@ $displayEmail = htmlspecialchars(
                                     <i class="fas fa-users-cog mr-3 text-blue-500 w-4 text-center"></i>
                                     <span>Manage Users</span>
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700  transition-colors duration-150">
                                     <i class="fas fa-history mr-3 text-gray-500 w-4 text-center"></i>
                                     <span>System Logs</span>
@@ -320,7 +321,7 @@ $displayEmail = htmlspecialchars(
                                 </button>
                             </div>
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150">
                                     <i class="fas fa-sign-out-alt mr-3 w-4 text-center"></i>
                                     <span>Sign Out</span>
@@ -355,7 +356,7 @@ $displayEmail = htmlspecialchars(
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="/dentalemr_system/html/index.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/index.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -369,7 +370,7 @@ $displayEmail = htmlspecialchars(
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="/dentalemr_system/html/addpatient.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/addpatient.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -404,12 +405,12 @@ $displayEmail = htmlspecialchars(
                         </button>
                         <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="/dentalemr_system/html/treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="/dentalemr_system/html/addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -418,7 +419,7 @@ $displayEmail = htmlspecialchars(
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -433,7 +434,7 @@ $displayEmail = htmlspecialchars(
                         </a>
                     </li>
                     <li>
-                        <a href="/dentalemr_system/html/reports/mho_ohp.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/reports/mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -446,7 +447,7 @@ $displayEmail = htmlspecialchars(
                         </a>
                     </li>
                     <li>
-                        <a href="/dentalemr_system/html/reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -461,7 +462,7 @@ $displayEmail = htmlspecialchars(
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="/dentalemr_system/html/archived.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/archived.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -547,7 +548,7 @@ $displayEmail = htmlspecialchars(
                                 <span class="sr-only">Close modal</span>
                             </button>
                         </div>
-                        <form id="addStaffForm" action="/dentalemr_system/php/manageusers/add_staff.php?uid=<?php echo $userId; ?>" method="POST">
+                        <form id="addStaffForm" action="/DentalEMR_System/php/manageusers/add_staff.php?uid=<?php echo $userId; ?>" method="POST">
                             <input type="hidden" name="userType" value="Staff">
                             <div class="grid gap-4 mb-4 sm:grid-cols-2">
                                 <div class="sm:col-span-2">
@@ -674,7 +675,7 @@ $displayEmail = htmlspecialchars(
                 if (confirm("You've been inactive for 30 minutes. Would you like to stay logged in?")) {
                     resetTimer();
                 } else {
-                    window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
+                    window.location.href = "/DentalEMR_System/php/login/logout.php?uid=<?php echo $userId; ?>";
                 }
             }, inactivityTime);
         }
@@ -830,7 +831,7 @@ $displayEmail = htmlspecialchars(
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(() => {
-                window.location.href = '/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>&reason=inactivity';
+                window.location.href = '/DentalEMR_System/php/login/logout.php?uid=<?php echo $userId; ?>&reason=inactivity';
             }, inactivityLimit);
         }
 
@@ -964,7 +965,7 @@ $displayEmail = htmlspecialchars(
         function loadStaffList() {
             // ADD CACHE BUSTER TO URL
             const cacheBuster = '?_=' + new Date().getTime();
-            fetch("/dentalemr_system/php/manageusers/get_staff.php" + cacheBuster)
+            fetch("/DentalEMR_System/php/manageusers/get_staff.php" + cacheBuster)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok: ' + response.status);
@@ -1107,7 +1108,7 @@ $displayEmail = htmlspecialchars(
 
             // Add cache buster to delete URL too
             const cacheBuster = '&_=' + new Date().getTime();
-            window.location.href = `/dentalemr_system/php/manageusers/delete_staff.php?id=${staffId}&uid=${currentUserId}${cacheBuster}`;
+            window.location.href = `/DentalEMR_System/php/manageusers/delete_staff.php?id=${staffId}&uid=${currentUserId}${cacheBuster}`;
         }
 
         // Add resend credentials function
@@ -1122,7 +1123,7 @@ $displayEmail = htmlspecialchars(
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             button.disabled = true;
 
-            fetch(`/dentalemr_system/php/manageusers/resend_credentials.php?id=${staffId}&uid=${currentUserId}`)
+            fetch(`/DentalEMR_System/php/manageusers/resend_credentials.php?id=${staffId}&uid=${currentUserId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {

@@ -2,9 +2,9 @@
 // Simple database connector
 function connectDB() {
     $host = "localhost";
-    $user = "root";
-    $pass = "";
-    $db   = "dentalemr_system";
+    $user = "u401132124_dentalclinic";
+    $pass = "Mho_DentalClinic1st";
+    $db   = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $user, $pass, $db);
     if ($conn->connect_error) {

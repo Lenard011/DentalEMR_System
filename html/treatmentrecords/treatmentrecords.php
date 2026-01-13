@@ -49,7 +49,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -72,10 +72,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/treatmentrecords.php?offline=true';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/treatmentrecords.php?offline=true';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -104,10 +104,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/treatmentrecords.php?offline=true';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/treatmentrecords.php?offline=true';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -133,7 +133,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -154,9 +154,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -168,7 +168,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/treatmentrecords.php?offline=true';
+                    window.location.href = '/DentalEMR_System/html/treatmentrecords/treatmentrecords.php?offline=true';
                 }
             </script>";
             exit;
@@ -196,6 +196,7 @@ if (!$isOfflineMode) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Treatment Records</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -384,18 +385,18 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -419,7 +420,7 @@ if (!$isOfflineMode) {
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -794,7 +795,7 @@ if (!$isOfflineMode) {
         });
     </script>
     <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
     </script>
 
     <script>
@@ -996,22 +997,24 @@ if (!$isOfflineMode) {
                     const tr = document.createElement('tr');
                     tr.className = 'border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700';
                     tr.innerHTML = `
-                <td class="px-4 py-3 text-center">${rowNum}</td>
-                <td class="px-4 py-3 text-center">${escapeHtml(patient.fullname || "—")}</td>
-                <td class="px-4 py-3 text-center">${escapeHtml(patient.sex || "—")}</td>
-                <td class="px-4 py-3 text-center">${escapeHtml(patient.age || "—")}</td>
-                <td class="px-4 py-3 text-center">${escapeHtml(patient.address || "—")}</td>
-                <td class="py-3 text-center">
-                    <button onclick="window.location.href='view_info.php?uid=${uid}&id=${patient.patient_id}<?php echo $isOfflineMode ? '&offline=true' : ''; ?>'"
-                        class="text-white bg-blue-600 cursor-pointer hover:bg-blue-700 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 transition-colors duration-200">
-                        View
-                    </button>
-                    <button onclick="archivePatient(${patient.patient_id})"
-                        class="text-white bg-red-600 cursor-pointer hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-1.5 transition-colors duration-200">
-                        Archive
-                    </button>
-                </td>
-            `;
+                        <td class="px-4 py-3 text-center">${rowNum}</td>
+                        <td class="px-4 py-3 text-center">${escapeHtml(patient.fullname || "—")}</td>
+                        <td class="px-4 py-3 text-center">${escapeHtml(patient.sex || "—")}</td>
+                        <td class="px-4 py-3 text-center">${escapeHtml(patient.age || "—")}</td>
+                        <td class="px-4 py-3 text-center">${escapeHtml(patient.address || "—")}</td>
+                        <td class="py-3 text-center">
+                            <button onclick="window.location.href='view_info.php?uid=${uid}&id=${patient.patient_id}<?php echo $isOfflineMode ? '&offline=true' : ''; ?>'"
+                                class="text-white bg-blue-600 cursor-pointer hover:bg-blue-700 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 transition-colors duration-200">
+                                View
+                            </button>
+                            <?php if ($loggedUser['type'] === 'Dentist' || $loggedUser['type'] === 'Admin'): ?>
+                            <button onclick="archivePatient(${patient.patient_id})"
+                                class="text-white bg-red-600 cursor-pointer hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-1.5 transition-colors duration-200">
+                                Archive
+                            </button>
+                            <?php endif; ?>
+                        </td>
+                    `;
                     fragment.appendChild(tr);
                 });
 
@@ -1115,17 +1118,21 @@ if (!$isOfflineMode) {
             };
 
             const isOnline = navigator.onLine && !<?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+            const currentUid = <?php echo $isOfflineMode ? "'offline'" : "$userId"; ?>;
 
             try {
                 if (isOnline) {
                     // Fast online archive with timeout
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased timeout
 
                     const formData = new FormData();
                     formData.append("archive_id", patientId);
+                    formData.append("uid", currentUid); // Add the user ID
 
-                    const response = await fetch("/dentalemr_system/php/treatmentrecords/treatment.php", {
+                    console.log("Sending archive request for patient:", patientId, "uid:", currentUid);
+
+                    const response = await fetch("/DentalEMR_System/php/treatmentrecords/treatment.php", {
                         method: "POST",
                         body: formData,
                         signal: controller.signal
@@ -1133,9 +1140,25 @@ if (!$isOfflineMode) {
 
                     clearTimeout(timeoutId);
 
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    console.log("Archive response status:", response.status);
+
+                    if (!response.ok) {
+                        // Try to get error details from response
+                        let errorText = `HTTP ${response.status}`;
+                        try {
+                            const errorData = await response.json();
+                            errorText = errorData.message || errorText;
+                            if (errorData.error_details) {
+                                errorText += ` (${errorData.error_details})`;
+                            }
+                        } catch (e) {
+                            // Ignore JSON parse errors
+                        }
+                        throw new Error(errorText);
+                    }
 
                     const result = await response.json();
+                    console.log("Archive result:", result);
 
                     if (result.success) {
                         showNotification("Archived successfully", 'success');
@@ -1144,7 +1167,12 @@ if (!$isOfflineMode) {
                         localStorage.setItem('dentalemr_cached_patients', JSON.stringify(allPatients));
                         renderPatients();
                     } else {
-                        throw new Error(result.message || 'Archive failed');
+                        // Show more detailed error message
+                        let errorMsg = result.message || 'Archive failed';
+                        if (result.error_details) {
+                            errorMsg += ' - ' + result.error_details;
+                        }
+                        throw new Error(errorMsg);
                     }
                 } else {
                     // Save for offline sync

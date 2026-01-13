@@ -8,74 +8,30 @@ $isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
 // Enhanced session validation with offline support
 if ($isOfflineMode) {
     // Offline mode session validation
-    $isValidSession = false;
-
-    // Check if we have offline session data
     if (isset($_SESSION['offline_user'])) {
         $loggedUser = $_SESSION['offline_user'];
         $userId = 'offline';
-        $isValidSession = true;
     } else {
-        // Try to create offline session from localStorage data (via JavaScript)
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const checkOfflineSession = () => {
-                    try {
-                        // Check sessionStorage first
-                        const sessionData = sessionStorage.getItem('dentalemr_current_user');
-                        if (sessionData) {
-                            const user = JSON.parse(sessionData);
-                            if (user && user.isOffline) {
-                                console.log('Valid offline session detected:', user.email);
-                                return true;
-                            }
-                        }
-                        
-                        // Fallback: check localStorage for offline users
-                        const offlineUsers = localStorage.getItem('dentalemr_local_users');
-                        if (offlineUsers) {
-                            const users = JSON.parse(offlineUsers);
-                            if (users && users.length > 0) {
-                                console.log('Offline users found in localStorage');
-                                return true;
-                            }
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error checking offline session:', error);
-                        return false;
-                    }
-                };
-                
-                if (!checkOfflineSession()) {
-                    alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
-                }
-            });
-        </script>";
-
         // Create offline session for this request
         $_SESSION['offline_user'] = [
             'id' => 'offline_user',
             'name' => 'Offline User',
             'email' => 'offline@dentalclinic.com',
-            'type' => 'Dentist',
+            'type' => 'Staff',
             'isOffline' => true
         ];
         $loggedUser = $_SESSION['offline_user'];
         $userId = 'offline';
-        $isValidSession = true;
     }
 } else {
     // Online mode - normal session validation
     if (!isset($_GET['uid'])) {
         echo "<script>
             if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
+                window.location.href = '/DentalEMR_System/html/a_staff/addpatient.php?offline=true';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -103,11 +59,10 @@ if ($isOfflineMode) {
     if (!$isValidSession) {
         echo "<script>
             if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
+                window.location.href = '/DentalEMR_System/html/a_staff/addpatient.php?offline=true';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -116,7 +71,7 @@ if ($isOfflineMode) {
 
 // PER-USER INACTIVITY TIMEOUT (Online mode only)
 if (!$isOfflineMode) {
-    $inactiveLimit = 1800; // 10 minutes
+    $inactiveLimit = 1800; // 30 minutes
 
     if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
         $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
@@ -133,7 +88,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -149,14 +104,19 @@ if ($isOfflineMode) {
 } else {
     $loggedUser = $_SESSION['active_sessions'][$userId];
 }
-
+// Debug the session
+error_log("=== STAFF ADD PATIENT PAGE DEBUG ===");
+error_log("GET uid: " . ($_GET['uid'] ?? 'not set'));
+error_log("Logged User Array: " . print_r($loggedUser, true));
+error_log("User Type from session: " . ($loggedUser['type'] ?? 'not set'));
+error_log("Is Offline Mode: " . ($isOfflineMode ? 'yes' : 'no'));
 // Database connection only for online mode
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -167,28 +127,38 @@ if (!$isOfflineMode) {
                     alert('Database connection failed. Please try again.');
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
-                    // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/addpatient.php?offline=true';
+                    window.location.href = '/DentalEMR_System/html/a_staff/addpatient.php?offline=true';
                 }
             </script>";
             exit;
         }
     }
 
-    // Fetch dentist name if user is a dentist (only in online mode)
-    if ($loggedUser['type'] === 'Dentist') {
-        $stmt = $conn->prepare("SELECT name, profile_picture FROM dentist WHERE id = ?");
-        $stmt->bind_param("i", $loggedUser['id']);
-        $stmt->execute();
-        $stmt->bind_result($dentistName, $dentistProfilePicture);
-        if ($stmt->fetch()) {
-            $loggedUser['name'] = $dentistName;
-            $loggedUser['profile_picture'] = $dentistProfilePicture; // Add this line
+    // Include logging functions AFTER database connection is established
+    require_once '../../php/logging.php'; // Changed from ../../php/logging.php
+
+    // Fetch user details based on type
+    if ($loggedUser['type'] === 'Staff') {
+        $stmt = $conn->prepare("SELECT name, profile_picture FROM staff WHERE id = ?");
+        if ($stmt) {
+            $stmt->bind_param("i", $loggedUser['id']);
+            $stmt->execute();
+            $stmt->bind_result($staffName, $staffProfilePicture);
+            if ($stmt->fetch()) {
+                $loggedUser['name'] = $staffName;
+                $loggedUser['profile_picture'] = $staffProfilePicture;
+            }
+            $stmt->close();
         }
-        $stmt->close();
+
+        // Log page access for staff
+        if (function_exists('logActivity')) {
+            logActivity($conn, $loggedUser['id'], 'Staff', 'VIEW_PAGE', 'Accessed Add Patient page');
+        }
     }
 }
 ?>
+
 <!doctype html>
 <html>
 
@@ -196,9 +166,128 @@ if (!$isOfflineMode) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add patient</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
+
+    <!-- Theme Color Meta Tags -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
+
+    <!-- CSS and Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Initialize Theme Immediately -->
+    <script>
+        // Set theme before page renders to prevent flash
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
     <style>
+        /* ... existing styles remain ... */
+
+        /* Add dark mode fixes for your modal and table */
+        .dark .modal-content {
+            background-color: #1f2937;
+            color: #f9fafb;
+        }
+
+        .dark .modal-header {
+            border-bottom-color: #374151;
+        }
+
+        .dark .modal-title {
+            color: #93c5fd;
+        }
+
+        .dark .close-btn {
+            color: #9ca3af;
+        }
+
+        .dark .close-btn:hover {
+            color: #ef4444;
+        }
+
+        .dark .search-box input {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+
+        .dark .search-box input::placeholder {
+            color: #9ca3af;
+        }
+
+        .dark .patient-table th {
+            background-color: #374151;
+            color: #d1d5db;
+            border-bottom-color: #4b5563;
+        }
+
+        .dark .patient-table td {
+            border-bottom-color: #4b5563;
+        }
+
+        .dark .patient-table tr:hover {
+            background-color: #374151;
+        }
+
+        .dark .modal-tabs {
+            border-bottom-color: #374151;
+        }
+
+        .dark .modal-tab {
+            color: #9ca3af;
+        }
+
+        .dark .modal-tab:hover {
+            background-color: #374151;
+        }
+
+        .dark .modal-tab.active {
+            color: #60a5fa;
+            border-bottom-color: #60a5fa;
+        }
+
+        /* Dark mode for empty state */
+        .dark .empty-state {
+            color: #9ca3af;
+        }
+
+        .dark .empty-state i {
+            color: #4b5563;
+        }
+
+        /* Dark mode table fixes */
+        .dark table {
+            background-color: #1f2937;
+        }
+
+        .dark th {
+            background-color: #374151;
+            color: #e5e7eb;
+            border-bottom-color: #4b5563;
+        }
+
+        .dark td {
+            border-bottom-color: #374151;
+            color: #d1d5db;
+        }
+
+        .dark tr:nth-child(even) {
+            background-color: #111827;
+        }
+
+        .dark tr:hover {
+            background-color: #374151;
+        }
+
         .offline-indicator {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
@@ -277,7 +366,7 @@ if (!$isOfflineMode) {
     </style>
 </head>
 
-<body>
+<body class="bg-gray-50 dark:bg-gray-900">
     <!-- Add connection status indicator -->
     <div id="connectionStatus" class="hidden fixed top-4 right-4 z-60"></div>
 
@@ -314,9 +403,9 @@ if (!$isOfflineMode) {
                         </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="#" class="flex items-center justify-between mr-4">
+                    <a href="./staff_dashboard.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
-                            class="mr-3 h-8" alt="MHO Logo" />
+                            class="mr-3 h-8 rounded-full" alt="MHO Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
                     </a>
 
@@ -343,15 +432,12 @@ if (!$isOfflineMode) {
                         <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown"
                             class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                                <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
-                                <?php else: ?>
-                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
-                                <?php endif; ?>
+                                <img class="w-full h-full object-cover"
+                                    src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png"
+                                    alt="user photo" />
                             </div>
-                            <!-- FIXED: Changed to always show user info but with responsive text sizing -->
                             <div class="text-left">
-                                <div class="text-sm font-medium truncate max-w-[150px]">
+                                <div class="text-sm font-medium truncate max-w-[150px] dark:text-white">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['name'])
@@ -363,7 +449,7 @@ if (!$isOfflineMode) {
                                         <span class="text-orange-600 text-xs">(Offline)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                                <div class="text-xs text-gray-500 dark:text-white truncate max-w-[150px]">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['email'])
@@ -379,7 +465,7 @@ if (!$isOfflineMode) {
                         <!-- Dropdown Menu -->
                         <div id="dropdown" class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
                             <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                                <div class="text-sm font-semibold">
+                                <div class="text-sm font-semibold dark:text-white">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['name'])
@@ -391,7 +477,7 @@ if (!$isOfflineMode) {
                                         <span class="text-orange-600 text-xs">(Offline)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                <div class="text-xs text-gray-600 dark:text-white mt-1">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['email'])
@@ -402,26 +488,30 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="#"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
+                                <a href="/DentalEMR_System/html/a_staff/profile.php?uid=<?php echo $userId; ?>"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-users-cog mr-3 text-gray-500"></i>
-                                    Manage Users
-                                </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-history mr-3 text-gray-500"></i>
-                                    System Logs
-                                </a>
                             </div>
+
+                            <!-- Theme Toggle -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <button type="button" id="theme-toggle"
+                                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg id="theme-toggle-dark-icon" class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                    </svg>
+                                    <svg id="theme-toggle-light-icon" class="w-4 h-4 mr-2 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span id="theme-toggle-text">Toggle theme</span>
+                                </button>
+                            </div>
+
+                            <!-- Sign Out -->
+                            <div class="border-t border-gray-200 dark:border-gray-700 py-2">
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -432,7 +522,6 @@ if (!$isOfflineMode) {
                 </div>
             </div>
         </nav>
-
         <!-- Sidebar -->
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
@@ -456,11 +545,10 @@ if (!$isOfflineMode) {
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="index.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId;
-                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="./staff_dashboard.php?uid=<?php echo $userId; ?>"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
-                                class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
                                 <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
@@ -472,7 +560,7 @@ if (!$isOfflineMode) {
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
                         <a href="#"
-                            class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">
+                            class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100   group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-blue-600 transition duration-75 dark:text-blue-400  dark:group-hover:text-blue"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -482,47 +570,24 @@ if (!$isOfflineMode) {
                                     d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" />
                             </svg>
 
-                            <span class="ml-3"><?php echo $isOfflineMode ? 'Add Patient (Offline)' : 'Add patient'; ?></span>
+                            <span class="ml-3">Add Patient</span>
                         </a>
                     </li>
                     <li>
-                        <button type="button"
-                            class="flex items-center cursor-pointer p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                            aria-controls="dropdown-pages" data-collapse-toggle="dropdown-pages">
+                        <a href="./treatmentrecords/staff_treatmentrecords.php?uid=<?php echo $userId; ?>"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                                    clip-rule="evenodd"></path>
+                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                             </svg>
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap">Patient Treatment</span>
-                            <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <ul id="dropdown-pages" class="hidden py-2 space-y-2">
-                            <li>
-                                <a href="./treatmentrecords/treatmentrecords.php?uid=<?php echo $userId;
-                                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
-                                    Records</a>
-                            </li>
-                            <li>
-                                <a href="./addpatienttreatment/patienttreatment.php?uid=<?php echo $userId;
-                                                                                        echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
-                                    Patient Treatment</a>
-                            </li>
-                        </ul>
+                            <span class="ml-3">Treatment Records</span>
+                        </a>
                     </li>
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="./reports/targetclientlist.php?uid=<?php echo $userId; ?>"
+                        <a href="./staff_targetclientlist.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -537,7 +602,7 @@ if (!$isOfflineMode) {
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/mho_ohp.php?uid=<?php echo $userId; ?>"
+                        <a href="./staff_mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -550,32 +615,14 @@ if (!$isOfflineMode) {
                         </a>
                     </li>
                     <li>
-                        <a href="./reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="./staff_oralhygienefindings.php?uid=<?php echo $userId; ?>" class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                 viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
                                     d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5" />
                             </svg>
-
                             <span class="ml-3">Oral Hygiene Findings</span>
-                        </a>
-                    </li>
-                </ul>
-                <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
-                    <li>
-                        <a href="./archived.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-                                    clip-rule="evenodd" />
-                                <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-                            </svg>
-                            <span class="ml-3">Archived</span>
                         </a>
                     </li>
                 </ul>
@@ -1300,8 +1347,84 @@ if (!$isOfflineMode) {
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="../node_modules/flowbite/dist/flowbite.min.js"></script>
-    <script src="../js/tailwind.config.js"></script>
+    <script src="/DentalEMR_SYSTEM/node_modules/flowbite/dist/flowbite.min.js"></script>
+    <script src="/DentalEMR_SYSTEM/js/tailwind.config.js"></script>
+    <!-- Theme Toggle Script -->
+    <script>
+        // ========== THEME MANAGEMENT ==========
+        function initTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleText = document.getElementById('theme-toggle-text');
+
+            // Get current theme
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            // Set initial theme
+            if (currentTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
+            }
+
+            // Add click event to theme toggle
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    toggleTheme();
+                });
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleText = document.getElementById('theme-toggle-text');
+
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Dark Mode';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                if (themeToggleLightIcon) themeToggleLightIcon.classList.add('hidden');
+                if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('hidden');
+                if (themeToggleText) themeToggleText.textContent = 'Light Mode';
+            }
+        }
+
+        // Initialize theme when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+
+            // Also update dropdown visibility based on theme
+            const dropdown = document.getElementById('dropdown');
+            const userMenuButton = document.getElementById('user-menu-button');
+
+            if (userMenuButton && dropdown) {
+                userMenuButton.addEventListener('click', function() {
+                    dropdown.classList.toggle('hidden');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
     <!-- Client-side 10-minute inactivity logout -->
     <script>
         // Client-side 10-minute inactivity logout (only for online mode)
@@ -1315,7 +1438,7 @@ if (!$isOfflineMode) {
             if (!<?php echo $isOfflineMode ? 'true' : 'false'; ?>) {
                 logoutTimer = setTimeout(() => {
                     alert("You've been logged out due to 30 minutes of inactivity.");
-                    window.location.href = "/dentalemr_system/php/login/logout.php";
+                    window.location.href = "/DentalEMR_System/php/login/logout.php";
                 }, inactivityTime);
             }
         }
@@ -1415,7 +1538,7 @@ if (!$isOfflineMode) {
 
     <!-- Table  -->
     <script>
-        const API_PATH = "../php/register_patient/getPatients.php";
+        const API_PATH = "/DentalEMR_SYSTEM/php/register_patient/getPatients.php";
         let currentSearch = "";
         let currentPage = 1;
         let limit = 10;
@@ -1475,7 +1598,9 @@ if (!$isOfflineMode) {
                 allPatients.push({
                     ...patient,
                     source: 'online',
-                    isOffline: false
+                    isOffline: false,
+                    // Ensure patient_id is preserved
+                    patient_id: patient.patient_id || patient.id
                 });
             });
 
@@ -1484,7 +1609,7 @@ if (!$isOfflineMode) {
             unsyncedOffline.forEach(patient => {
                 const patientData = patient.data;
                 allPatients.push({
-                    patient_id: patient.id,
+                    patient_id: patient.id, // Use the offline ID
                     surname: patientData.surname || '',
                     firstname: patientData.firstname || '',
                     middlename: patientData.middlename || '',
@@ -1540,14 +1665,18 @@ if (!$isOfflineMode) {
                     const unsyncedPatients = offlinePatients.filter(p => !p.synced);
                     const filteredPatients = mergePatients([], unsyncedPatients, currentSearch, selectedAddresses);
 
-                    displayPatients(filteredPatients, filteredPatients.length);
+                    // Apply client-side pagination for offline mode
+                    const startIndex = (page - 1) * limit;
+                    const endIndex = startIndex + limit;
+                    const paginatedPatients = filteredPatients.slice(startIndex, endIndex);
+
+                    displayPatients(paginatedPatients, filteredPatients.length);
                     isTableLoading = false;
                     return;
                 }
 
-                // Online mode - fetch from server and merge with offline
-                const cacheBuster = forceRefresh ? `&_t=${Date.now()}` : '';
-                const url = `${API_PATH}?page=${page}&limit=${limit}&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}${cacheBuster}`;
+                // Online mode - fetch ALL data from server (no pagination on server)
+                const url = `${API_PATH}?limit=1000&search=${encodeURIComponent(currentSearch)}&addresses=${encodeURIComponent(selectedAddresses.join(","))}&_t=${Date.now()}`;
 
                 const res = await fetch(url, {
                     cache: "no-store",
@@ -1570,7 +1699,7 @@ if (!$isOfflineMode) {
                     selectedAddresses
                 );
 
-                // Apply pagination
+                // Apply client-side pagination
                 const startIndex = (page - 1) * limit;
                 const endIndex = startIndex + limit;
                 const paginatedPatients = allPatients.slice(startIndex, endIndex);
@@ -1591,7 +1720,12 @@ if (!$isOfflineMode) {
                     const unsyncedPatients = offlinePatients.filter(p => !p.synced);
                     const filteredPatients = mergePatients([], unsyncedPatients, currentSearch, selectedAddresses);
 
-                    displayPatients(filteredPatients, filteredPatients.length);
+                    // Apply client-side pagination
+                    const startIndex = (page - 1) * limit;
+                    const endIndex = startIndex + limit;
+                    const paginatedPatients = filteredPatients.slice(startIndex, endIndex);
+
+                    displayPatients(paginatedPatients, filteredPatients.length);
 
                     // Show offline indicator
                     showOfflineIndicator();
@@ -1615,16 +1749,16 @@ if (!$isOfflineMode) {
 
             if (!patients || patients.length === 0) {
                 showMessageInTable(`
-                <div class="text-center py-8">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No patients found</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        ${navigator.onLine ? 'Get started by adding a new patient.' : 'You are offline. Patient data will be saved locally.'}
-                    </p>
-                </div>
-            `);
+            <div class="text-center py-8">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No patients found</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    ${navigator.onLine ? 'Get started by adding a new patient.' : 'You are offline. Patient data will be saved locally.'}
+                </p>
+            </div>
+        `);
                 if (paginationNav) paginationNav.innerHTML = "";
                 return;
             }
@@ -1636,41 +1770,44 @@ if (!$isOfflineMode) {
                 const offlineBadge = isOfflinePatient ?
                     `<span class="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">Offline</span>` : '';
 
+                // FIXED: Use the actual patient_id from the database
+                const actualId = p.patient_id || p.id || displayId;
+
                 tbody.insertAdjacentHTML("beforeend", `
-                <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${displayId}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        <div class="flex items-center justify-center">
-                            <span>${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</span>
-                            ${offlineBadge}
-                        </div>
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(p.sex)}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(String(p.age))}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        ${escapeHtml(p.address)}
-                    </td>
-                    <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
-                        <button onclick="${isOfflinePatient ? 
-                            `viewOfflinePatient('${p.patient_id}')` : 
-                            `window.location.href='viewrecord.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId; ?>&id=${encodeURIComponent(p.patient_id)}${isOfflineMode ? '&offline=true' : ''}'`}"
-                            class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
-                            View
-                        </button>
-                        ${isOfflinePatient ? `
-                        <button onclick="deleteOfflinePatient('${p.patient_id}')"
-                            class="ml-2 text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-2">
-                            Delete
-                        </button>` : ''}
-                    </td>
-                </tr>
-            `);
+            <tr class="border-b text-gray-500 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${actualId}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    <div class="flex items-center justify-center">
+                        <span>${escapeHtml(p.surname)}, ${escapeHtml(p.firstname)} ${p.middlename ? escapeHtml(p.middlename) : ""}</span>
+                        ${offlineBadge}
+                    </div>
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${escapeHtml(p.sex)}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    ${escapeHtml(String(p.age))}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    ${escapeHtml(p.address)}
+                </td>
+                <td class="px-4 py-3 text-center font-medium text-gray-700 whitespace-nowrap dark:text-white">
+                    <button onclick="${isOfflinePatient ? 
+                        `viewOfflinePatient('${p.patient_id}')` : 
+                        `window.location.href='staff_viewrecord.php?uid=<?php echo $isOfflineMode ? 'offline' : $userId; ?>&id=${encodeURIComponent(p.patient_id)}${isOfflineMode ? '&offline=true' : ''}'`}"
+                        class="text-white cursor-pointer bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-xs px-3 py-2">
+                        View
+                    </button>
+                    ${isOfflinePatient ? `
+                    <button onclick="deleteOfflinePatient('${p.patient_id}')"
+                        class="ml-2 text-white cursor-pointer bg-red-600 hover:bg-red-700 font-medium rounded-lg text-xs px-3 py-2">
+                        Delete
+                    </button>` : ''}
+                </td>
+            </tr>
+        `);
             });
 
             renderPagination(totalCount, limit, currentPage);
@@ -2176,8 +2313,10 @@ if (!$isOfflineMode) {
 
                             formData.append("patient", "1");
                             formData.append("offline_sync", "true");
-
-                            const response = await fetch("/dentalemr_system/php/register_patient/addpatient.php", {
+                            if (patient.data.user_type) {
+                                formData.append("user_type", patient.data.user_type);
+                            }
+                            const response = await fetch("/DentalEMR_System/php/register_patient/addpatient.php", {
                                 method: "POST",
                                 body: formData
                             });
@@ -2425,7 +2564,8 @@ if (!$isOfflineMode) {
                         console.log('Offline mode detected, saving locally...');
                         const formData = new FormData(newForm);
                         const patientData = Object.fromEntries(formData.entries());
-
+                        patientData.user_type = '<?php echo $loggedUser["type"] ?? "Dentist"; ?>';
+                        console.log('Saving offline with user type:', patientData.user_type);
                         try {
                             await offlineStorage.savePatient(patientData);
 
@@ -2458,7 +2598,7 @@ if (!$isOfflineMode) {
                         formData.append("patient", "1");
 
                         try {
-                            const response = await fetch("/dentalemr_system/php/register_patient/addpatient.php", {
+                            const response = await fetch("/DentalEMR_System/php/register_patient/addpatient.php", {
                                 method: "POST",
                                 body: formData
                             });

@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 // REQUIRE userId parameter for each page
 // Example usage: dashboard.php?uid=5
 if (!isset($_GET['uid'])) {
-    header('Location: /dentalemr_system/html/login/login.html?error=invalid_session');
+    header('Location: /DentalEMR_System/html/login/login.html?error=invalid_session');
     exit;
 }
 
@@ -16,12 +16,12 @@ if (
     !isset($_SESSION['active_sessions']) ||
     !isset($_SESSION['active_sessions'][$userId])
 ) {
-    header('Location: /dentalemr_system/html/login/login.html?error=session_expired');
+    header('Location: /DentalEMR_System/html/login/login.html?error=session_expired');
     exit;
 }
 
 // PER-USER INACTIVITY TIMEOUT
-$inactiveLimit = 600; // 10 minutes
+$inactiveLimit = 1800; // 10 minutes
 
 if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
     $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
@@ -36,7 +36,7 @@ if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
             session_destroy();
         }
 
-        header('Location: /dentalemr_system/html/login/login.html?error=inactivity');
+        header('Location: /DentalEMR_System/html/login/login.html?error=inactivity');
         exit;
     }
 }
@@ -49,9 +49,12 @@ $loggedUser = $_SESSION['active_sessions'][$userId];
 
 // Store user session info safely
 $host = "localhost";
-$dbUser = "root";
-$dbPass = "";
-$dbName = "dentalemr_system";
+$dbUser = "u401132124_dentalclinic";
+$dbPass = "Mho_DentalClinic1st";
+$dbName = "u401132124_mho_dentalemr";
+
+// At the top of PHP section, after connection
+
 
 $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
 if ($conn->connect_error) {
@@ -80,10 +83,53 @@ if ($loggedUser['type'] === 'Dentist') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="theme-color" content="#3b82f6">
     <title>MHO Dental Clinic - System Logs</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Improved Table Styles */
+        .log-table-container {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+
+        .log-table th {
+            position: sticky;
+            top: 0;
+            background-color: #f9fafb;
+            z-index: 10;
+        }
+
+        .dark .log-table th {
+            background-color: #374151;
+        }
+
+        /* Action badge styles */
+        .action-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Loading animation */
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         /* Custom Variables */
         :root {
             --primary-color: #3b82f6;
@@ -241,6 +287,152 @@ if ($loggedUser['type'] === 'Dentist') {
             margin: 0 2px;
         }
     </style>
+    <!-- Add this CSS to your <style> section -->
+    <style>
+        /* Loading Animation Improvements */
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            border-top-color: #3b82f6;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Fade in animation for table */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Skeleton loading */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        .dark .skeleton {
+            background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+            background-size: 200% 100%;
+        }
+
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Loading dots */
+        .loading-dots {
+            display: inline-block;
+        }
+
+        .loading-dots:after {
+            content: '.';
+            animation: dots 1.5s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60% {
+                content: '...';
+            }
+
+            80%,
+            100% {
+                content: '';
+            }
+        }
+
+        /* Modal improvements */
+        .modal-backdrop {
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-content {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* JSON display styling */
+        pre {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            line-height: 1.4;
+        }
+
+        /* Scrollable content */
+        .max-h-40 {
+            max-height: 10rem;
+        }
+
+        /* Improved hover states for action buttons */
+        button:hover {
+            transform: translateY(-1px);
+            transition: transform 0.2s ease;
+        }
+
+        /* Button spacing */
+        .flex.space-x-2>*+* {
+            margin-left: 0.5rem;
+        }
+
+        /* Button hover effects */
+        .view-log-btn:hover,
+        .delete-log-btn:hover {
+            transform: translateY(-1px);
+            transition: transform 0.2s ease;
+        }
+
+        /* Disabled button style */
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -268,7 +460,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="/dentalemr_system/html/index.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
+                    <a href="/DentalEMR_System/html/index.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
                             class="mr-3 h-8 rounded-full" alt="MHO Dental Clinic Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
@@ -280,21 +472,21 @@ if ($loggedUser['type'] === 'Dentist') {
                     <div class="relative">
                         <button type="button" id="userDropdownButton"
                             class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white transition-colors duration-200">
-                            <!-- Profile Picture or Icon - UPDATED to use $displayPicture -->
-                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                                <?php if (!empty($displayPicture)): ?>
-                                    <img src="<?php echo htmlspecialchars($displayPicture); ?>"
-                                        alt="Profile"
-                                        class="w-full h-full object-cover"
-                                        id="navProfilePicture">
+                            <!-- Profile Picture -->
+                            <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                <?php if (!empty($loggedUser['profile_picture'])): ?>
+                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>"
+                                        alt="Profile" class="w-full h-full object-cover">
                                 <?php else: ?>
-                                    <i class="fas fa-user text-gray-600 dark:text-gray-400" id="navProfileIcon"></i>
+                                    <div class="w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
+                                    </div>
                                 <?php endif; ?>
                             </div>
 
-                            <!-- User Info (hidden on mobile) -->
+                            <!-- User Info -->
                             <div class="hidden md:block text-left">
-                                <div class="text-sm font-medium truncate max-w-[150px]" id="navUserName">
+                                <div class="text-sm font-medium truncate max-w-[150px]">
                                     <?php echo htmlspecialchars($loggedUser['name'] ?? 'User'); ?>
                                 </div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
@@ -302,8 +494,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </div>
                             </div>
 
-                            <!-- Dropdown Arrow -->
-                            <i class="fas fa-chevron-down text-xs text-gray-500 transition-transform duration-200" id="dropdownArrow"></i>
+                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
                         </button>
 
                         <!-- Dropdown Menu -->
@@ -318,12 +509,12 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700   transition-colors duration-150">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 w-4 text-center"></i>
                                     <span>My Profile</span>
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 w-4 text-center"></i>
                                     <span>Manage Users</span>
@@ -348,7 +539,7 @@ if ($loggedUser['type'] === 'Dentist') {
                                 </button>
                             </div>
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150">
                                     <i class="fas fa-sign-out-alt mr-3 w-4 text-center"></i>
                                     <span>Sign Out</span>
@@ -383,7 +574,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="/dentalemr_system/html/index.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/index.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -397,7 +588,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="/dentalemr_system/html/addpatient.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/addpatient.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -432,12 +623,12 @@ if ($loggedUser['type'] === 'Dentist') {
                         </button>
                         <ul id="dropdown-pages" class="hidden py-2 space-y-2">
                             <li>
-                                <a href="/dentalemr_system/html/treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
                                     Records</a>
                             </li>
                             <li>
-                                <a href="/dentalemr_system/html/addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
                                     Patient Treatment</a>
                             </li>
@@ -446,7 +637,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -461,7 +652,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         </a>
                     </li>
                     <li>
-                        <a href="/dentalemr_system/html/reports/mho_ohp.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/reports/mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -474,7 +665,7 @@ if ($loggedUser['type'] === 'Dentist') {
                         </a>
                     </li>
                     <li>
-                        <a href="/dentalemr_system/html/reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -489,7 +680,7 @@ if ($loggedUser['type'] === 'Dentist') {
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="/dentalemr_system/html/archived.php?uid=<?php echo $userId; ?>"
+                        <a href="/DentalEMR_System/html/archived.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -508,302 +699,184 @@ if ($loggedUser['type'] === 'Dentist') {
 
         <!-- Main Content -->
         <main class="p-4 md:ml-64 h-auto pt-20">
-            <!-- Page Header -->
-            <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-6">
-                <div class="max-w-7xl mx-auto">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">System Logs</h1>
-                            <p class="text-gray-600 dark:text-gray-400 mt-1">Monitor and manage all system activities</p>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <div class="text-sm text-gray-500 dark:text-gray-400">
-                                <i class="fas fa-clock mr-1"></i>
-                                Last updated: <span id="lastUpdated">Just now</span>
-                            </div>
-                            <button onclick="refreshLogs()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white" title="Refresh">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">System Logs</h1>
+                <p class="text-gray-600 dark:text-gray-400">Monitor all system activities and user actions</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="logsTab" role="tablist">
+                    <li class="me-2" role="presentation">
+                        <button class="inline-block p-4 border-b-2 rounded-t-lg border-blue-600 text-blue-600 dark:text-blue-500 dark:border-blue-500"
+                            id="activity-tab" data-tab="activity" type="button" role="tab">Activity Logs</button>
+                    </li>
+                    <li class="me-2" role="presentation">
+                        <button class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+                            id="history-tab" data-tab="history" type="button" role="tab">History Logs</button>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Date From</label>
+                        <input type="date" id="dateFrom" class="w-full p-2 border rounded-lg dark:bg-gray-700">
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Date To</label>
+                        <input type="date" id="dateTo" class="w-full p-2 border rounded-lg dark:bg-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">User Type</label>
+                        <select id="userFilter" class="w-full p-2 border rounded-lg dark:bg-gray-700">
+                            <option value="">All Users</option>
+                            <option value="dentist">Dentist</option>
+                            <option value="staff">Staff</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Action Type</label>
+                        <select id="actionFilter" class="w-full p-2 border rounded-lg dark:bg-gray-700">
+                            <option value="">All Actions</option>
+
+                            <!-- Session Actions (from activity_logs) -->
+                            <option value="Login">Login</option>
+                            <option value="Logout">Logout</option>
+                            <option value="Failed Login">Failed Login</option>
+
+                            <!-- CRUD Actions (for both tables) -->
+                            <option value="INSERT">Create/Insert</option>
+                            <option value="UPDATE">Update/Edit</option>
+                            <option value="DELETE">Delete/Remove</option>
+
+                            <!-- System Actions -->
+                            <option value="Deleted">Deleted</option>
+                            <option value="Email Failed">Email Failed</option>
+
+                            <!-- Export/Import -->
+                            <option value="Export">Export</option>
+                            <!-- <option value="Import">Import</option> -->
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-4 space-x-2">
+                    <button id="applyFilters" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Apply Filters
+                    </button>
+                    <button id="clearFilters" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Clear
+                    </button>
                 </div>
             </div>
 
-            <!-- Filters and Actions -->
-            <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4">
-                <div class="max-w-7xl mx-auto">
-                    <div class="flex flex-col lg:flex-row gap-4">
-                        <!-- Search -->
-                        <div class="flex-1">
-                            <div class="relative">
-                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <input type="text"
-                                    id="searchInput"
-                                    placeholder="Search logs by user, action, or details..."
-                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    oninput="debouncedSearch()">
-                                <button onclick="clearSearch()" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Filter Buttons -->
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="filterLogs('all')" id="filterAll" class="px-4 py-2.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium">
-                                All Logs
-                            </button>
-                            <button onclick="filterLogs('activity')" id="filterActivity" class="px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                                Activities
-                            </button>
-                            <button onclick="filterLogs('history')" id="filterHistory" class="px-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                                History
-                            </button>
-                        </div>
+            <!-- Logs Container -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-semibold">Log Entries</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400" id="entriesCount">Select filters to view logs</p>
                     </div>
-
-                    <!-- Advanced Filters (Collapsible) -->
-                    <div class="mt-4 hidden" id="advancedFilters">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-gray-900  dark:text-white rounded-lg">
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Date Range</label>
-                                <div class="flex gap-2">
-                                    <input type="date" id="dateFrom" class="flex-1 p-2 border rounded-lg ">
-                                    <input type="date" id="dateTo" class="flex-1 p-2 border rounded-lg">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2 ">User Type</label>
-                                <select id="userTypeFilter" class="w-full p-2 border rounded-lg">
-                                    <option value="">All Users</option>
-                                    <option value="Dentist">Dentist</option>
-                                    <option value="Staff">Staff</option>
-                                    <option value="Admin">Admin</option>
-                                </select>
-                            </div>
-                            <div class="flex items-end">
-                                <button onclick="applyAdvancedFilters()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                    Apply Filters
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Toggle Advanced Filters -->
-                    <div class="mt-3 text-center">
-                        <button onclick="toggleAdvancedFilters()" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                            <i class="fas fa-filter mr-1"></i>
-                            Advanced Filters
+                    <div class="flex space-x-2">
+                        <button id="exportBtn" class="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                        <button id="refreshBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Main Content Area -->
-            <div class="p-4">
-                <div class="max-w-7xl mx-auto">
-                    <!-- Stats Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6  dark:text-white">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                            <div class="flex items-center">
-                                <div class="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                                    <i class="fas fa-history text-lg"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Logs</p>
-                                    <p class="text-2xl font-semibold" id="totalLogs">0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                            <div class="flex items-center">
-                                <div class="p-3 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
-                                    <i class="fas fa-user-clock text-lg"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Activities Today</p>
-                                    <p class="text-2xl font-semibold" id="todayLogs">0</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                            <div class="flex items-center">
-                                <div class="p-3 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                                    <i class="fas fa-database text-lg"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-gray-600 dark:text-gray-400">Database Size</p>
-                                    <p class="text-2xl font-semibold" id="dbSize">0 MB</p>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Add this after your stats cards for debugging -->
-                        <div id="debugStats" class="hidden text-xs text-gray-500 mt-2">
-                            Debug: <span id="debugActiveUsers">-</span>
-                        </div>
+                <!-- Initial State (shown by default) -->
+                <div id="initialState" class="p-8 text-center">
+                    <div class="inline-block text-blue-600 mb-4">
+                        <i class="fas fa-history text-4xl"></i>
                     </div>
-
-
-                    <!-- Bulk Actions Bar -->
-                    <div id="bulkActionsBar" class="hidden bg-blue-50 dark:bg-blue-900/20 border  dark:text-white border-blue-200 dark:border-blue-800 rounded-lg p-3 mb-4">
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div class="flex items-center gap-3">
-                                <div class="flex items-center">
-                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="w-4 h-4 text-blue-600 rounded">
-                                    <label for="selectAllCheckbox" class="ml-2 font-medium">
-                                        <span id="selectedCount">0</span> logs selected
-                                    </label>
-                                </div>
-                                <button onclick="clearSelection()" class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                                    Clear all
-                                </button>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                <button onclick="exportSelected()" class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
-                                    <i class="fas fa-download mr-1"></i>
-                                    Export Selected
-                                </button>
-                                <button onclick="confirmBulkDelete()" class="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm">
-                                    <i class="fas fa-trash mr-1"></i>
-                                    Delete Selected
-                                </button>
-                            </div>
-                        </div>
+                    <h4 class="text-lg font-medium mb-2">Welcome to System Logs</h4>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Configure your filters and click "Apply Filters" to view logs</p>
+                    <div class="inline-flex items-center text-sm text-blue-600">
+                        <i class="fas fa-lightbulb mr-2"></i>
+                        <span>Tip: Try filtering by date range for better results</span>
                     </div>
+                </div>
 
-                    <!-- Logs Table Container -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200  dark:text-white dark:border-gray-700 overflow-hidden">
-                        <!-- Table Header -->
-                        <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                            <h3 class="font-semibold">System Activities</h3>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="systemLogs.showExportModal()" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm">
-                                    <i class="fas fa-file-export mr-1"></i>
-                                    Export
-                                </button>
-                                <div class="relative">
-                                    <select onchange="changeLimit(this.value)" class="bg-transparent border-none text-sm focus:ring-0">
-                                        <option value="10">10 per page</option>
-                                        <option value="25">25 per page</option>
-                                        <option value="50">50 per page</option>
-                                        <option value="100">100 per page</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Loading State -->
+                <div id="loading" class="hidden p-8 text-center">
+                    <div class="inline-block loading-spinner mb-4"></div>
+                    <h4 class="text-lg font-medium mb-2">Loading logs<span class="loading-dots"></span></h4>
+                    <p class="text-gray-600 dark:text-gray-400">Fetching your data, please wait</p>
+                </div>
 
-                        <!-- Table (Responsive) -->
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead class="bg-gray-50 dark:bg-gray-900">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left w-12">
-                                            <input type="checkbox" id="selectAllMain" onchange="toggleSelectAll(this)" class="w-4 h-4">
-                                        </th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                                            <button onclick="sortTable('type')" class="flex items-center">
-                                                Type
-                                                <i class="fas fa-sort ml-1"></i>
-                                            </button>
-                                        </th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider mobile-hidden">
-                                            <button onclick="sortTable('user')" class="flex items-center">
-                                                User
-                                                <i class="fas fa-sort ml-1"></i>
-                                            </button>
-                                        </th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                                            <button onclick="sortTable('action')" class="flex items-center">
-                                                Action
-                                                <i class="fas fa-sort ml-1"></i>
-                                            </button>
-                                        </th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider mobile-hidden">
-                                            Details
-                                        </th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                                            <button onclick="sortTable('date')" class="flex items-center">
-                                                Date
-                                                <i class="fas fa-sort ml-1"></i>
-                                            </button>
-                                        </th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
-                                            Actions
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody id="logsBody" class="divide-y divide-gray-200 dark:divide-gray-700">
-                                    <!-- Logs will be loaded here -->
-                                    <tr>
-                                        <td colspan="7" class="px-4 py-8 text-center">
-                                            <div class="flex flex-col items-center justify-center">
-                                                <i class="fas fa-spinner fa-spin text-2xl text-blue-500 mb-2"></i>
-                                                <p class="text-gray-600 dark:text-gray-400">Loading system logs...</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div id="emptyState" class="hidden px-4 py-12 text-center">
-                            <div class="max-w-sm mx-auto">
-                                <i class="fas fa-clipboard-list text-4xl text-gray-400 mb-4"></i>
-                                <h3 class="text-lg font-medium mb-2">No logs found</h3>
-                                <p class="text-gray-600 dark:text-gray-400 mb-4">
-                                    Try adjusting your search or filter to find what you're looking for.
-                                </p>
-                                <button onclick="clearFilters()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                    Clear all filters
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Loading State -->
-                        <div id="loadingState" class="hidden px-4 py-8 text-center">
-                            <div class="flex items-center justify-center space-x-2">
-                                <div class="w-4 h-4 bg-blue-500 rounded-full animate-pulse"></div>
-                                <div class="w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-150"></div>
-                                <div class="w-4 h-4 bg-blue-500 rounded-full animate-pulse delay-300"></div>
-                            </div>
-                            <p class="mt-3 text-gray-600 dark:text-gray-400">Loading logs...</p>
-                        </div>
-
-                        <!-- Pagination -->
-                        <div id="pagination" class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div class="text-sm text-gray-700 dark:text-gray-400">
-                                Showing <span id="showingFrom">0</span> to <span id="showingTo">0</span> of <span id="totalItems">0</span> entries
-                            </div>
-                            <nav class="flex items-center space-x-1">
-                                <button onclick="window.changePage(systemLogs?.currentPage - 1 || 1)" id="prevPage" disabled class="px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <div id="pageNumbers" class="flex items-center space-x-1">
-                                    <!-- Page numbers will be inserted here -->
-                                </div>
-                                <button onclick="window.changePage(systemLogs?.currentPage + 1 || 1)" id="nextPage" disabled class="px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </nav>
-                        </div>
+                <!-- Skeleton Loading (for better UX) -->
+                <div id="skeletonLoading" class="hidden p-4">
+                    <div class="space-y-3">
+                        <!-- Skeleton rows -->
+                        <div class="skeleton h-12 rounded-lg"></div>
+                        <div class="skeleton h-12 rounded-lg"></div>
+                        <div class="skeleton h-12 rounded-lg"></div>
+                        <div class="skeleton h-12 rounded-lg"></div>
+                        <div class="skeleton h-12 rounded-lg"></div>
                     </div>
+                </div>
 
-                    <!-- Quick Stats -->
-                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4  dark:text-white">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                            <h4 class="font-medium mb-3">Most Active Users (7 days)</h4>
-                            <div id="topUsers" class="space-y-2">
-                                <!-- Will be populated by JavaScript -->
-                            </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                            <h4 class="font-medium mb-3">Top Activities (7 days)</h4>
-                            <div id="activityTypes" class="space-y-2">
-                                <!-- Will be populated by JavaScript -->
-                            </div>
-                        </div>
+                <!-- Logs Table -->
+                <div id="logsTable" class="hidden fade-in">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-700 dark:text-gray-300">
+                            <thead class="text-xs uppercase bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th class="px-6 py-3">Timestamp</th>
+                                    <th class="px-6 py-3">User</th>
+                                    <th class="px-6 py-3">Action</th>
+                                    <th class="px-6 py-3">Target</th>
+                                    <th class="px-6 py-3">Details</th>
+                                    <th class="px-6 py-3">IP Address</th>
+                                    <th class="px-6 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsBody">
+                                <!-- Logs will be loaded here -->
+                            </tbody>
+                        </table>
                     </div>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" class="hidden p-4 border-t border-gray-200 dark:border-gray-700">
+                    <nav class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700 dark:text-gray-400">
+                            Showing <span id="startRow">1</span> to <span id="endRow">10</span> of <span id="totalRows">0</span> entries
+                        </div>
+                        <ul class="flex items-center space-x-2">
+                            <li><button id="prevPage" class="px-3 py-1 rounded border hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Previous</button></li>
+                            <li>
+                                <div id="pageNumbers" class="flex space-x-1"></div>
+                            </li>
+                            <li><button id="nextPage" class="px-3 py-1 rounded border hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">Next</button></li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <!-- No Results -->
+                <div id="noResults" class="hidden p-8 text-center">
+                    <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
+                    <h4 class="text-lg font-medium mb-2">No logs found</h4>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Try adjusting your filters or check back later</p>
+                    <button onclick="clearFilters()" class="px-4 py-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                        <i class="fas fa-filter mr-2"></i>Clear all filters
+                    </button>
+                </div>
+
+                <!-- Error State -->
+                <div id="errorState" class="hidden p-8 text-center">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-4"></i>
+                    <h4 class="text-lg font-medium mb-2">Unable to load logs</h4>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4" id="errorMessage">Please try again later</p>
+                    <button onclick="loadLogs()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-redo mr-2"></i>Retry
+                    </button>
                 </div>
             </div>
         </main>
@@ -812,7 +885,7 @@ if ($loggedUser['type'] === 'Dentist') {
         <!-- View Details Modal -->
         <div id="detailsModal" class="modal-backdrop hidden fixed inset-0 z-50 overflow-y-auto">
             <div class="min-h-screen px-4 flex items-center justify-center">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <div class="modal-content bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                         <h3 class="text-xl font-semibold">Log Details</h3>
                         <button onclick="closeDetailsModal()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
@@ -840,10 +913,10 @@ if ($loggedUser['type'] === 'Dentist') {
                                 Are you sure you want to delete this log? This action cannot be undone.
                             </p>
                             <div class="flex justify-center space-x-3">
-                                <button onclick="closeDeleteModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <button onclick="closeDeleteModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                     Cancel
                                 </button>
-                                <button onclick="confirmDelete()" id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                <button onclick="confirmDelete()" id="confirmDeleteBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                                     Delete
                                 </button>
                             </div>
@@ -907,7 +980,6 @@ if ($loggedUser['type'] === 'Dentist') {
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../../js/tailwind.config.js"></script>
-    <!-- Theme Toggle Script -->
     <script>
         // ========== THEME MANAGEMENT ==========
         function initTheme() {
@@ -961,1294 +1033,14 @@ if ($loggedUser['type'] === 'Dentist') {
             }
         }
 
-        // Initialize theme when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            initTheme();
-
-            // Also update dropdown visibility based on theme
-            const dropdown = document.getElementById('dropdown');
-            const userMenuButton = document.getElementById('user-menu-button');
-
-            if (userMenuButton && dropdown) {
-                userMenuButton.addEventListener('click', function() {
-                    dropdown.classList.toggle('hidden');
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!userMenuButton.contains(event.target) && !dropdown.contains(event.target)) {
-                        dropdown.classList.add('hidden');
-                    }
-                });
-            }
-        });
-    </script>
-
-    <script>
-        // Improved JavaScript with better organization and performance
-
-        class SystemLogsManager {
-            constructor() {
-                this.currentPage = 1;
-                this.limit = 10;
-                this.totalPages = 1;
-                this.totalItems = 0;
-                this.searchTerm = '';
-                this.currentFilter = 'all';
-                this.sortField = 'created_at'; // Changed from 'date' to match database field
-                this.sortOrder = 'desc';
-                this.selectedLogs = new Set();
-                this.allLogs = [];
-                this.filteredLogs = [];
-                this.searchTimeout = null;
-                this.isLoading = false;
-                this.logToDelete = null;
-
-                // Advanced filter properties
-                this.dateFrom = '';
-                this.dateTo = '';
-                this.userType = '';
-            }
-
-            init() {
-                // Set initial active state for "All Logs" button
-                this.updateFilterButtons();
-
-                this.setupEventListeners();
-                this.setupConnectionMonitoring();
-
-                // Set default dates for date range filters
-                this.setDefaultDateRange();
-
-                // Force load stats immediately - ONLY ONCE
-                this.loadStats();
-
-                // Then load other data
-                setTimeout(() => {
-                    this.loadQuickStats();
-                    this.loadLogs();
-                    this.updateLastUpdated();
-                }, 100);
-            }
-
-            setDefaultDateRange() {
-                // Set dateFrom to 30 days ago
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-                // Set dateTo to today
-                const today = new Date();
-
-                // Format dates as YYYY-MM-DD for input fields
-                const formatDate = (date) => {
-                    return date.toISOString().split('T')[0];
-                };
-
-                // Set the input field values
-                const dateFromInput = document.getElementById('dateFrom');
-                const dateToInput = document.getElementById('dateTo');
-
-                if (dateFromInput) {
-                    dateFromInput.value = formatDate(thirtyDaysAgo);
-                    this.dateFrom = formatDate(thirtyDaysAgo);
-                }
-
-                if (dateToInput) {
-                    dateToInput.value = formatDate(today);
-                    this.dateTo = formatDate(today);
-                }
-            }
-
-            updateFilterButtons() {
-                const allButton = document.getElementById('filterAll');
-                if (allButton) {
-                    allButton.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
-                    allButton.classList.add('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-700', 'dark:text-blue-300', 'font-medium');
-                }
-            }
-
-            setupEventListeners() {
-                // Mobile menu
-                const mobileMenuButton = document.getElementById('mobileMenuButton');
-                if (mobileMenuButton) {
-                    mobileMenuButton.addEventListener('click', () => this.toggleMobileSidebar());
-                }
-
-                const userDropdownButton = document.getElementById('userDropdownButton');
-                if (userDropdownButton) {
-                    userDropdownButton.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const dropdown = document.getElementById('userDropdown');
-                        if (dropdown) dropdown.classList.toggle('hidden');
-                    });
-                }
-
-                // Close dropdowns when clicking outside
-                document.addEventListener('click', (e) => {
-                    const dropdown = document.getElementById('userDropdown');
-                    if (dropdown && !e.target.closest('#userDropdown') && !e.target.closest('#userDropdownButton')) {
-                        dropdown.classList.add('hidden');
-                    }
-                });
-
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.key === 'f') {
-                        e.preventDefault();
-                        const searchInput = document.getElementById('searchInput');
-                        if (searchInput) searchInput.focus();
-                    }
-                    if (e.key === 'Escape') {
-                        this.closeAllModals();
-                    }
-                });
-
-                // Date range input listeners
-                const dateFromInput = document.getElementById('dateFrom');
-                const dateToInput = document.getElementById('dateTo');
-
-                if (dateFromInput) {
-                    dateFromInput.addEventListener('change', (e) => {
-                        this.dateFrom = e.target.value;
-                        // Validate date range
-                        this.validateDateRange();
-                    });
-                }
-
-                if (dateToInput) {
-                    dateToInput.addEventListener('change', (e) => {
-                        this.dateTo = e.target.value;
-                        // Validate date range
-                        this.validateDateRange();
-                    });
-                }
-
-                // User type filter listener
-                const userTypeFilter = document.getElementById('userTypeFilter');
-                if (userTypeFilter) {
-                    userTypeFilter.addEventListener('change', (e) => {
-                        this.userType = e.target.value;
-                    });
-                }
-            }
-
-            validateDateRange() {
-                const dateFromInput = document.getElementById('dateFrom');
-                const dateToInput = document.getElementById('dateTo');
-
-                if (this.dateFrom && this.dateTo && this.dateFrom > this.dateTo) {
-                    this.showToast('End date cannot be earlier than start date', 'warning');
-                    // Swap dates if they're in wrong order
-                    [this.dateFrom, this.dateTo] = [this.dateTo, this.dateFrom];
-
-                    if (dateFromInput) dateFromInput.value = this.dateFrom;
-                    if (dateToInput) dateToInput.value = this.dateTo;
-                }
-            }
-
-
-            setupConnectionMonitoring() {
-                const updateConnectionStatus = () => {
-                    const status = document.getElementById('connectionStatus');
-                    if (!status) return;
-
-                    const indicator = status.querySelector('.rounded-full');
-                    const text = status.querySelector('span');
-
-                    if (navigator.onLine) {
-                        indicator.className = 'w-2 h-2 rounded-full status-online';
-                        text.textContent = 'Online';
-                        status.classList.remove('hidden');
-                        setTimeout(() => status.classList.add('hidden'), 3000);
-                    } else {
-                        indicator.className = 'w-2 h-2 rounded-full status-offline';
-                        text.textContent = 'Offline';
-                        status.classList.remove('hidden');
-                    }
-                };
-
-                window.addEventListener('online', updateConnectionStatus);
-                window.addEventListener('offline', updateConnectionStatus);
-                updateConnectionStatus();
-            }
-
-            setupServiceWorker() {
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('/dentalemr_system/sw.js')
-                        .then(reg => console.log('Service Worker registered'))
-                        .catch(err => console.log('Service Worker registration failed:', err));
-                }
-            }
-
-            async loadInitialData() {
-                try {
-                    // Load all data in sequence to avoid race conditions
-                    await this.loadStats();
-                    await this.loadQuickStats();
-                    await this.loadLogs();
-                    this.updateLastUpdated();
-                } catch (error) {
-                    console.error('Error loading initial data:', error);
-                    // Try to load at least the logs
-                    await this.loadLogs();
-                }
-            }
-
-            async loadLogs() {
-                if (this.isLoading) return;
-
-                this.isLoading = true;
-                this.showLoadingState();
-
-                try {
-                    // Get the user ID from the URL parameter
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const userId = urlParams.get('uid');
-
-                    if (!userId) {
-                        console.error('User ID is missing from URL');
-                        throw new Error('User ID is missing from URL');
-                    }
-
-                    const params = new URLSearchParams({
-                        uid: userId,
-                        page: this.currentPage,
-                        limit: this.limit,
-                        search: this.searchTerm,
-                        filter: this.currentFilter,
-                        sort: this.sortField,
-                        order: this.sortOrder
-                    });
-                    // Add advanced filter parameters if they exist
-                    if (this.dateFrom) {
-                        params.append('date_from', this.dateFrom);
-                    }
-
-                    if (this.dateTo) {
-                        params.append('date_to', this.dateTo);
-                    }
-
-                    if (this.userType) {
-                        params.append('user_type', this.userType);
-                    }
-                    console.log('Fetching logs with params:', params.toString());
-
-                    const response = await fetch(`/dentalemr_system/php/manageusers/fetch_system_logs.php?${params}`, {
-                        cache: 'no-store', // Prevent caching
-                        headers: {
-                            'Cache-Control': 'no-cache'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    console.log('Server response:', data);
-
-                    if (data.success) {
-                        this.allLogs = data.logs || [];
-                        this.totalItems = data.total || 0;
-                        this.totalPages = Math.ceil(this.totalItems / this.limit);
-
-                        // If we have data, render it
-                        if (this.allLogs.length > 0) {
-                            this.renderLogs();
-                        } else {
-                            this.showEmptyState();
-                        }
-                    } else {
-                        console.error('Server returned error:', data);
-                        this.showEmptyState();
-                        throw new Error(data.message || 'Failed to load logs');
-                    }
-                } catch (error) {
-                    console.error('Error loading logs:', error);
-                    this.showEmptyState();
-
-                    // Only show error toast if it's not the initial load
-                    if (this.currentPage > 1 || this.searchTerm || this.currentFilter !== 'all') {
-                        this.showError('Failed to load system logs. Please try again.');
-                    }
-                } finally {
-                    this.isLoading = false;
-                    this.hideLoadingState();
-                }
-            }
-            applyAdvancedFilters() {
-                // Get date range values
-                const dateFromInput = document.getElementById('dateFrom');
-                const dateToInput = document.getElementById('dateTo');
-                const userTypeFilter = document.getElementById('userTypeFilter');
-
-                if (dateFromInput) this.dateFrom = dateFromInput.value;
-                if (dateToInput) this.dateTo = dateToInput.value;
-                if (userTypeFilter) this.userType = userTypeFilter.value;
-
-                // Validate date range
-                this.validateDateRange();
-
-                // Reset to first page and load logs
-                this.currentPage = 1;
-                this.loadLogs();
-
-                // Show feedback
-                const filterCount = [this.dateFrom, this.dateTo, this.userType].filter(Boolean).length;
-                if (filterCount > 0) {
-                    this.showToast(`Applied ${filterCount} filter(s)`, 'info');
-                }
-            }
-
-            clearAdvancedFilters() {
-                // Reset date range to default
-                this.setDefaultDateRange();
-
-                // Reset user type filter
-                const userTypeFilter = document.getElementById('userTypeFilter');
-                if (userTypeFilter) {
-                    userTypeFilter.value = '';
-                    this.userType = '';
-                }
-
-                // Apply the cleared filters
-                this.applyAdvancedFilters();
-            }
-
-            toggleAdvancedFilters() {
-                const filters = document.getElementById('advancedFilters');
-                const toggleBtn = document.querySelector('button[onclick*="toggleAdvancedFilters"]');
-
-                if (filters) {
-                    filters.classList.toggle('hidden');
-
-                    // Update button text
-                    if (toggleBtn) {
-                        const isHidden = filters.classList.contains('hidden');
-                        const icon = isHidden ? '<i class="fas fa-filter mr-1"></i>' : '<i class="fas fa-times mr-1"></i>';
-                        const text = isHidden ? 'Advanced Filters' : 'Close Filters';
-                        toggleBtn.innerHTML = `${icon}${text}`;
-                    }
-                }
-            }
-
-            renderLogs() {
-                const tbody = document.getElementById('logsBody');
-                if (!tbody) {
-                    console.error('Logs body element not found');
-                    return;
-                }
-
-                if (this.allLogs.length === 0) {
-                    this.showEmptyState();
-                    return;
-                }
-
-                this.hideEmptyState();
-
-                tbody.innerHTML = this.allLogs.map((log, index) => `
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors" 
-                onclick="window.showLogDetails(${JSON.stringify(log).replace(/"/g, '&quot;')})">
-                <td class="px-4 py-3" onclick="event.stopPropagation()">
-                    <input type="checkbox" 
-                           value="${log.id}"
-                           onchange="window.toggleLogSelection(${log.id})"
-                           ${this.selectedLogs.has(log.id) ? 'checked' : ''}
-                           class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-                </td>
-                <td class="px-4 py-3">
-                    <span class="badge ${log.type === 'activity' ? 'badge-activity' : 'badge-history'}">
-                        ${log.type === 'activity' ? 'Activity' : 'History'}
-                    </span>
-                </td>
-                <td class="px-4 py-3 mobile-hidden">
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mr-3">
-                            <i class="fas fa-user text-sm"></i>
-                        </div>
-                        <div>
-                            <div class="font-medium">${log.user_name}</div>
-                            <div class="text-xs text-gray-500">${log.user_type || 'User'}</div>
-                        </div>
-                    </div>
-                </td>
-                <td class="px-4 py-3">
-                    <div class="font-medium">${log.action}</div>
-                    <div class="text-xs text-gray-500 truncate max-w-xs">${log.details}</div>
-                </td>
-                <td class="px-4 py-3 mobile-hidden">
-                    <div class="text-sm truncate max-w-xs" title="${log.description || ''}">
-                        ${log.description || 'No description'}
-                    </div>
-                </td>
-                <td class="px-4 py-3">
-                    <div class="text-sm">${this.formatDate(log.created_at)}</div>
-                    <div class="text-xs text-gray-500">${this.formatTime(log.created_at)}</div>
-                </td>
-                <td class="px-4 py-3">
-                    <div class="flex items-center space-x-2">
-                        <button onclick="event.stopPropagation(); window.showLogDetails(${JSON.stringify(log).replace(/"/g, '&quot;')})" 
-                                class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                                title="View details">
-                            <i class="fas fa-eye text-blue-500"></i>
-                        </button>
-                        <button onclick="event.stopPropagation(); window.confirmDeleteLog(${log.id})" 
-                                class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                                title="Delete log">
-                            <i class="fas fa-trash text-red-500"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-
-                tbody.classList.remove('hidden');
-                this.updatePagination();
-                this.updateBulkActions();
-            }
-
-            formatDate(dateString) {
-                try {
-                    const date = new Date(dateString);
-                    if (isNaN(date.getTime())) return 'Invalid date';
-                    return date.toLocaleDateString('en-PH', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    });
-                } catch (e) {
-                    return 'Invalid date';
-                }
-            }
-
-            formatTime(dateString) {
-                try {
-                    const date = new Date(dateString);
-                    if (isNaN(date.getTime())) return 'Invalid time';
-                    return date.toLocaleTimeString('en-PH', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
-                } catch (e) {
-                    return 'Invalid time';
-                }
-            }
-
-            updatePagination() {
-                const showingFrom = ((this.currentPage - 1) * this.limit) + 1;
-                const showingTo = Math.min(this.currentPage * this.limit, this.totalItems);
-
-                const showingFromEl = document.getElementById('showingFrom');
-                const showingToEl = document.getElementById('showingTo');
-                const totalItemsEl = document.getElementById('totalItems');
-
-                if (showingFromEl) showingFromEl.textContent = showingFrom;
-                if (showingToEl) showingToEl.textContent = showingTo;
-                if (totalItemsEl) totalItemsEl.textContent = this.totalItems;
-
-                // Update page numbers
-                const pageNumbers = document.getElementById('pageNumbers');
-                if (!pageNumbers) return;
-
-                let pagesHTML = '';
-
-                // Always show first page
-                if (this.totalPages > 1) {
-                    if (this.currentPage === 1) {
-                        pagesHTML += `<button class="px-3 py-1.5 bg-blue-600 text-white rounded-lg">1</button>`;
-                    } else {
-                        pagesHTML += `<button onclick="window.changePage(1)" class="px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">1</button>`;
-                    }
-                }
-
-                // Show ellipsis if needed
-                if (this.currentPage > 3) {
-                    pagesHTML += `<span class="px-2">...</span>`;
-                }
-
-                // Show pages around current page
-                const startPage = Math.max(2, this.currentPage - 1);
-                const endPage = Math.min(this.totalPages - 1, this.currentPage + 1);
-
-                for (let i = startPage; i <= endPage; i++) {
-                    if (i === this.currentPage) {
-                        pagesHTML += `<button class="px-3 py-1.5 bg-blue-600 text-white rounded-lg">${i}</button>`;
-                    } else {
-                        pagesHTML += `<button onclick="window.changePage(${i})" class="px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">${i}</button>`;
-                    }
-                }
-
-                // Show ellipsis if needed
-                if (this.currentPage < this.totalPages - 2) {
-                    pagesHTML += `<span class="px-2">...</span>`;
-                }
-
-                // Always show last page if there is one
-                if (this.totalPages > 1) {
-                    if (this.currentPage === this.totalPages) {
-                        pagesHTML += `<button class="px-3 py-1.5 bg-blue-600 text-white rounded-lg">${this.totalPages}</button>`;
-                    } else {
-                        pagesHTML += `<button onclick="window.changePage(${this.totalPages})" class="px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">${this.totalPages}</button>`;
-                    }
-                }
-
-                pageNumbers.innerHTML = pagesHTML;
-
-                // Update button states
-                const prevPageBtn = document.getElementById('prevPage');
-                const nextPageBtn = document.getElementById('nextPage');
-                if (prevPageBtn) prevPageBtn.disabled = this.currentPage === 1;
-                if (nextPageBtn) nextPageBtn.disabled = this.currentPage === this.totalPages || this.totalPages === 0;
-            }
-
-            toggleSelectAll(checkbox) {
-                const checkboxes = document.querySelectorAll('input[type="checkbox"]:not(#selectAllMain)');
-                checkboxes.forEach(cb => {
-                    cb.checked = checkbox.checked;
-                    const logId = parseInt(cb.value);
-                    if (checkbox.checked) {
-                        this.selectedLogs.add(logId);
-                    } else {
-                        this.selectedLogs.delete(logId);
-                    }
-                });
-                this.updateBulkActions();
-            }
-
-            toggleLogSelection(logId) {
-                if (this.selectedLogs.has(logId)) {
-                    this.selectedLogs.delete(logId);
-                } else {
-                    this.selectedLogs.add(logId);
-                }
-                this.updateBulkActions();
-            }
-
-            updateBulkActions() {
-                const selectedCount = this.selectedLogs.size;
-                const bulkActionsBar = document.getElementById('bulkActionsBar');
-                const selectedCountElement = document.getElementById('selectedCount');
-
-                if (selectedCountElement) {
-                    selectedCountElement.textContent = selectedCount;
-                }
-
-                if (bulkActionsBar) {
-                    if (selectedCount > 0) {
-                        bulkActionsBar.classList.remove('hidden');
-                    } else {
-                        bulkActionsBar.classList.add('hidden');
-                    }
-                }
-
-                // Update select all checkbox
-                const totalCheckboxes = document.querySelectorAll('input[type="checkbox"]:not(#selectAllMain)').length;
-                const selectAllCheckbox = document.getElementById('selectAllMain');
-                if (selectAllCheckbox) {
-                    selectAllCheckbox.checked = selectedCount > 0 && selectedCount === totalCheckboxes;
-                    selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < totalCheckboxes;
-                }
-            }
-
-            clearSelection() {
-                this.selectedLogs.clear();
-                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-                checkboxes.forEach(cb => cb.checked = false);
-                this.updateBulkActions();
-            }
-
-            changePage(page) {
-                if (page < 1 || page > this.totalPages) return;
-                this.currentPage = page;
-                this.loadLogs();
-            }
-
-            changeLimit(newLimit) {
-                this.limit = parseInt(newLimit);
-                this.currentPage = 1;
-                this.loadLogs();
-            }
-
-            debouncedSearch() {
-                clearTimeout(this.searchTimeout);
-                this.searchTimeout = setTimeout(() => {
-                    const searchInput = document.getElementById('searchInput');
-                    if (searchInput) {
-                        this.searchTerm = searchInput.value;
-                        this.currentPage = 1;
-                        this.loadLogs();
-                    }
-                }, 500);
-            }
-
-            filterLogs(filter) {
-                this.currentFilter = filter;
-                this.currentPage = 1;
-
-                // Update active filter button
-                const filterButtons = ['All', 'Activity', 'History'];
-                filterButtons.forEach(btn => {
-                    const element = document.getElementById(`filter${btn}`);
-                    if (element) {
-                        element.classList.remove('bg-blue-100', 'dark:bg-blue-900/30', 'text-blue-700', 'dark:text-blue-300', 'font-medium');
-                        element.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
-                    }
-                });
-
-                const activeButton = document.getElementById(`filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`);
-                if (activeButton) {
-                    activeButton.className = 'px-4 py-2.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium';
-                }
-
-                this.loadLogs();
-            }
-
-            clearSearch() {
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.value = '';
-                    this.searchTerm = '';
-                    this.loadLogs();
-                }
-            }
-
-            clearFilters() {
-                this.clearSearch();
-                this.filterLogs('all');
-                this.clearSelection();
-            }
-
-            clearFilters() {
-                this.clearSearch();
-                this.filterLogs('all');
-                this.clearAdvancedFilters();
-                this.clearSelection();
-                this.showToast('All filters cleared', 'info');
-            }
-            toggleAdvancedFilters() {
-                const filters = document.getElementById('advancedFilters');
-                if (filters) {
-                    filters.classList.toggle('hidden');
-                }
-            }
-
-            applyAdvancedFilters() {
-                // Implement advanced filtering logic here
-                this.loadLogs();
-            }
-
-            sortTable(field) {
-                if (this.sortField === field) {
-                    this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-                } else {
-                    this.sortField = field;
-                    this.sortOrder = 'desc';
-                }
-                this.loadLogs();
-            }
-
-            showLogDetails(log) {
-                const modal = document.getElementById('detailsModal');
-                const content = document.getElementById('modalContent');
-
-                if (!modal || !content) return;
-
-                content.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-sm text-gray-500">Log ID</label>
-                        <p class="font-medium">${log.id}</p>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">Type</label>
-                        <span class="badge ${log.type === 'activity' ? 'badge-activity' : 'badge-history'}">
-                            ${log.type === 'activity' ? 'Activity' : 'History'}
-                        </span>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">User</label>
-                        <p class="font-medium">${log.user_name}</p>
-                        <p class="text-sm text-gray-500">${log.user_type || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">Action</label>
-                        <p class="font-medium">${log.action}</p>
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-sm text-gray-500">Date & Time</label>
-                        <p class="font-medium">${this.formatDate(log.created_at)} ${this.formatTime(log.created_at)}</p>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">IP Address</label>
-                        <p class="font-medium font-mono">${log.ip_address || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">User Agent</label>
-                        <p class="text-sm truncate" title="${log.user_agent || 'N/A'}">${log.user_agent || 'N/A'}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-6 space-y-4">
-                <div>
-                    <label class="text-sm text-gray-500">Details</label>
-                    <div class="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                        <p>${log.details}</p>
-                    </div>
-                </div>
-                ${log.description ? `
-                <div>
-                    <label class="text-sm text-gray-500">Description</label>
-                    <div class="mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                        <p>${log.description}</p>
-                    </div>
-                </div>
-                ` : ''}
-            </div>
-        `;
-
-                modal.classList.remove('hidden');
-            }
-
-            closeDetailsModal() {
-                const modal = document.getElementById('detailsModal');
-                if (modal) modal.classList.add('hidden');
-            }
-
-            confirmDeleteLog(logId = null) {
-                this.logToDelete = logId;
-                const modal = document.getElementById('deleteModal');
-                if (!modal) return;
-
-                const title = document.getElementById('deleteModalTitle');
-                const message = document.getElementById('deleteModalMessage');
-
-                if (title && message) {
-                    if (logId) {
-                        title.textContent = 'Delete Log';
-                        message.textContent = 'Are you sure you want to delete this log? This action cannot be undone.';
-                    } else {
-                        title.textContent = 'Delete Selected Logs';
-                        message.textContent = `Are you sure you want to delete ${this.selectedLogs.size} selected logs? This action cannot be undone.`;
-                    }
-                }
-
-                modal.classList.remove('hidden');
-            }
-
-            async confirmDelete() {
-                const logIds = this.logToDelete ? [this.logToDelete] : Array.from(this.selectedLogs);
-
-                try {
-                    const response = await fetch('/dentalemr_system/php/manageusers/delete_logs.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            log_ids: logIds,
-                            user_id: <?php echo $userId; ?>
-                        })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        this.showToast(`Successfully deleted ${logIds.length} log(s)`, 'success');
-                        this.closeDeleteModal();
-                        this.clearSelection();
-                        this.loadLogs();
-                        this.loadStats();
-                    } else {
-                        throw new Error(result.message);
-                    }
-                } catch (error) {
-                    console.error('Error deleting logs:', error);
-                    this.showToast('Failed to delete logs', 'error');
-                }
-            }
-
-            closeDeleteModal() {
-                const modal = document.getElementById('deleteModal');
-                if (modal) modal.classList.add('hidden');
-                this.logToDelete = null;
-            }
-
-            showExportModal() {
-                const modal = document.getElementById('exportModal');
-                if (modal) modal.classList.remove('hidden');
-            }
-
-            closeExportModal() {
-                const modal = document.getElementById('exportModal');
-                if (modal) modal.classList.add('hidden');
-            }
-
-            proceedExport() {
-                const format = document.querySelector('input[name="exportFormat"]:checked');
-                if (!format) return;
-
-                const formatValue = format.value;
-                const logIds = this.selectedLogs.size > 0 ? Array.from(this.selectedLogs) : null;
-
-                // Build query parameters
-                const params = new URLSearchParams({
-                    format: formatValue,
-                    user_id: <?php echo $userId; ?>
-                });
-
-                if (logIds && logIds.length > 0) {
-                    params.append('log_ids', logIds.join(','));
-                }
-
-                this.closeExportModal();
-                this.showToast('Preparing export...', 'info');
-
-                // Create download link
-                const link = document.createElement('a');
-                link.href = `/dentalemr_system/php/manageusers/export_logs.php?${params}`;
-                link.target = '_blank';
-                link.style.display = 'none';
-
-                // For JSON format, we need to handle it differently
-                if (formatValue === 'json') {
-                    // Fetch JSON data first to handle errors
-                    fetch(link.href)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Export failed');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.success === false) {
-                                throw new Error(data.message || 'Export failed');
-                            }
-                            // Create downloadable JSON file
-                            const blob = new Blob([JSON.stringify(data, null, 2)], {
-                                type: 'application/json'
-                            });
-                            const url = URL.createObjectURL(blob);
-                            link.href = url;
-                            link.download = `system_logs_${new Date().toISOString().split('T')[0]}.json`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(url);
-                            this.showToast('Export completed successfully', 'success');
-                        })
-                        .catch(error => {
-                            console.error('Export error:', error);
-                            this.showToast(`Export failed: ${error.message}`, 'error');
-                        });
-                } else {
-                    // For CSV and PDF, use direct download
-                    link.download = `system_logs_${new Date().toISOString().split('T')[0]}.${formatValue}`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    this.showToast('Export started', 'success');
-                }
-            }
-
-            exportSelected() {
-                if (this.selectedLogs.size === 0) {
-                    this.showToast('Please select logs to export', 'warning');
-                    return;
-                }
-                this.showExportModal();
-            }
-
-            refreshLogs() {
-                this.clearSelection();
-                this.loadLogs();
-                this.loadStats();
-                this.updateLastUpdated();
-                this.showToast('Logs refreshed', 'success');
-            }
-
-            async loadStats() {
-                try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const userId = urlParams.get('uid');
-
-                    if (!userId) {
-                        console.error('User ID missing for stats');
-                        return;
-                    }
-
-                    console.log('🔄 Loading active users stats...');
-
-                    const response = await fetch(`/dentalemr_system/php/manageusers/get_stats_fixed.php?uid=${userId}`, {
-                        cache: 'no-store',
-                        headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache'
-                        }
-                    });
-
-                    const data = await response.json();
-
-                    console.log('📊 Stats API response:', data);
-
-                    if (data.success) {
-                        // Update ALL stats
-                        const activeUsersEl = document.getElementById('activeUsers');
-                        const todayLoginsCountEl = document.getElementById('todayLoginsCount');
-                        const totalLogsEl = document.getElementById('totalLogs');
-                        const todayLogsEl = document.getElementById('todayLogs');
-                        const dbSizeEl = document.getElementById('dbSize');
-
-                        if (activeUsersEl) {
-                            activeUsersEl.textContent = data.active_users;
-                            activeUsersEl.title = `Currently active (last ${data._meta?.time_window || '15 minutes'})`;
-                        }
-
-                        if (todayLoginsCountEl) {
-                            todayLoginsCountEl.textContent = data.today_logins;
-                        }
-
-                        if (totalLogsEl) {
-                            totalLogsEl.textContent = data.total_logs.toLocaleString();
-                        }
-
-                        if (todayLogsEl) {
-                            todayLogsEl.textContent = data.today_logs.toLocaleString();
-                        }
-
-                        if (dbSizeEl) {
-                            dbSizeEl.textContent = `${data.db_size.toFixed(2)} MB`;
-                        }
-
-                        console.log(`✅ Active: ${data.active_users}, Today Logins: ${data.today_logins}`);
-                    } else {
-                        console.error('❌ Stats API error:', data.message);
-                    }
-                } catch (error) {
-                    console.error('❌ Error loading stats:', error);
-                }
-            }
-
-            forceStatsUpdate(stats) {
-                console.log('⚡ [DEBUG] Forcing stats update with:', stats);
-
-                // Method 1: Direct DOM manipulation
-                const activeUsersValue = parseInt(stats.active_users) || 2; // Default to 2 based on debug
-                const activeUsersEl = document.getElementById('activeUsers');
-
-                if (activeUsersEl) {
-                    // Remove any existing content and add new
-                    activeUsersEl.innerHTML = '';
-                    activeUsersEl.textContent = activeUsersValue;
-                    console.log('⚡ [DEBUG] Force updated active users to:', activeUsersValue);
-                }
-
-                // Method 2: Find all elements with class that might contain the value
-                document.querySelectorAll('*').forEach(el => {
-                    if (el.textContent === '1' && el.classList.contains('text-2xl')) {
-                        console.log('🔍 [DEBUG] Found element with value 1:', el);
-                        el.textContent = activeUsersValue;
-                    }
-                });
-
-                // Method 3: Update the entire card
-                const activeUsersCard = document.querySelector('.bg-white.dark\\:bg-gray-800.rounded-lg.shadow-sm:nth-child(3)');
-                if (activeUsersCard) {
-                    const valueElement = activeUsersCard.querySelector('.text-2xl.font-semibold');
-                    if (valueElement && valueElement.textContent === '1') {
-                        valueElement.textContent = activeUsersValue;
-                        console.log('🎨 [DEBUG] Updated card value to:', activeUsersValue);
-                    }
-                }
-            }
-
-            showFallbackStats() {
-                console.log('🔄 [DEBUG] Showing fallback stats (should be 2)');
-
-                // Set active users to 2 based on our debug output
-                const activeUsersEl = document.getElementById('activeUsers');
-                if (activeUsersEl) {
-                    const currentValue = activeUsersEl.textContent;
-                    console.log('📊 [DEBUG] Current active users value:', currentValue);
-
-                    if (parseInt(currentValue) !== 2) {
-                        activeUsersEl.textContent = '2';
-                        console.log('✅ [DEBUG] Fallback: Active users set to 2');
-                    }
-                }
-
-                // Also update the debug element
-                const debugEl = document.getElementById('debugActiveUsers');
-                if (debugEl) {
-                    debugEl.textContent = 'Fallback: 2';
-                    debugEl.parentElement.classList.remove('hidden');
-                }
-            }
-
-            async loadQuickStats() {
-                try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const userId = urlParams.get('uid');
-
-                    if (!userId) {
-                        console.error('User ID missing for quick stats');
-                        return;
-                    }
-
-                    const response = await fetch(`/dentalemr_system/php/manageusers/get_quick_stats.php?uid=${userId}`, {
-                        cache: 'no-store'
-                    });
-                    const data = await response.json();
-
-                    if (data.success) {
-                        this.renderTopUsers(data.top_users);
-                        this.renderActivityTypes(data.activity_types);
-                        this.renderSystemHealth(data.system_health);
-                    }
-                } catch (error) {
-                    console.error('Error loading quick stats:', error);
-                }
-            }
-
-            renderTopUsers(users) {
-                const container = document.getElementById('topUsers');
-                if (!container) return;
-
-                container.innerHTML = users.map(user => `
-        <div class="flex items-center justify-between py-1.5">
-            <div class="flex items-center">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 ${
-                    user.type === 'Dentist' ? 'bg-blue-100 text-blue-600' :
-                    user.type === 'Admin' ? 'bg-purple-100 text-purple-600' :
-                    user.type === 'Staff' ? 'bg-green-100 text-green-600' :
-                    'bg-gray-100 text-gray-600'
-                }">
-                    <i class="fas fa-user text-sm"></i>
-                </div>
-                <div>
-                    <div class="text-sm font-medium truncate max-w-[120px]">${user.name}</div>
-                    <div class="text-xs text-gray-500">${user.type}</div>
-                </div>
-            </div>
-            <span class="text-sm font-bold">${user.count}</span>
-        </div>
-    `).join('');
-            }
-
-            renderActivityTypes(activities) {
-                const container = document.getElementById('activityTypes');
-                if (!container) return;
-
-                container.innerHTML = activities.map(activity => `
-        <div class="flex items-center justify-between py-1.5">
-            <div class="flex items-center">
-                <div class="w-2 h-2 rounded-full mr-3 ${
-                    activity.type === 'Login' ? 'bg-green-500' :
-                    activity.type === 'Create' ? 'bg-blue-500' :
-                    activity.type === 'Update' ? 'bg-yellow-500' :
-                    activity.type === 'Delete' ? 'bg-red-500' :
-                    'bg-gray-500'
-                }"></div>
-                <span class="text-sm truncate max-w-[120px]">${activity.type}</span>
-            </div>
-            <span class="text-sm font-medium">${activity.count}</span>
-        </div>
-    `).join('');
-            }
-
-            renderSystemHealth(health) {
-                const container = document.getElementById('systemHealth');
-                if (!container) return;
-
-                container.innerHTML = `
-        <div class="space-y-4">
-            <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span>Active Days (7d)</span>
-                    <span class="font-medium">${health.active_days}/7</span>
-                </div>
-                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                    <div class="bg-green-500 h-2 rounded-full" style="width: ${(health.active_days/7)*100}%"></div>
-                </div>
-            </div>
-            <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span>Last Hour Activity</span>
-                    <span class="font-medium">${health.last_hour_activity}</span>
-                </div>
-                <div class="text-xs text-gray-500">Recent system activities</div>
-            </div>
-            <div>
-                <div class="flex justify-between text-sm mb-1">
-                    <span>Unique IPs Today</span>
-                    <span class="font-medium">${health.unique_ips_today}</span>
-                </div>
-                <div class="text-xs text-gray-500">Distinct access points</div>
-            </div>
-        </div>
-    `;
-            }
-
-            updateLastUpdated() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('en-PH', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-                const lastUpdatedEl = document.getElementById('lastUpdated');
-                if (lastUpdatedEl) {
-                    lastUpdatedEl.textContent = timeString;
-                }
-            }
-
-            toggleMobileSidebar() {
-                const sidebar = document.getElementById('mobileSidebar');
-                if (sidebar) {
-                    sidebar.classList.toggle('hidden');
-                }
-            }
-
-            showLoadingState() {
-                const logsBody = document.getElementById('logsBody');
-                const emptyState = document.getElementById('emptyState');
-                const loadingState = document.getElementById('loadingState');
-
-                if (logsBody) logsBody.classList.add('hidden');
-                if (emptyState) emptyState.classList.add('hidden');
-                if (loadingState) loadingState.classList.remove('hidden');
-            }
-
-            hideLoadingState() {
-                const loadingState = document.getElementById('loadingState');
-                if (loadingState) loadingState.classList.add('hidden');
-            }
-
-            showEmptyState() {
-                const logsBody = document.getElementById('logsBody');
-                const emptyState = document.getElementById('emptyState');
-                const loadingState = document.getElementById('loadingState');
-
-                if (logsBody) logsBody.classList.add('hidden');
-                if (loadingState) loadingState.classList.add('hidden');
-                if (emptyState) emptyState.classList.remove('hidden');
-            }
-
-            hideEmptyState() {
-                const emptyState = document.getElementById('emptyState');
-                if (emptyState) emptyState.classList.add('hidden');
-            }
-
-            closeAllModals() {
-                this.closeDetailsModal();
-                this.closeDeleteModal();
-                this.closeExportModal();
-            }
-
-            showToast(message, type = 'info') {
-                const container = document.getElementById('toastContainer');
-                if (!container) return;
-
-                const id = Date.now();
-
-                const toast = document.createElement('div');
-                toast.id = `toast-${id}`;
-                toast.className = `
-            ${type === 'success' ? 'bg-green-500' : 
-              type === 'error' ? 'bg-red-500' : 
-              type === 'warning' ? 'bg-yellow-500' : 
-              'bg-blue-500'}
-            text-white px-4 py-3 rounded-lg shadow-lg max-w-sm transform transition-all duration-300 ease-in-out
-        `;
-
-                toast.innerHTML = `
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                                  type === 'error' ? 'exclamation-circle' : 
-                                  type === 'warning' ? 'exclamation-triangle' : 
-                                  'info-circle'} mr-2"></i>
-                    <span>${message}</span>
-                </div>
-                <button onclick="document.getElementById('toast-${id}').remove()" class="ml-4">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        `;
-
-                container.appendChild(toast);
-
-                // Auto remove after 5 seconds
-                setTimeout(() => {
-                    if (toast.parentElement) {
-                        toast.style.opacity = '0';
-                        toast.style.transform = 'translateX(100%)';
-                        setTimeout(() => toast.remove(), 300);
-                    }
-                }, 5000);
-            }
-
-            showError(message) {
-                this.showToast(message, 'error');
-            }
-        }
-
-        // Wait for DOM to be fully loaded before initializing
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize the system logs manager
-            window.systemLogs = new SystemLogsManager();
-            window.systemLogs.init();
-
-            // Test API endpoint
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('uid');
-
-            console.log('System Logs Manager initialized for user:', userId);
-        });
-
-        // Global functions for inline event handlers
-        window.toggleMobileSidebar = () => window.systemLogs?.toggleMobileSidebar();
-        window.refreshLogs = () => window.systemLogs?.refreshLogs();
-        window.debouncedSearch = () => window.systemLogs?.debouncedSearch();
-        window.clearSearch = () => window.systemLogs?.clearSearch();
-        window.filterLogs = (filter) => {
-            if (window.systemLogs) {
-                window.systemLogs.currentPage = 1;
-                window.systemLogs.filterLogs(filter);
-            }
-        };
-        window.toggleAdvancedFilters = () => window.systemLogs?.toggleAdvancedFilters();
-        window.applyAdvancedFilters = () => window.systemLogs?.applyAdvancedFilters();
-        window.clearFilters = () => window.systemLogs?.clearFilters();
-        window.sortTable = (field) => window.systemLogs?.sortTable(field);
-        window.changePage = (page) => window.systemLogs?.changePage(page);
-        window.changeLimit = (limit) => window.systemLogs?.changeLimit(limit);
-        window.toggleSelectAll = (checkbox) => window.systemLogs?.toggleSelectAll(checkbox);
-        window.toggleLogSelection = (logId) => window.systemLogs?.toggleLogSelection(logId);
-        window.clearSelection = () => window.systemLogs?.clearSelection();
-        window.showLogDetails = (log) => window.systemLogs?.showLogDetails(log);
-        window.closeDetailsModal = () => window.systemLogs?.closeDetailsModal();
-        window.confirmDeleteLog = (logId) => window.systemLogs?.confirmDeleteLog(logId);
-        window.confirmBulkDelete = () => window.systemLogs?.confirmDeleteLog();
-        window.confirmDelete = () => window.systemLogs?.confirmDelete();
-        window.closeDeleteModal = () => window.systemLogs?.closeDeleteModal();
-        window.showExportModal = () => window.systemLogs?.showExportModal();
-        window.closeExportModal = () => window.systemLogs?.closeExportModal();
-        window.proceedExport = () => window.systemLogs?.proceedExport();
-        window.exportSelected = () => window.systemLogs?.exportSelected();
-    </script>
-
-    <!-- Inactivity Timer -->
-    <script>
+        // ========== INACTIVITY TIMER ==========
         let inactivityTimer;
-        const inactivityLimit = 1800000; // 10 minutes
+        const inactivityLimit = 1800000; // 30 minutes
 
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
             inactivityTimer = setTimeout(() => {
-                window.location.href = '/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>&reason=inactivity';
+                window.location.href = '/DentalEMR_System/php/login/logout.php?uid=<?php echo $userId; ?>&reason=inactivity';
             }, inactivityLimit);
         }
 
@@ -2257,8 +1049,1007 @@ if ($loggedUser['type'] === 'Dentist') {
             document.addEventListener(event, resetInactivityTimer);
         });
 
-        // Start timer
-        resetInactivityTimer();
+        // ========== USER DROPDOWN ==========
+        document.getElementById('userDropdownButton').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#userDropdownButton') && !e.target.closest('#userDropdown')) {
+                document.getElementById('userDropdown').classList.add('hidden');
+            }
+        });
+
+        // ========== SYSTEM LOGS FUNCTIONALITY ==========
+        // Global variables
+        let currentTab = 'activity';
+        let currentPage = 1;
+        let totalPages = 1;
+        const itemsPerPage = 20;
+        let isLoading = false;
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            resetInactivityTimer();
+            initLogsPage();
+        });
+
+        function initLogsPage() {
+            console.log('Initializing logs page...');
+
+            // Set date range to show ALL records by default (empty = no filter)
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+
+            // No need to populate filter options - they are static now
+
+            // Set up tab switching
+            document.querySelectorAll('[data-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    switchTab(tabId);
+                });
+            });
+
+            // Set up filter buttons
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                showSkeletonLoading();
+                setTimeout(() => loadLogs(), 100);
+            });
+
+            document.getElementById('clearFilters').addEventListener('click', clearFilters);
+            document.getElementById('exportBtn').addEventListener('click', showExportModal);
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                showSkeletonLoading();
+                setTimeout(() => loadLogs(), 100);
+            });
+
+            // Set up pagination
+            document.getElementById('prevPage').addEventListener('click', () => changePage(currentPage - 1));
+            document.getElementById('nextPage').addEventListener('click', () => changePage(currentPage + 1));
+
+            // Load logs automatically on page load
+            setTimeout(() => {
+                showSkeletonLoading();
+                loadLogs();
+            }, 500);
+        }
+
+        function switchTab(tabId) {
+            if (isLoading) return;
+
+            currentTab = tabId;
+            currentPage = 1;
+
+            // Update tab styles
+            document.querySelectorAll('[data-tab]').forEach(tab => {
+                if (tab.dataset.tab === tabId) {
+                    tab.classList.add('border-blue-600', 'text-blue-600', 'dark:text-blue-500', 'dark:border-blue-500');
+                    tab.classList.remove('border-transparent');
+                } else {
+                    tab.classList.remove('border-blue-600', 'text-blue-600', 'dark:text-blue-500', 'dark:border-blue-500');
+                    tab.classList.add('border-transparent');
+                }
+            });
+
+            // Load logs for the new tab
+            showSkeletonLoading();
+            setTimeout(() => loadLogs(), 100);
+        }
+
+        async function populateFilterOptions() {
+            try {
+                console.log('Populating action filter options...');
+
+                // Only need to populate action types now
+                const actionResponse = await fetch('/DentalEMR_System/php/logs/get_actions.php');
+
+                if (actionResponse.ok) {
+                    const actionData = await actionResponse.json();
+                    const actionSelect = document.getElementById('actionFilter');
+
+                    if (actionData.success && actionData.actions) {
+                        // Clear existing options except "All Actions"
+                        while (actionSelect.options.length > 1) {
+                            actionSelect.remove(1);
+                        }
+
+                        actionData.actions.forEach(action => {
+                            const option = document.createElement('option');
+                            option.value = action;
+                            option.textContent = action;
+                            actionSelect.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading filter options:', error);
+            }
+        }
+
+        async function loadLogs() {
+            if (isLoading) return;
+
+            console.log('Loading logs...');
+            isLoading = true;
+
+            const filters = {
+                dateFrom: document.getElementById('dateFrom').value,
+                dateTo: document.getElementById('dateTo').value,
+                userId: document.getElementById('userFilter').value, // Will be '', 'dentist', or 'staff'
+                action: document.getElementById('actionFilter').value,
+                page: currentPage,
+                limit: itemsPerPage,
+                logType: currentTab
+            };
+
+            console.log('Filters:', filters);
+
+            try {
+                const response = await fetch('/DentalEMR_System/php/logs/fetch_logs.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        uid: <?php echo $userId; ?>,
+                        filters: filters
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                hideSkeletonLoading();
+
+                if (data.success) {
+                    if (data.logs.length === 0) {
+                        showNoResults();
+                    } else {
+                        renderLogs(data);
+                        showToast('Logs loaded successfully', 'success');
+                    }
+                } else {
+                    showError(data.message || 'Failed to load logs');
+                }
+            } catch (error) {
+                console.error('Error loading logs:', error);
+                hideSkeletonLoading();
+                showError('Failed to load logs. Please try again.');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Helper functions to show/hide states
+        function showInitialState() {
+            hideAllStates();
+            document.getElementById('initialState').classList.remove('hidden');
+            document.getElementById('entriesCount').textContent = 'Select filters and click "Apply Filters"';
+        }
+
+        function showSkeletonLoading() {
+            hideAllStates();
+            document.getElementById('skeletonLoading').classList.remove('hidden');
+            document.getElementById('entriesCount').textContent = 'Loading logs...';
+        }
+
+        function hideSkeletonLoading() {
+            document.getElementById('skeletonLoading').classList.add('hidden');
+        }
+
+        function showTable() {
+            hideAllStates();
+            document.getElementById('logsTable').classList.remove('hidden');
+            document.getElementById('pagination').classList.remove('hidden');
+        }
+
+        function showNoResults() {
+            hideAllStates();
+            document.getElementById('noResults').classList.remove('hidden');
+            document.getElementById('entriesCount').textContent = 'No logs found';
+        }
+
+        function showError(message) {
+            hideAllStates();
+            document.getElementById('errorState').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('entriesCount').textContent = 'Error loading logs';
+        }
+
+        function hideAllStates() {
+            document.getElementById('initialState').classList.add('hidden');
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('skeletonLoading').classList.add('hidden');
+            document.getElementById('logsTable').classList.add('hidden');
+            document.getElementById('noResults').classList.add('hidden');
+            document.getElementById('errorState').classList.add('hidden');
+            document.getElementById('pagination').classList.add('hidden');
+        }
+
+        function renderLogs(data) {
+            const tbody = document.getElementById('logsBody');
+
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+
+            data.logs.forEach(log => {
+                const row = document.createElement('tr');
+                row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors';
+                row.setAttribute('data-log-id', log.id);
+
+                if (currentTab === 'activity') {
+                    row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="font-medium whitespace-nowrap">${formatDateTime(log.timestamp)}</div>
+                        <div class="text-xs text-gray-500">${timeAgo(log.timestamp)}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="font-medium">${escapeHtml(log.user_name || 'System')}</div>
+                        <div class="text-xs text-gray-500">
+                            ${log.user_type ? `(${log.user_type})` : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs rounded-full ${getActionColor(log.action)}">
+                            ${escapeHtml(log.action)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">${escapeHtml(log.target || 'N/A')}</td>
+                    <td class="px-6 py-4 max-w-xs" title="${escapeHtml(log.details)}">
+                        <div class="truncate">${escapeHtml(truncateText(log.details, 50))}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="font-mono text-sm">${log.ip_address}</div>
+                        <div class="text-xs text-gray-500 truncate max-w-xs" title="${escapeHtml(log.user_agent)}">
+                            ${getBrowserInfo(log.user_agent)}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex space-x-2">
+                            <button data-log-id="${log.id}" 
+                                    class="view-log-btn px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 transition-colors">
+                                <i class="fas fa-eye mr-1"></i>View
+                            </button>
+                            <button data-log-id="${log.id}" 
+                                    class="delete-log-btn px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900 dark:text-red-300 transition-colors">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </button>
+                        </div>
+                    </td>
+                `;
+                } else {
+                    // History logs format - show action with appropriate color
+                    row.innerHTML = `
+                        <td class="px-6 py-4">
+                            <div class="font-medium whitespace-nowrap">${formatDateTime(log.timestamp)}</div>
+                            <div class="text-xs text-gray-500">${timeAgo(log.timestamp)}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium">${escapeHtml(log.changed_by || 'System')}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 text-xs rounded-full ${getActionColor(log.action)}">
+                                ${escapeHtml(log.action)}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium">${escapeHtml(log.table_name)}</div>
+                            <div class="text-xs text-gray-500">Record ID: ${log.record_id}</div>
+                        </td>
+                        <td class="px-6 py-4 max-w-xs" title="${escapeHtml(log.description)}">
+                            <div class="truncate">${escapeHtml(truncateText(log.description, 50))}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-mono text-sm">${log.ip_address}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex space-x-2">
+                                <button data-log-id="${log.id}" 
+                                        class="view-log-btn px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 transition-colors">
+                                    <i class="fas fa-eye mr-1"></i>View
+                                </button>
+                                <button data-log-id="${log.id}" 
+                                        class="delete-log-btn px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 dark:bg-red-900 dark:text-red-300 transition-colors">
+                                    <i class="fas fa-trash mr-1"></i>Delete
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                }
+
+                fragment.appendChild(row);
+            });
+
+            // Clear and append in one operation
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
+
+            updatePagination(data);
+            showTable();
+
+            // Update entries count
+            document.getElementById('entriesCount').textContent = `${data.total} log entries found`;
+
+            // Attach event listeners to the new buttons
+            attachEventListenersToButtons();
+        }
+        async function populateSmartActionFilter() {
+            try {
+                const response = await fetch('/DentalEMR_System/php/logs/get_all_actions.php');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const actionSelect = document.getElementById('actionFilter');
+
+                    if (data.success && data.actions && data.actions.length > 0) {
+                        // Clear existing options except "All Actions"
+                        while (actionSelect.options.length > 1) {
+                            actionSelect.remove(1);
+                        }
+
+                        // Group actions by type
+                        const actionGroups = {
+                            'Session': [],
+                            'CRUD': [],
+                            'System': [],
+                            'Other': []
+                        };
+
+                        data.actions.forEach(action => {
+                            const actionLower = action.toLowerCase();
+
+                            if (actionLower.includes('login') || actionLower.includes('logout') || actionLower.includes('session')) {
+                                actionGroups['Session'].push(action);
+                            } else if (actionLower.includes('insert') || actionLower.includes('update') ||
+                                actionLower.includes('delete') || actionLower.includes('create') ||
+                                actionLower.includes('edit') || actionLower.includes('remove')) {
+                                actionGroups['CRUD'].push(action);
+                            } else if (actionLower.includes('export') || actionLower.includes('import') ||
+                                actionLower.includes('email') || actionLower.includes('deleted')) {
+                                actionGroups['System'].push(action);
+                            } else {
+                                actionGroups['Other'].push(action);
+                            }
+                        });
+
+                        // Add grouped options
+                        Object.keys(actionGroups).forEach(group => {
+                            if (actionGroups[group].length > 0) {
+                                // Add group label (disabled option)
+                                const groupOption = document.createElement('option');
+                                groupOption.disabled = true;
+                                groupOption.textContent = `── ${group} ──`;
+                                actionSelect.appendChild(groupOption);
+
+                                // Add actions in this group
+                                actionGroups[group].forEach(action => {
+                                    const option = document.createElement('option');
+                                    option.value = action;
+                                    option.textContent = action;
+                                    actionSelect.appendChild(option);
+                                });
+                            }
+                        });
+
+                        console.log('Loaded grouped actions:', actionGroups);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading actions:', error);
+            }
+        }
+
+        function attachEventListenersToButtons() {
+            // View buttons
+            document.querySelectorAll('.view-log-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const logId = this.getAttribute('data-log-id');
+                    if (logId) {
+                        viewLogDetails(parseInt(logId));
+                    }
+                });
+            });
+
+            // Delete buttons
+            document.querySelectorAll('.delete-log-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const logId = this.getAttribute('data-log-id');
+                    if (logId) {
+                        showDeleteConfirmation(parseInt(logId));
+                    }
+                });
+            });
+        }
+
+        // Delete confirmation functions
+        let deleteLogId = null;
+        let deleteLogType = null;
+
+        function showDeleteConfirmation(logId) {
+            deleteLogId = logId;
+            deleteLogType = currentTab;
+
+            const row = document.querySelector(`tr[data-log-id="${logId}"]`);
+            let logDetails = '';
+
+            if (currentTab === 'activity') {
+                const user = row.querySelector('.px-6.py-4:nth-child(2) .font-medium').textContent;
+                const action = row.querySelector('.px-6.py-4:nth-child(3) span').textContent;
+                const timestamp = row.querySelector('.px-6.py-4:nth-child(1) .font-medium').textContent;
+                logDetails = `${action} by ${user} at ${timestamp}`;
+            } else {
+                const changedBy = row.querySelector('.px-6.py-4:nth-child(2) .font-medium').textContent;
+                const action = row.querySelector('.px-6.py-4:nth-child(3) span').textContent;
+                const tableName = row.querySelector('.px-6.py-4:nth-child(4) .font-medium').textContent;
+                const timestamp = row.querySelector('.px-6.py-4:nth-child(1) .font-medium').textContent;
+                logDetails = `${action} on ${tableName} by ${changedBy} at ${timestamp}`;
+            }
+
+            document.getElementById('deleteModalTitle').textContent = 'Delete Log Entry';
+            document.getElementById('deleteModalMessage').innerHTML = `
+            Are you sure you want to delete this log entry?<br><br>
+            <strong>${logDetails}</strong><br><br>
+            This action cannot be undone.
+        `;
+
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.add('hidden');
+            deleteLogId = null;
+            deleteLogType = null;
+        }
+
+        async function confirmDelete() {
+            if (!deleteLogId || !deleteLogType) return;
+
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const originalText = confirmBtn.innerHTML;
+
+            try {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Deleting...';
+
+                const response = await fetch('/DentalEMR_System/php/logs/delete_log.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        uid: <?php echo $userId; ?>,
+                        logId: deleteLogId,
+                        logType: deleteLogType
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Log entry deleted successfully', 'success');
+
+                    // Remove the row from the table
+                    const row = document.querySelector(`tr[data-log-id="${deleteLogId}"]`);
+                    if (row) {
+                        row.style.opacity = '0.5';
+                        setTimeout(() => {
+                            row.remove();
+                            updateRowCountAfterDelete();
+                        }, 300);
+                    }
+
+                    closeDeleteModal();
+                } else {
+                    showToast(data.message || 'Failed to delete log entry', 'error');
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error deleting log:', error);
+                showToast('Failed to delete log entry. Please try again.', 'error');
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = originalText;
+            }
+        }
+
+        function updateRowCountAfterDelete() {
+            const totalRows = document.querySelectorAll('#logsBody tr').length;
+            const currentTotal = parseInt(document.getElementById('totalRows').textContent) || 0;
+
+            if (totalRows > 0) {
+                const newTotal = currentTotal - 1;
+                document.getElementById('totalRows').textContent = newTotal;
+                document.getElementById('entriesCount').textContent = `${newTotal} log entries found`;
+
+                // Update end row if needed
+                const endRow = parseInt(document.getElementById('endRow').textContent) || 0;
+                if (endRow > newTotal) {
+                    document.getElementById('endRow').textContent = newTotal;
+                }
+
+                // If no more rows on current page, go to previous page
+                if (totalRows === 0 && currentPage > 1) {
+                    currentPage--;
+                    loadLogs();
+                }
+            } else {
+                showNoResults();
+            }
+        }
+
+        // Helper functions
+        function getActionColor(action) {
+            if (!action) return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+
+            const actionLower = action.toLowerCase();
+
+            const colors = {
+                // Session Actions
+                'login': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                'logout': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+                'failed login': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+
+                // CRUD Actions
+                'insert': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+                'create': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+
+                'update': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+                'edit': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+
+                'delete': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+                'deleted': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+                'remove': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+
+                // Email Actions
+                'email': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
+                'email failed': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+
+                // File Operations
+                'export': 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-300',
+                'import': 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-300',
+
+                // Default
+                'default': 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+            };
+
+            // Check for exact match
+            if (colors[actionLower]) {
+                return colors[actionLower];
+            }
+
+            // Check for partial matches
+            if (actionLower.includes('login')) {
+                if (actionLower.includes('failed')) {
+                    return colors['failed login'];
+                }
+                return colors['login'];
+            }
+
+            if (actionLower.includes('logout')) {
+                return colors['logout'];
+            }
+
+            if (actionLower.includes('insert') || actionLower.includes('create')) {
+                return colors['insert'];
+            }
+
+            if (actionLower.includes('update') || actionLower.includes('edit')) {
+                return colors['update'];
+            }
+
+            if (actionLower.includes('delete') || actionLower.includes('remove')) {
+                return colors['delete'];
+            }
+
+            if (actionLower.includes('email')) {
+                if (actionLower.includes('failed')) {
+                    return colors['email failed'];
+                }
+                return colors['email'];
+            }
+
+            if (actionLower.includes('export')) {
+                return colors['export'];
+            }
+
+            if (actionLower.includes('import')) {
+                return colors['import'];
+            }
+
+            return colors['default'];
+        }
+
+        function formatDateTime(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('en-PH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            const intervals = {
+                year: 31536000,
+                month: 2592000,
+                week: 604800,
+                day: 86400,
+                hour: 3600,
+                minute: 60
+            };
+
+            for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+                const interval = Math.floor(seconds / secondsInUnit);
+                if (interval >= 1) {
+                    return `${interval} ${unit}${interval === 1 ? '' : 's'} ago`;
+                }
+            }
+
+            return 'Just now';
+        }
+
+        function truncateText(text, maxLength) {
+            if (!text) return 'N/A';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        function getBrowserInfo(userAgent) {
+            if (!userAgent) return 'Unknown';
+
+            if (userAgent.includes('Chrome')) return 'Chrome';
+            if (userAgent.includes('Firefox')) return 'Firefox';
+            if (userAgent.includes('Safari')) return 'Safari';
+            if (userAgent.includes('Edge')) return 'Edge';
+
+            return 'Other';
+        }
+
+        async function viewLogDetails(logId) {
+            if (isLoading) {
+                showToast('Please wait, currently loading...', 'info');
+                return;
+            }
+
+            try {
+                showToast('Loading details...', 'info');
+
+                const response = await fetch('/DentalEMR_System/php/logs/get_log_details.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        uid: <?php echo $userId; ?>,
+                        logId: logId,
+                        logType: currentTab
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showLogDetailsModal(data.log);
+                } else {
+                    showToast(data.message || 'Failed to load log details', 'error');
+                }
+            } catch (error) {
+                console.error('Error loading log details:', error);
+                showToast('Failed to load log details. Please try again.', 'error');
+            }
+        }
+
+        function showLogDetailsModal(log) {
+            const modalContent = document.getElementById('modalContent');
+
+            if (currentTab === 'activity') {
+                modalContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Timestamp</h4>
+                            <p class="font-medium">${formatDateTime(log.timestamp)}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${timeAgo(log.timestamp)}</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">User</h4>
+                            <p class="font-medium">${escapeHtml(log.user_name || 'System')}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">User ID: ${log.user_id || 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Action</h4>
+                            <span class="px-2 py-1 text-sm rounded-full ${getActionColor(log.action)}">
+                                ${escapeHtml(log.action)}
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Target</h4>
+                            <p class="font-medium">${escapeHtml(log.target || 'N/A')}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Details</h4>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                            <pre class="text-sm whitespace-pre-wrap">${escapeHtml(log.details || 'No details available')}</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">IP Address</h4>
+                            <code class="block font-mono text-sm bg-gray-100 dark:bg-gray-700 p-2 rounded">${log.ip_address || 'N/A'}</code>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Browser/Device</h4>
+                            <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-sm">
+                                ${escapeHtml(getBrowserInfo(log.user_agent))}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${log.user_agent ? `
+                    <div class="space-y-2">
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">User Agent</h4>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-2 rounded text-xs font-mono overflow-x-auto">
+                            ${escapeHtml(log.user_agent)}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            } else {
+                // History logs modal
+                modalContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Timestamp</h4>
+                            <p class="font-medium">${formatDateTime(log.timestamp)}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">${timeAgo(log.timestamp)}</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Changed By</h4>
+                            <p class="font-medium">${escapeHtml(log.changed_by || 'System')}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Type: ${log.changed_by_type || 'system'}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Action</h4>
+                            <span class="px-2 py-1 text-sm rounded-full ${getActionColor(log.action)}">
+                                ${escapeHtml(log.action)}
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Table & Record</h4>
+                            <p class="font-medium">${escapeHtml(log.table_name || 'N/A')}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Record ID: ${log.record_id || 'N/A'}</p>
+                        </div>
+                    </div>
+                    
+                    ${log.description ? `
+                    <div class="space-y-2">
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Description</h4>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                            <pre class="text-sm whitespace-pre-wrap">${escapeHtml(log.description)}</pre>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    ${log.old_values || log.new_values ? `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        ${log.old_values ? `
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">Old Values</h4>
+                            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                                <pre class="text-sm whitespace-pre-wrap max-h-40 overflow-y-auto">${formatJSONForDisplay(log.old_values)}</pre>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${log.new_values ? `
+                        <div class="space-y-2">
+                            <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">New Values</h4>
+                            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                                <pre class="text-sm whitespace-pre-wrap max-h-40 overflow-y-auto">${formatJSONForDisplay(log.new_values)}</pre>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="space-y-2">
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">IP Address</h4>
+                        <code class="block font-mono text-sm bg-gray-100 dark:bg-gray-700 p-2 rounded">${log.ip_address || 'N/A'}</code>
+                    </div>
+                </div>
+            `;
+            }
+
+            document.getElementById('detailsModal').classList.remove('hidden');
+        }
+
+        function formatJSONForDisplay(jsonString) {
+            try {
+                if (!jsonString) return 'N/A';
+                const parsed = JSON.parse(jsonString);
+                return JSON.stringify(parsed, null, 2);
+            } catch (e) {
+                return jsonString;
+            }
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.add('hidden');
+        }
+
+        // Add click handler to close modal when clicking on backdrop
+        document.getElementById('detailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDetailsModal();
+            }
+        });
+
+        // Add click handler for delete modal backdrop
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+
+        // Add Escape key to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (!document.getElementById('detailsModal').classList.contains('hidden')) {
+                    closeDetailsModal();
+                }
+                if (!document.getElementById('deleteModal').classList.contains('hidden')) {
+                    closeDeleteModal();
+                }
+                if (!document.getElementById('exportModal').classList.contains('hidden')) {
+                    closeExportModal();
+                }
+            }
+        });
+
+        function escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updatePagination(data) {
+            totalPages = Math.ceil(data.total / itemsPerPage);
+
+            document.getElementById('startRow').textContent = ((currentPage - 1) * itemsPerPage) + 1;
+            document.getElementById('endRow').textContent = Math.min(currentPage * itemsPerPage, data.total);
+            document.getElementById('totalRows').textContent = data.total;
+
+            document.getElementById('entriesCount').textContent = `${data.total} log entries found`;
+
+            // Update page numbers
+            const pageNumbers = document.getElementById('pageNumbers');
+            pageNumbers.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.className = `px-3 py-1 rounded ${i === currentPage ? 'bg-blue-600 text-white' : 'border hover:bg-gray-50 dark:hover:bg-gray-700'}`;
+                button.textContent = i;
+                button.addEventListener('click', () => changePage(i));
+                pageNumbers.appendChild(button);
+            }
+
+            // Update button states
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+
+            document.getElementById('pagination').classList.remove('hidden');
+        }
+
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            showSkeletonLoading();
+            setTimeout(() => loadLogs(), 100);
+        }
+
+        function clearFilters() {
+            // Clear date filters (empty = show all records)
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            document.getElementById('userFilter').value = '';
+            document.getElementById('actionFilter').value = '';
+            currentPage = 1;
+
+            // Reload logs with cleared filters
+            showSkeletonLoading();
+            setTimeout(() => loadLogs(), 100);
+        }
+
+        function showExportModal() {
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+        }
+
+        function proceedExport() {
+            const format = document.querySelector('input[name="exportFormat"]:checked').value;
+            const filters = {
+                dateFrom: document.getElementById('dateFrom').value,
+                dateTo: document.getElementById('dateTo').value,
+                userId: document.getElementById('userFilter').value,
+                action: document.getElementById('actionFilter').value,
+                logType: currentTab
+            };
+
+            // Trigger download
+            const params = new URLSearchParams({
+                uid: <?php echo $userId; ?>,
+                format: format,
+                ...filters
+            });
+
+            window.open(`/DentalEMR_System/php/logs/export_logs.php?${params}`, '_blank');
+            closeExportModal();
+            showToast('Export started', 'success');
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `flex items-center p-4 rounded-lg shadow-lg transform transition-all duration-300 translate-x-full ${type === 'error' ? 'bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 'bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-300'}`;
+            toast.innerHTML = `
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-3"></i>
+            <span>${message}</span>
+        `;
+
+            const container = document.getElementById('toastContainer');
+            container.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 10);
+
+            // Remove after delay
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 5000);
+        }
     </script>
 </body>
 

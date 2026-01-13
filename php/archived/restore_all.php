@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: application/json");
-include_once "/dentalemr_system/php/manageusers/log_history.php";
-$conn = new mysqli("localhost", "root", "", "dentalemr_system");
+include_once "/DentalEMR_System/php/manageusers/log_history.php";
+$conn = new mysqli("localhost", "u401132124_dentalclinic", "Mho_DentalClinic1st", "u401132124_mho_dentalemr");
 if ($conn->connect_error) {
     http_response_code(500);
     echo json_encode(["success" => false, "message" => "Database connection failed."]);

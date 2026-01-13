@@ -134,8 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'user_name' => urlencode($userName),
             'user_type' => $userType,
             'redirect' => $userType === 'Dentist'
-                ? "/dentalemr_system/html/index.php?uid={$user['id']}"
-                : "/dentalemr_system/html/a_staff/addpatient.php?uid={$user['id']}"
+                ? "/DentalEMR_System/html/index.php?uid={$user['id']}"
+                : "/DentalEMR_System/html/a_staff/addpatient.php?uid={$user['id']}"
         ]);
         exit;
     }
@@ -187,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => 'Login successful! A verification code has been sent to your email.',
             'user_id' => $user['id'],
             'user_name' => urlencode($user['name']),
-            'redirect' => '/dentalemr_system/php/login/verify_mfa.php',
+            'redirect' => '/DentalEMR_System/php/login/verify_mfa.php',
             'email_sent' => true
         ]);
     } else {
@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => 'Login successful! Please check your email for the verification code (or use debug mode below).',
             'user_id' => $user['id'],
             'user_name' => urlencode($user['name']),
-            'redirect' => '/dentalemr_system/php/login/verify_mfa.php',
+            'redirect' => '/DentalEMR_System/php/login/verify_mfa.php',
             'email_sent' => false,
             'debug_note' => 'Email sending failed - debug mode active'
         ]);

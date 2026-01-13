@@ -47,7 +47,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -70,10 +70,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +102,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +131,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +152,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,7 +166,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -189,13 +189,21 @@ if (!$isOfflineMode) {
 // Get patient ID from URL
 $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Verify patient exists
-if ($patientId > 0) {
+// Get patient name directly from database for immediate display
+$patientName = 'Loading...';
+$patientInitial = '';
+
+if ($patientId > 0 && !$isOfflineMode) {
     $stmt = $conn->prepare("SELECT patient_id, firstname, middlename, surname FROM patients WHERE patient_id = ?");
     $stmt->bind_param("i", $patientId);
     $stmt->execute();
     $result = $stmt->get_result();
-    if ($result->num_rows === 0) {
+    if ($result->num_rows > 0) {
+        $patient = $result->fetch_assoc();
+        $middleInitial = !empty($patient['middlename']) ? $patient['middlename'][0] . '.' : '';
+        $patientName = htmlspecialchars($patient['firstname'] . ' ' . $middleInitial . ' ' . $patient['surname']);
+        $patientInitial = htmlspecialchars(substr($patient['firstname'], 0, 1) . substr($patient['surname'], 0, 1));
+    } else {
         $patientId = 0; // Reset if patient doesn't exist
     }
     $stmt->close();
@@ -210,6 +218,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Treatment Records - Oral Health</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -325,18 +334,18 @@ $conn->close();
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a  href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -360,7 +369,7 @@ $conn->close();
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -594,7 +603,7 @@ $conn->close();
                 <!-- Patient Name and Add Button -->
                 <div class="items-center justify-between flex flex-col sm:flex-row mb-4 gap-2">
                     <p id="patientName" class="italic text-base sm:text-lg font-medium text-gray-900 dark:text-white">
-                        Loading ...
+                        <?php echo $patientName; ?>
                     </p>
                     <div class="flex flex-row items-center gap-2 w-full sm:w-auto">
                         <!-- Refresh Button -->
@@ -999,7 +1008,7 @@ $conn->close();
             }
         });
 
-        function initializePage() {
+        async function initializePage() {
             console.log('Initializing page with Patient ID:', currentPatientId, 'User ID:', currentUserId);
 
             if (!currentPatientId || currentPatientId <= 0) {
@@ -1016,8 +1025,29 @@ $conn->close();
             // Set navigation links
             updateNavigationLinks();
 
-            // Load patient name first
-            loadPatientInfo();
+            // Check if patient name is already loaded from PHP
+            const patientNameElement = document.getElementById("patientName");
+            const currentPatientName = patientNameElement ? patientNameElement.textContent.trim() : '';
+            
+            if (currentPatientName === 'Loading...' || currentPatientName === '') {
+                // Load patient name via AJAX
+                await loadPatientInfo();
+            } else {
+                // Patient name already loaded from PHP
+                patientName = currentPatientName;
+                console.log('Patient name already loaded from PHP:', patientName);
+                
+                // Update placeholder
+                const patientNamePlaceholder = document.getElementById("patientNamePlaceholder");
+                if (patientNamePlaceholder) {
+                    patientNamePlaceholder.textContent = patientName;
+                }
+                
+                // Remove italic style
+                if (patientNameElement) {
+                    patientNameElement.classList.remove('italic');
+                }
+            }
 
             // Load oral records
             loadPatientOralRecords();
@@ -1050,45 +1080,65 @@ $conn->close();
         async function loadPatientInfo() {
             try {
                 console.log('Loading patient info for ID:', currentPatientId);
-                const response = await fetch(`/dentalemr_system/php/patients/get_patient.php?id=${currentPatientId}&cache=${Date.now()}`);
+                
+                const patientNameElement = document.getElementById("patientName");
+                
+                // Show loading indicator
+                if (patientNameElement) {
+                    patientNameElement.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading patient...';
+                }
 
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Patient info response:', result);
+                // Try to fetch patient data
+                const response = await fetch(`/DentalEMR_System/php/patients/get_patient.php?id=${currentPatientId}&cache=${Date.now()}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('Patient API response:', result);
 
-                    if (result.success && result.data) {
-                        const patient = result.data;
-                        patientName = `${patient.firstname} ${patient.middlename ? patient.middlename + '. ' : ''}${patient.surname}`;
-                        console.log('Patient name loaded:', patientName);
+                if (result.success && result.data) {
+                    const patient = result.data;
+                    const middleInitial = patient.middlename ? patient.middlename.charAt(0).toUpperCase() + '. ' : '';
+                    patientName = `${patient.firstname} ${middleInitial}${patient.surname}`.trim();
+                    console.log('Patient name loaded:', patientName);
 
-                        // Update patient name display
-                        const patientNameElement = document.getElementById("patientName");
-                        if (patientNameElement) {
-                            patientNameElement.textContent = patientName;
-                            patientNameElement.classList.remove('italic');
-                        }
-
-                        // Update placeholder in no records message
-                        const patientNamePlaceholder = document.getElementById("patientNamePlaceholder");
-                        if (patientNamePlaceholder) {
-                            patientNamePlaceholder.textContent = patientName;
-                        }
-                    } else {
-                        console.warn('Patient info not found or error:', result.message);
+                    // Update patient name display
+                    if (patientNameElement) {
+                        patientNameElement.textContent = patientName;
+                        patientNameElement.classList.remove('italic');
                     }
+
+                    // Update placeholder in no records message
+                    const patientNamePlaceholder = document.getElementById("patientNamePlaceholder");
+                    if (patientNamePlaceholder) {
+                        patientNamePlaceholder.textContent = patientName;
+                    }
+                    
+                    return true;
                 } else {
-                    console.warn('Failed to fetch patient info:', response.status);
+                    console.warn('Patient info API error:', result.message);
+                    showPatientNameFallback('Patient not found');
+                    return false;
                 }
             } catch (error) {
-                console.warn('Could not load patient info:', error);
-                const patientNameElement = document.getElementById("patientName");
-                if (patientNameElement) {
-                    patientNameElement.textContent = 'Patient ID: ' + currentPatientId;
-                    patientNameElement.classList.remove('italic');
-                }
+                console.error('Error loading patient info:', error);
+                showPatientNameFallback('Error loading patient');
+                return false;
             }
         }
-
+        function showPatientNameFallback(message = '') {
+            const patientNameElement = document.getElementById("patientName");
+            if (patientNameElement) {
+                if (message) {
+                    patientNameElement.textContent = message;
+                } else {
+                    patientNameElement.textContent = 'Patient ID: ' + currentPatientId;
+                }
+                patientNameElement.classList.remove('italic');
+            }
+        }
         function refreshRecords() {
             console.log('Refreshing records...');
             showLoading(true);
@@ -1152,7 +1202,7 @@ $conn->close();
                 }
 
                 // Fetch data from API with cache busting
-                const apiUrl = `/dentalemr_system/php/treatmentrecords/view_oral_api.php?id=${currentPatientId}&t=${Date.now()}`;
+                const apiUrl = `/DentalEMR_System/php/treatmentrecords/view_oral_api.php?id=${currentPatientId}&t=${Date.now()}`;
                 console.log('Fetching from API:', apiUrl);
 
                 const response = await fetch(apiUrl, {
@@ -1315,7 +1365,7 @@ $conn->close();
                 // Clear previous data
                 if (oralDataContainer) oralDataContainer.innerHTML = '';
 
-                const response = await fetch(`/dentalemr_system/php/treatmentrecords/view_oral_api.php?record=${recordId}&t=${Date.now()}`, {
+                const response = await fetch(`/DentalEMR_System/php/treatmentrecords/view_oral_api.php?record=${recordId}&t=${Date.now()}`, {
                     cache: 'no-store'
                 });
 
@@ -1677,7 +1727,7 @@ $conn->close();
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php?uid=" + currentUserId;
+                window.location.href = "/DentalEMR_System/php/login/logout.php?uid=" + currentUserId;
             }, inactivityTime);
         }
 
@@ -1781,7 +1831,7 @@ $conn->close();
                 saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
                 saveBtn.disabled = true;
 
-                const response = await fetch("/dentalemr_system/php/treatmentrecords/save_ohc.php", {
+                const response = await fetch("/DentalEMR_System/php/treatmentrecords/save_ohc.php", {
                     method: "POST",
                     body: formData
                 });
@@ -1861,7 +1911,7 @@ $conn->close();
     </script>
 
         <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
     
 
     <!-- Offline/Online Sync Handler -->
@@ -1972,7 +2022,7 @@ $conn->close();
                 const patientIds = archiveActions.map(action => action.data.patient_id || action.data.id);
 
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/treatment.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -2038,7 +2088,7 @@ $conn->close();
 
                 // Online: proceed with normal archive
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/treatment.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',

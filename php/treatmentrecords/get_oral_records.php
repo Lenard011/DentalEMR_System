@@ -4,9 +4,9 @@ header("Access-Control-Allow-Origin: *");
 
 // Simple direct approach
 $servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "dentalemr_system";
+$username = "u401132124_dentalclinic";
+$password = "Mho_DentalClinic1st";
+$dbname = "u401132124_mho_dentalemr";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);

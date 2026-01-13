@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'user_id' => $user['id'],
             'user_name' => urlencode($userName),
             'user_type' => $userType,
-            'redirect' => "/dentalemr_system/html/a_staff/addpatient.php?uid={$user['id']}"
+            'redirect' => "/DentalEMR_System/html/a_staff/staff_dashboard.php?uid={$user['id']}"
         ]);
         exit;
     }
@@ -164,7 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => 'Login successful! A verification code has been sent to your email.',
             'user_id' => $user['id'],
             'user_name' => urlencode($user['name']),
-            'redirect' => '/dentalemr_system/php/login/verify_mfa.php',
+            'redirect' => '/DentalEMR_System/php/login/verify_mfa.php',
             'email_sent' => true
         ]);
     } else {
@@ -173,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'message' => 'Login successful! Please check your email for the verification code.',
             'user_id' => $user['id'],
             'user_name' => urlencode($user['name']),
-            'redirect' => '/dentalemr_system/php/login/verify_mfa.php',
+            'redirect' => '/DentalEMR_System/php/login/verify_mfa.php',
             'email_sent' => false
         ]);
     }

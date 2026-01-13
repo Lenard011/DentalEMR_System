@@ -1,9 +1,9 @@
 <?php
 // conn.php - Database connection
 $host = "localhost";
-$username = "root";
-$password = "";
-$database = "dentalemr_system";
+$username = "u401132124_dentalclinic";
+$password = "Mho_DentalClinic1st";
+$database = "u401132124_mho_dentalemr";
 
 $conn = new mysqli($host, $username, $password, $database);
 

@@ -3,9 +3,9 @@ header('Content-Type: application/json; charset=utf-8');
 
 // ✅ Create a PDO connection
 $host = "localhost";
-$db   = "dentalemr_system";
-$user = "root";
-$pass = "";
+$db   = "u401132124_mho_dentalemr";
+$user = "u401132124_dentalclinic";
+$pass = "Mho_DentalClinic1st";
 $charset = "utf8mb4";
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

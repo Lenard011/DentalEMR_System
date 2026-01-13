@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MHO Dental Clinic - Login</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <link href="../css/style.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -515,7 +516,7 @@
             <div class="card bg-white rounded-2xl p-8 dark:bg-gray-800">
                 <div class="flex items-center justify-between mb-8">
                     <div class="logo-container">
-                        <img src="/dentalemr_system/img/DOH Logo.png" class="rounded-full w-16 h-16" alt="DOH Logo">
+                        <img src="/DentalEMR_System/img/DOH Logo.png" class="rounded-full w-16 h-16" alt="DOH Logo">
                     </div>
                     <div class="text-center flex-1 mx-4">
                         <h1 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">
@@ -526,7 +527,7 @@
                         </h3>
                     </div>
                     <div class="logo-container">
-                        <img src="../../img/DOHDentalLogo-removebg-preview.png" class="w-24 h-16" alt="DOH Dental Logo">
+                        <img src="/DentalEMR_System/img/DOHDentalLogo-removebg-preview.png" class="w-24 h-16" alt="DOH Dental Logo">
                     </div>
                 </div>
 
@@ -573,7 +574,7 @@
             <div class="card bg-white rounded-2xl p-8 dark:bg-gray-800">
                 <div class="flex items-center justify-between mb-8">
                     <div class="logo-container">
-                        <img src="/dentalemr_system/img/DOH Logo.png" class="rounded-full w-16 h-16" alt="DOH Logo">
+                        <img src="/DentalEMR_System/img/DOH Logo.png" class="rounded-full w-16 h-16" alt="DOH Logo">
                     </div>
                     <div class="text-center flex-1 mx-4">
                         <h1 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">
@@ -584,7 +585,7 @@
                         </h3>
                     </div>
                     <div class="logo-container">
-                        <img src="../../img/DOHDentalLogo-removebg-preview.png" class="w-24 h-16" alt="DOH Dental Logo">
+                        <img src="/DentalEMR_System/img/DOHDentalLogo-removebg-preview.png" class="w-24 h-16" alt="DOH Dental Logo">
                     </div>
                 </div>
 
@@ -647,7 +648,7 @@
             <div class="card bg-white rounded-2xl p-8 dark:bg-gray-800">
                 <div class="flex items-center justify-between mb-8">
                     <div class="logo-container">
-                        <img src="/dentalemr_system/img/DOH Logo.png" class="rounded-full w-16 h-16" alt="DOH Logo">
+                        <img src="/DentalEMR_System/img/DOH Logo.png" class="rounded-full w-16 h-16" alt="DOH Logo">
                     </div>
                     <div class="text-center flex-1 mx-4">
                         <h1 class="text-lg font-bold text-gray-900 dark:text-white leading-tight">
@@ -658,7 +659,7 @@
                         </h3>
                     </div>
                     <div class="logo-container">
-                        <img src="../../img/DOHDentalLogo-removebg-preview.png" class="w-24 h-16" alt="DOH Dental Logo">
+                        <img src="/DentalEMR_System/img/DOHDentalLogo-removebg-preview.png" class="w-24 h-16" alt="DOH Dental Logo">
                     </div>
                 </div>
 
@@ -720,7 +721,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
-    <script src="../../js/tailwind.config.js"></script>
+    <script src="/DentalEMR_System/js/tailwind.config.js"></script>
 
     <script>
         // Simple offline login system
@@ -921,7 +922,7 @@
                 submitBtn.disabled = true;
                 alertDiv.style.display = 'none';
 
-                fetch('/dentalemr_system/php/login/login.php', {
+                fetch('/DentalEMR_System/php/login/login.php', {
                     method: 'POST',
                     body: formData
                 })
@@ -994,7 +995,7 @@
                 submitBtn.disabled = true;
                 alertDiv.style.display = 'none';
 
-                fetch('/dentalemr_system/php/login/staff_login.php', { // Make sure this also returns JSON
+                fetch('/DentalEMR_System/php/login/staff_login.php', { // Make sure this also returns JSON
                     method: 'POST',
                     body: formData
                 })
@@ -1186,7 +1187,7 @@
 
                         setTimeout(() => {
                             // Redirect to index.php in offline mode
-                            window.location.href = '/dentalemr_system/html/index.php?offline=true';
+                            window.location.href = '/html/index.php?offline=true';
                         }, 1000);
                     } else {
                         console.log('Offline login failed');
@@ -1236,7 +1237,7 @@
             function proceedWithRedirect(data, userType) {
                 if (data.status === 'mfa_required') {
                     setTimeout(() => {
-                        window.location.href = data.redirect || '/dentalemr_system/php/login/verify_mfa.php';
+                        window.location.href = data.redirect || '/php/login/verify_mfa.php';
                     }, 1500);
                 } else if (data.status === 'success') {
                     setTimeout(() => {
@@ -1244,12 +1245,12 @@
                             window.location.href = data.redirect;
                         } else if (userType === 'Dentist') {
                             window.location.href = data.user_id ?
-                                `/dentalemr_system/html/index.php?uid=${data.user_id}` :
-                                '/dentalemr_system/html/index.php';
+                                `/html/index.php?uid=${data.user_id}` :
+                                '/html/index.php';
                         } else {
                             window.location.href = data.user_id ?
-                                `/dentalemr_system/html/a_staff/addpatient.php?uid=${data.user_id}` :
-                                '/dentalemr_system/html/a_staff/addpatient.php';
+                                `/html/a_staff/addpatient.php?uid=${data.user_id}` :
+                                '/html/a_staff/addpatient.php';
                         }
                     }, 1500);
                 }

@@ -207,7 +207,7 @@ class UniversalOfflineStorage {
                 }
             });
 
-            const response = await fetch('/dentalemr_system/php/register_patients/addpatient.php', {
+            const response = await fetch('/DentalEMR_System/php/register_patients/addpatient.php', {
                 method: 'POST',
                 body: formData
             });
@@ -232,7 +232,7 @@ class UniversalOfflineStorage {
                 }
             });
 
-            const response = await fetch('/dentalemr_system/php/treatment/add_treatment.php', {
+            const response = await fetch('/DentalEMR_System/php/treatment/add_treatment.php', {
                 method: 'POST',
                 body: formData
             });

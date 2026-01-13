@@ -19,7 +19,7 @@ if (!in_array($part, ['1', '2', 'both'])) {
 }
 
 // Database connection
-$conn = new mysqli("localhost", "root", "", "dentalemr_system");
+$conn = new mysqli("localhost", "u401132124_dentalclinic", "Mho_DentalClinic1st", "u401132124_mho_dentalemr");
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }

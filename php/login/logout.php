@@ -7,7 +7,7 @@ require_once '../manageusers/activity_logger.php';
 
 // Check if user ID is provided
 if (!isset($_GET['uid'])) {
-    header('Location: /dentalemr_system/html/login/login.html');
+    header('Location: /DentalEMR_System/html/login/login.html');
     exit;
 }
 
@@ -29,9 +29,9 @@ if (isset($_SESSION['active_sessions'][$userId])) {
 // DATABASE CONNECTION FOR LOGGING
 try {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $pdo = new PDO("mysql:host=$host;dbname=$dbName;charset=utf8", $dbUser, $dbPass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -58,5 +58,5 @@ if (empty($_SESSION['active_sessions'])) {
 }
 
 // Redirect back to login
-header('Location: /dentalemr_system/html/login/login.html');
+header('Location: /DentalEMR_System/html/login/login.html');
 exit;

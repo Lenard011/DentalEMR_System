@@ -25,7 +25,7 @@ elseif (!empty($_SESSION['pending_users']) && is_array($_SESSION['pending_users'
 if (!$user || empty($user['id']) || empty($user['type'])) {
     echo "<script>
         alert('Pending user session incomplete. Please log in again.');
-        window.location.href='/dentalemr_system/html/login/login.html';
+        window.location.href='/DentalEMR_System/html/login/login.html';
     </script>";
     exit;
 }
@@ -102,8 +102,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
                     'vdate' => $verificationDate
                 ]);
 
-                // After successful MFA code verification, replace the entire redirect section with:
-
                 // NEW MULTI-SESSION SYSTEM
                 if (!isset($_SESSION['active_sessions'])) {
                     $_SESSION['active_sessions'] = [];
@@ -134,11 +132,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
                     // Return user data for JavaScript to capture
                     $userData = $_SESSION['pending_offline_user'];
                     $redirect = $userType === 'Dentist'
-                        ? "/dentalemr_system/html/index.php?uid={$userId}"
-                        : "/dentalemr_system/html/a_staff/addpatient.php?uid={$userId}";
+                        ? "/DentalEMR_System/html/index.php?uid={$userId}"
+                        : "/DentalEMR_System/html/a_staff/staff_dashboard.php?uid={$userId}";
 
-                    // echo "Login successful&user_id=" . $userData['id'] . "&user_name=" . urlencode($userData['name']) . "&redirect=" . urlencode($redirect);
-                    echo "<script> alert('Verified successfully!'); window.location.href='{$redirect}'; </script>";
+                    // Direct redirect without alert
+                    echo "<script>window.location.href='{$redirect}';</script>";
+
                     // Clean up
                     unset($_SESSION['pending_offline_user']);
                     unset($_SESSION['pending_user']);
@@ -154,11 +153,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
                     ];
 
                     $redirect = $userType === 'Dentist'
-                        ? "/dentalemr_system/html/index.php?uid={$userId}"
-                        : "/dentalemr_system/html/a_staff/addpatient.php?uid={$userId}";
+                        ? "/DentalEMR_System/html/index.php?uid={$userId}"
+                        : "/DentalEMR_System/html/a_staff/staff_dashboard.php?uid={$userId}";
 
-                    // echo "Login successful&user_id=" . $userId . "&user_name=" . urlencode($userName) . "&redirect=" . urlencode($redirect);
-                    echo "<script> alert('Verified successfully!'); window.location.href='{$redirect}'; </script>";
+                    // Direct redirect without alert
+                    echo "<script>window.location.href='{$redirect}';</script>";
 
                     // Clean up
                     unset($_SESSION['pending_user']);
@@ -183,7 +182,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MHO Dental Clinic - Verify Identity</title>
-    <link href="../css/style.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
+    <link href="/DentalEMR_System/css/style.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -549,7 +549,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
             <div class="card bg-white rounded-2xl p-4 dark:bg-gray-800">
                 <div class="flex items-center justify-between mb-2">
                     <div class="logo-container">
-                        <img src="/dentalemr_system/img/DOH Logo.png" class="rounded-full w-16 h-16" alt="DOH Logo">
+                        <img src="/DentalEMR_System/img/DOH Logo.png" class="rounded-full w-16 h-16" alt="DOH Logo">
                     </div>
                     <div class="text-center flex-1 mx-1">
                         <h1 class="text-sm font-bold text-gray-900 dark:text-white leading-tight">
@@ -560,7 +560,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
                         </h3>
                     </div>
                     <div class="logo-container">
-                        <img src="../../img/DOHDentalLogo-removebg-preview.png" class="w-24 h-16" alt="DOH Dental Logo">
+                        <img src="/DentalEMR_System/img/DOHDentalLogo-removebg-preview.png" class="w-24 h-16" alt="DOH Dental Logo">
                     </div>
                 </div>
 
@@ -650,7 +650,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['mfa_code'])) {
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 text-center">
-                    <a href="/dentalemr_system/html/login/login.html"
+                    <a href="/DentalEMR_System/html/login/login.html"
                         class="btn-secondary font-medium rounded-lg text-sm px-4 py-2.5 inline-flex items-center">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Back to Login

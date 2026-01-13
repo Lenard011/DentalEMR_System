@@ -4,9 +4,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 $host = "localhost";
-$user = "root";  // change if needed
-$pass = "";      // change if needed
-$db   = "dentalemr_system";
+$user = "u401132124_dentalclinic";  // change if needed
+$pass = "Mho_DentalClinic1st";      // change if needed
+$db   = "u401132124_mho_dentalemr";
 
 $conn = new mysqli($host, $user, $pass, $db);
 

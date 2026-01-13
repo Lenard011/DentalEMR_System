@@ -10,6 +10,110 @@ require_once '../conn.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
+// ===========================
+// HISTORY LOGGING FUNCTION
+// ===========================
+function addHistoryLog($conn, $tableName, $recordId, $action, $changedByType, $changedById, $oldValues = null, $newValues = null, $description = null)
+{
+    try {
+        $sql = "INSERT INTO history_logs 
+                (table_name, record_id, action, changed_by_type, changed_by_id, old_values, new_values, description, ip_address) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            error_log("Failed to prepare history log statement: " . $conn->error);
+            return false;
+        }
+
+        $oldJSON = $oldValues ? json_encode($oldValues, JSON_UNESCAPED_UNICODE) : null;
+        $newJSON = $newValues ? json_encode($newValues, JSON_UNESCAPED_UNICODE) : null;
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+        $stmt->bind_param(
+            "sississss",
+            $tableName,
+            $recordId,
+            $action,
+            $changedByType,
+            $changedById,
+            $oldJSON,
+            $newJSON,
+            $description,
+            $ip
+        );
+
+        $success = $stmt->execute();
+        if (!$success) {
+            error_log("Failed to execute history log: " . $stmt->error);
+        }
+
+        $stmt->close();
+        return $success;
+    } catch (Exception $e) {
+        error_log("Error in addHistoryLog: " . $e->getMessage());
+        return false;
+    }
+}
+
+// ===========================
+// GET USER INFORMATION FUNCTION
+// ===========================
+function getLoggedUserInfo($conn, $input = [])
+{
+    $userId = 0;
+    $userType = 'System';
+    $userName = 'System';
+
+    // Check POST data first (from form submissions)
+    if (!empty($input['uid'])) {
+        $userId = intval($input['uid']);
+        $userType = $input['user_type'] ?? 'System';
+        $userName = $input['user_name'] ?? 'System User';
+    }
+    // Check session
+    elseif (isset($_SESSION['active_sessions'])) {
+        foreach ($_SESSION['active_sessions'] as $session) {
+            if (isset($session['id']) && isset($session['type'])) {
+                $userId = $session['id'];
+                $userType = $session['type'];
+                $userName = $session['name'] ?? $session['email'] ?? 'System User';
+                break;
+            }
+        }
+    }
+
+    return [
+        'id' => $userId,
+        'type' => $userType,
+        'name' => $userName
+    ];
+}
+
+// ===========================
+// GET PATIENT NAME FUNCTION
+// ===========================
+function getPatientName($conn, $patientId)
+{
+    try {
+        $stmt = $conn->prepare("SELECT firstname, surname FROM patients WHERE patient_id = ?");
+        $stmt->bind_param("i", $patientId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $patient = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($patient) {
+            $name = trim(($patient['firstname'] ?? '') . ' ' . ($patient['surname'] ?? ''));
+            return $name ?: "Patient ID: $patientId";
+        }
+        return "Unknown Patient (ID: $patientId)";
+    } catch (Exception $e) {
+        error_log("Error getting patient name: " . $e->getMessage());
+        return "Patient ID: $patientId";
+    }
+}
+
 try {
     // Check if it's a POST request
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -23,21 +127,26 @@ try {
         throw new Exception("Invalid patient ID.");
     }
 
+    // Get user information for history logging
+    $loggedUser = getLoggedUserInfo($conn, $_POST);
+    $patientName = getPatientName($conn, $patient_id);
+
     // Handle examination date
     $examination_date = isset($_POST['examination_date']) ? trim($_POST['examination_date']) : '';
-    
+
     // Validate and format the date
     if (!empty($examination_date)) {
         // Validate date format (YYYY-MM-DD)
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $examination_date)) {
             throw new Exception("Invalid date format. Please use YYYY-MM-DD format.");
         }
-        
+
         // Convert to MySQL datetime format
         $examination_datetime = $examination_date . ' ' . date('H:i:s');
     } else {
         // Use current date/time if not provided
         $examination_datetime = date('Y-m-d H:i:s');
+        $examination_date = date('Y-m-d');
     }
 
     // Collect all fields
@@ -64,6 +173,13 @@ try {
         'temp_total_df' => isset($_POST['temp_total_df']) ? intval($_POST['temp_total_df']) : 0
     ];
 
+    // Prepare the new data for history logging
+    $newData = array_merge([
+        'patient_id' => $patient_id,
+        'examination_date' => $examination_date,
+        'created_at' => $examination_datetime
+    ], $fields);
+
     // Prepare SQL statement
     $sql = "INSERT INTO oral_health_condition (
         patient_id, orally_fit_child, dental_caries, gingivitis, periodontal_disease,
@@ -82,7 +198,7 @@ try {
 
     // Debug: Check field values
     error_log("Examination datetime: " . $examination_datetime);
-    
+
     // Bind parameters - FIXED: 23 parameters total (22 fields + NOW() for updated_at)
     $bind_result = $stmt->bind_param(
         "isssssssssiiiiiiiiiiis", // Changed to 22 'i's and 's's
@@ -116,11 +232,31 @@ try {
 
     // Execute the statement
     if ($stmt->execute()) {
+        $recordId = $stmt->insert_id;
+
+        // Log the history
+        addHistoryLog(
+            $conn,
+            "oral_health_condition",
+            $recordId,
+            "CREATE",
+            $loggedUser['type'],
+            $loggedUser['id'],
+            null, // No old values for new record
+            $newData,
+            "Added oral health condition for patient: $patientName (ID: $patientId) by {$loggedUser['type']} {$loggedUser['name']}"
+        );
+
         $response = [
             'success' => true,
             'message' => 'Oral health record saved successfully.',
-            'record_id' => $stmt->insert_id,
-            'examination_date' => $examination_date ?: date('Y-m-d')
+            'record_id' => $recordId,
+            'examination_date' => $examination_date,
+            'logged_by' => [
+                'type' => $loggedUser['type'],
+                'name' => $loggedUser['name'],
+                'id' => $loggedUser['id']
+            ]
         ];
 
         echo json_encode($response);

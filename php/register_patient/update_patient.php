@@ -28,7 +28,7 @@ if (!isset($_GET['uid'])) {
     if (thisIsAjaxRequest()) {
         echo json_encode($response);
     } else {
-        echo "<script>alert('Invalid session. Please log in again.'); window.location.href = '/dentalemr_system/html/login/login.html';</script>";
+        echo "<script>alert('Invalid session. Please log in again.'); window.location.href = '/DentalEMR_System/html/login/login.html';</script>";
     }
     exit;
 }
@@ -41,7 +41,7 @@ if (!isset($_SESSION['active_sessions']) || !isset($_SESSION['active_sessions'][
     if (thisIsAjaxRequest()) {
         echo json_encode($response);
     } else {
-        echo "<script>alert('Please log in first.'); window.location.href = '/dentalemr_system/html/login/login.html';</script>";
+        echo "<script>alert('Please log in first.'); window.location.href = '/DentalEMR_System/html/login/login.html';</script>";
     }
     exit;
 }
@@ -63,7 +63,7 @@ if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
         if (thisIsAjaxRequest()) {
             echo json_encode($response);
         } else {
-            echo "<script>alert('You have been logged out due to inactivity.'); window.location.href = '/dentalemr_system/html/login/login.html';</script>";
+            echo "<script>alert('You have been logged out due to inactivity.'); window.location.href = '/DentalEMR_System/html/login/login.html';</script>";
         }
         exit;
     }
@@ -76,7 +76,7 @@ $_SESSION['active_sessions'][$userId]['last_activity'] = time();
 $loggedUser = $_SESSION['active_sessions'][$userId];
 
 // Database connection
-$conn = new mysqli("localhost", "root", "", "dentalemr_system");
+$conn = new mysqli("localhost", "u401132124_dentalclinic", "Mho_DentalClinic1st", "u401132124_mho_dentalemr");
 if ($conn->connect_error) {
     $response = ["success" => false, "error" => "Database connection failed"];
     if (thisIsAjaxRequest()) {
@@ -133,7 +133,7 @@ if ($isUpdateRequest) {
             if (thisIsAjaxRequest()) {
                 echo json_encode($response);
             } else {
-                header("Location: ../../html/viewrecord.php?uid={$userId}&error=nopid");
+                header("Location: /DentalEMR_System/html/viewrecord.php?uid={$userId}&error=nopid");
             }
             exit();
         }
@@ -289,14 +289,14 @@ if ($isUpdateRequest) {
             "success" => true,
             "message" => "Patient updated successfully",
             "patient_id" => $patient_id,
-            "redirect" => "/dentalemr_system/html/viewrecord.php?uid={$userId}&id=" . urlencode($patient_id) . "&updated=1"
+            "redirect" => "/DentalEMR_System/html/viewrecord.php?uid={$userId}&id=" . urlencode($patient_id) . "&updated=1"
         ];
 
         if (thisIsAjaxRequest()) {
             echo json_encode($response);
         } else {
             // Redirect for non-AJAX requests
-            header("Location: /dentalemr_system/html/viewrecord.php?uid={$userId}&id=" . urlencode($patient_id) . "&updated=1");
+            header("Location: /DentalEMR_System/html/viewrecord.php?uid={$userId}&id=" . urlencode($patient_id) . "&updated=1");
         }
 
         $conn->close();
@@ -312,7 +312,7 @@ if ($isUpdateRequest) {
         if (thisIsAjaxRequest()) {
             echo json_encode($response);
         } else {
-            header("Location: /dentalemr_system/html/viewrecord.php?uid={$userId}&id=" . urlencode($patient_id) . "&updated=0&error=" . urlencode($e->getMessage()));
+            header("Location: /DentalEMR_System/html/viewrecord.php?uid={$userId}&id=" . urlencode($patient_id) . "&updated=0&error=" . urlencode($e->getMessage()));
         }
 
         if (isset($conn) && $conn) {

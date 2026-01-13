@@ -2,9 +2,9 @@
 // config.php
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'dentalemr_system');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_NAME', 'u401132124_mho_dentalemr');
+define('DB_USER', 'u401132124_dentalclinic');
+define('DB_PASS', 'Mho_DentalClinic1st');
 
 // Email configuration
 define('SMTP_HOST', 'smtp.gmail.com');

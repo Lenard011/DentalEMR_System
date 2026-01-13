@@ -3,7 +3,7 @@ header("Content-Type: application/json; charset=UTF-8");
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 try {
-    $conn = new mysqli("localhost", "root", "", "dentalemr_system");
+    $conn = new mysqli("localhost", "u401132124_dentalclinic", "Mho_DentalClinic1st", "u401132124_mho_dentalemr");
     $conn->set_charset("utf8mb4");
 
     // Get patient ID from GET query

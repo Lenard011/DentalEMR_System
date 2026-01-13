@@ -741,3 +741,256 @@ Stack trace:
 
 [04-Jan-2026 10:41:46 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
 [04-Jan-2026 10:41:46 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[08-Jan-2026 06:23:46 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[08-Jan-2026 06:23:46 Europe/Berlin] Patient ID: 16
+[08-Jan-2026 06:23:46 Europe/Berlin] Received data: Array
+(
+    [action] => save_medical
+    [patient_id] => 16
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [diabetes_mellitus] => 0
+    [blood_disorders] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[08-Jan-2026 06:23:46 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[08-Jan-2026 06:23:46 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[12-Jan-2026 20:18:03 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[12-Jan-2026 20:18:03 Europe/Berlin] Patient ID: 14
+[12-Jan-2026 20:18:03 Europe/Berlin] Received data: Array
+(
+    [tattoo] => 1
+    [action] => save_medical
+    [patient_id] => 14
+    [allergies_flag] => 0
+    [hypertension_cva] => 0
+    [diabetes_mellitus] => 0
+    [blood_disorders] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[12-Jan-2026 20:18:03 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[12-Jan-2026 20:18:03 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[13-Jan-2026 18:58:24 Europe/Berlin] Detected user: ID=0, Type=System, Name=Unknown User
+[13-Jan-2026 18:58:24 Europe/Berlin] For action 'save_patient' - User detected: Type=System, ID=0, Name=Unknown User
+[13-Jan-2026 19:01:09 Europe/Berlin] Detected user: ID=0, Type=System, Name=Unknown User
+[13-Jan-2026 19:01:09 Europe/Berlin] For action 'save_patient' - User detected: Type=System, ID=0, Name=Unknown User
+[13-Jan-2026 19:46:29 Europe/Berlin] Session status: 2
+[13-Jan-2026 19:46:29 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 19:46:29 Europe/Berlin] Active sessions in session: 2
+[13-Jan-2026 19:46:29 Europe/Berlin] Active sessions data: {"1":{"id":1,"email":"lenardovinci64@gmail.com","name":"Dr. Leonardo Vinci","type":"Dentist","login_time":1768321164,"last_activity":1768329983,"profile_picture":"\/DentalEMR_System\/uploads\/profile_pictures\/user_1_1768321188.png"},"42":{"id":42,"email":"jayjaypanganiban43@gmail.com","name":"Jay JAy Panganiban","type":"Staff","login_time":1768325379,"last_activity":1768329590}}
+[13-Jan-2026 19:46:29 Europe/Berlin] Request UID: Not found
+[13-Jan-2026 19:46:29 Europe/Berlin] Using default System user
+[13-Jan-2026 19:46:29 Europe/Berlin] ACTION: save_patient - User: System System (ID: 0)
+[13-Jan-2026 20:03:28 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:03:28 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:03:28 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:03:28 Europe/Berlin] No uid parameter found in request
+[13-Jan-2026 20:03:28 Europe/Berlin] Using default System user (fallback)
+[13-Jan-2026 20:03:28 Europe/Berlin] Final user info: Type=System, ID=0, Name=System
+[13-Jan-2026 20:03:28 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:03:28 Europe/Berlin] ACTION: save_patient - Detected User: System System (ID: 0)
+[13-Jan-2026 20:03:28 Europe/Berlin] History log saved successfully. Log ID: 119, User Type: System, User ID: 0
+[13-Jan-2026 20:03:28 Europe/Berlin] Patient update log result: SUCCESS
+[13-Jan-2026 20:08:20 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:08:20 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:08:20 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:08:20 Europe/Berlin] No uid parameter found in request
+[13-Jan-2026 20:08:20 Europe/Berlin] Using default System user (fallback)
+[13-Jan-2026 20:08:20 Europe/Berlin] Final user info: Type=System, ID=0, Name=System
+[13-Jan-2026 20:08:20 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:08:20 Europe/Berlin] ACTION: save_patient - Detected User: System System (ID: 0)
+[13-Jan-2026 20:08:20 Europe/Berlin] History log saved successfully. Log ID: 120, User Type: System, User ID: 0
+[13-Jan-2026 20:08:20 Europe/Berlin] Patient update log result: SUCCESS
+[13-Jan-2026 20:15:37 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:15:37 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:15:37 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:15:37 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:15:37 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:15:37 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:15:37 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:15:37 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:15:37 Europe/Berlin] ACTION: save_patient - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:15:37 Europe/Berlin] History log saved successfully. Log ID: 121, User Type: Dentist, User ID: 1
+[13-Jan-2026 20:15:37 Europe/Berlin] Patient update log result: SUCCESS
+[13-Jan-2026 20:16:35 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:16:35 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:16:35 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:16:35 Europe/Berlin] GET uid found: 42
+[13-Jan-2026 20:16:35 Europe/Berlin] Found user in active_sessions: ID=42, Type=Staff, Name=Jay JAy Panganiban
+[13-Jan-2026 20:16:35 Europe/Berlin] Staff verified in DB: Jay JAy Panganiban
+[13-Jan-2026 20:16:35 Europe/Berlin] Final user info: Type=Staff, ID=42, Name=Jay JAy Panganiban
+[13-Jan-2026 20:16:35 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:16:35 Europe/Berlin] ACTION: save_patient - Detected User: Staff Jay JAy Panganiban (ID: 42)
+[13-Jan-2026 20:16:35 Europe/Berlin] History log saved successfully. Log ID: 122, User Type: Staff, User ID: 42
+[13-Jan-2026 20:16:35 Europe/Berlin] Patient update log result: SUCCESS
+[13-Jan-2026 20:16:53 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:16:53 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:16:53 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:16:53 Europe/Berlin] GET uid found: 42
+[13-Jan-2026 20:16:53 Europe/Berlin] Found user in active_sessions: ID=42, Type=Staff, Name=Jay JAy Panganiban
+[13-Jan-2026 20:16:53 Europe/Berlin] Staff verified in DB: Jay JAy Panganiban
+[13-Jan-2026 20:16:53 Europe/Berlin] Final user info: Type=Staff, ID=42, Name=Jay JAy Panganiban
+[13-Jan-2026 20:16:53 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:16:53 Europe/Berlin] ACTION: save_membership - Detected User: Staff Jay JAy Panganiban (ID: 42)
+[13-Jan-2026 20:16:53 Europe/Berlin] Exception in POST handler: Unknown column 'updated_at' in 'field list'
+[13-Jan-2026 20:17:39 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:17:39 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:17:39 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:17:39 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:17:39 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:17:39 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:17:39 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:17:39 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:17:39 Europe/Berlin] ACTION: save_membership - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:17:39 Europe/Berlin] Exception in POST handler: Unknown column 'updated_at' in 'field list'
+[13-Jan-2026 20:17:45 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:17:45 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:17:45 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:17:45 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:17:45 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:17:45 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:17:45 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:17:45 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:17:45 Europe/Berlin] ACTION: save_medical - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:17:45 Europe/Berlin] Exception in POST handler: Unknown column 'id' in 'field list'
+[13-Jan-2026 20:17:51 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:17:51 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:17:51 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:17:51 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:17:51 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:17:51 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:17:51 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:17:51 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:17:51 Europe/Berlin] ACTION: save_medical - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:17:51 Europe/Berlin] Exception in POST handler: Unknown column 'id' in 'field list'
+[13-Jan-2026 20:18:26 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:18:26 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:18:26 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:18:26 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:18:26 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:26 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:18:26 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:26 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:18:26 Europe/Berlin] ACTION: save_membership - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:18:26 Europe/Berlin] Exception in POST handler: Unknown column 'updated_at' in 'field list'
+[13-Jan-2026 20:18:33 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:18:33 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:18:33 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:18:33 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:18:33 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:33 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:18:33 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:33 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:18:34 Europe/Berlin] ACTION: save_membership - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:18:34 Europe/Berlin] Exception in POST handler: Unknown column 'updated_at' in 'field list'
+[13-Jan-2026 20:18:45 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:18:45 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:18:45 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:18:45 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:18:45 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:45 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:18:45 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:45 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:18:45 Europe/Berlin] ACTION: save_membership - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:18:45 Europe/Berlin] Exception in POST handler: Unknown column 'updated_at' in 'field list'
+[13-Jan-2026 20:18:52 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:18:52 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:18:52 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:18:52 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:18:52 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:52 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:18:52 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:52 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:18:52 Europe/Berlin] ACTION: save_membership - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:18:52 Europe/Berlin] Exception in POST handler: Unknown column 'updated_at' in 'field list'
+[13-Jan-2026 20:18:53 Europe/Berlin] === USER DETECTION START ===
+[13-Jan-2026 20:18:53 Europe/Berlin] Session ID: ed6tlrr4i310u6rfscrfhr0427
+[13-Jan-2026 20:18:53 Europe/Berlin] Session status: 2
+[13-Jan-2026 20:18:53 Europe/Berlin] GET uid found: 1
+[13-Jan-2026 20:18:53 Europe/Berlin] Found user in active_sessions: ID=1, Type=Dentist, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:53 Europe/Berlin] Dentist verified in DB: Dr. Leonardo Vinci
+[13-Jan-2026 20:18:53 Europe/Berlin] Final user info: Type=Dentist, ID=1, Name=Dr. Leonardo Vinci
+[13-Jan-2026 20:18:53 Europe/Berlin] === USER DETECTION END ===
+[13-Jan-2026 20:18:53 Europe/Berlin] ACTION: save_membership - Detected User: Dentist Dr. Leonardo Vinci (ID: 1)
+[13-Jan-2026 20:18:53 Europe/Berlin] Exception in POST handler: Unknown column 'updated_at' in 'field list'
+[13-Jan-2026 20:43:30 Europe/Berlin] === SAVE_MEDICAL REQUEST ===
+[13-Jan-2026 20:43:30 Europe/Berlin] Patient ID: 16
+[13-Jan-2026 20:43:30 Europe/Berlin] Received data: Array
+(
+    [hypertension_cva] => 1
+    [action] => save_medical
+    [patient_id] => 16
+    [uid] => 42
+    [user_type] => Staff
+    [user_name] => Jay JAy Panganiban
+    [allergies_flag] => 0
+    [diabetes_mellitus] => 0
+    [blood_disorders] => 0
+    [heart_disease] => 0
+    [thyroid_disorders] => 0
+    [hepatitis_flag] => 0
+    [malignancy_flag] => 0
+    [prev_hospitalization_flag] => 0
+    [blood_transfusion_flag] => 0
+    [tattoo] => 0
+    [other_conditions_flag] => 0
+    [sugar_flag] => 0
+    [alcohol_flag] => 0
+    [tobacco_flag] => 0
+    [betel_nut_flag] => 0
+    [nhts_pr] => 0
+    [four_ps] => 0
+    [indigenous_people] => 0
+    [pwd] => 0
+    [philhealth_flag] => 0
+    [sss_flag] => 0
+    [gsis_flag] => 0
+)
+
+[13-Jan-2026 20:43:30 Europe/Berlin] Medical History SQL: UPDATE medical_history SET allergies_flag = ?, allergies_details = ?, hypertension_cva = ?, diabetes_mellitus = ?, blood_disorders = ?, heart_disease = ?, thyroid_disorders = ?, hepatitis_flag = ?, hepatitis_details = ?, malignancy_flag = ?, malignancy_details = ?, prev_hospitalization_flag = ?, last_admission_date = ?, admission_cause = ?, surgery_details = ?, blood_transfusion_flag = ?, blood_transfusion = ?, tattoo = ?, other_conditions_flag = ?, other_conditions = ? WHERE patient_id = ?
+[13-Jan-2026 20:43:30 Europe/Berlin] Types: isiiiiiisisisssisiisi
+[13-Jan-2026 21:34:03 Europe/Berlin] PHP Warning:  Undefined variable $patientId in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\oral_condition_api.php on line 486
+[13-Jan-2026 21:34:10 Europe/Berlin] PHP Warning:  Undefined variable $patientId in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\oral_condition_api.php on line 486
+[13-Jan-2026 21:35:30 Europe/Berlin] PHP Warning:  Undefined variable $patientId in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\oral_condition_api.php on line 486
+[13-Jan-2026 21:40:50 Europe/Berlin] PHP Warning:  Undefined variable $patientId in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\oral_condition_api.php on line 487
+[13-Jan-2026 21:42:11 Europe/Berlin] PHP Warning:  Undefined variable $patientId in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\oral_condition_api.php on line 487
+[13-Jan-2026 21:42:50 Europe/Berlin] PHP Warning:  Undefined variable $patientId in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\oral_condition_api.php on line 487
+[13-Jan-2026 21:43:25 Europe/Berlin] PHP Warning:  Undefined variable $patientId in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\oral_condition_api.php on line 487
+[13-Jan-2026 21:46:06 Europe/Berlin] PHP Warning:  Undefined variable $patientId in C:\xampp\htdocs\DentalEMR_System\php\treatmentrecords\oral_condition_api.php on line 486

@@ -6,7 +6,21 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 header('Content-Type: application/json');
 
-require_once "../conn.php"; // $conn
+// ============================================================
+// DATABASE CONNECTION (IMPROVED)
+// ============================================================
+$conn = null;
+try {
+    require_once "./conn.php";
+    
+    // Verify connection is alive
+    if (!$conn || !mysqli_ping($conn)) {
+        throw new Exception("Database connection lost");
+    }
+} catch (Exception $e) {
+    echo json_encode(["success" => false, "message" => "Database connection failed: " . $e->getMessage()]);
+    exit;
+}
 
 /* ============================================================
    LOAD LOGGED-IN USER FOR HISTORY LOG
@@ -65,17 +79,27 @@ function addHistoryLog($conn, $tableName, $recordId, $action, $changedByType, $c
 }
 
 /* ============================================================
-   DYNAMIC BIND HELPER
+   DYNAMIC BIND HELPER (IMPROVED)
 ============================================================ */
 function bind_params_dynamic($stmt, $params)
 {
     if (empty($params)) return;
-    $types = str_repeat('s', count($params));
-    $bind = [$types];
-    foreach ($params as $k => $v) {
-        $bind[] = &$params[$k];
+    $types = '';
+    foreach ($params as $param) {
+        if (is_int($param)) {
+            $types .= 'i';
+        } elseif (is_float($param)) {
+            $types .= 'd';
+        } else {
+            $types .= 's';
+        }
     }
-    call_user_func_array([$stmt, 'bind_param'], $bind);
+    
+    $bind_params = [$types];
+    foreach ($params as $k => $v) {
+        $bind_params[] = &$params[$k];
+    }
+    call_user_func_array([$stmt, 'bind_param'], $bind_params);
 }
 
 /* ============================================================
@@ -88,10 +112,9 @@ if (!$action) {
 }
 
 try {
-
-    /* ============================================================
-   MEMBERSHIP
-============================================================ */
+    // ============================================================
+    // MEMBERSHIP
+    // ============================================================
     if ($action === "get_membership") {
         $patient_id = intval($_GET['patient_id'] ?? 0);
         $stmt = $conn->prepare("SELECT * FROM patient_other_info WHERE patient_id = ?");
@@ -113,6 +136,7 @@ try {
         echo json_encode(["success" => true, "memberships" => $memberships, "values" => $row ?? []]);
         exit;
     }
+    
     if ($action === "save_membership") {
         $patient_id = intval($_POST['patient_id']);
 
@@ -240,6 +264,7 @@ try {
         echo json_encode(["success" => true, "medical" => $medical, "values" => $row ?? []]);
         exit;
     }
+    
     if ($action === "save_medical") {
         $patient_id = intval($_POST['patient_id']);
 
@@ -375,6 +400,7 @@ try {
         echo json_encode(["success" => true, "dietary" => $dietary, "values" => $row ?? []]);
         exit;
     }
+    
     if ($action === "save_dietary") {
         $patient_id = intval($_POST['patient_id']);
 
@@ -482,6 +508,7 @@ try {
         echo json_encode(["success" => true, "vitals" => $rows]);
         exit;
     }
+    
     if ($action === "save_vitals") {
         $patient_id = intval($_POST['patient_id']);
         $blood_pressure = $_POST['blood_pressure'] ?? '';

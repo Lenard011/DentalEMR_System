@@ -10,10 +10,10 @@ $offlineDataAvailable = false;
 if (!isset($_GET['uid']) && !$isOfflineMode) {
     echo "<script>
         if (!navigator.onLine) {
-            window.location.href = '/dentalemr_system/html/index.php?offline=true';
+            window.location.href = '/DentalEMR_System/html/index.php?offline=true';
         } else {
             alert('Invalid session. Please log in again.');
-            window.location.href = '/dentalemr_system/html/login/login.html';
+            window.location.href = '/DentalEMR_System/html/login/login.html';
         }
     </script>";
     exit;
@@ -48,7 +48,7 @@ if ($isOfflineMode) {
             
             if (!checkOfflineSession()) {
                 alert('Please log in first for offline access.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
                 return;
             }
             
@@ -86,10 +86,10 @@ if ($isOfflineMode) {
     if (!$isValidSession) {
         echo "<script>
             if (!navigator.onLine) {
-                window.location.href = '/dentalemr_system/html/index.php?offline=true';
+                window.location.href = '/DentalEMR_System/html/index.php?offline=true';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,9 +102,9 @@ $dbError = false;
 
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -115,7 +115,7 @@ if (!$isOfflineMode) {
                     alert('Database connection failed. Please try again.');
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
-                    window.location.href = '/dentalemr_system/html/index.php?offline=true&uid=' + $userId;
+                    window.location.href = '/DentalEMR_System/html/index.php?offline=true&uid=' + $userId;
                 }
             </script>";
             exit;
@@ -591,24 +591,23 @@ if (!$isOfflineMode && $conn && !$dbError) {
     $checkTreatmentsTable = $conn->query("SHOW TABLES LIKE 'services_monitoring_chart'");
     if ($checkTreatmentsTable && $checkTreatmentsTable->num_rows > 0) {
         $recentTreatments = $conn->query("
-            SELECT 
-                s.id, 
-                s.created_at, 
-                p.patient_id, 
-                p.firstname, 
-                p.surname, 
-                p.middlename, 
-                p.age, 
-                p.address, 
-                p.sex, 
-                t.description, 
-                t.code
-            FROM services_monitoring_chart s
-            LEFT JOIN treatments t ON s.treatment_code = t.code
-            LEFT JOIN patients p ON s.patient_id = p.patient_id
-            ORDER BY s.created_at DESC
-            LIMIT 5
-        ");
+        SELECT 
+            s.created_at, 
+            p.patient_id, 
+            p.firstname, 
+            p.surname, 
+            p.middlename, 
+            p.age, 
+            p.address, 
+            p.sex, 
+            t.description, 
+            t.code
+        FROM services_monitoring_chart s
+        LEFT JOIN treatments t ON s.treatment_code = t.code
+        LEFT JOIN patients p ON s.patient_id = p.patient_id
+        ORDER BY s.created_at DESC
+        LIMIT 5
+    ");
 
         // Debug: Check what the query returns
         $treatmentQueryDebug = "";
@@ -657,7 +656,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $isOfflineMode ? 'Offline Dashboard' : 'Dashboard'; ?> - MHO Dental Clinic</title>
-
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- Theme Color Meta Tags -->
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#111827" media="(prefers-color-scheme: dark)">
@@ -1476,18 +1475,18 @@ if (!$isOfflineMode && $conn && !$dbError) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -1511,7 +1510,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -1949,8 +1948,8 @@ if (!$isOfflineMode && $conn && !$dbError) {
     <script src="../js/tailwind.config.js"></script>
 
     <!-- Load offline systems -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
-    <script src="/dentalemr_system/js/local-auth.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/local-auth.js"></script>
 
     <script>
         // ========== THEME MANAGEMENT ==========
@@ -2472,7 +2471,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
 
         function viewPatientDetails(patientId) {
             alert(`Viewing details for patient ID: ${patientId}\n\nRedirecting to patient profile...`);
-            window.location.href = `/dentalemr_system/html/treatmentrecords/view_info.php?id=${patientId}&uid=<?php echo $userId; ?>`;
+            window.location.href = `/DentalEMR_System/html/treatmentrecords/view_info.php?id=${patientId}&uid=<?php echo $userId; ?>`;
         }
 
         function viewVisitDetails(visitId) {
@@ -2920,7 +2919,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
             let year = document.getElementById("yearFilter").value;
             const params = new URLSearchParams(window.location.search);
             params.set("year", year);
-            window.location.href = "http://localhost/dentalemr_system/html/index.php?" + params.toString();
+            window.location.href = "http://localhost/DentalEMR_System/html/index.php?" + params.toString();
         }
 
         // ========== INACTIVITY LOGOUT ==========
@@ -2931,7 +2930,7 @@ if (!$isOfflineMode && $conn && !$dbError) {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 30 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php";
+                window.location.href = "/DentalEMR_System/php/login/logout.php";
             }, inactivityTime);
         }
 

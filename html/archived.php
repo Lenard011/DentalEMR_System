@@ -47,7 +47,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -70,10 +70,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +102,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +131,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +152,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,7 +166,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -196,6 +196,7 @@ if (!$isOfflineMode) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add patient</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -311,18 +312,18 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -346,7 +347,7 @@ if (!$isOfflineMode) {
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -679,7 +680,7 @@ if (!$isOfflineMode) {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 30 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
+                window.location.href = "/DentalEMR_System/php/login/logout.php?uid=<?php echo $userId; ?>";
             }, inactivityTime);
         }
 
@@ -826,64 +827,75 @@ if (!$isOfflineMode) {
 
     <!-- Restore  -->
     <script>
-        const API_RESTORE = "/dentalemr_system/php/archived/restore_patient.php";
+        const API_RESTORE = "/DentalEMR_System/php/archived/restore_patient.php?uid=<?php echo $userId; ?>";
 
         // 🟢 Restore a single patient
         async function restorePatient(patientId) {
             if (!confirm("Are you sure you want to restore this archived patient and all related records?")) return;
 
             try {
+                // Show loading state on the specific button
+                const originalButton = event.target;
+                const originalText = originalButton.innerHTML;
+                originalButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Restoring...';
+                originalButton.disabled = true;
+
                 const formData = new FormData();
                 formData.append("restore_id", patientId);
-
-                const response = await fetch(API_RESTORE, {
+                formData.append("uid", <?php echo $userId; ?>);
+                const response = await fetch("/DentalEMR_System/php/archived/restore_patient.php", {
                     method: "POST",
                     body: formData,
                 });
 
-                const text = await response.text(); // handle invalid JSON safely
+                const text = await response.text();
+                console.log("Raw response:", text); // Debug logging
+
                 let data;
                 try {
                     data = JSON.parse(text);
-                } catch {
-                    console.error("Invalid JSON returned:", text);
-                    alert("Restore failed: Server returned invalid JSON.");
-                    return;
+                } catch (e) {
+                    console.error("JSON parse error:", e, "Text:", text);
+
+                    // Try to extract JSON if there's extra output
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        try {
+                            data = JSON.parse(jsonMatch[0]);
+                        } catch (e2) {
+                            originalButton.innerHTML = originalText;
+                            originalButton.disabled = false;
+                            alert("Restore failed: Invalid response format from server.");
+                            return;
+                        }
+                    } else {
+                        originalButton.innerHTML = originalText;
+                        originalButton.disabled = false;
+                        alert("Restore failed: Server returned invalid response.");
+                        return;
+                    }
                 }
 
                 if (response.ok && data.success) {
                     alert(data.message || "Patient restored successfully!");
-                    // 🔄 Reload your archived list (or refresh page)
-                    loadArchivedPatients();
+                    // Reload the archived list
+                    loadArchivedPatients(currentPage, currentSearch);
                 } else {
-                    alert(data.message || "Restore failed. Check the PHP logs.");
+                    originalButton.innerHTML = originalText;
+                    originalButton.disabled = false;
+                    alert(data.message || "Restore failed. Please try again.");
                 }
             } catch (err) {
                 console.error("Network error while restoring:", err);
-                alert("Network error while restoring patient.");
-            }
-        }
-
-        // 🔄 Restore all patients at once
-        async function restoreAllPatients() {
-            if (!confirm("Are you sure you want to restore ALL archived patients?")) return;
-
-            try {
-                // You can modify this to loop over all archive rows if needed
-                const restoreButtons = document.querySelectorAll(".restore-btn");
-                for (const btn of restoreButtons) {
-                    const id = btn.getAttribute("data-id");
-                    await restorePatient(id);
-                }
-            } catch (err) {
-                alert("Restore all failed. Check console for details.");
-                console.error(err);
+                event.target.innerHTML = originalText;
+                event.target.disabled = false;
+                alert("Network error while restoring patient. Check your connection.");
             }
         }
     </script>
 
     <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
 
     <script>
         // ========== OFFLINE SUPPORT FOR REPORTS - START ==========
@@ -921,7 +933,7 @@ if (!$isOfflineMode) {
             setupReportsOffline();
 
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                navigator.serviceWorker.register('/DentalEMR_System/sw.js')
                     .then(function(registration) {
                         console.log('SW registered for reports');
                     })

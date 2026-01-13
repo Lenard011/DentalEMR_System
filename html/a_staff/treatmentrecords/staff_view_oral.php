@@ -47,7 +47,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -70,10 +70,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/a_staff/treatmentrecords/staff_view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +102,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/a_staff/treatmentrecords/staff_view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +131,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +152,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,7 +166,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/a_staff/treatmentrecords/staff_view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -189,13 +189,21 @@ if (!$isOfflineMode) {
 // Get patient ID from URL
 $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Verify patient exists
-if ($patientId > 0) {
+// Get patient name directly from database for immediate display
+$patientName = 'Loading...';
+$patientInitial = '';
+
+if ($patientId > 0 && !$isOfflineMode) {
     $stmt = $conn->prepare("SELECT patient_id, firstname, middlename, surname FROM patients WHERE patient_id = ?");
     $stmt->bind_param("i", $patientId);
     $stmt->execute();
     $result = $stmt->get_result();
-    if ($result->num_rows === 0) {
+    if ($result->num_rows > 0) {
+        $patient = $result->fetch_assoc();
+        $middleInitial = !empty($patient['middlename']) ? $patient['middlename'][0] . '.' : '';
+        $patientName = htmlspecialchars($patient['firstname'] . ' ' . $middleInitial . ' ' . $patient['surname']);
+        $patientInitial = htmlspecialchars(substr($patient['firstname'], 0, 1) . substr($patient['surname'], 0, 1));
+    } else {
         $patientId = 0; // Reset if patient doesn't exist
     }
     $stmt->close();
@@ -210,6 +218,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Treatment Records - Oral Health</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -238,7 +247,7 @@ $conn->close();
                         </svg>
                         <span class="sr-only">Toggle sidebar</span>
                     </button>
-                    <a href="#" class="flex items-center justify-between mr-4 ">
+                    <a href="./staff_dashboard.php?uid=<?php echo $userId; ?>" class="flex items-center justify-between mr-4">
                         <img src="https://th.bing.com/th/id/OIP.zjh8eiLAHY9ybXUCuYiqQwAAAA?r=0&rs=1&pid=ImgDetMain&cb=idpwebp1&o=7&rm=3"
                             class="mr-3 h-8 rounded-full" alt="MHO Logo" />
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">MHO Dental Clinic</span>
@@ -267,11 +276,9 @@ $conn->close();
                         <button type="button" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="dropdown"
                             class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                             <div class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
-                                <?php if (!empty($loggedUser['profile_picture'])): ?>
-                                    <img src="<?php echo htmlspecialchars($loggedUser['profile_picture']); ?>" alt="Profile" class="w-full h-full object-cover">
-                                <?php else: ?>
-                                    <i class="fas fa-user text-gray-600 dark:text-gray-400"></i>
-                                <?php endif; ?>
+                                <img class="w-full h-full object-cover"
+                                    src="https://spng.pngfind.com/pngs/s/378-3780189_member-icon-png-transparent-png.png"
+                                    alt="user photo" />
                             </div>
                             <div class="text-left">
                                 <div class="text-sm font-medium truncate max-w-[150px] dark:text-white">
@@ -314,7 +321,7 @@ $conn->close();
                                         <span class="text-orange-600 text-xs">(Offline)</span>
                                     <?php endif; ?>
                                 </div>
-                                <div class="text-xs text-gray-600 dark:text-white mt-1 ">
+                                <div class="text-xs text-gray-600 dark:text-white mt-1">
                                     <?php
                                     echo htmlspecialchars(
                                         !empty($loggedUser['email'])
@@ -325,22 +332,10 @@ $conn->close();
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/a_staff/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
-                                </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
-                                    Manage Users
-                                </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
-                                    System Logs
                                 </a>
                             </div>
 
@@ -360,7 +355,7 @@ $conn->close();
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -371,9 +366,7 @@ $conn->close();
                 </div>
             </div>
         </nav>
-
         <!-- Sidebar -->
-
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -396,10 +389,10 @@ $conn->close();
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="./staff_dashboard.php?uid=<?php echo $userId; ?>"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
-                                class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
                                 <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
@@ -410,10 +403,10 @@ $conn->close();
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
+                        <a href="/DentalEMR_System/html/a_staff/staff_addpatient.php?uid=<?php echo $userId; ?>"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
@@ -425,41 +418,20 @@ $conn->close();
                         </a>
                     </li>
                     <li>
-                        <button type="button"
-                            class="flex items-center cursor-pointer p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                            aria-controls="dropdown-pages" data-collapse-toggle="dropdown-pages">
+                        <a href="#"
+                            class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100   group">
                             <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                class="w-6 h-6 text-blue-600 transition duration-75 dark:text-blue-400  dark:group-hover:text-blue"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                                    clip-rule="evenodd"></path>
+                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                             </svg>
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap">Patient Treatment</span>
-                            <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <ul id="dropdown-pages" class="visible py-2 space-y-2">
-                            <li>
-                                <a href="#"
-                                    class="pl-11 flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100   group">Treatment
-                                    Records</a>
-                            </li>
-                            <li>
-                                <a href="../addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
-                                    Patient Treatment</a>
-                            </li>
-                        </ul>
+                            <span class="ml-3">Treatment Records</span>
+                        </a>
                     </li>
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../reports/targetclientlist.php?uid=<?php echo $userId; ?>"
+                        <a href="./staff_targetclientlist.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg aria-hidden="true"
                                 class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
@@ -474,7 +446,7 @@ $conn->close();
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/mho_ohp.php?uid=<?php echo $userId; ?>"
+                        <a href="./staff_mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -487,34 +459,14 @@ $conn->close();
                         </a>
                     </li>
                     <li>
-                        <a href="../reports/oralhygienefindings.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="./staff_oralhygienefindings.php?uid=<?php echo $userId; ?>" class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                 viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
                                     d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5" />
                             </svg>
-
                             <span class="ml-3">Oral Hygiene Findings</span>
-                        </a>
-                    </li>
-                </ul>
-                <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
-                    <li>
-                        <a href="../archived.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-                                    clip-rule="evenodd" />
-                                <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-                            </svg>
-
-
-                            <span class="ml-3">Archived</span>
                         </a>
                     </li>
                 </ul>
@@ -594,7 +546,7 @@ $conn->close();
                 <!-- Patient Name and Add Button -->
                 <div class="items-center justify-between flex flex-col sm:flex-row mb-4 gap-2">
                     <p id="patientName" class="italic text-base sm:text-lg font-medium text-gray-900 dark:text-white">
-                        Loading ...
+                        <?php echo $patientName; ?>
                     </p>
                     <div class="flex flex-row items-center gap-2 w-full sm:w-auto">
                         <!-- Refresh Button -->
@@ -606,14 +558,14 @@ $conn->close();
                             Refresh Records
                         </button>
 
-                        <button type="button" id="addOHCbtn" onclick="openOHCModal()"
+                        <!-- <button type="button" id="addOHCbtn" onclick="openOHCModal()"
                             class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto">
                             <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path clip-rule="evenodd" fill-rule="evenodd"
                                     d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
                             </svg>
                             Add Oral Health Record
-                        </button>
+                        </button> -->
                     </div>
                 </div>
 
@@ -691,7 +643,7 @@ $conn->close();
             </section>
         </main>
 
-        <!-- Modal  -->
+        <!-- Modal -->
         <div id="ohcModal" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl p-4 m-2 max-h-[90vh] overflow-y-auto">
@@ -705,6 +657,18 @@ $conn->close();
                 </div>
                 <form id="ohcForm" class="space-y-4">
                     <input type="hidden" name="patient_id" id="patient_id" value="<?php echo $patientId; ?>">
+
+                    <!-- Date Input Section - ADDED HERE -->
+                    <div class="mb-4">
+                        <div class="flex flex-row justify-between w-120 items-center">
+                            <label for="examination_date" 
+                                class="flex text-sm font-medium text-gray-900 dark:text-white">Examination Date:</label>
+                            <input type="date" name="examination_date" id="examination_date" 
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-primary-600 focus:border-primary-600 block w-50 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                                value="<?php echo date('Y-m-d'); ?>" />
+                        </div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Default is today's date</p>
+                    </div>
 
                     <div class="grid gap-2 mb-4">
                         <div class="mb-3">
@@ -886,7 +850,7 @@ $conn->close();
 
     <!-- <script src="../node_modules/flowbite/dist/flowbite.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
-    <script src="../../js/tailwind.config.js"></script>
+    <script src="/DentalEMR_System/js/tailwind.config.js"></script>
     <!-- Theme Toggle Script -->
     <script>
         // ========== THEME MANAGEMENT ==========
@@ -987,7 +951,7 @@ $conn->close();
             }
         });
 
-        function initializePage() {
+        async function initializePage() {
             console.log('Initializing page with Patient ID:', currentPatientId, 'User ID:', currentUserId);
 
             if (!currentPatientId || currentPatientId <= 0) {
@@ -995,7 +959,7 @@ $conn->close();
                 showAlert('Missing patient ID. Please select a patient first.', 'error');
                 if (currentUserId) {
                     setTimeout(() => {
-                        window.location.href = `treatmentrecords.php?uid=${currentUserId}`;
+                        window.location.href = `staff_treatmentrecords.php?uid=${currentUserId}`;
                     }, 2000);
                 }
                 return;
@@ -1004,8 +968,29 @@ $conn->close();
             // Set navigation links
             updateNavigationLinks();
 
-            // Load patient name first
-            loadPatientInfo();
+            // Check if patient name is already loaded from PHP
+            const patientNameElement = document.getElementById("patientName");
+            const currentPatientName = patientNameElement ? patientNameElement.textContent.trim() : '';
+            
+            if (currentPatientName === 'Loading...' || currentPatientName === '') {
+                // Load patient name via AJAX
+                await loadPatientInfo();
+            } else {
+                // Patient name already loaded from PHP
+                patientName = currentPatientName;
+                console.log('Patient name already loaded from PHP:', patientName);
+                
+                // Update placeholder
+                const patientNamePlaceholder = document.getElementById("patientNamePlaceholder");
+                if (patientNamePlaceholder) {
+                    patientNamePlaceholder.textContent = patientName;
+                }
+                
+                // Remove italic style
+                if (patientNameElement) {
+                    patientNameElement.classList.remove('italic');
+                }
+            }
 
             // Load oral records
             loadPatientOralRecords();
@@ -1016,13 +1001,13 @@ $conn->close();
                 // Set patient info link
                 const patientInfoLink = document.getElementById("patientInfoLink");
                 if (patientInfoLink && currentPatientId && currentUserId) {
-                    patientInfoLink.href = `view_info.php?uid=${currentUserId}&id=${currentPatientId}`;
+                    patientInfoLink.href = `staff_view_info.php?uid=${currentUserId}&id=${currentPatientId}`;
                 }
 
                 // Set services rendered link
                 const servicesRenderedLink = document.getElementById("servicesRenderedLink");
                 if (servicesRenderedLink && currentPatientId && currentUserId) {
-                    servicesRenderedLink.href = `view_record.php?uid=${currentUserId}&id=${currentPatientId}`;
+                    servicesRenderedLink.href = `staff_view_record.php?uid=${currentUserId}&id=${currentPatientId}`;
                 }
 
                 // Set print link
@@ -1038,45 +1023,65 @@ $conn->close();
         async function loadPatientInfo() {
             try {
                 console.log('Loading patient info for ID:', currentPatientId);
-                const response = await fetch(`/dentalemr_system/php/patients/get_patient.php?id=${currentPatientId}&cache=${Date.now()}`);
+                
+                const patientNameElement = document.getElementById("patientName");
+                
+                // Show loading indicator
+                if (patientNameElement) {
+                    patientNameElement.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Loading patient...';
+                }
 
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Patient info response:', result);
+                // Try to fetch patient data
+                const response = await fetch(`/DentalEMR_System/php/patients/get_patient.php?id=${currentPatientId}&cache=${Date.now()}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                console.log('Patient API response:', result);
 
-                    if (result.success && result.data) {
-                        const patient = result.data;
-                        patientName = `${patient.firstname} ${patient.middlename ? patient.middlename + '. ' : ''}${patient.surname}`;
-                        console.log('Patient name loaded:', patientName);
+                if (result.success && result.data) {
+                    const patient = result.data;
+                    const middleInitial = patient.middlename ? patient.middlename.charAt(0).toUpperCase() + '. ' : '';
+                    patientName = `${patient.firstname} ${middleInitial}${patient.surname}`.trim();
+                    console.log('Patient name loaded:', patientName);
 
-                        // Update patient name display
-                        const patientNameElement = document.getElementById("patientName");
-                        if (patientNameElement) {
-                            patientNameElement.textContent = patientName;
-                            patientNameElement.classList.remove('italic');
-                        }
-
-                        // Update placeholder in no records message
-                        const patientNamePlaceholder = document.getElementById("patientNamePlaceholder");
-                        if (patientNamePlaceholder) {
-                            patientNamePlaceholder.textContent = patientName;
-                        }
-                    } else {
-                        console.warn('Patient info not found or error:', result.message);
+                    // Update patient name display
+                    if (patientNameElement) {
+                        patientNameElement.textContent = patientName;
+                        patientNameElement.classList.remove('italic');
                     }
+
+                    // Update placeholder in no records message
+                    const patientNamePlaceholder = document.getElementById("patientNamePlaceholder");
+                    if (patientNamePlaceholder) {
+                        patientNamePlaceholder.textContent = patientName;
+                    }
+                    
+                    return true;
                 } else {
-                    console.warn('Failed to fetch patient info:', response.status);
+                    console.warn('Patient info API error:', result.message);
+                    showPatientNameFallback('Patient not found');
+                    return false;
                 }
             } catch (error) {
-                console.warn('Could not load patient info:', error);
-                const patientNameElement = document.getElementById("patientName");
-                if (patientNameElement) {
-                    patientNameElement.textContent = 'Patient ID: ' + currentPatientId;
-                    patientNameElement.classList.remove('italic');
-                }
+                console.error('Error loading patient info:', error);
+                showPatientNameFallback('Error loading patient');
+                return false;
             }
         }
-
+        function showPatientNameFallback(message = '') {
+            const patientNameElement = document.getElementById("patientName");
+            if (patientNameElement) {
+                if (message) {
+                    patientNameElement.textContent = message;
+                } else {
+                    patientNameElement.textContent = 'Patient ID: ' + currentPatientId;
+                }
+                patientNameElement.classList.remove('italic');
+            }
+        }
         function refreshRecords() {
             console.log('Refreshing records...');
             showLoading(true);
@@ -1140,7 +1145,7 @@ $conn->close();
                 }
 
                 // Fetch data from API with cache busting
-                const apiUrl = `/dentalemr_system/php/treatmentrecords/view_oral_api.php?id=${currentPatientId}&t=${Date.now()}`;
+                const apiUrl = `/DentalEMR_System/php/treatmentrecords/view_oral_api.php?id=${currentPatientId}&t=${Date.now()}`;
                 console.log('Fetching from API:', apiUrl);
 
                 const response = await fetch(apiUrl, {
@@ -1303,7 +1308,7 @@ $conn->close();
                 // Clear previous data
                 if (oralDataContainer) oralDataContainer.innerHTML = '';
 
-                const response = await fetch(`/dentalemr_system/php/treatmentrecords/view_oral_api.php?record=${recordId}&t=${Date.now()}`, {
+                const response = await fetch(`/DentalEMR_System/php/treatmentrecords/view_oral_api.php?record=${recordId}&t=${Date.now()}`, {
                     cache: 'no-store'
                 });
 
@@ -1631,13 +1636,13 @@ $conn->close();
 
         function navigateToNext() {
             if (currentPatientId && currentUserId) {
-                window.location.href = `view_oralA.php?uid=${currentUserId}&id=${currentPatientId}`;
+                window.location.href = `staff_view_oralA.php?uid=${currentUserId}&id=${currentPatientId}`;
             }
         }
         
         function backmain() {
             if (currentUserId) {
-                window.location.href = `treatmentrecords.php?uid=${currentUserId}`;
+                window.location.href = `staff_treatmentrecords.php?uid=${currentUserId}`;
             }
         }
 
@@ -1665,7 +1670,7 @@ $conn->close();
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php?uid=" + currentUserId;
+                window.location.href = "/DentalEMR_System/php/login/logout.php?uid=" + currentUserId;
             }, inactivityTime);
         }
 
@@ -1680,16 +1685,25 @@ $conn->close();
         function getValue(id) {
             const form = document.getElementById("ohcForm");
             const el = form.querySelector(`#${id}`);
-            if (!el) return "";
+            if (!el) {
+                console.warn(`Element with id ${id} not found`);
+                return "";
+            }
+
+            // For date fields
+            if (el.type === "date") {
+                return el.value || "";
+            }
 
             // For check fields (text inputs that toggle ✓/✗)
-            if (el.type === "text" && el.hasAttribute('readonly') && el.onclick) {
+            if (el.type === "text" && el.hasAttribute('readonly')) {
                 return el.value?.trim() || "";
             }
 
             // For number fields
             if (el.type === "number") {
-                return el.value || "0";
+                const val = el.value;
+                return val === "" ? "0" : val;
             }
 
             return el.value?.trim() || "";
@@ -1732,6 +1746,7 @@ $conn->close();
 
             // Collect all form values
             const fields = [
+                'examination_date',
                 'orally_fit_child', 'dental_caries', 'gingivitis', 'periodontal_disease',
                 'debris', 'calculus', 'abnormal_growth', 'cleft_palate', 'others',
                 'perm_teeth_present', 'perm_sound_teeth', 'perm_decayed_teeth_d',
@@ -1742,51 +1757,72 @@ $conn->close();
 
             fields.forEach(field => {
                 const value = getValue(field);
+                console.log(`${field}: ${value}`);
                 formData.append(field, value);
             });
 
             console.log("Saving oral health data for patient:", patient_id);
+            console.log("FormData entries:");
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
+            }
 
             try {
-                // Use FormData instead of JSON for better compatibility
-                const response = await fetch("/dentalemr_system/php/treatmentrecords/save_ohc.php", {
+                // Show loading state
+                const saveBtn = document.querySelector('button[onclick="saveOHC()"]');
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+                saveBtn.disabled = true;
+
+                const response = await fetch("/DentalEMR_System/php/treatmentrecords/save_ohc.php", {
                     method: "POST",
                     body: formData
                 });
 
                 const text = await response.text();
-                console.log("Server response:", text);
+                console.log("Raw server response:", text);
 
-                // Try to parse JSON
                 let result;
                 try {
                     result = JSON.parse(text);
                 } catch (parseError) {
                     console.error("JSON Parse Error:", parseError);
-                    console.error("Raw response text:", text);
-
-                    // Check if the response contains HTML or PHP errors
-                    if (text.includes('<') || text.includes('PHP') || text.includes('Error')) {
-                        alert("Server returned an error page. Please check server logs.");
-                    } else {
-                        alert("Server returned invalid response. Please try again.");
+                    console.error("Raw response that failed to parse:", text);
+                    
+                    // Try to extract error message from HTML response
+                    let errorMessage = "Server returned an invalid response.";
+                    if (text.includes('Fatal error') || text.includes('Parse error')) {
+                        const errorMatch = text.match(/<b>([^<]+)<\/b>/);
+                        if (errorMatch) {
+                            errorMessage = "Server error: " + errorMatch[1];
+                        }
                     }
+                    
+                    alert(errorMessage + "\nPlease check server logs for details.");
                     return;
                 }
+
+                // Restore button
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
 
                 if (result.success) {
                     alert(result.message);
                     closeOHCModal();
-                    // Force a complete page reload to show new records
                     setTimeout(() => {
-                        location.reload(true); // true forces reload from server
+                        location.reload(true);
                     }, 300);
                 } else {
-                    alert(result.message || "Error saving data.");
+                    alert("Error: " + (result.message || "Unknown error saving data."));
                 }
             } catch (err) {
                 console.error("Network Error:", err);
                 alert("Failed to save data. Please check your connection and try again.");
+                
+                // Restore button
+                const saveBtn = document.querySelector('button[onclick="saveOHC()"]');
+                saveBtn.innerHTML = 'Save';
+                saveBtn.disabled = false;
             }
         }
 
@@ -1818,7 +1854,7 @@ $conn->close();
     </script>
 
         <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
     
 
     <!-- Offline/Online Sync Handler -->
@@ -1929,7 +1965,7 @@ $conn->close();
                 const patientIds = archiveActions.map(action => action.data.patient_id || action.data.id);
 
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/treatment.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -1956,7 +1992,7 @@ $conn->close();
                         }
 
                         // Refresh the patient list if on treatment records page
-                        if (window.location.pathname.includes('treatmentrecords.php')) {
+                        if (window.location.pathname.includes('staff_treatmentrecords.php')) {
                             setTimeout(() => {
                                 if (typeof window.loadPatients === 'function') {
                                     window.loadPatients();
@@ -1995,7 +2031,7 @@ $conn->close();
 
                 // Online: proceed with normal archive
                 try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
+                    const response = await fetch('/DentalEMR_System/php/treatmentrecords/treatment.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',

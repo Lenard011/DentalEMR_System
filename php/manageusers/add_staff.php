@@ -90,7 +90,7 @@ function sendCredentialsEmail($staffData, $password)
                         <p><strong>Username:</strong> {$staffData['username']}</p>
                         <p><strong>Email:</strong> {$staffData['email']}</p>
                         <p><strong>Temporary Password:</strong> {$password}</p>
-                        <p><strong>Login URL:</strong> http://localhost/DEntalEMR_System/html/login/login.html</p>
+                        <p><strong>Login URL:</strong> http://localhost/DentalEMR_System/html/login/login.html</p>
                     </div>
                     
                     <div class='important'>
@@ -103,7 +103,7 @@ function sendCredentialsEmail($staffData, $password)
                     </div>
                     
                     <p style='text-align: center;'>
-                        <a href='http://localhost/DEntalEMR_System/html/login/login.html' style=' display: inline-block; text-align: center; background:blue; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0;'>
+                        <a href='http://localhost/DentalEMR_System/html/login/login.html' style=' display: inline-block; text-align: center; background:blue; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; margin: 10px 0;'>
                             Click here to Login
                         </a>
                     </p>
@@ -131,14 +131,14 @@ function sendCredentialsEmail($staffData, $password)
         Username: {$staffData['username']}
         Email: {$staffData['email']}
         Temporary Password: {$password}
-        Login URL: https://yourdomain.com/dentalemr_system/html/login/login.html
+        Login URL: https://yourdomain.com/DentalEMR_System/html/login/login.html
         
         Important Security Notice:
         - Please login immediately and change your password
         - Do not share your credentials with anyone
         - Use the provided temporary password only once
         
-        Click here to login: https://yourdomain.com/dentalemr_system/html/login/login.html
+        Click here to login: https://yourdomain.com/DentalEMR_System/html/login/login.html
         
         If you have any issues logging in, please contact support at " . SUPPORT_EMAIL . "
         
@@ -162,8 +162,8 @@ function response($message, $userId = null, $type = 'info', $emailStatus = null)
     }
 
     $redirectUrl = $userId
-        ? "/dentalemr_system/html/manageusers/manageuser.php?uid=" . $userId
-        : "/dentalemr_system/html/manageusers/manageuser.php";
+        ? "/DentalEMR_System/html/manageusers/manageuser.php?uid=" . $userId
+        : "/DentalEMR_System/html/manageusers/manageuser.php";
 
     $alertType = $type === 'error' ? 'error' : 'info';
 
@@ -365,7 +365,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } else {
     // If not POST request, redirect back
     $currentUserId = isset($_GET['uid']) && is_numeric($_GET['uid']) ? intval($_GET['uid']) : null;
-    $redirectUrl = "/dentalemr_system/html/manageusers/manageuser.php" . ($currentUserId ? "?uid=" . $currentUserId : "");
+    $redirectUrl = "/DentalEMR_System/html/manageusers/manageuser.php" . ($currentUserId ? "?uid=" . $currentUserId : "");
     header("Location: " . $redirectUrl);
     exit;
 }

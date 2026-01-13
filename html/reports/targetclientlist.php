@@ -47,7 +47,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -70,10 +70,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +102,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +131,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +152,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,7 +166,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -200,9 +200,9 @@ if (!$isOfflineMode && $conn) {
 } else {
     // CONFIGURE DB CONNECTION for offline mode or if connection failed
     $host = "localhost";
-    $user = "root";
-    $pass = "";
-    $dbname = "dentalemr_system";
+    $user = "u401132124_dentalclinic";
+    $pass = "Mho_DentalClinic1st";
+    $dbname = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $user, $pass, $dbname);
     if ($conn->connect_error) {
@@ -382,6 +382,7 @@ $end = min(($offset + $limit), $total_records);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Target Client List</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -497,18 +498,18 @@ $end = min(($offset + $limit), $total_records);
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -532,7 +533,7 @@ $end = min(($offset + $limit), $total_records);
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -798,7 +799,7 @@ $end = min(($offset + $limit), $total_records);
                                     <div id="exportDropdown" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
                                         <div class="p-2">
                                             <div class="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">Export Current Part</div>
-                                            <a href="/dentalemr_system/php/export_targetclient.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&part=<?php echo $currentPart; ?>&type=excel"
+                                            <a href="/DentalEMR_System/php/export_targetclient.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&part=<?php echo $currentPart; ?>&type=excel"
                                                 class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
                                                 <i class="fas fa-file-excel text-green-600 mr-2"></i>
                                                 Export Current to Excel
@@ -1127,7 +1128,7 @@ $end = min(($offset + $limit), $total_records);
                             <ul class="inline-flex items-stretch -space-x-px">
                                 <!-- Previous Button -->
                                 <li>
-                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page > 1) ? 'page=' . ($page - 1) : '#' ?>"
+                                    <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page > 1) ? 'page=' . ($page - 1) : '#' ?>"
                                         class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($page <= 1) ? 'pointer-events-none opacity-50' : '' ?>">
                                         <span class="sr-only">Previous</span>
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -1144,7 +1145,7 @@ $end = min(($offset + $limit), $total_records);
                                 $range = 3; // how many page links to show around current
                                 for ($i = max(1, $page - $range); $i <= min($total_pages, $page + $range); $i++): ?>
                                     <li>
-                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $i ?>"
+                                        <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $i ?>"
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight border 
                                 <?= ($i == $page)
                                         ? 'z-10 text-blue-600 bg-blue-50 border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
@@ -1161,7 +1162,7 @@ $end = min(($offset + $limit), $total_records);
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">...</span>
                                     </li>
                                     <li>
-                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $total_pages ?>"
+                                        <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $total_pages ?>"
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                                             <?= $total_pages ?>
                                         </a>
@@ -1170,7 +1171,7 @@ $end = min(($offset + $limit), $total_records);
 
                                 <!-- Next Button -->
                                 <li>
-                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page < $total_pages) ? 'page=' . ($page + 1) : '#' ?>"
+                                    <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page < $total_pages) ? 'page=' . ($page + 1) : '#' ?>"
                                         class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($page >= $total_pages) ? 'pointer-events-none opacity-50' : '' ?>">
                                         <span class="sr-only">Next</span>
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -1304,7 +1305,7 @@ $end = min(($offset + $limit), $total_records);
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php";
+                window.location.href = "/DentalEMR_System/php/login/logout.php";
             }, inactivityTime);
         }
 
@@ -1362,7 +1363,7 @@ $end = min(($offset + $limit), $total_records);
             showNotification('Preparing complete report...', 'info');
 
             // Make sure to pass 'both' as string, not as number
-            const completeUrl = `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=both&type=${format}`;
+            const completeUrl = `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=both&type=${format}`;
 
             console.log('Export URL:', completeUrl); // Debug log
 
@@ -1387,7 +1388,7 @@ $end = min(($offset + $limit), $total_records);
             const isPart2 = window.location.pathname.includes('targetclientlist2.php');
             const part = isPart2 ? 2 : 1;
 
-            window.open(`/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=${part}&type=excel`, '_blank');
+            window.open(`/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=${part}&type=excel`, '_blank');
         }
 
         // Fixed and improved export functions
@@ -1407,7 +1408,7 @@ $end = min(($offset + $limit), $total_records);
             // Create a small delay between downloads to avoid browser blocking
             setTimeout(() => {
                 // Download Part 1
-                const part1Url = `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=1&type=${format}`;
+                const part1Url = `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=1&type=${format}`;
                 const part1Link = document.createElement('a');
                 part1Link.href = part1Url;
                 part1Link.target = '_blank';
@@ -1421,7 +1422,7 @@ $end = min(($offset + $limit), $total_records);
                 // Wait a moment before downloading Part 2
                 setTimeout(() => {
                     // Download Part 2
-                    const part2Url = `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=2&type=${format}`;
+                    const part2Url = `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=2&type=${format}`;
                     const part2Link = document.createElement('a');
                     part2Link.href = part2Url;
                     part2Link.target = '_blank';
@@ -1461,7 +1462,7 @@ $end = min(($offset + $limit), $total_records);
 
             // Create download for Part 1
             const part1Window = window.open(
-                `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=1&type=${format}`,
+                `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=1&type=${format}`,
                 '_blank'
             );
 
@@ -1471,7 +1472,7 @@ $end = min(($offset + $limit), $total_records);
 
                 // Create download for Part 2
                 const part2Window = window.open(
-                    `/dentalemr_system/php/export_targetclient.php?uid=${userId}&year=${year}&part=2&type=${format}`,
+                    `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=2&type=${format}`,
                     '_blank'
                 );
 
@@ -1736,7 +1737,7 @@ $end = min(($offset + $limit), $total_records);
         });
     </script>
     <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
 
     <script>
         // ========== OFFLINE SUPPORT FOR REPORTS - START ==========
@@ -1774,7 +1775,7 @@ $end = min(($offset + $limit), $total_records);
             setupReportsOffline();
 
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                navigator.serviceWorker.register('/DentalEMR_System/sw.js')
                     .then(function(registration) {
                         console.log('SW registered for reports');
                     })

@@ -2,57 +2,23 @@
 session_start();
 date_default_timezone_set('Asia/Manila');
 
+// Database configuration
+$host = "localhost";
+$dbUser = "u401132124_dentalclinic";
+$dbPass = "Mho_DentalClinic1st";
+$dbName = "u401132124_mho_dentalemr";
+
+// Get patient ID from URL
+$patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
 // Check if we're in offline mode
 $isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
 
-// Enhanced session validation with offline support
+// Session validation
 if ($isOfflineMode) {
-    // Offline mode session validation
-    $isValidSession = false;
-
-    // Check if we have offline session data
-    if (isset($_SESSION['offline_user'])) {
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
-    } else {
-        // Try to create offline session from localStorage data
-        echo "<script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const checkOfflineSession = () => {
-                    try {
-                        const sessionData = sessionStorage.getItem('dentalemr_current_user');
-                        if (sessionData) {
-                            const user = JSON.parse(sessionData);
-                            if (user && user.isOffline) {
-                                console.log('Valid offline session detected:', user.email);
-                                return true;
-                            }
-                        }
-                        
-                        const offlineUsers = localStorage.getItem('dentalemr_local_users');
-                        if (offlineUsers) {
-                            const users = JSON.parse(offlineUsers);
-                            if (users && users.length > 0) {
-                                console.log('Offline users found in localStorage');
-                                return true;
-                            }
-                        }
-                        return false;
-                    } catch (error) {
-                        console.error('Error checking offline session:', error);
-                        return false;
-                    }
-                };
-                
-                if (!checkOfflineSession()) {
-                    alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
-                }
-            });
-        </script>";
-
-        // Create offline session for this request
+    // Offline mode
+    if (!isset($_SESSION['offline_user'])) {
+        // Create offline session
         $_SESSION['offline_user'] = [
             'id' => 'offline_user',
             'name' => 'Offline User',
@@ -60,135 +26,66 @@ if ($isOfflineMode) {
             'type' => 'Dentist',
             'isOffline' => true
         ];
-        $loggedUser = $_SESSION['offline_user'];
-        $userId = 'offline';
-        $isValidSession = true;
     }
+    $loggedUser = $_SESSION['offline_user'];
+    $userId = 'offline';
 } else {
-    // Online mode - normal session validation
+    // Online mode
     if (!isset($_GET['uid'])) {
-        echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
-            } else {
-                alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
-        </script>";
+        header('Location: /DentalEMR_System/html/login/login.html');
         exit;
     }
 
     $userId = intval($_GET['uid']);
-    $isValidSession = false;
 
-    // CHECK IF THIS USER IS REALLY LOGGED IN
-    if (
-        isset($_SESSION['active_sessions']) &&
-        isset($_SESSION['active_sessions'][$userId])
-    ) {
-        $userSession = $_SESSION['active_sessions'][$userId];
-
-        // Check basic required fields
-        if (isset($userSession['id']) && isset($userSession['type'])) {
-            $isValidSession = true;
-            // Update last activity
-            $_SESSION['active_sessions'][$userId]['last_activity'] = time();
-            $loggedUser = $userSession;
-        }
-    }
-
-    if (!$isValidSession) {
-        echo "<script>
-            if (!navigator.onLine) {
-                // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
-            } else {
-                alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            }
-        </script>";
+    // Validate session
+    if (!isset($_SESSION['active_sessions'][$userId])) {
+        header('Location: /DentalEMR_System/html/login/login.html');
         exit;
     }
-}
 
-// PER-USER INACTIVITY TIMEOUT (Online mode only)
-if (!$isOfflineMode) {
-    $inactiveLimit = 1800; // 10 minutes
-
-    if (isset($_SESSION['active_sessions'][$userId]['last_activity'])) {
-        $lastActivity = $_SESSION['active_sessions'][$userId]['last_activity'];
-
-        if ((time() - $lastActivity) > $inactiveLimit) {
-            // Log out ONLY this user (not everyone)
-            unset($_SESSION['active_sessions'][$userId]);
-
-            // If no one else is logged in, end session entirely
-            if (empty($_SESSION['active_sessions'])) {
-                session_unset();
-                session_destroy();
-            }
-
-            echo "<script>
-                alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
-            </script>";
-            exit;
-        }
-    }
-
-    // Update last activity timestamp
+    $loggedUser = $_SESSION['active_sessions'][$userId];
     $_SESSION['active_sessions'][$userId]['last_activity'] = time();
 }
 
-// GET USER DATA FOR PAGE USE
-if ($isOfflineMode) {
-    $loggedUser = $_SESSION['offline_user'];
-} else {
-    $loggedUser = $_SESSION['active_sessions'][$userId];
-}
-
-// Database connection only for online mode
+// Database connection (only for online mode)
 $conn = null;
-if (!$isOfflineMode) {
-    $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+$patientName = "Unknown Patient";
 
-    $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
-    if ($conn->connect_error) {
-        // If database fails but browser is online, show error
-        if (!isset($_GET['offline'])) {
-            echo "<script>
-                if (navigator.onLine) {
-                    alert('Database connection failed. Please try again.');
-                    console.error('Database error: " . addslashes($conn->connect_error) . "');
-                } else {
-                    // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
-                }
-            </script>";
-            exit;
+if (!$isOfflineMode && $patientId > 0) {
+    try {
+        $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
+        if ($conn->connect_error) {
+            throw new Exception("Connection failed: " . $conn->connect_error);
         }
-    }
 
-    // Fetch dentist name if user is a dentist (only in online mode)
-    if ($loggedUser['type'] === 'Dentist') {
-        $stmt = $conn->prepare("SELECT name, profile_picture FROM dentist WHERE id = ?");
-        $stmt->bind_param("i", $loggedUser['id']);
+        // Fetch patient name
+        $stmt = $conn->prepare("SELECT firstname, surname, middlename FROM patients WHERE patient_id = ?");
+        $stmt->bind_param("i", $patientId);
         $stmt->execute();
-        $stmt->bind_result($dentistName, $dentistProfilePicture);
-        if ($stmt->fetch()) {
-            $loggedUser['name'] = $dentistName;
-            $loggedUser['profile_picture'] = $dentistProfilePicture; // Add this line
+        $result = $stmt->get_result();
+        if ($patient = $result->fetch_assoc()) {
+            $middle = !empty($patient['middlename']) ? " " . $patient['middlename'][0] . "." : "";
+            $patientName = $patient['firstname'] . $middle . " " . $patient['surname'];
         }
         $stmt->close();
+
+        // Fetch dentist profile if applicable
+        if ($loggedUser['type'] === 'Dentist') {
+            $stmt = $conn->prepare("SELECT name, profile_picture FROM dentist WHERE id = ?");
+            $stmt->bind_param("i", $loggedUser['id']);
+            $stmt->execute();
+            $stmt->bind_result($dentistName, $dentistProfilePicture);
+            if ($stmt->fetch()) {
+                $loggedUser['name'] = $dentistName;
+                $loggedUser['profile_picture'] = $dentistProfilePicture;
+            }
+            $stmt->close();
+        }
+    } catch (Exception $e) {
+        error_log("Database error: " . $e->getMessage());
     }
 }
-// Get patient ID from URL
-$patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
 ?>
 <!doctype html>
 <html>
@@ -196,10 +93,85 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Treatment Records</title>
+    <title>Patient Treatment Records - Oral Health Condition</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tooth-cell {
+            min-width: 40px;
+            text-align: center;
+            padding: 4px;
+            font-weight: 600;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .treatment-fv {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .treatment-fg {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .treatment-pfs {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .treatment-pf {
+            background-color: #f3e8ff;
+            color: #7e22ce;
+        }
+
+        .treatment-tf {
+            background-color: #fef9c3;
+            color: #854d0e;
+        }
+
+        .treatment-x {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .treatment-o {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        .tooth-input {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tooth-input:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #notice {
+            transition: opacity 0.3s ease;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background-color: white !important;
+                color: black !important;
+            }
+
+            table {
+                break-inside: avoid;
+            }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -311,18 +283,18 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -346,7 +318,7 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -572,180 +544,152 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                 </div>
             </nav>
         </header>
+
         <main class="p-2 md:ml-64 h-auto pt-2">
             <section class="bg-white dark:bg-gray-900 p-3 sm:p-4 rounded-lg">
                 <!-- Patient Name and Add Button -->
                 <div class="items-center justify-between flex flex-col sm:flex-row mb-4 gap-2">
                     <p id="patientName" class="italic text-base sm:text-lg font-medium text-gray-900 dark:text-white">
-                        Loading ...
+                        <?php echo htmlspecialchars($patientName); ?>
                     </p>
                     <button type="button" id="addSMC"
-                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                        <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path clip-rule="evenodd" fill-rule="evenodd"
-                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+                        class="text-white cursor-pointer flex flex-row items-center justify-center gap-1 bg-blue-700 hover:bg-blue-800 font-medium rounded-sm text-xs px-3 py-2 w-full sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 no-print">
+                        <svg class="h-3.5 w-3.5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path clip-rule="evenodd" fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
                         </svg>
                         Add Treatment
                     </button>
                 </div>
 
                 <!-- Services Monitoring Chart Container -->
-                <div id="tables-container"
-                    class="mx-auto flex flex-col justify-center items-center p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
+                <div id="tables-container" class="mx-auto flex flex-col justify-center items-center p-3 sm:p-4 bg-white rounded-lg shadow dark:border shadow-stone-300 drop-shadow-sm dark:bg-gray-800 dark:border-gray-950">
                     <div class="items-center justify-between flex flex-row w-full mb-4">
                         <p class="text-base font-normal text-gray-950 dark:text-white">B. Services Monitoring Chart</p>
                     </div>
 
                     <!-- Tables Section -->
                     <div class="w-full space-y-6">
-                        <!-- First table -->
-                        <div class="w-full">
-                            <div class="bg-white dark:bg-gray-800 relative shadow-md rounded-lg overflow-hidden">
-                                <div class="overflow-x-auto">
-                                    <table id="table-first"
-                                        class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400 min-w-[800px]">
-                                        <thead
-                                            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                            <tr>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">55</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">54</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">53</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">52</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">51</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">61</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">62</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">63</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">64</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">65</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Table rows will be populated here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                        <!-- First table (55-65) -->
+                        <div class="w-full overflow-x-auto">
+                            <table id="table-first" class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">55</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">54</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">53</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">52</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">51</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">61</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">62</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">63</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">64</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">65</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-first-body">
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
 
-                        <!-- Second table -->
-                        <div class="w-full">
-                            <div class="bg-white dark:bg-gray-800 relative shadow-md rounded-lg overflow-hidden">
-                                <div class="overflow-x-auto">
-                                    <table id="table-second"
-                                        class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400 min-w-[800px]">
-                                        <thead
-                                            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                            <tr>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">85</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">84</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">83</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">82</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">81</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">71</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">72</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">73</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">74</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">75</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Table rows will be populated here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                        <!-- Second table (85-75) -->
+                        <div class="w-full overflow-x-auto">
+                            <table id="table-second" class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">85</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">84</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">83</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">82</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">81</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">71</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">72</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">73</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">74</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">75</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-second-body">
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
 
-                        <!-- Third table -->
-                        <div class="w-full">
-                            <div class="bg-white dark:bg-gray-800 relative shadow-md rounded-lg overflow-hidden">
-                                <div class="overflow-x-auto">
-                                    <table id="table-third"
-                                        class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400 min-w-[1200px]">
-                                        <thead
-                                            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                            <tr>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">18</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">17</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">16</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">15</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">14</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">13</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">12</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">11</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">21</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">22</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">23</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">24</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">25</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">26</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">27</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">28</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Table rows will be populated here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                        <!-- Third table (18-28) -->
+                        <div class="w-full overflow-x-auto">
+                            <table id="table-third" class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">18</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">17</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">16</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">15</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">14</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">13</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">12</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">11</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">21</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">22</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">23</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">24</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">25</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">26</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">27</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">28</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-third-body">
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
 
-                        <!-- Fourth table -->
-                        <div class="w-full">
-                            <div class="bg-white dark:bg-gray-800 relative shadow-md rounded-lg overflow-hidden">
-                                <div class="overflow-x-auto">
-                                    <table id="table-fourth"
-                                        class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400 min-w-[1200px]">
-                                        <thead
-                                            class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                            <tr>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">48</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">47</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">46</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">45</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">44</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">43</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">42</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">41</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">31</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">32</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">33</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">34</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">35</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">36</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">37</th>
-                                                <th scope="col" class="px-2 sm:px-4 py-2 text-center">38</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- Table rows will be populated here -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                        <!-- Fourth table (48-38) -->
+                        <div class="w-full overflow-x-auto">
+                            <table id="table-fourth" class="w-full text-xs sm:text-sm text-left text-gray-500 dark:text-gray-400">
+                                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                    <tr>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">Date</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">48</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">47</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">46</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">45</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">44</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">43</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">42</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">41</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">31</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">32</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">33</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">34</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">35</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">36</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">37</th>
+                                        <th scope="col" class="px-2 sm:px-4 py-2 text-center">38</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-fourth-body">
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- Navigation Button -->
-                <div class="w-full mt-6">
-                    <div class="flex justify-between">
-                        <button type="button" onclick="back()"
-                            class="text-white cursor-pointer inline-flex items-center justify-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 w-full sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                            Back
-                        </button>
-                    </div>
+                <!-- Navigation Buttons -->
+                <div class="w-full mt-6 flex justify-between no-print">
+                    <button type="button" onclick="back()"
+                        class="text-white cursor-pointer inline-flex items-center justify-center bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 w-full sm:w-auto dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        Back
+                    </button>
                 </div>
             </section>
         </main>
 
-        <!-- Modal -->
+        <!-- Add Treatment Modal -->
         <div id="SMCModal" tabindex="-1" aria-hidden="true"
             class="fixed inset-0 hidden flex justify-center items-center z-50 bg-gray-600/50">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-5xl mx-4 max-h-[90vh] overflow-y-auto">
@@ -910,9 +854,7 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
         </div>
 
         <!-- Notification -->
-        <div id="notice"
-            style="position:fixed; top:14px; right:14px; display:none; padding:12px 16px; border-radius:8px; background:#3b82f6; color:white; z-index:9999; font-weight:500; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); max-width:350px; word-break:break-word;">
-        </div>
+        <div id="notice" class="hidden fixed top-14 right-14 p-3 rounded-lg text-white font-medium shadow-lg z-50 max-w-sm"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@3.1.2/dist/flowbite.min.js"></script>
@@ -994,427 +936,57 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
         });
     </script>
     <script>
-        // ==================== SESSION MANAGEMENT ====================
-        let inactivityTime = 1800000; // 30 minutes in ms
-        let logoutTimer;
+        // ==================== GLOBAL VARIABLES ====================
+        const patientId = <?php echo $patientId; ?>;
+        const userId = <?php echo $isOfflineMode ? "'offline'" : $userId; ?>;
+        const isOfflineMode = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+        let selectedTreatmentCode = null;
 
-        function resetTimer() {
-            clearTimeout(logoutTimer);
-            logoutTimer = setTimeout(() => {
-                alert("You've been logged out due to 30 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>";
-            }, inactivityTime);
-        }
-
-        ["click", "mousemove", "keypress", "scroll", "touchstart"].forEach(evt => {
-            document.addEventListener(evt, resetTimer, false);
-        });
-
-        resetTimer();
-
-        // ==================== NAVIGATION FUNCTIONS ====================
-        function backmain() {
-            location.href = ("treatmentrecords.php?uid=<?php echo $userId; ?>");
-        }
-
-        function back() {
-            const patientId = <?php echo $patientId; ?>;
-
-            if (!patientId) {
-                alert("Missing patient ID.");
-                return;
-            }
-            window.location.href = `view_oralA.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-        }
-
-        // ==================== NOTIFICATION SYSTEM ====================
-        const notice = document.getElementById("notice");
-
-        function showNotice(message, color = "blue") {
+        // ==================== UTILITY FUNCTIONS ====================
+        function showNotice(message, type = 'info') {
+            const notice = document.getElementById('notice');
             if (!notice) return;
 
-            const colorMap = {
-                'blue': '#3b82f6',
-                'green': '#10b981',
-                'red': '#ef4444',
-                'orange': '#f59e0b',
-                'yellow': '#fbbf24'
+            const colors = {
+                info: 'bg-blue-600',
+                success: 'bg-green-600',
+                warning: 'bg-yellow-600',
+                error: 'bg-red-600'
             };
 
-            const bgColor = colorMap[color] || color;
-
+            notice.className = `${colors[type] || colors.info} fixed top-14 right-14 p-3 rounded-lg text-white font-medium shadow-lg z-50 max-w-sm`;
             notice.textContent = message;
-            notice.style.background = bgColor;
-            notice.style.display = "block";
-            notice.style.opacity = "1";
+            notice.classList.remove('hidden');
 
             setTimeout(() => {
-                notice.style.transition = "opacity 0.6s ease";
-                notice.style.opacity = "0";
-                setTimeout(() => {
-                    notice.style.display = "none";
-                    notice.style.transition = "";
-                }, 600);
+                notice.classList.add('hidden');
             }, 5000);
         }
 
-        // ==================== PAGE INITIALIZATION ====================
-        document.addEventListener("DOMContentLoaded", function() {
-            const patientId = <?php echo $patientId; ?>;
-
-            // Setup navigation links
-            const patientInfoLink = document.getElementById("patientInfoLink");
-            if (patientInfoLink && patientId) {
-                patientInfoLink.href = `view_info.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-            } else {
-                patientInfoLink.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    alert("Please select a patient first.");
-                });
-            }
-
-            const servicesRenderedLink = document.getElementById("servicesRenderedLink");
-            if (servicesRenderedLink && patientId) {
-                servicesRenderedLink.href = `view_record.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-            } else {
-                servicesRenderedLink.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    alert("Please select a patient first.");
-                });
-            }
-
-            const printdLink = document.getElementById("printdLink");
-            if (printdLink && patientId) {
-                printdLink.href = `print.php?uid=<?php echo $userId; ?>&id=${encodeURIComponent(patientId)}`;
-            } else {
-                printdLink.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    alert("Please select a patient first.");
-                });
-            }
-
-            // Load patient data and records
-            if (patientId) {
-                loadPatientData(patientId);
-            } else {
-                console.error("No patient ID provided in URL");
-                showNotice("No patient selected. Please go back and select a patient.", "red");
-            }
-        });
-
-        // ==================== DATA LOADING FUNCTIONS ====================
-        function loadPatientData(patientId) {
-            console.log("Loading patient data for ID:", patientId);
-
-            const nameEl = document.getElementById("patientName");
-            if (nameEl) {
-                nameEl.textContent = "Loading...";
-            }
-
-            // Use relative path that matches your project structure
-            fetch(`../../php/treatmentrecords/get_treatment_history.php?patient_id=${patientId}&_=${Date.now()}`)
-                .then(response => {
-                    console.log("Response status:", response.status);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Patient data received:", data);
-
-                    if (data.error) {
-                        console.error("API Error:", data.error);
-                        showNotice("Error: " + data.error, "red");
-                        return;
-                    }
-
-                    if (!data.success) {
-                        console.error("API returned unsuccessful:", data);
-                        showNotice("Failed to load data: " + (data.message || "Unknown error"), "red");
-                        return;
-                    }
-
-                    // Set patient name
-                    const nameEl = document.getElementById("patientName");
-                    if (nameEl) {
-                        nameEl.textContent = data.patient_name || "Patient Name Not Found";
-                        if (data.using_history_table) {
-                            nameEl.title = "Using new treatment history system";
-                        }
-                    }
-
-                    // Populate tables
-                    if (data.records && data.records.length > 0) {
-                        console.log("Populating tables with", data.records.length, "records");
-                        populateTables(data.records);
-                        showNotice(`Loaded ${data.records.length} treatment records`, "green");
-                    } else {
-                        populateTables([]);
-                        showNotice("No treatment records found", "yellow");
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading data:', error);
-                    console.error('Error details:', error.message);
-                    showNotice("Failed to load patient data. Please check if the PHP file exists and the server is running.", "red");
-
-                    const nameEl = document.getElementById("patientName");
-                    if (nameEl) {
-                        nameEl.textContent = "Error loading data - Check Console";
-                    }
-
-                    // Show debug info
-                    console.log("Tried to fetch from: ../../php/treatmentrecords/get_treatment_history.php");
-                    console.log("Current page URL:", window.location.href);
-                });
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-PH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         }
 
-        // ==================== TABLE POPULATION ====================
-        function populateTables(records) {
-            console.log("Populating tables with", records.length, "records");
-
-            if (!records || records.length === 0) {
-                // Clear all tables
-                const tableIds = ['table-first', 'table-second', 'table-third', 'table-fourth'];
-                tableIds.forEach(tableId => {
-                    const tbody = document.querySelector(`#${tableId} tbody`);
-                    if (tbody) {
-                        tbody.innerHTML = `
-                    <tr>
-                        <td colspan="20" class="px-4 py-4 text-center font-medium text-gray-500 dark:text-gray-400">
-                            No treatment records found
-                        </td>
-                    </tr>
-                `;
-                    }
-                });
-                return;
-            }
-
-            const tableGroups = {
-                "table-first": [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
-                "table-second": [85, 84, 83, 82, 81, 71, 72, 73, 74, 75],
-                "table-third": [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
-                "table-fourth": [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
+        function getTreatmentClass(code) {
+            const classes = {
+                'FV': 'treatment-fv',
+                'FG': 'treatment-fg',
+                'PFS': 'treatment-pfs',
+                'PF': 'treatment-pf',
+                'TF': 'treatment-tf',
+                'X': 'treatment-x',
+                'O': 'treatment-o'
             };
-
-            // Group by date and FDI number
-            const groupedByDate = {};
-
-            records.forEach(row => {
-                let date;
-
-                if (row.treatment_date) {
-                    // New table format
-                    date = row.treatment_date;
-                } else if (row.created_at) {
-                    // Old table format
-                    const dateObj = new Date(row.created_at);
-                    date = isNaN(dateObj.getTime()) ?
-                        row.created_at.split(' ')[0] :
-                        dateObj.toISOString().split('T')[0];
-                } else {
-                    return; // Skip if no date
-                }
-
-                const formattedDate = new Date(date).toLocaleDateString('en-PH', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
-
-                if (!groupedByDate[formattedDate]) {
-                    groupedByDate[formattedDate] = {};
-                }
-
-                if (row.fdi_number) {
-                    groupedByDate[formattedDate][row.fdi_number] = row.treatment_code;
-                }
-            });
-
-            console.log("Grouped data:", groupedByDate);
-
-            // Populate each table
-            for (const [tableId, teeth] of Object.entries(tableGroups)) {
-                const tbody = document.querySelector(`#${tableId} tbody`);
-                if (!tbody) continue;
-
-                tbody.innerHTML = "";
-
-                const dates = Object.keys(groupedByDate).sort((a, b) => {
-                    try {
-                        return new Date(b) - new Date(a); // Newest first
-                    } catch {
-                        return b.localeCompare(a);
-                    }
-                });
-
-                if (dates.length === 0) {
-                    const tr = document.createElement("tr");
-                    tr.classList.add("border-b", "border-gray-200", "dark:border-gray-700");
-
-                    const td = document.createElement("td");
-                    td.className = "px-4 py-4 text-center font-medium text-gray-500 dark:text-gray-400";
-                    td.colSpan = teeth.length + 1;
-                    td.textContent = "No treatment records";
-                    tr.appendChild(td);
-                    tbody.appendChild(tr);
-                } else {
-                    dates.forEach(date => {
-                        const tr = document.createElement("tr");
-                        tr.classList.add("border-b", "border-gray-200", "dark:border-gray-700");
-
-                        // Date cell
-                        const th = document.createElement("th");
-                        th.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white whitespace-nowrap";
-                        th.textContent = date;
-                        tr.appendChild(th);
-
-                        // Tooth cells
-                        teeth.forEach(fdi => {
-                            const td = document.createElement("td");
-                            td.className = "px-4 py-3 text-center font-medium text-gray-900 dark:text-white";
-                            const treatmentCode = groupedByDate[date][fdi];
-                            td.textContent = treatmentCode || "-";
-
-                            if (treatmentCode) {
-                                td.classList.add("font-semibold");
-                                // Color coding - FIXED: Split classes properly
-                                const colorClasses = {
-                                    'FV': ['text-blue-600', 'dark:text-blue-400'],
-                                    'FG': ['text-blue-500', 'dark:text-blue-300'],
-                                    'PFS': ['text-green-600', 'dark:text-green-400'],
-                                    'PF': ['text-purple-600', 'dark:text-purple-400'],
-                                    'TF': ['text-yellow-600', 'dark:text-yellow-400'],
-                                    'X': ['text-red-600', 'dark:text-red-400'],
-                                    'O': ['text-gray-600', 'dark:text-gray-400']
-                                };
-
-                                const classes = colorClasses[treatmentCode] || ['text-gray-900'];
-                                classes.forEach(cls => td.classList.add(cls));
-                            }
-
-                            tr.appendChild(td);
-                        });
-
-                        tbody.appendChild(tr);
-                    });
-                }
-            }
+            return classes[code] || '';
         }
-
-        // ==================== MODAL FUNCTIONS ====================
-        let selectedTreatmentCode = null;
-
-        // Treatment dropdown selection
-        document.getElementById("selcttreatment").addEventListener("change", function() {
-            selectedTreatmentCode = this.value;
-            if (selectedTreatmentCode) {
-                showNotice(`Selected: ${this.options[this.selectedIndex].text}`, "blue");
-            }
-        });
-
-        function initSMCTreatmentClick() {
-            const toothInputs = document.querySelectorAll("#SMCModal .tooth-input");
-
-            toothInputs.forEach(input => {
-                // Clear existing event listeners by cloning
-                const newInput = input.cloneNode(true);
-                input.parentNode.replaceChild(newInput, input);
-            });
-
-            document.querySelectorAll("#SMCModal .tooth-input").forEach(input => {
-                input.addEventListener("click", () => {
-                    if (!selectedTreatmentCode) {
-                        showNotice("Please select a treatment first!", "red");
-                        return;
-                    }
-
-                    const treatmentText = document.querySelector(`#selcttreatment option[value="${selectedTreatmentCode}"]`).text;
-                    input.value = selectedTreatmentCode;
-                    input.style.backgroundColor = "#e5e7eb";
-                    input.title = treatmentText;
-
-                    // Visual feedback
-                    input.style.transform = "scale(1.1)";
-                    setTimeout(() => {
-                        input.style.transform = "scale(1)";
-                    }, 200);
-                });
-
-                input.addEventListener("dblclick", () => {
-                    if (input.value) {
-                        input.value = "";
-                        input.style.backgroundColor = "";
-                        input.title = "";
-
-                        // Visual feedback
-                        input.style.transform = "scale(0.95)";
-                        setTimeout(() => {
-                            input.style.transform = "scale(1)";
-                        }, 200);
-                    }
-                });
-            });
-        }
-
-        // Open modal and load treatments for selected date
-        document.getElementById("addSMC").addEventListener("click", async () => {
-            const patientId = <?php echo $patientId; ?>;
-            if (!patientId) return showNotice("No patient selected", "red");
-
-            // Get selected date
-            const datePicker = document.getElementById("treatmentDate");
-            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
-
-            try {
-                const response = await fetch(`../../php/treatmentrecords/get_today_smc.php?patient_id=${patientId}&date=${selectedDate}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                const data = await response.json();
-
-                // Clear all previous inputs first
-                document.querySelectorAll("#SMCModal .tooth-input").forEach(input => {
-                    input.value = "";
-                    input.style.backgroundColor = "";
-                    input.title = "";
-                });
-
-                // Fill modal inputs with records for the selected date
-                if (data.records && data.records.length > 0) {
-                    data.records.forEach(rec => {
-                        const input = document.querySelector(`#SMCModal .tooth-input[data-tooth-id='${rec.fdi_number}']`);
-                        if (input) {
-                            input.value = rec.treatment_code;
-                            input.style.backgroundColor = "#e5e7eb";
-                            input.title = getTreatmentName(rec.treatment_code);
-                        }
-                    });
-
-                    showNotice(`Loaded ${data.records.length} existing treatments for ${selectedDate}`, "blue");
-                } else {
-                    showNotice(`No existing treatments found for ${selectedDate}. You can add new ones.`, "yellow");
-                }
-
-                // Reset treatment selector
-                document.getElementById("selcttreatment").selectedIndex = 0;
-                selectedTreatmentCode = null;
-
-                document.getElementById("SMCModal").classList.remove("hidden");
-                initSMCTreatmentClick();
-            } catch (err) {
-                console.error("Failed to load treatments", err);
-                // If get_today_smc.php doesn't exist, just show empty modal
-                showNotice("Ready to add new treatments", "yellow");
-                document.getElementById("SMCModal").classList.remove("hidden");
-                initSMCTreatmentClick();
-            }
-        });
 
         function getTreatmentName(code) {
-            const treatments = {
+            const names = {
                 'FV': 'Fluoride Varnish',
                 'FG': 'Fluoride Gel',
                 'PFS': 'Pit and Fissure Sealant',
@@ -1423,21 +995,287 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                 'X': 'Extraction',
                 'O': 'Others'
             };
-            return treatments[code] || code;
+            return names[code] || code;
+        }
+
+        // ==================== NAVIGATION FUNCTIONS ====================
+        function back() {
+            window.location.href = `view_oralA.php?uid=${userId}&id=${patientId}`;
+        }
+
+        function backmain() {
+            window.location.href = `treatmentrecords.php?uid=${userId}`;
+        }
+
+        // ==================== DATA LOADING ====================
+        async function loadTreatmentHistory() {
+            if (!patientId) {
+                showNotice('No patient selected', 'error');
+                return;
+            }
+
+            try {
+                const url = `/DentalEMR_System/php/treatmentrecords/get_smc_data.php?patient_id=${patientId}&_=${Date.now()}`;
+                console.log('Fetching from:', url);
+
+                const response = await fetch(url);
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Data received:', data);
+
+                if (data.success) {
+                    populateTables(data.records);
+                    showNotice(`Loaded ${data.records.length} treatment records`, 'success');
+                } else {
+                    showNotice(data.error || 'Failed to load data', 'error');
+                    populateTables([]);
+                }
+            } catch (error) {
+                console.error('Error loading treatment history:', error);
+                console.error('Error details:', error.message);
+                showNotice('Failed to load treatment data. Please check console for details.', 'error');
+                populateTables([]);
+            }
+        }
+
+        function populateTables(records) {
+            const tableGroups = {
+                'table-first-body': [55, 54, 53, 52, 51, 61, 62, 63, 64, 65],
+                'table-second-body': [85, 84, 83, 82, 81, 71, 72, 73, 74, 75],
+                'table-third-body': [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
+                'table-fourth-body': [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
+            };
+
+            // Group records by date
+            const groupedByDate = {};
+            records.forEach(record => {
+                const date = record.created_at ? record.created_at.split(' ')[0] : '';
+                if (!date) return;
+
+                if (!groupedByDate[date]) {
+                    groupedByDate[date] = {};
+                }
+
+                if (record.fdi_number) {
+                    groupedByDate[date][record.fdi_number] = record.treatment_code;
+                }
+            });
+
+            // Clear all tables
+            Object.keys(tableGroups).forEach(tableId => {
+                const tbody = document.getElementById(tableId);
+                if (tbody) tbody.innerHTML = '';
+            });
+
+            // Create rows for each date
+            const dates = Object.keys(groupedByDate).sort().reverse(); // Newest first
+
+            if (dates.length === 0) {
+                // Show "no data" message in first table
+                const tbody = document.getElementById('table-first-body');
+                if (tbody) {
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-gray-200 dark:border-gray-700';
+                    const td = document.createElement('td');
+                    td.className = 'px-4 py-3 text-center text-gray-500 dark:text-gray-400';
+                    td.colSpan = 11;
+                    td.textContent = 'No treatment records found';
+                    tr.appendChild(td);
+                    tbody.appendChild(tr);
+                }
+                return;
+            }
+
+            // Populate each table
+            dates.forEach(date => {
+                Object.entries(tableGroups).forEach(([tableId, teeth]) => {
+                    const tbody = document.getElementById(tableId);
+                    if (!tbody) return;
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-gray-200 dark:border-gray-700';
+
+                    // Date cell
+                    const dateCell = document.createElement('td');
+                    dateCell.className = 'px-2 sm:px-4 py-2 text-center font-medium text-gray-900 dark:text-white whitespace-nowrap';
+                    dateCell.textContent = formatDate(date);
+                    tr.appendChild(dateCell);
+
+                    // Tooth cells
+                    teeth.forEach(tooth => {
+                        const td = document.createElement('td');
+                        td.className = 'px-2 sm:px-4 py-2 text-center font-medium';
+
+                        const treatmentCode = groupedByDate[date][tooth];
+                        if (treatmentCode) {
+                            td.textContent = treatmentCode;
+                            td.className += ' ' + getTreatmentClass(treatmentCode);
+                            td.title = getTreatmentName(treatmentCode);
+                        } else {
+                            td.textContent = '-';
+                            td.className += ' text-gray-400 dark:text-gray-500';
+                        }
+
+                        tr.appendChild(td);
+                    });
+
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        // ==================== MODAL FUNCTIONS ====================
+        function initToothInputs() {
+            const toothInputs = document.querySelectorAll('.tooth-input');
+            const treatmentSelect = document.getElementById('selcttreatment');
+
+            // Clear existing event listeners
+            toothInputs.forEach(input => {
+                input.removeEventListener('click', handleToothClick);
+                input.removeEventListener('dblclick', handleToothDblClick);
+            });
+
+            // Add new event listeners
+            toothInputs.forEach(input => {
+                input.addEventListener('click', handleToothClick);
+                input.addEventListener('dblclick', handleToothDblClick);
+            });
+
+            // Treatment selector change
+            if (treatmentSelect) {
+                treatmentSelect.addEventListener('change', function() {
+                    selectedTreatmentCode = this.value;
+                    if (selectedTreatmentCode) {
+                        const optionText = this.options[this.selectedIndex].text;
+                        showNotice(`Selected: ${optionText}`, 'info');
+                    }
+                });
+            }
+        }
+
+        function handleToothClick(event) {
+            if (!selectedTreatmentCode) {
+                showNotice('Please select a treatment first!', 'warning');
+                return;
+            }
+
+            const input = event.target;
+            input.value = selectedTreatmentCode;
+            input.style.backgroundColor = '#e5e7eb';
+            input.title = getTreatmentName(selectedTreatmentCode);
+
+            // Visual feedback
+            input.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                input.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function handleToothDblClick(event) {
+            const input = event.target;
+            input.value = '';
+            input.style.backgroundColor = '';
+            input.title = '';
+
+            // Visual feedback
+            input.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                input.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        async function loadExistingTreatments(date) {
+            if (!patientId) return;
+
+            try {
+                const response = await fetch(`/DentalEMR_System/php/treatmentrecords/get_smc_data.php?patient_id=${patientId}&date=${date}`);
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+
+                if (data.success && data.records.length > 0) {
+                    data.records.forEach(record => {
+                        const input = document.querySelector(`.tooth-input[data-tooth-id="${record.fdi_number}"]`);
+                        if (input) {
+                            input.value = record.treatment_code;
+                            input.style.backgroundColor = '#e5e7eb';
+                            input.title = getTreatmentName(record.treatment_code);
+                        }
+                    });
+
+                    showNotice(`Loaded ${data.records.length} existing treatments for ${date}`, 'info');
+                }
+            } catch (error) {
+                // Silently fail - it's okay if we can't load existing treatments
+                console.log('No existing treatments found for this date');
+            }
+        }
+
+        async function openAddModal() {
+            if (!patientId) {
+                showNotice('No patient selected', 'error');
+                return;
+            }
+
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('treatmentDate');
+            if (dateInput) {
+                dateInput.value = today;
+            }
+
+            // Clear all inputs
+            document.querySelectorAll('.tooth-input').forEach(input => {
+                input.value = '';
+                input.style.backgroundColor = '';
+                input.title = '';
+            });
+
+            // Reset treatment selector
+            const treatmentSelect = document.getElementById('selcttreatment');
+            if (treatmentSelect) {
+                treatmentSelect.selectedIndex = 0;
+                selectedTreatmentCode = null;
+            }
+
+            // Load existing treatments for today
+            await loadExistingTreatments(today);
+
+            // Show modal
+            document.getElementById('SMCModal').classList.remove('hidden');
+            initToothInputs();
+        }
+
+        function closeSMC() {
+            document.getElementById('SMCModal').classList.add('hidden');
+            selectedTreatmentCode = null;
         }
 
         // ==================== SAVE FUNCTION ====================
-        function saveSMC() {
-            const patientId = document.getElementById("patient_id").value;
-            if (!patientId) return showNotice("Patient ID not set", "red");
+        async function saveSMC() {
+            if (!patientId) {
+                showNotice('Patient ID not set', 'error');
+                return;
+            }
 
-            const datePicker = document.getElementById("treatmentDate");
-            const selectedDate = datePicker ? datePicker.value : new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('treatmentDate');
+            if (!dateInput || !dateInput.value) {
+                showNotice('Please select a date', 'warning');
+                return;
+            }
 
+            const selectedDate = dateInput.value;
             const treatments = [];
-            let hasTreatments = false;
 
-            document.querySelectorAll("#SMCModal .tooth-input").forEach(input => {
+            // Collect all treatments
+            document.querySelectorAll('.tooth-input').forEach(input => {
                 const treatmentCode = input.value.trim();
                 const toothId = input.dataset.toothId;
 
@@ -1446,497 +1284,122 @@ $patientId = isset($_GET['id']) ? intval($_GET['id']) : 0;
                         tooth_id: toothId,
                         treatment_code: treatmentCode
                     });
-                    hasTreatments = true;
                 }
             });
 
-            if (!hasTreatments) {
-                showNotice("No treatments selected", "yellow");
+            if (treatments.length === 0) {
+                showNotice('No treatments selected', 'warning');
                 return;
             }
 
             // Disable save button
-            const saveBtn = document.getElementById("saveSMCBtn");
+            const saveBtn = document.getElementById('saveSMCBtn');
             const originalText = saveBtn.textContent;
-            saveBtn.textContent = "Saving...";
+            saveBtn.textContent = 'Saving...';
             saveBtn.disabled = true;
 
-            // Close modal
-            closeSMC();
-
-            // Use relative path for save endpoint
-            fetch("../../php/treatmentrecords/save_treatment_history.php", {
-                    method: "POST",
+            try {
+                const response = await fetch('/DentalEMR_System/php/treatmentrecords/save_smc.php', {
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json"
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        patient_id: parseInt(patientId),
+                        patient_id: patientId,
                         treatments: treatments,
                         date: selectedDate
                     })
-                })
-                .then(async response => {
-                    const text = await response.text();
-                    console.log("Server response:", text);
-
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error("Failed to parse JSON:", text);
-                        throw new Error("Invalid server response");
-                    }
-                })
-                .then(data => {
-                    console.log("Parsed data:", data);
-
-                    if (data.success) {
-                        showNotice(data.message, "green");
-
-                        // Clear modal inputs
-                        document.querySelectorAll("#SMCModal .tooth-input").forEach(input => {
-                            input.value = "";
-                            input.style.backgroundColor = "";
-                            input.title = "";
-                        });
-
-                        // Reset treatment selector
-                        document.getElementById("selcttreatment").selectedIndex = 0;
-                        selectedTreatmentCode = null;
-
-                        // Refresh the table data
-                        setTimeout(() => {
-                            loadPatientData(patientId);
-                        }, 300);
-
-                    } else {
-                        showNotice("Failed: " + (data.message || "Unknown error"), "red");
-
-                        // If error is about missing table, create it
-                        if (data.message && data.message.includes("table not found")) {
-                            if (confirm("Treatment history table not found. Create it now?")) {
-                                createTreatmentHistoryTable();
-                            }
-                        }
-                    }
-
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
-                })
-                .catch(err => {
-                    console.error("Save error:", err);
-                    showNotice("Save failed: " + err.message, "red");
-                    saveBtn.textContent = originalText;
-                    saveBtn.disabled = false;
                 });
-        }
 
-        function createTreatmentHistoryTable() {
-            showNotice("Creating treatment history table...", "blue");
-
-            fetch("../../php/treatmentrecords/create_history_table.php")
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotice("Table created successfully! Please try saving again.", "green");
-                    } else {
-                        showNotice("Failed to create table: " + data.message, "red");
-                    }
-                })
-                .catch(err => {
-                    showNotice("Error creating table: " + err.message, "red");
-                });
-        }
-
-        // Close modal
-        function closeSMC() {
-            document.getElementById("SMCModal").classList.add("hidden");
-            // Reset treatment selector
-            document.getElementById("selcttreatment").selectedIndex = 0;
-            selectedTreatmentCode = null;
-        }
-
-        // Add CSS for better loading states
-        const style = document.createElement('style');
-        style.textContent = `
-            .tooth-input {
-                transition: all 0.2s ease;
-            }
-            
-            .tooth-input:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-            
-            #tables-container {
-                transition: opacity 0.3s ease;
-            }
-            
-            .loading-spinner {
-                display: none;
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                z-index: 9999;
-            }
-            
-            #saveSMCBtn:disabled {
-                background-color: #93c5fd !important;
-                cursor: not-allowed;
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
-    <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
-
-
-    <!-- Offline/Online Sync Handler -->
-    <script>
-        // Global offline sync manager
-        class OfflineSyncManager {
-            constructor() {
-                this.offlineActions = JSON.parse(localStorage.getItem('offline_actions') || '[]');
-                this.isOnline = navigator.onLine;
-                this.syncInterval = null;
-
-                this.init();
-            }
-
-            init() {
-                // Listen for online/offline events
-                window.addEventListener('online', () => this.handleOnline());
-                window.addEventListener('offline', () => this.handleOffline());
-
-                // Start periodic sync
-                this.startSyncInterval();
-
-                // Try to sync immediately if online
-                if (this.isOnline) {
-                    setTimeout(() => this.syncOfflineActions(), 1000);
-                }
-            }
-
-            handleOnline() {
-                this.isOnline = true;
-                console.log('Device is online, syncing...');
-                this.syncOfflineActions();
-                this.startSyncInterval();
-            }
-
-            handleOffline() {
-                this.isOnline = false;
-                console.log('Device is offline');
-                this.stopSyncInterval();
-            }
-
-            startSyncInterval() {
-                if (this.syncInterval) clearInterval(this.syncInterval);
-                this.syncInterval = setInterval(() => this.syncOfflineActions(), 30000); // Every 30 seconds
-            }
-
-            stopSyncInterval() {
-                if (this.syncInterval) {
-                    clearInterval(this.syncInterval);
-                    this.syncInterval = null;
-                }
-            }
-
-            addOfflineAction(action, data) {
-                const actionData = {
-                    id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-                    action: action,
-                    data: data,
-                    timestamp: new Date().toISOString(),
-                    patient_id: data.patient_id || data.id || null
-                };
-
-                this.offlineActions.push(actionData);
-                this.saveToStorage();
-
-                console.log('Action saved for offline sync:', actionData);
-
-                // Try to sync immediately if online
-                if (this.isOnline) {
-                    setTimeout(() => this.syncOfflineActions(), 500);
-                }
-
-                return actionData.id;
-            }
-
-            removeOfflineAction(actionId) {
-                this.offlineActions = this.offlineActions.filter(action => action.id !== actionId);
-                this.saveToStorage();
-            }
-
-            saveToStorage() {
-                try {
-                    localStorage.setItem('offline_actions', JSON.stringify(this.offlineActions));
-                } catch (e) {
-                    console.error('Failed to save offline actions:', e);
-                }
-            }
-
-            async syncOfflineActions() {
-                if (!this.isOnline || this.offlineActions.length === 0) {
-                    return;
-                }
-
-                console.log(`Syncing ${this.offlineActions.length} offline actions...`);
-
-                // Group actions by type for batch processing
-                const archiveActions = this.offlineActions.filter(a => a.action === 'archive_patient');
-
-                // Process archive actions
-                if (archiveActions.length > 0) {
-                    await this.syncArchiveActions(archiveActions);
-                }
-
-                // Process other action types as needed
-            }
-
-            async syncArchiveActions(archiveActions) {
-                const patientIds = archiveActions.map(action => action.data.patient_id || action.data.id);
-
-                try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({
-                            sync_offline_archives: '1',
-                            archive_ids: JSON.stringify(patientIds)
-                        })
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        console.log('Offline archive sync successful:', result);
-
-                        // Remove successfully synced actions
-                        archiveActions.forEach(action => {
-                            this.removeOfflineAction(action.id);
-                        });
-
-                        // Show success message
-                        if (result.synced_count > 0) {
-                            showNotice(`Synced ${result.synced_count} archived patients from offline mode`, 'green');
-                        }
-
-                        // Refresh the patient list if on treatment records page
-                        if (window.location.pathname.includes('treatmentrecords.php')) {
-                            setTimeout(() => {
-                                if (typeof window.loadPatients === 'function') {
-                                    window.loadPatients();
-                                }
-                            }, 1000);
-                        }
-                    } else {
-                        console.error('Offline archive sync failed:', result);
-                    }
-                } catch (error) {
-                    console.error('Failed to sync offline archives:', error);
-                }
-            }
-
-            // Add this to your existing archive function
-            async archivePatientWithOfflineSupport(patientId, patientName) {
-                if (!this.isOnline) {
-                    // Store for offline sync
-                    const actionId = this.addOfflineAction('archive_patient', {
-                        patient_id: patientId,
-                        patient_name: patientName,
-                        id: patientId
-                    });
-
-                    // Remove from local display immediately for better UX
-                    showNotice(`Patient "${patientName}" marked for archive (offline). Will sync when online.`, 'orange');
-
-                    // Return a promise that resolves immediately for offline
-                    return Promise.resolve({
-                        success: true,
-                        offline: true,
-                        actionId: actionId,
-                        message: 'Patient marked for archive (offline)'
-                    });
-                }
-
-                // Online: proceed with normal archive
-                try {
-                    const response = await fetch('/dentalemr_system/php/treatmentrecords/treatment.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams({
-                            archive_id: patientId
-                        })
-                    });
-
-                    return await response.json();
-                } catch (error) {
-                    console.error('Archive request failed:', error);
-
-                    // Fallback to offline mode if request fails
-                    const actionId = this.addOfflineAction('archive_patient', {
-                        patient_id: patientId,
-                        patient_name: patientName,
-                        id: patientId
-                    });
-
-                    return {
-                        success: true,
-                        offline: true,
-                        actionId: actionId,
-                        message: 'Archive failed, saved for offline sync'
-                    };
-                }
-            }
-        }
-
-        // Initialize offline sync manager
-        const offlineSync = new OfflineSyncManager();
-
-        // Add to window for global access
-        window.offlineSync = offlineSync;
-
-        // Enhanced notification function with better styling
-        function showNotice(message, color = "blue") {
-            const notice = document.getElementById("notice");
-            if (!notice) return;
-
-            // Map color names to actual colors
-            const colorMap = {
-                'blue': '#3b82f6',
-                'green': '#10b981',
-                'red': '#ef4444',
-                'orange': '#f59e0b',
-                'yellow': '#fbbf24'
-            };
-
-            const bgColor = colorMap[color] || color;
-
-            notice.textContent = message;
-            notice.style.background = bgColor;
-            notice.style.display = "block";
-            notice.style.opacity = "1";
-            notice.style.position = "fixed";
-            notice.style.top = "14px";
-            notice.style.right = "14px";
-            notice.style.padding = "12px 16px";
-            notice.style.borderRadius = "8px";
-            notice.style.color = "white";
-            notice.style.fontWeight = "500";
-            notice.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
-            notice.style.zIndex = "9999";
-            notice.style.maxWidth = "350px";
-            notice.style.wordBreak = "break-word";
-
-            setTimeout(() => {
-                notice.style.transition = "opacity 0.6s ease";
-                notice.style.opacity = "0";
-                setTimeout(() => {
-                    notice.style.display = "none";
-                    notice.style.transition = "";
-                }, 600);
-            }, 5000);
-        }
-
-        // Enhanced fetch with offline fallback
-        async function fetchWithOfflineFallback(url, options = {}) {
-            if (!navigator.onLine) {
-                // Check if we have offline data
-                const cachedData = localStorage.getItem(`cache_${url}`);
-                if (cachedData) {
-                    return JSON.parse(cachedData);
-                }
-
-                throw new Error('You are offline and no cached data is available');
-            }
-
-            try {
-                const response = await fetch(url, options);
                 const data = await response.json();
 
-                // Cache successful responses
-                if (response.ok && options.method === 'GET') {
-                    try {
-                        localStorage.setItem(`cache_${url}`, JSON.stringify(data));
-                    } catch (e) {
-                        console.warn('Could not cache data, storage might be full');
-                    }
-                }
+                if (data.success) {
+                    showNotice(data.message, 'success');
+                    closeSMC();
 
-                return data;
-            } catch (error) {
-                console.error('Fetch failed:', error);
-
-                // Try to return cached data as fallback
-                const cachedData = localStorage.getItem(`cache_${url}`);
-                if (cachedData) {
-                    console.log('Returning cached data as fallback');
-                    return JSON.parse(cachedData);
-                }
-
-                throw error;
-            }
-        }
-
-        // Monitor network status with visual indicator
-        function setupNetworkStatusIndicator() {
-            const indicator = document.createElement('div');
-            indicator.id = 'network-status';
-            indicator.style.position = 'fixed';
-            indicator.style.bottom = '10px';
-            indicator.style.right = '10px';
-            indicator.style.width = '12px';
-            indicator.style.height = '12px';
-            indicator.style.borderRadius = '50%';
-            indicator.style.zIndex = '9998';
-            indicator.style.transition = 'all 0.3s ease';
-
-            document.body.appendChild(indicator);
-
-            function updateIndicator() {
-                if (navigator.onLine) {
-                    indicator.style.backgroundColor = '#10b981';
-                    indicator.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.5)';
-                    indicator.title = 'Online';
+                    // Refresh the table
+                    setTimeout(() => {
+                        loadTreatmentHistory();
+                    }, 500);
                 } else {
-                    indicator.style.backgroundColor = '#ef4444';
-                    indicator.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.5)';
-                    indicator.title = 'Offline';
+                    showNotice(data.message || 'Failed to save treatments', 'error');
                 }
+            } catch (error) {
+                console.error('Save error:', error);
+                showNotice('Failed to save treatments. Please try again.', 'error');
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
             }
-
-            updateIndicator();
-            window.addEventListener('online', updateIndicator);
-            window.addEventListener('offline', updateIndicator);
         }
 
-        // Call setup on DOMContentLoaded
-        document.addEventListener('DOMContentLoaded', () => {
-            setupNetworkStatusIndicator();
+        // ==================== EVENT LISTENERS ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up navigation links
+            const patientInfoLink = document.getElementById('patientInfoLink');
+            const servicesRenderedLink = document.getElementById('servicesRenderedLink');
+            const printdLink = document.getElementById('printdLink');
 
-            // Override the original archive function to use offline support
-            if (typeof window.archivePatient === 'function') {
-                const originalArchive = window.archivePatient;
-                window.archivePatient = async function(patientId, patientName) {
-                    return await offlineSync.archivePatientWithOfflineSupport(patientId, patientName);
-                };
+            if (patientId) {
+                patientInfoLink.href = `view_info.php?uid=${userId}&id=${patientId}`;
+                servicesRenderedLink.href = `view_record.php?uid=${userId}&id=${patientId}`;
+                printdLink.href = `print.php?uid=${userId}&id=${patientId}`;
             }
 
-            // Check for pending offline actions on page load
-            setTimeout(() => {
-                if (offlineSync.offlineActions.length > 0 && navigator.onLine) {
-                    showNotice(`You have ${offlineSync.offlineActions.length} pending offline actions. Syncing...`, 'yellow');
-                    offlineSync.syncOfflineActions();
-                }
-            }, 2000);
+            // Add button
+            const addBtn = document.getElementById('addSMC');
+            if (addBtn) {
+                addBtn.addEventListener('click', openAddModal);
+            }
+
+            // Cancel button
+            const cancelBtn = document.getElementById('cancelMedicalBtn');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', closeSMC);
+            }
+
+            // Modal close on background click
+            const modal = document.getElementById('SMCModal');
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        closeSMC();
+                    }
+                });
+            }
+
+            // Load initial data
+            if (patientId) {
+                loadTreatmentHistory();
+            }
+
+            // Setup theme toggle
+            initTheme();
         });
+
+        // Theme management (keep from original)
+        function initTheme() {
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            if (currentTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', toggleTheme);
+            }
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
     </script>
 </body>
 

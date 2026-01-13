@@ -1,7 +1,24 @@
 <?php
+// oral_condition_api.php - UPDATED WITH HISTORY LOGGING
 header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', '1');
 error_reporting(E_ALL);
+
+// Enable error logging
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log');
+
+// Set CORS headers
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE, PATCH");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Allow-Credentials: true");
+
+// Handle OPTIONS request for CORS preflight
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 // Try to include conns.php with multiple possible paths
 $conns_path = __DIR__ . '/conns.php';
@@ -28,6 +45,89 @@ if (isset($pdo) && $pdo instanceof PDO) {
 } else {
     echo json_encode(['success' => false, 'error' => 'Database connection not found']);
     exit;
+}
+
+// ===========================
+// HISTORY LOGGING FUNCTION
+// ===========================
+function addHistoryLog($db, $tableName, $recordId, $action, $changedByType, $changedById, $oldValues = null, $newValues = null, $description = null)
+{
+    try {
+        $sql = "INSERT INTO history_logs 
+                (table_name, record_id, action, changed_by_type, changed_by_id, old_values, new_values, description, ip_address) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        $stmt = $db->prepare($sql);
+        if (!$stmt) {
+            error_log("Failed to prepare history log statement: " . implode(' ', $db->errorInfo()));
+            return false;
+        }
+
+        $oldJSON = $oldValues ? json_encode($oldValues, JSON_UNESCAPED_UNICODE) : null;
+        $newJSON = $newValues ? json_encode($newValues, JSON_UNESCAPED_UNICODE) : null;
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+        $stmt->execute([
+            $tableName,
+            $recordId,
+            $action,
+            $changedByType,
+            $changedById,
+            $oldJSON,
+            $newJSON,
+            $description,
+            $ip
+        ]);
+
+        return true;
+    } catch (Exception $e) {
+        error_log("Error in addHistoryLog: " . $e->getMessage());
+        return false;
+    }
+}
+
+// ===========================
+// GET LOGGED USER INFORMATION
+// ===========================
+function getLoggedUserInfo($input = [])
+{
+    $userId = 0;
+    $userType = 'System';
+    $userName = 'System';
+
+    // Check if user info is provided in input
+    if (!empty($input['user_id'])) {
+        $userId = intval($input['user_id']);
+        $userType = $input['user_type'] ?? 'System';
+        $userName = $input['user_name'] ?? 'System User';
+    }
+
+    return [
+        'id' => $userId,
+        'type' => $userType,
+        'name' => $userName
+    ];
+}
+
+// ===========================
+// GET PATIENT NAME FUNCTION
+// ===========================
+function getPatientName($db, $patientId)
+{
+    try {
+        $stmt = $db->prepare("SELECT firstname, surname FROM patients WHERE patient_id = ?");
+        $stmt->execute([$patientId]);
+        $patient = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($patient) {
+            $name = trim(($patient['firstname'] ?? '') . ' ' . ($patient['surname'] ?? ''));
+            return $name ?: "Patient ID: $patientId";
+        }
+        return "Unknown Patient (ID: $patientId)";
+    } catch (Exception $e) {
+        error_log("Error getting patient name: " . $e->getMessage());
+        return "Patient ID: $patientId";
+    }
 }
 
 // Simple debug logging function
@@ -314,6 +414,9 @@ try {
     $visit_id = $data['visit_id'] ?? null;
     $visit_date = $data['visit_date'] ?? null;
 
+    // Get user info from input (if provided)
+    $loggedUser = getLoggedUserInfo($data);
+
     if (!$patient_id) {
         throw new Exception('Missing patient_id');
     }
@@ -332,6 +435,17 @@ try {
     $db->beginTransaction();
     debug_log("Starting transaction");
 
+    // Get patient name for logging
+    $patientName = getPatientName($db, $patient_id);
+
+    // Get existing visit data for logging (if visit_id exists)
+    $oldVisitData = null;
+    if ($visit_id && $visit_id > 0) {
+        $stmt = $db->prepare("SELECT * FROM visits WHERE visit_id = ?");
+        $stmt->execute([$visit_id]);
+        $oldVisitData = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     // Create or update visit with date
     if (!$visit_id || $visit_id == 0) {
         // Get next visit number for this patient
@@ -345,20 +459,100 @@ try {
         $q = $db->prepare("INSERT INTO visits (patient_id, visit_date, visit_number) VALUES (?, ?, ?)");
         $q->execute([$patient_id, $effective_date, $num]);
         $visit_id = $db->lastInsertId();
+
+        // Log visit creation
+        addHistoryLog(
+            $db,
+            "visits",
+            $visit_id,
+            "CREATE",
+            $loggedUser['type'],
+            $loggedUser['id'],
+            null,
+            [
+                'patient_id' => $patient_id,
+                'visit_date' => $effective_date,
+                'visit_number' => $num
+            ],
+            "Created new visit (ID: $visit_id) for patient: $patientName"
+        );
+
         debug_log("Created new visit_id: $visit_id for patient: $patient_id with date: $effective_date");
     } else {
         // Update existing visit with new date if provided
         if ($visit_date) {
+            $oldDate = $oldVisitData['visit_date'] ?? null;
+
             $q = $db->prepare("UPDATE visits SET visit_date = ? WHERE visit_id = ?");
             $q->execute([$visit_date, $visit_id]);
+
+            // Log visit update if date changed
+            if ($oldDate != $visit_date) {
+                addHistoryLog(
+                    $db,
+                    "visits",
+                    $visit_id,
+                    "UPDATE",
+                    $loggedUser['type'],
+                    $loggedUser['id'],
+                    ['visit_date' => $oldDate],
+                    ['visit_date' => $visit_date],
+                    "Updated visit date from $oldDate to $visit_date for patient: $patientName"
+                );
+            }
+
             debug_log("Updated visit_id: $visit_id with date: $visit_date");
         }
+    }
+
+    // Get existing conditions and treatments for logging
+    $existingConditions = [];
+    $existingTreatments = [];
+
+    if ($visit_id && $visit_id > 0) {
+        $condStmt = $db->prepare("SELECT * FROM visittoothcondition WHERE visit_id = ?");
+        $condStmt->execute([$visit_id]);
+        $existingConditions = $condStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $treatStmt = $db->prepare("SELECT * FROM visittoothtreatment WHERE visit_id = ?");
+        $treatStmt->execute([$visit_id]);
+        $existingTreatments = $treatStmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Prepare statements
     $insCond = $db->prepare("INSERT INTO visittoothcondition (visit_id, tooth_id, condition_id, box_key, color, case_type) VALUES (?, ?, ?, ?, ?, ?)");
     $insTreat = $db->prepare("INSERT INTO visittoothtreatment (visit_id, tooth_id, treatment_id, box_key, color, case_type) VALUES (?, ?, ?, ?, ?, ?)");
 
+    // Also prepare delete statements for existing data
+    $delCond = $db->prepare("DELETE FROM visittoothcondition WHERE visit_id = ?");
+    $delTreat = $db->prepare("DELETE FROM visittoothtreatment WHERE visit_id = ?");
+
+    // Clear existing data first
+    if ($visit_id && $visit_id > 0) {
+        $delCond->execute([$visit_id]);
+        $delTreat->execute([$visit_id]);
+
+        // Log deletion of existing data
+        if (!empty($existingConditions) || !empty($existingTreatments)) {
+            addHistoryLog(
+                $db,
+                "visittoothcondition/visittoothtreatment",
+                $visit_id,
+                "DELETE",
+                $loggedUser['type'],
+                $loggedUser['id'],
+                [
+                    'conditions' => $existingConditions,
+                    'treatments' => $existingTreatments
+                ],
+                null,
+                "Cleared existing oral health data for visit ID: $visit_id (patient: $patientName)"
+            );
+        }
+    }
+
+    $insertedConditions = [];
+    $insertedTreatments = [];
     $inserted = 0;
     $warnings = [];
 
@@ -408,6 +602,17 @@ try {
 
             try {
                 $insCond->execute([$visit_id, $tooth, $cid, $box, $color, $caseType]);
+                $condId = $db->lastInsertId();
+                $insertedConditions[] = [
+                    'id' => $condId,
+                    'visit_id' => $visit_id,
+                    'tooth_id' => $tooth,
+                    'condition_id' => $cid,
+                    'box_key' => $box,
+                    'color' => $color,
+                    'case_type' => $caseType,
+                    'condition_code' => $condCode
+                ];
                 $inserted++;
                 debug_log("Condition inserted successfully");
             } catch (Exception $e) {
@@ -429,6 +634,17 @@ try {
 
             try {
                 $insTreat->execute([$visit_id, $tooth, $tid, $box, $color, $caseType]);
+                $treatId = $db->lastInsertId();
+                $insertedTreatments[] = [
+                    'id' => $treatId,
+                    'visit_id' => $visit_id,
+                    'tooth_id' => $tooth,
+                    'treatment_id' => $tid,
+                    'box_key' => $box,
+                    'color' => $color,
+                    'case_type' => $caseType,
+                    'treatment_code' => $treatCode
+                ];
                 $inserted++;
                 debug_log("Treatment inserted successfully");
             } catch (Exception $e) {
@@ -444,11 +660,41 @@ try {
     $db->commit();
     debug_log("Transaction committed successfully. Inserted: $inserted items");
 
+    // Log the complete oral health condition save
+    if ($inserted > 0) {
+        addHistoryLog(
+            $db,
+            "visittoothcondition/visittoothtreatment",
+            $visit_id,
+            "CREATE",
+            $loggedUser['type'],
+            $loggedUser['id'],
+            null,
+            [
+                'conditions_count' => count($insertedConditions),
+                'treatments_count' => count($insertedTreatments),
+                'total_items' => $inserted,
+                'patient_id' => $patient_id,
+                'visit_id' => $visit_id,
+                'visit_date' => $visit_date ?? date('Y-m-d')
+            ],
+            "Saved oral health condition data for patient: $patientName (Visit ID: $visit_id) - " .
+                count($insertedConditions) . " conditions, " . count($insertedTreatments) . " treatments"
+        );
+    }
+
     $response = [
         'success' => true,
         'visit_id' => $visit_id,
         'inserted' => $inserted,
-        'warnings' => $warnings
+        'conditions_count' => count($insertedConditions),
+        'treatments_count' => count($insertedTreatments),
+        'warnings' => $warnings,
+        'logged_by' => $loggedUser['id'] > 0 ? [
+            "type" => $loggedUser['type'],
+            "name" => $loggedUser['name'],
+            "id" => $loggedUser['id']
+        ] : null
     ];
 
     debug_log("Sending response: " . json_encode($response));

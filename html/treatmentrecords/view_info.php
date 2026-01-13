@@ -47,7 +47,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -70,10 +70,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +102,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +131,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +152,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,7 +166,7 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '/DentalEMR_System/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
                 }
             </script>";
             exit;
@@ -196,6 +196,7 @@ if (!$isOfflineMode) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo bin2hex(random_bytes(32)); ?>">
     <title>Patient Treatment Records</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -311,18 +312,18 @@ if (!$isOfflineMode) {
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/manageuser.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
                                     Manage Users
                                 </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
+                                <a href="/DentalEMR_System/html/manageusers/systemlogs.php?uid=<?php echo $userId;
                                                                                                 echo $isOfflineMode ? '&offline=true' : ''; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
@@ -346,7 +347,7 @@ if (!$isOfflineMode) {
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -1528,7 +1529,7 @@ if (!$isOfflineMode) {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 30 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php?uid=<?php echo $userId; ?>&";
+                window.location.href = "/DentalEMR_System/php/login/logout.php?uid=<?php echo $userId; ?>&";
             }, inactivityTime);
         }
 
@@ -2159,7 +2160,7 @@ if (!$isOfflineMode) {
 
                     // Approach 1: Standard fetch
                     try {
-                        const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_patient&patient_id=${patientId}`, {
+                        const res = await fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php?action=get_patient&patient_id=${patientId}`, {
                             method: 'GET',
                             headers: {
                                 'Accept': 'application/json',
@@ -2188,7 +2189,7 @@ if (!$isOfflineMode) {
                         try {
                             result = await new Promise((resolve, reject) => {
                                 const xhr = new XMLHttpRequest();
-                                xhr.open('GET', `/dentalemr_system/php/treatmentrecords/view_info.php?action=get_patient&patient_id=${patientId}&_t=${Date.now()}`, true);
+                                xhr.open('GET', `/DentalEMR_System/php/treatmentrecords/view_info.php?action=get_patient&patient_id=${patientId}&_t=${Date.now()}`, true);
                                 xhr.setRequestHeader('Accept', 'application/json');
                                 xhr.setRequestHeader('Cache-Control', 'no-cache');
                                 xhr.withCredentials = true;
@@ -2499,7 +2500,7 @@ if (!$isOfflineMode) {
             // LOAD MEMBERSHIP INFO
             async function loadMembership() {
                 try {
-                    const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_membership&patient_id=${patientId}`);
+                    const res = await fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php?action=get_membership&patient_id=${patientId}`);
                     const result = await res.json();
 
                     if (!result.success) {
@@ -2690,8 +2691,12 @@ if (!$isOfflineMode) {
                         data.action = 'save_patient';
                         data.patient_id = patientId;
 
+                        data.uid = <?php echo json_encode($userId); ?>;
+                        data.user_type = <?php echo json_encode($loggedUser['type'] ?? 'System'); ?>;
+                        data.user_name = <?php echo json_encode($loggedUser['name'] ?? 'Unknown'); ?>;
+
                         const result = await window.ajaxRequest({
-                            url: '/dentalemr_system/php/treatmentrecords/view_info.php',
+                            url: '/DentalEMR_System/php/treatmentrecords/view_info.php',
                             method: 'POST',
                             data: data,
                             headers: {
@@ -2783,13 +2788,16 @@ if (!$isOfflineMode) {
                     formData.append("patient_id", patientId);
                     formData.append("action", "save_membership");
 
+                    formData.append("uid", <?php echo json_encode($userId); ?>);
+                    formData.append("user_type", <?php echo json_encode($loggedUser['type'] ?? 'System'); ?>);
+                    formData.append("user_name", <?php echo json_encode($loggedUser['name'] ?? 'Unknown'); ?>);
                     console.log('Membership FormData:');
                     for (let [key, value] of formData.entries()) {
                         console.log(key, ':', value);
                     }
 
                     try {
-                        const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
+                        const res = await fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php`, {
                             method: "POST",
                             body: formData
                         });
@@ -2894,8 +2902,11 @@ if (!$isOfflineMode) {
                 data.append('temperature', formData.get('temperature'));
                 data.append('weight', formData.get('weight'));
 
+                data.append('uid', <?php echo json_encode($userId); ?>);
+                data.append('user_type', <?php echo json_encode($loggedUser['type'] ?? 'System'); ?>);
+                data.append('user_name', <?php echo json_encode($loggedUser['name'] ?? 'Unknown'); ?>);
                 try {
-                    const res = await fetch('/dentalemr_system/php/treatmentrecords/view_info.php', {
+                    const res = await fetch('/DentalEMR_System/php/treatmentrecords/view_info.php', {
                         method: 'POST',
                         body: data
                     });
@@ -2919,7 +2930,7 @@ if (!$isOfflineMode) {
             async function fetchVitals() {
                 if (!patientInput.value) return;
                 try {
-                    const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_vitals&patient_id=${patientInput.value}`);
+                    const res = await fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php?action=get_vitals&patient_id=${patientInput.value}`);
                     const data = await res.json();
 
                     bpTable.innerHTML = tempTable.innerHTML = pulseTable.innerHTML = weightTable.innerHTML = '';
@@ -3025,7 +3036,7 @@ if (!$isOfflineMode) {
             const medicalModalForm = document.getElementById("medicalForm");
 
             function loadMedicalHistory() {
-                fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_medical&patient_id=${patient_id}`)
+                fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php?action=get_medical&patient_id=${patient_id}`)
                     .then(res => res.json())
                     .then(data => {
                         medicalList.innerHTML = "";
@@ -3059,7 +3070,7 @@ if (!$isOfflineMode) {
 
             // Fetch existing medical history values when opening modal
             function loadMedicalFormValues() {
-                fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_medical&patient_id=${patient_id}`)
+                fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php?action=get_medical&patient_id=${patient_id}`)
                     .then(res => res.json())
                     .then(data => {
                         if (data.success && data.values) {
@@ -3107,6 +3118,9 @@ if (!$isOfflineMode) {
                 formData.append("action", "save_medical");
                 formData.append("patient_id", patient_id);
 
+                formData.append("uid", <?php echo json_encode($userId); ?>);
+                formData.append("user_type", <?php echo json_encode($loggedUser['type'] ?? 'System'); ?>);
+                formData.append("user_name", <?php echo json_encode($loggedUser['name'] ?? 'Unknown'); ?>);
                 // Handle checkbox values properly
                 const checkboxes = medicalModalForm.querySelectorAll('input[type="checkbox"]');
                 checkboxes.forEach(checkbox => {
@@ -3119,7 +3133,7 @@ if (!$isOfflineMode) {
                 }
 
                 try {
-                    const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
+                    const res = await fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php`, {
                         method: "POST",
                         body: formData
                     });
@@ -3183,7 +3197,7 @@ if (!$isOfflineMode) {
 
             // Fetch and display dietary/social history
             function loadDietaryHistory() {
-                fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_dietary&patient_id=${patient_id}`)
+                fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php?action=get_dietary&patient_id=${patient_id}`)
                     .then(res => res.json())
                     .then(data => {
                         dietaryList.innerHTML = "";
@@ -3205,7 +3219,7 @@ if (!$isOfflineMode) {
 
             // Populate form values when opening modal
             function loadDietaryFormValues() {
-                fetch(`/dentalemr_system/php/treatmentrecords/view_info.php?action=get_dietary&patient_id=${patient_id}`)
+                fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php?action=get_dietary&patient_id=${patient_id}`)
                     .then(res => res.json())
                     .then(data => {
                         if (data.success && data.values) {
@@ -3253,6 +3267,11 @@ if (!$isOfflineMode) {
                 formData.append("action", "save_dietary");
                 formData.append("patient_id", patient_id);
 
+                // Get user information from PHP session
+                formData.append("uid", <?php echo json_encode($userId); ?>);
+                formData.append("user_type", <?php echo json_encode($loggedUser['type'] ?? 'System'); ?>);
+                formData.append("user_name", <?php echo json_encode($loggedUser['name'] ?? 'Unknown'); ?>);
+
                 // Handle checkbox values properly
                 const checkboxes = dietaryForm.querySelectorAll('input[type="checkbox"]');
                 checkboxes.forEach(checkbox => {
@@ -3265,7 +3284,7 @@ if (!$isOfflineMode) {
                 }
 
                 try {
-                    const res = await fetch(`/dentalemr_system/php/treatmentrecords/view_info.php`, {
+                    const res = await fetch(`/DentalEMR_System/php/treatmentrecords/view_info.php`, {
                         method: "POST",
                         body: formData
                     });

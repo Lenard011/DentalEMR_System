@@ -1,6 +1,7 @@
 <?php
 session_start();
 date_default_timezone_set('Asia/Manila');
+$currentPart = 1;
 
 // Check if we're in offline mode
 $isOfflineMode = isset($_GET['offline']) && $_GET['offline'] === 'true';
@@ -47,7 +48,7 @@ if ($isOfflineMode) {
                 
                 if (!checkOfflineSession()) {
                     alert('Please log in first for offline access.');
-                    window.location.href = '/dentalemr_system/html/login/login.html';
+                    window.location.href = '/DentalEMR_System/html/login/login.html';
                 }
             });
         </script>";
@@ -57,7 +58,7 @@ if ($isOfflineMode) {
             'id' => 'offline_user',
             'name' => 'Offline User',
             'email' => 'offline@dentalclinic.com',
-            'type' => 'Dentist',
+            'type' => 'Staff', // Changed from 'Dentist' to 'Staff'
             'isOffline' => true
         ];
         $loggedUser = $_SESSION['offline_user'];
@@ -70,10 +71,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '" . htmlspecialchars($_SERVER['PHP_SELF']) . "?offline=true';
             } else {
                 alert('Invalid session. Please log in again.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -102,10 +103,10 @@ if ($isOfflineMode) {
         echo "<script>
             if (!navigator.onLine) {
                 // Redirect to same page in offline mode
-                window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                window.location.href = '" . htmlspecialchars($_SERVER['PHP_SELF']) . "?offline=true';
             } else {
                 alert('Please log in first.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             }
         </script>";
         exit;
@@ -131,7 +132,7 @@ if (!$isOfflineMode) {
 
             echo "<script>
                 alert('You have been logged out due to inactivity.');
-                window.location.href = '/dentalemr_system/html/login/login.html';
+                window.location.href = '/DentalEMR_System/html/login/login.html';
             </script>";
             exit;
         }
@@ -152,9 +153,9 @@ if ($isOfflineMode) {
 $conn = null;
 if (!$isOfflineMode) {
     $host = "localhost";
-    $dbUser = "root";
-    $dbPass = "";
-    $dbName = "dentalemr_system";
+    $dbUser = "u401132124_dentalclinic";
+    $dbPass = "Mho_DentalClinic1st";
+    $dbName = "u401132124_mho_dentalemr";
 
     $conn = new mysqli($host, $dbUser, $dbPass, $dbName);
     if ($conn->connect_error) {
@@ -166,31 +167,26 @@ if (!$isOfflineMode) {
                     console.error('Database error: " . addslashes($conn->connect_error) . "');
                 } else {
                     // Switch to offline mode automatically
-                    window.location.href = '/dentalemr_system/html/treatmentrecords/view_info.php?offline=true&id=" . (isset($_GET['id']) ? $_GET['id'] : '') . "';
+                    window.location.href = '" . htmlspecialchars($_SERVER['PHP_SELF']) . "?offline=true';
                 }
             </script>";
             exit;
         }
     }
 
-    // Fetch dentist name if user is a dentist (only in online mode)
-    if ($loggedUser['type'] === 'Dentist') {
-        $stmt = $conn->prepare("SELECT name, profile_picture FROM dentist WHERE id = ?");
+    // Fetch staff name if user is staff (changed from dentist to staff)
+    if ($loggedUser['type'] === 'Staff') {
+        $stmt = $conn->prepare("SELECT name FROM staff WHERE id = ?");
         $stmt->bind_param("i", $loggedUser['id']);
         $stmt->execute();
-        $stmt->bind_result($dentistName, $dentistProfilePicture);
+        $stmt->bind_result($staffName);
         if ($stmt->fetch()) {
-            $loggedUser['name'] = $dentistName;
-            $loggedUser['profile_picture'] = $dentistProfilePicture; // Add this line
+            $loggedUser['name'] = $staffName;
         }
         $stmt->close();
     }
 }
 
-
-?>
-
-<?php
 // patients_table.php
 // Improved backend for Target Client List table
 
@@ -198,181 +194,213 @@ if (!$isOfflineMode) {
 if (!$isOfflineMode && $conn) {
     // Use the existing connection
 } else {
-    // CONFIGURE DB CONNECTION for offline mode or if connection failed
-    $host = "localhost";
-    $user = "root";
-    $pass = "";
-    $dbname = "dentalemr_system";
+    // If we're in offline mode, we need to handle it differently
+    if ($isOfflineMode) {
+        // For offline mode, we'll use JavaScript to handle data
+        // We'll skip the database connection and let JavaScript handle it
+        $total_records = 0;
+        $total_pages = 0;
+        $start = 0;
+        $end = 0;
+        $availableYears = [date('Y')];
+        $selectedYear = date('Y');
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+        $addressFilter = isset($_GET['address']) ? trim($_GET['address']) : '';
 
-    $conn = new mysqli($host, $user, $pass, $dbname);
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
+        // We'll handle the rest with JavaScript in offline mode
+    } else {
+        // CONFIGURE DB CONNECTION for online mode if connection failed
+        $host = "localhost";
+        $user = "u401132124_dentalclinic";
+        $pass = "Mho_DentalClinic1st";
+        $dbname = "u401132124_mho_dentalemr";
+
+        $conn = new mysqli($host, $user, $pass, $dbname);
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
     }
 }
 
-// Helper: normalize boolean-like fields
-function is_truthy($v)
-{
-    if ($v === null) return false;
-    $vstr = strtolower((string)$v);
-    return in_array($vstr, ['1', 'true', 'y', 'yes', 't']);
-}
+// Only proceed with database operations if we're online and have a connection
+if (!$isOfflineMode && isset($conn)) {
+    // Helper: normalize boolean-like fields
+    function is_truthy($v)
+    {
+        if ($v === null) return false;
+        $vstr = strtolower((string)$v);
+        return in_array($vstr, ['1', 'true', 'y', 'yes', 't']);
+    }
 
-// Safe getter to prevent undefined array key warnings
-function safe_get($array, $key, $default = null)
-{
-    return isset($array[$key]) ? $array[$key] : $default;
-}
+    // Safe getter to prevent undefined array key warnings
+    function safe_get($array, $key, $default = null)
+    {
+        return isset($array[$key]) ? $array[$key] : $default;
+    }
 
-// Helper: compute age in years
-function compute_age_from_dob($dob)
-{
-    if (!$dob || $dob === "0000-00-00") return null;
-    $dob_dt = new DateTime($dob);
-    $now = new DateTime();
-    return $now->diff($dob_dt)->y;
-}
+    // Helper: compute age in years
+    function compute_age_from_dob($dob)
+    {
+        if (!$dob || $dob === "0000-00-00") return null;
+        $dob_dt = new DateTime($dob);
+        $now = new DateTime();
+        return $now->diff($dob_dt)->y;
+    }
 
-// Helper: compute months old
-function compute_months_from_dob($dob)
-{
-    if (!$dob || $dob === "0000-00-00") return null;
-    $dob_dt = new DateTime($dob);
-    $now = new DateTime();
-    $diff = $now->diff($dob_dt);
-    return ($diff->y * 12) + $diff->m;
-}
+    // Helper: compute months old
+    function compute_months_from_dob($dob)
+    {
+        if (!$dob || $dob === "0000-00-00") return null;
+        $dob_dt = new DateTime($dob);
+        $now = new DateTime();
+        $diff = $now->diff($dob_dt);
+        return ($diff->y * 12) + $diff->m;
+    }
 
-// Get current year for default filtering
-$currentYear = date('Y');
+    // Get current year for default filtering
+    $currentYear = date('Y');
 
-// Get year filter from GET parameter or use current year
-$selectedYear = isset($_GET['year']) && is_numeric($_GET['year']) ? (int)$_GET['year'] : $currentYear;
+    // Get year filter from GET parameter or use current year
+    $selectedYear = isset($_GET['year']) && is_numeric($_GET['year']) ? (int)$_GET['year'] : $currentYear;
 
-// Validate year range (adjust as needed)
-if ($selectedYear < 2000 || $selectedYear > $currentYear + 1) {
-    $selectedYear = $currentYear;
-}
+    // Validate year range (adjust as needed)
+    if ($selectedYear < 2000 || $selectedYear > $currentYear + 1) {
+        $selectedYear = $currentYear;
+    }
 
-// Input from GET
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$addressFilter = isset($_GET['address']) ? trim($_GET['address']) : '';
+    // Input from GET
+    $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+    $addressFilter = isset($_GET['address']) ? trim($_GET['address']) : '';
 
-// Pagination
-$limit = 10;
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($page < 1) $page = 1;
-$offset = ($page - 1) * $limit;
+    // Pagination
+    $limit = 10;
+    $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+    if ($page < 1) $page = 1;
+    $offset = ($page - 1) * $limit;
 
-// FIXED: Get DISTINCT patients with their LATEST related records
-// Count total distinct patients with filters including year filter
-$count_sql = "SELECT COUNT(DISTINCT p.patient_id) AS total 
-              FROM patients p 
-              WHERE YEAR(p.created_at) = $selectedYear";
+    // FIXED: Get DISTINCT patients with their LATEST related records
+    // Count total distinct patients with filters including year filter
+    $count_sql = "SELECT COUNT(DISTINCT p.patient_id) AS total 
+                  FROM patients p 
+                  WHERE YEAR(p.created_at) = $selectedYear";
 
-if ($search !== '') {
-    $s = $conn->real_escape_string($search);
-    $count_sql .= " AND (p.surname LIKE '%{$s}%' OR p.firstname LIKE '%{$s}%' OR p.middlename LIKE '%{$s}%')";
-}
-if ($addressFilter !== '') {
-    $a = $conn->real_escape_string($addressFilter);
-    $count_sql .= " AND p.address LIKE '%{$a}%'";
-}
+    if ($search !== '') {
+        $s = $conn->real_escape_string($search);
+        $count_sql .= " AND (p.surname LIKE '%{$s}%' OR p.firstname LIKE '%{$s}%' OR p.middlename LIKE '%{$s}%')";
+    }
+    if ($addressFilter !== '') {
+        $a = $conn->real_escape_string($addressFilter);
+        $count_sql .= " AND p.address LIKE '%{$a}%'";
+    }
 
-$total_query = $conn->query($count_sql);
-$total_row = $total_query->fetch_assoc();
-$total_records = (int)$total_row['total'];
-$total_pages = ceil($total_records / $limit);
+    $total_query = $conn->query($count_sql);
+    $total_row = $total_query->fetch_assoc();
+    $total_records = (int)$total_row['total'];
+    $total_pages = ceil($total_records / $limit);
 
-// FIXED: Main query - Get DISTINCT patients with their LATEST related records
-// Since patient_other_info doesn't have created_at, we'll use info_id (assuming higher ID = newer)
-// And oral_health_condition has created_at for ordering
-$sql = "
-SELECT 
-    p.*,
-    -- Get the latest patient_other_info record for each patient (using highest info_id)
-    COALESCE(
-        (SELECT o.indigenous_people 
-         FROM patient_other_info o 
-         WHERE o.patient_id = p.patient_id 
-         ORDER BY o.info_id DESC 
-         LIMIT 1), 
-        ''
-    ) AS indigenous_people,
-    -- Get the latest oral_health_condition record for each patient
-    COALESCE(
-        (SELECT oh.orally_fit_child 
+    // FIXED: Main query - Get DISTINCT patients with their LATEST related records
+    // Since patient_other_info doesn't have created_at, we'll use info_id (assuming higher ID = newer)
+    // And oral_health_condition has created_at for ordering
+    $sql = "
+    SELECT 
+        p.*,
+        -- Get the latest patient_other_info record for each patient (using highest info_id)
+        COALESCE(
+            (SELECT o.indigenous_people 
+             FROM patient_other_info o 
+             WHERE o.patient_id = p.patient_id 
+             ORDER BY o.info_id DESC 
+             LIMIT 1), 
+            ''
+        ) AS indigenous_people,
+        -- Get the latest oral_health_condition record for each patient
+        COALESCE(
+            (SELECT oh.orally_fit_child 
+             FROM oral_health_condition oh 
+             WHERE oh.patient_id = p.patient_id 
+             ORDER BY oh.created_at DESC 
+             LIMIT 1), 
+            ''
+        ) AS orally_fit_child,
+        -- Get the latest perm_decayed_teeth_d
+        (SELECT oh.perm_decayed_teeth_d 
          FROM oral_health_condition oh 
          WHERE oh.patient_id = p.patient_id 
          ORDER BY oh.created_at DESC 
-         LIMIT 1), 
-        ''
-    ) AS orally_fit_child,
-    -- Get the latest perm_decayed_teeth_d
-    (SELECT oh.perm_decayed_teeth_d 
-     FROM oral_health_condition oh 
-     WHERE oh.patient_id = p.patient_id 
-     ORDER BY oh.created_at DESC 
-     LIMIT 1) AS perm_decayed_teeth_d,
-    -- Get the latest perm_missing_teeth_m
-    (SELECT oh.perm_missing_teeth_m 
-     FROM oral_health_condition oh 
-     WHERE oh.patient_id = p.patient_id 
-     ORDER BY oh.created_at DESC 
-     LIMIT 1) AS perm_missing_teeth_m,
-    -- Get the latest perm_filled_teeth_f
-    (SELECT oh.perm_filled_teeth_f 
-     FROM oral_health_condition oh 
-     WHERE oh.patient_id = p.patient_id 
-     ORDER BY oh.created_at DESC 
-     LIMIT 1) AS perm_filled_teeth_f,
-    -- Get the latest oral health recorded date
-    (SELECT oh.created_at 
-     FROM oral_health_condition oh 
-     WHERE oh.patient_id = p.patient_id 
-     ORDER BY oh.created_at DESC 
-     LIMIT 1) AS oral_health_recorded_at
-FROM patients p
-WHERE YEAR(p.created_at) = $selectedYear";
+         LIMIT 1) AS perm_decayed_teeth_d,
+        -- Get the latest perm_missing_teeth_m
+        (SELECT oh.perm_missing_teeth_m 
+         FROM oral_health_condition oh 
+         WHERE oh.patient_id = p.patient_id 
+         ORDER BY oh.created_at DESC 
+         LIMIT 1) AS perm_missing_teeth_m,
+        -- Get the latest perm_filled_teeth_f
+        (SELECT oh.perm_filled_teeth_f 
+         FROM oral_health_condition oh 
+         WHERE oh.patient_id = p.patient_id 
+         ORDER BY oh.created_at DESC 
+         LIMIT 1) AS perm_filled_teeth_f,
+        -- Get the latest oral health recorded date
+        (SELECT oh.created_at 
+         FROM oral_health_condition oh 
+         WHERE oh.patient_id = p.patient_id 
+         ORDER BY oh.created_at DESC 
+         LIMIT 1) AS oral_health_recorded_at
+    FROM patients p
+    WHERE YEAR(p.created_at) = $selectedYear";
 
-// Apply search filter
-if ($search !== '') {
-    $sql .= " AND (p.surname LIKE '%{$s}%' OR p.firstname LIKE '%{$s}%' OR p.middlename LIKE '%{$s}%')";
-}
-// Apply address filter
-if ($addressFilter !== '') {
-    $sql .= " AND p.address LIKE '%{$a}%'";
-}
-
-// Group by patient to ensure uniqueness
-$sql .= " GROUP BY p.patient_id";
-
-// Order and limit
-$sql .= " ORDER BY p.created_at DESC LIMIT $limit OFFSET $offset";
-
-$res = $conn->query($sql);
-if (!$res) {
-    die("Query error: " . $conn->error);
-}
-
-// Get available years from database for dropdown
-$years_sql = "SELECT DISTINCT YEAR(created_at) as year FROM patients ORDER BY year DESC";
-$years_result = $conn->query($years_sql);
-$availableYears = [];
-if ($years_result) {
-    while ($row = $years_result->fetch_assoc()) {
-        $availableYears[] = $row['year'];
+    // Apply search filter
+    if ($search !== '') {
+        $sql .= " AND (p.surname LIKE '%{$s}%' OR p.firstname LIKE '%{$s}%' OR p.middlename LIKE '%{$s}%')";
     }
-}
+    // Apply address filter
+    if ($addressFilter !== '') {
+        $sql .= " AND p.address LIKE '%{$a}%'";
+    }
 
-// If no years found, add current year
-if (empty($availableYears)) {
-    $availableYears[] = $currentYear;
-}
+    // Group by patient to ensure uniqueness
+    $sql .= " GROUP BY p.patient_id";
 
-// Range for display
-$start = ($total_records > 0) ? $offset + 1 : 0;
-$end = min(($offset + $limit), $total_records);
+    // Order and limit
+    $sql .= " ORDER BY p.created_at DESC LIMIT $limit OFFSET $offset";
+
+    $res = $conn->query($sql);
+    if (!$res) {
+        die("Query error: " . $conn->error);
+    }
+
+    // Get available years from database for dropdown
+    $years_sql = "SELECT DISTINCT YEAR(created_at) as year FROM patients ORDER BY year DESC";
+    $years_result = $conn->query($years_sql);
+    $availableYears = [];
+    if ($years_result) {
+        while ($row = $years_result->fetch_assoc()) {
+            $availableYears[] = $row['year'];
+        }
+    }
+
+    // If no years found, add current year
+    if (empty($availableYears)) {
+        $availableYears[] = $currentYear;
+    }
+
+    // Range for display
+    $start = ($total_records > 0) ? $offset + 1 : 0;
+    $end = min(($offset + $limit), $total_records);
+} else {
+    // For offline mode, set defaults
+    $total_records = 0;
+    $total_pages = 0;
+    $start = 0;
+    $end = 0;
+    $selectedYear = isset($_GET['year']) ? (int)$_GET['year'] : date('Y');
+    $availableYears = [$selectedYear];
+    $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+    $addressFilter = isset($_GET['address']) ? trim($_GET['address']) : '';
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $limit = 10;
+    $res = null; // No result set in offline mode
+}
 ?>
 
 <!doctype html>
@@ -382,6 +410,7 @@ $end = min(($offset + $limit), $total_records);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Target Client List</title>
+    <link rel="icon" type="image/png" href="/DentalEMR_System/img/1761912137392.png">
     <!-- <link href="../css/style.css" rel="stylesheet"> -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -497,22 +526,10 @@ $end = min(($offset + $limit), $total_records);
                                 </div>
                             </div>
                             <div class="py-2">
-                                <a  href="/dentalemr_system/html/manageusers/profile.php?uid=<?php echo $userId; ?>"
+                                <a href="/DentalEMR_System/html/a_staff/profile.php?uid=<?php echo $userId; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <i class="fas fa-user-circle mr-3 text-gray-500 dark:text-gray-400"></i>
                                     My Profile
-                                </a>
-                                <a href="/dentalemr_system/html/manageusers/manageuser.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-users-cog mr-3 text-gray-500 dark:text-gray-400"></i>
-                                    Manage Users
-                                </a>
-                                <a href="/dentalemr_system/html/manageusers/systemlogs.php?uid=<?php echo $userId;
-                                                                                                echo $isOfflineMode ? '&offline=true' : ''; ?>"
-                                    class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <i class="fas fa-history mr-3 text-gray-500 dark:text-gray-400"></i>
-                                    System Logs
                                 </a>
                             </div>
 
@@ -532,7 +549,7 @@ $end = min(($offset + $limit), $total_records);
 
                             <!-- Sign Out -->
                             <div class="border-t border-gray-200 dark:border-gray-700 py-2">
-                                <a href="/dentalemr_system/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
+                                <a href="/DentalEMR_System/php/login/logout.php?uid=<?php echo $loggedUser['id']; ?>"
                                     class="flex items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <i class="fas fa-sign-out-alt mr-3"></i>
                                     Sign Out
@@ -545,7 +562,6 @@ $end = min(($offset + $limit), $total_records);
         </nav>
 
         <!-- Sidebar -->
-
         <aside
             class="fixed top-0 left-0 z-40 w-64 h-screen pt-14 transition-transform -translate-x-full bg-white border-r border-gray-200 md:translate-x-0 dark:bg-gray-800 dark:border-gray-700"
             aria-label="Sidenav" id="drawer-navigation">
@@ -568,10 +584,10 @@ $end = min(($offset + $limit), $total_records);
                 </form>
                 <ul class="space-y-2">
                     <li>
-                        <a href="../index.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="./staff_dashboard.php?uid=<?php echo $userId; ?>"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
-                                class="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
                                 <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
@@ -582,56 +598,35 @@ $end = min(($offset + $limit), $total_records);
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="../addpatient.php?uid=<?php echo $userId; ?>"
+                        <a href="./staff_addpatient.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6  text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                                 <path
                                     d="M2 13c0 1 1 1 1 1h5.256A4.5 4.5 0 0 1 8 12.5a4.5 4.5 0 0 1 1.544-3.393Q8.844 9.002 8 9c-5 0-6 3-6 4" />
                             </svg>
-
                             <span class="ml-3">Add Patient</span>
                         </a>
                     </li>
                     <li>
-                        <button type="button"
-                            class="flex items-center cursor-pointer p-2 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
-                            aria-controls="dropdown-pages" data-collapse-toggle="dropdown-pages">
+                        <a href="./treatmentrecords/staff_treatmentrecords.php?uid=<?php echo $userId; ?>"
+                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg transition duration-75 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">
                             <svg aria-hidden="true"
-                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+                                class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                                    clip-rule="evenodd"></path>
+                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                             </svg>
-                            <span class="flex-1 ml-3 text-left whitespace-nowrap">Patient Treatment</span>
-                            <svg aria-hidden="true" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
-                        <ul id="dropdown-pages" class="hidden py-2 space-y-2">
-                            <li>
-                                <a href="../treatmentrecords/treatmentrecords.php?uid=<?php echo $userId; ?>"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Treatment
-                                    Records</a>
-                            </li>
-                            <li>
-                                <a href="../addpatienttreatment/patienttreatment.php?uid=<?php echo $userId; ?>"
-                                    class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Add
-                                    Patient Treatment</a>
-                            </li>
-                        </ul>
+                            <span class="ml-3">Treatment Records</span>
+                        </a>
                     </li>
                 </ul>
                 <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
                     <li>
-                        <a href="#" class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100  dark:hover:bg-blue-700 group">
+                        <a href="#"
+                            class="flex items-center p-2 text-base font-medium text-blue-600 rounded-lg dark:text-blue bg-blue-100   group">
                             <svg aria-hidden="true"
                                 class="w-6 h-6 text-blue-600 transition duration-75 dark:text-blue-400  dark:group-hover:text-blue"
                                 fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -645,7 +640,7 @@ $end = min(($offset + $limit), $total_records);
                         </a>
                     </li>
                     <li>
-                        <a href="./mho_ohp.php?uid=<?php echo $userId; ?>"
+                        <a href="./staff_mho_ohp.php?uid=<?php echo $userId; ?>"
                             class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
@@ -658,34 +653,14 @@ $end = min(($offset + $limit), $total_records);
                         </a>
                     </li>
                     <li>
-                        <a href="./oralhygienefindings.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <a href="./staff_oralhygienefindings.php?uid=<?php echo $userId; ?>" class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                             <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                 viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
                                     d="M9 8h10M9 12h10M9 16h10M4.99 8H5m-.02 4h.01m0 4H5" />
                             </svg>
-
                             <span class="ml-3">Oral Hygiene Findings</span>
-                        </a>
-                    </li>
-                </ul>
-                <ul class="pt-5 mt-5 space-y-2 border-t border-gray-200 dark:border-gray-700">
-                    <li>
-                        <a href="../archived.php?uid=<?php echo $userId; ?>"
-                            class="flex items-center p-2 text-base font-medium text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                            <svg class="flex-shrink-0 w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M20 10H4v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8ZM9 13v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"
-                                    clip-rule="evenodd" />
-                                <path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2Z" />
-                            </svg>
-
-
-                            <span class="ml-3">Archived</span>
                         </a>
                     </li>
                 </ul>
@@ -762,54 +737,6 @@ $end = min(($offset + $limit), $total_records);
                             <div class="rounded-full  bg-gray-200 border border-gray-500 h-5 w-5"></div>
                         </div>
                     </div>
-                    <div class="flex flex-row justify-between ">
-                        <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
-                                class="w-full md:w-auto cursor-pointer flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10  dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                                type="button">
-                                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true"
-                                    class="h-4 w-4 mr-2 text-gray-400" viewbox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 088 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Filter
-                                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
-                                    xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                    <path clip-rule="evenodd" fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                                </svg>
-                            </button>
-                            <div id="filterDropdown"
-                                class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose
-                                    address
-                                </h6>
-                                <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                                    <li class="flex items-center">
-                                        <input id="apple" type="checkbox" value="Balansay" name="address"
-                                            onclick="document.location = '?address=Balansay';"
-                                            class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600  dark:bg-gray-600 dark:border-gray-500">
-                                        <label for="apple"
-                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Balansay</label>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-3 w-full md:w-auto">
-                            <button type="button" class="flex items-center justify-center cursor-pointer text-white bg-blue-700
-                        hover:bg-blue-800 font-medium rounded-lg gap-1 text-sm px-4 py-2 dark:bg-blue-600
-                        dark:hover:bg-blue-700">
-                                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                    viewBox="0 0 24 24">
-                                    <path stroke="white" stroke-linejoin="round" stroke-width="2"
-                                        d="M16.444 18H19a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h2.556M17 11V5a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v6h10ZM7 15h10v4a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-4Z" />
-                                </svg>
-                                Generate report
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Info Box showing year statistics -->
@@ -830,11 +757,48 @@ $end = min(($offset + $limit), $total_records);
                             </p>
                         </div>
                         <?php if ($total_records > 0): ?>
-                            <button onclick="exportYearReport(<?php echo $selectedYear; ?>)"
-                                class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg flex items-center gap-2">
-                                <i class="fas fa-download"></i>
-                                Export <?php echo $selectedYear; ?> Report
-                            </button>
+                            <!-- In the filters section of targetclientlist.php -->
+                            <div class="flex items-center space-x-3 w-full md:w-auto">
+                                <!-- Export Dropdown -->
+                                <div class="relative">
+                                    <button id="exportDropdownButton" data-dropdown-toggle="exportDropdown"
+                                        class="flex items-center justify-center cursor-pointer text-white bg-blue-700
+                                        hover:bg-blue-800 font-medium rounded-lg gap-1 text-sm px-4 py-2 dark:bg-blue-600
+                                        dark:hover:bg-blue-700">
+                                        <i class="fas fa-download"></i>
+                                        Export Report
+                                        <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                                    </button>
+
+                                    <div id="exportDropdown" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden z-50">
+                                        <div class="p-2">
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">Export Current Part</div>
+                                            <a href="/DentalEMR_System/php/export_targetclient.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&part=<?php echo $currentPart; ?>&type=excel"
+                                                class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                                                <i class="fas fa-file-excel text-green-600 mr-2"></i>
+                                                Export Current to Excel
+                                            </a>
+
+                                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">Export Both Parts</div>
+                                            <a href="javascript:void(0)" onclick="exportBothParts('excel')"
+                                                class="flex items-center px-3 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded">
+                                                <i class="fas fa-file-excel text-green-600 mr-2"></i>
+                                                Method 1: Export Both (Excel)
+                                            </a>
+                                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 px-2 py-1">Export Complete Report</div>
+                                            <a href="javascript:void(0)" onclick="exportCompleteReport('excel')"
+                                                class="flex items-center px-3 py-2 text-sm text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded">
+                                                <i class="fas fa-file-alt text-green-700 mr-2"></i>
+                                                Export Complete Report (Excel)
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -1138,7 +1102,7 @@ $end = min(($offset + $limit), $total_records);
                             <ul class="inline-flex items-stretch -space-x-px">
                                 <!-- Previous Button -->
                                 <li>
-                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page > 1) ? 'page=' . ($page - 1) : '#' ?>"
+                                    <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page > 1) ? 'page=' . ($page - 1) : '#' ?>"
                                         class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($page <= 1) ? 'pointer-events-none opacity-50' : '' ?>">
                                         <span class="sr-only">Previous</span>
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -1155,7 +1119,7 @@ $end = min(($offset + $limit), $total_records);
                                 $range = 3; // how many page links to show around current
                                 for ($i = max(1, $page - $range); $i <= min($total_pages, $page + $range); $i++): ?>
                                     <li>
-                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $i ?>"
+                                        <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $i ?>"
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight border 
                                 <?= ($i == $page)
                                         ? 'z-10 text-blue-600 bg-blue-50 border-blue-300 hover:bg-blue-100 hover:text-blue-700 dark:border-gray-700 dark:bg-gray-700 dark:text-white'
@@ -1172,7 +1136,7 @@ $end = min(($offset + $limit), $total_records);
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">...</span>
                                     </li>
                                     <li>
-                                        <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $total_pages ?>"
+                                        <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&page=<?= $total_pages ?>"
                                             class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white">
                                             <?= $total_pages ?>
                                         </a>
@@ -1181,7 +1145,7 @@ $end = min(($offset + $limit), $total_records);
 
                                 <!-- Next Button -->
                                 <li>
-                                    <a href="/dentalemr_system/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page < $total_pages) ? 'page=' . ($page + 1) : '#' ?>"
+                                    <a href="/DentalEMR_System/html/reports/targetclientlist.php?uid=<?php echo $userId; ?>&year=<?php echo $selectedYear; ?>&<?= ($page < $total_pages) ? 'page=' . ($page + 1) : '#' ?>"
                                         class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-[5px] border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white <?= ($page >= $total_pages) ? 'pointer-events-none opacity-50' : '' ?>">
                                         <span class="sr-only">Next</span>
                                         <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20"
@@ -1308,14 +1272,14 @@ $end = min(($offset + $limit), $total_records);
     </script>
     <!-- Client-side 10-minute inactivity logout -->
     <script>
-        let inactivityTime = 600000; // 10 minutes in ms
+        let inactivityTime = 1800000; // 10 minutes in ms
         let logoutTimer;
 
         function resetTimer() {
             clearTimeout(logoutTimer);
             logoutTimer = setTimeout(() => {
                 alert("You've been logged out due to 10 minutes of inactivity.");
-                window.location.href = "/dentalemr_system/php/login/logout.php";
+                window.location.href = "/DentalEMR_System/php/login/logout.php";
             }, inactivityTime);
         }
 
@@ -1337,7 +1301,7 @@ $end = min(($offset + $limit), $total_records);
             const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
 
             // Build the URL with all current parameters
-            let url = `targetclientlist2.php?uid=${userId}&year=${currentYear}&page=${currentPage}`;
+            let url = `staff_targetclientlist2.php?uid=${userId}&year=${currentYear}&page=${currentPage}`;
 
             if (currentSearch) {
                 url += `&search=${encodeURIComponent(currentSearch)}`;
@@ -1358,8 +1322,396 @@ $end = min(($offset + $limit), $total_records);
         }
     </script>
 
+    <script>
+        // New function to export complete report (both parts in one file)
+        function exportCompleteReport(format = 'excel') {
+            const userId = <?php echo $userId; ?>;
+            const year = <?php echo $selectedYear; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                alert('Complete report export is not available in offline mode. Please go online to export.');
+                return;
+            }
+
+            showNotification('Preparing complete report...', 'info');
+
+            // Make sure to pass 'both' as string, not as number
+            const completeUrl = `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=both&type=${format}`;
+
+            console.log('Export URL:', completeUrl); // Debug log
+
+            // Open in new tab to avoid any browser restrictions
+            window.open(completeUrl, '_blank');
+
+            showNotification('Complete report exported successfully! Check your downloads.', 'success');
+        }
+        // Export functionality
+        function exportYearReport(year) {
+            const userId = <?php echo $userId; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                if (confirm('You are in offline mode. Exporting will use locally stored data which may be incomplete. Continue?')) {
+                    exportOfflineData(year);
+                }
+                return;
+            }
+
+            // Determine which part we're on
+            const isPart2 = window.location.pathname.includes('targetclientlist2.php');
+            const part = isPart2 ? 2 : 1;
+
+            window.open(`/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=${part}&type=excel`, '_blank');
+        }
+
+        // Fixed and improved export functions
+        function exportBothParts(format = 'excel') {
+            const userId = <?php echo $userId; ?>;
+            const year = <?php echo $selectedYear; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                alert('Complete export is not available in offline mode. Please go online to export both parts.');
+                return;
+            }
+
+            // Show progress notification
+            showNotification('Starting export of both parts...', 'info');
+
+            // Create a small delay between downloads to avoid browser blocking
+            setTimeout(() => {
+                // Download Part 1
+                const part1Url = `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=1&type=${format}`;
+                const part1Link = document.createElement('a');
+                part1Link.href = part1Url;
+                part1Link.target = '_blank';
+                part1Link.download = `Target_Client_List_Part1_${year}_${getCurrentDateTime()}.${format === 'csv' ? 'csv' : 'xls'}`;
+                document.body.appendChild(part1Link);
+                part1Link.click();
+                document.body.removeChild(part1Link);
+
+                showNotification('Part 1 downloaded. Starting Part 2...', 'info');
+
+                // Wait a moment before downloading Part 2
+                setTimeout(() => {
+                    // Download Part 2
+                    const part2Url = `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=2&type=${format}`;
+                    const part2Link = document.createElement('a');
+                    part2Link.href = part2Url;
+                    part2Link.target = '_blank';
+                    part2Link.download = `Target_Client_List_Part2_${year}_${getCurrentDateTime()}.${format === 'csv' ? 'csv' : 'xls'}`;
+                    document.body.appendChild(part2Link);
+                    part2Link.click();
+                    document.body.removeChild(part2Link);
+
+                    showNotification('Both parts exported successfully!', 'success');
+                }, 2000);
+            }, 500);
+        }
+
+        // New robust method for exporting both parts
+        function exportBothPartsAlternative(format = 'excel') {
+            const userId = <?php echo $userId; ?>;
+            const year = <?php echo $selectedYear; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                alert('Complete export is not available in offline mode. Please go online to export both parts.');
+                return;
+            }
+
+            // Use a step-by-step approach with user confirmation
+            const exportSteps = confirm(
+                'Complete report export will download two files:\n\n' +
+                '1. Target Client List Part 1\n' +
+                '2. Target Client List Part 2\n\n' +
+                'Click OK to start the export process.'
+            );
+
+            if (!exportSteps) return;
+
+            // Step 1: Export Part 1
+            showNotification('Exporting Part 1... Please allow downloads.', 'info');
+
+            // Create download for Part 1
+            const part1Window = window.open(
+                `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=1&type=${format}`,
+                '_blank'
+            );
+
+            // Wait and then export Part 2
+            setTimeout(() => {
+                showNotification('Now exporting Part 2...', 'info');
+
+                // Create download for Part 2
+                const part2Window = window.open(
+                    `/DentalEMR_System/php/export_targetclient.php?uid=${userId}&year=${year}&part=2&type=${format}`,
+                    '_blank'
+                );
+
+                // Final notification
+                setTimeout(() => {
+                    showNotification('Export completed! Check your downloads folder.', 'success');
+
+                    // Close the windows after a delay
+                    if (part1Window) setTimeout(() => part1Window.close(), 1000);
+                    if (part2Window) setTimeout(() => part2Window.close(), 1500);
+                }, 3000);
+            }, 2000);
+        }
+
+        // New method: Single click export with ZIP (if you implement server-side ZIP)
+        function exportBothPartsZIP() {
+            const userId = <?php echo $userId; ?>;
+            const year = <?php echo $selectedYear; ?>;
+            const isOffline = <?php echo $isOfflineMode ? 'true' : 'false'; ?>;
+
+            if (isOffline) {
+                alert('Complete export is not available in offline mode. Please go online to export both parts.');
+                return;
+            }
+
+            // You can implement this if you create a server-side ZIP generator
+            alert('ZIP export feature coming soon! For now, use the "Export Both" options above.');
+        }
+
+        // Helper function for timestamp
+        function getCurrentDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+        }
+
+        function exportOfflineData(year) {
+            // Check if we're on Part 1 or Part 2
+            const isPart2 = window.location.pathname.includes('targetclientlist2.php');
+
+            if (isPart2) {
+                exportOfflinePart2(year);
+            } else {
+                exportOfflinePart1(year);
+            }
+        }
+
+        function exportOfflinePart1(year) {
+            // For Part 1, we need to get data from the current page table
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tbody tr');
+
+            if (rows.length === 0) {
+                alert('No data found for export.');
+                return;
+            }
+
+            // Create CSV content
+            let csvContent = "data:text/csv;charset=utf-8,";
+
+            // Headers
+            const headers = [
+                'No.', 'Date of Consultation', 'Family Serial No.', 'Name of Client',
+                'Sex (M)', 'Sex (F)', 'Complete Address', 'Date of Birth',
+                '0-11 mos.', '1-4 y/o', '5-9 y/o', '10-14 y/o', '15-19 y/o', '20-59 y/o', '>=60 y/o',
+                'Pregnant 10-14', 'Pregnant 15-19', 'Pregnant 20-49',
+                'Indigenous People', 'Orally Fit Upon Examination', 'Orally Fit After Rehab',
+                'Decayed Tooth', 'Missing Tooth', 'Filled Tooth'
+            ];
+            csvContent += headers.join(',') + "\n";
+
+            // Extract data from table rows
+            rows.forEach((row, index) => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 25) {
+                    const rowData = [
+                        index + 1,
+                        cells[1]?.textContent.trim() || '',
+                        cells[2]?.textContent.trim() || '',
+                        cells[3]?.textContent.trim() || '',
+                        cells[4]?.textContent.trim() || '',
+                        cells[5]?.textContent.trim() || '',
+                        cells[6]?.textContent.trim() || '',
+                        cells[7]?.textContent.trim() || '',
+                        cells[8]?.textContent.trim() || '',
+                        cells[9]?.textContent.trim() || '',
+                        cells[10]?.textContent.trim() || '',
+                        cells[11]?.textContent.trim() || '',
+                        cells[12]?.textContent.trim() || '',
+                        cells[13]?.textContent.trim() || '',
+                        cells[14]?.textContent.trim() || '',
+                        cells[15]?.textContent.trim() || '',
+                        cells[16]?.textContent.trim() || '',
+                        cells[17]?.textContent.trim() || '',
+                        cells[18]?.textContent.trim() || '',
+                        cells[19]?.textContent.trim() || '',
+                        cells[20]?.textContent.trim() || '',
+                        cells[21]?.textContent.trim() || '',
+                        cells[22]?.textContent.trim() || '',
+                        cells[23]?.textContent.trim() || ''
+                    ];
+                    csvContent += rowData.join(',') + "\n";
+                }
+            });
+
+            // Download CSV
+            downloadCSV(csvContent, `Target_Client_List_Part1_Offline_${year}_${getCurrentDate()}.csv`);
+        }
+
+        function exportOfflinePart2(year) {
+            // For Part 2, collect data from localStorage
+            const offlineData = [];
+            const keys = Object.keys(localStorage);
+
+            for (const key of keys) {
+                if (key.startsWith('targetclient_')) {
+                    const data = JSON.parse(localStorage.getItem(key));
+                    if (data.year == year) {
+                        offlineData.push(data);
+                    }
+                }
+            }
+
+            if (offlineData.length === 0) {
+                alert('No offline data found for export.');
+                return;
+            }
+
+            // Create CSV
+            let csvContent = "data:text/csv;charset=utf-8,";
+
+            // Add headers
+            const headers = ['Patient ID', 'Year', 'OE', 'IIOHC', 'AEBF', 'TFA', 'STB', 'OHE', 'E&CC', 'ART',
+                'OPS', 'PFS', 'TF', 'PF', 'GT', 'RP', 'RUT', 'Ref', 'TPEC', 'Dr',
+                'BOHC 0-11', 'BOHC 1-4', 'BOHC 5-9', 'BOHC 10-19', 'BOHC 20-59', 'BOHC 60+', 'BOHC Pregnant', 'Remarks'
+            ];
+            csvContent += headers.join(',') + "\n";
+
+            // Add data rows
+            offlineData.forEach(data => {
+                const row = [
+                    data.patient_id || '',
+                    data.year || '',
+                    data.oe || '',
+                    data.iiohc || '',
+                    data.aebf || '',
+                    data.tfa || '',
+                    data.stb || '',
+                    data.ohe || '',
+                    data.ecc || '',
+                    data.art || '',
+                    data.ops || '',
+                    data.pfs || '',
+                    data.tf || '',
+                    data.pf || '',
+                    data.gt || '',
+                    data.rp || '',
+                    data.rut || '',
+                    data.ref || '',
+                    data.tpec || '',
+                    data.dr || '',
+                    data.bohc_0_11 || '',
+                    data.bohc_1_4 || '',
+                    data.bohc_5_9 || '',
+                    data.bohc_10_19 || '',
+                    data.bohc_20_59 || '',
+                    data.bohc_60_plus || '',
+                    data.bohc_pregnant || '',
+                    data.remarks || ''
+                ];
+                csvContent += row.join(',') + "\n";
+            });
+
+            // Download CSV
+            downloadCSV(csvContent, `Target_Client_List_Part2_Offline_${year}_${getCurrentDate()}.csv`);
+        }
+
+        function downloadCSV(csvContent, filename) {
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showNotification('Offline export completed!', 'success');
+        }
+
+        function getCurrentDate() {
+            const now = new Date();
+            return now.toISOString().slice(0, 10).replace(/-/g, '');
+        }
+
+        function showNotification(message, type = 'info') {
+            // Remove existing notification
+            const existingNotif = document.getElementById('export-notification');
+            if (existingNotif) {
+                existingNotif.remove();
+            }
+
+            // Create new notification
+            const notif = document.createElement('div');
+            notif.id = 'export-notification';
+            notif.className = `fixed top-20 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white font-medium ${getNotificationClass(type)}`;
+            notif.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${getNotificationIcon(type)} mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+            document.body.appendChild(notif);
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                if (notif.parentNode) {
+                    notif.remove();
+                }
+            }, 3000);
+        }
+
+        function getNotificationClass(type) {
+            switch (type) {
+                case 'success':
+                    return 'bg-green-500';
+                case 'error':
+                    return 'bg-red-500';
+                case 'warning':
+                    return 'bg-yellow-500';
+                case 'info':
+                default:
+                    return 'bg-blue-500';
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch (type) {
+                case 'success':
+                    return 'fa-check-circle';
+                case 'error':
+                    return 'fa-exclamation-circle';
+                case 'warning':
+                    return 'fa-exclamation-triangle';
+                case 'info':
+                default:
+                    return 'fa-info-circle';
+            }
+        }
+
+        // Add keyboard shortcut for export (Ctrl+E)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                exportYearReport(<?php echo $selectedYear; ?>);
+            }
+        });
+    </script>
     <!-- Load offline storage -->
-    <script src="/dentalemr_system/js/offline-storage.js"></script>
+    <script src="/DentalEMR_System/js/offline-storage.js"></script>
 
     <script>
         // ========== OFFLINE SUPPORT FOR REPORTS - START ==========
@@ -1397,7 +1749,7 @@ $end = min(($offset + $limit), $total_records);
             setupReportsOffline();
 
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/dentalemr_system/sw.js')
+                navigator.serviceWorker.register('/DentalEMR_System/sw.js')
                     .then(function(registration) {
                         console.log('SW registered for reports');
                     })

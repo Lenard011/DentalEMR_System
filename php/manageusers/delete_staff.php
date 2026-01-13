@@ -13,8 +13,8 @@ if (isset($_GET['uid']) && is_numeric($_GET['uid'])) {
 
 // Build redirect URL with user ID
 $redirectUrl = $currentUserId
-  ? "/dentalemr_system/html/manageusers/manageuser.php?uid=" . $currentUserId
-  : "/dentalemr_system/html/manageusers/manageuser.php";
+  ? "/DentalEMR_System/html/manageusers/manageuser.php?uid=" . $currentUserId
+  : "/DentalEMR_System/html/manageusers/manageuser.php";
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
   echo "<script>

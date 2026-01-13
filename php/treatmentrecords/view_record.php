@@ -1,8 +1,31 @@
 <?php
+// Turn off HTML output but log errors
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+
+// Start output buffering
+ob_start();
+
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . './conns.php';
 
 try {
+    // Debug: Check if conns.php exists
+    $connsFile = __DIR__ . '/conns.php';
+    if (!file_exists($connsFile)) {
+        throw new Exception("Database connection file not found: " . $connsFile);
+    }
+    
+    require_once $connsFile;
+    
+    // Check if $pdo is properly set in conns.php
+    if (!isset($pdo) || !($pdo instanceof PDO)) {
+        throw new Exception("Database connection not properly initialized.");
+    }
+    
+    // Check database connection
+    $pdo->query('SELECT 1');
+    
     $method = $_SERVER['REQUEST_METHOD'];
 
     // -------------------- ADD RECORD (POST) --------------------
@@ -108,9 +131,26 @@ try {
         throw new Exception("Unsupported request method.");
     }
 } catch (Exception $e) {
+    // Clear any previous output
+    ob_clean();
+    
+    // Log the error
+    error_log("view_record.php ERROR: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+    
+    // Return JSON error
+    http_response_code(500);
     echo json_encode([
         "success" => false,
-        "message" => $e->getMessage()
+        "message" => "Server error: " . $e->getMessage(),
+        "debug_info" => [
+            "file" => $e->getFile(),
+            "line" => $e->getLine()
+        ]
     ]);
     exit;
+} finally {
+    // Clean any remaining output buffer
+    if (ob_get_length() > 0) {
+        ob_end_clean();
+    }
 }
